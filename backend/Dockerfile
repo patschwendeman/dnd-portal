@@ -1,15 +1,15 @@
-# Wähle das Basis-Image für Python
-FROM python:3.11
+# Set image
+FROM python:3.11-slim
 
-# Setze das Arbeitsverzeichnis
-WORKDIR /app
-
-# Kopiere die Anforderungen und installiere sie
+# Copy and install requirements
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-# Kopiere den Anwendungscode
-COPY ./app /app
+# Copy code in work dir
+COPY . .
 
-# Starte die FastAPI-Anwendung
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Define port
+EXPOSE 8000
+
+# Run app
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
