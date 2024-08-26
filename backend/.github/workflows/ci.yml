@@ -23,13 +23,7 @@ jobs:
             --file Dockerfile \
             --tag your-local-image:latest \
             --load .
+
       - name: Run Docker container
         run: |
-          docker run --rm your-local-image:latest
-
-      - name: Stop and remove Docker container
-        run: |
-          docker stop my_fastapi_app
-          docker rm my_fastapi_app
-
-
+          docker run -d --rm your-local-image:latest
