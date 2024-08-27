@@ -1,20 +1,26 @@
-CREATE TABLE music (
-    music_id SERIAL PRIMARY KEY,
-    source VARCHAR NOT NULL
+CREATE TABLE graphics_wall (
+    graphics_wall_id INTEGER PRIMARY KEY,
+    name VARCHAR,
+    source VARCHAR
 );
 
-CREATE TABLE graphics (
-    graphics_id SERIAL PRIMARY KEY,
-    source VARCHAR NOT NULL
+CREATE TABLE graphics_ground (
+    graphics_ground_id INTEGER PRIMARY KEY,
+    name VARCHAR,
+    source VARCHAR
+);
+
+CREATE TABLE music (
+    music_id INTEGER PRIMARY KEY,
+    source VARCHAR
 );
 
 CREATE TABLE scene (
-    scene_id SERIAL PRIMARY KEY,
-    name VARCHAR NOT NULL,
+    scene_id INTEGER PRIMARY KEY,
+    name VARCHAR,
     description TEXT,
-    screen_type VARCHAR,
-    screen_id INTEGER,
-    graphics_id INTEGER REFERENCES graphics(graphics_id)
+    graphics_wall_id INTEGER REFERENCES graphics_wall(graphics_wall_id),
+    graphics_ground_id INTEGER REFERENCES graphics_ground(graphics_ground_id)
 );
 
 CREATE TABLE scene_music (
@@ -24,30 +30,30 @@ CREATE TABLE scene_music (
 );
 
 CREATE TABLE battlemap_tracker (
-    battlemapTracker_id SERIAL PRIMARY KEY,
+    battlemapTracker_id INTEGER PRIMARY KEY,
+    loot VARCHAR,
+    xp VARCHAR,
+    enemies VARCHAR,
     locked BOOLEAN NOT NULL,
-    graphics_id INTEGER REFERENCES graphics(graphics_id),
-    graphicsLocked_id INTEGER REFERENCES graphics(graphics_id)
+    graphics_id INTEGER REFERENCES graphics_ground(graphics_ground_id),
+    graphicsLocked_id INTEGER REFERENCES graphics_ground(graphics_ground_id)
 );
 
-INSERT INTO music (source) VALUES 
-('https://example.com/music1.mp3'), 
-('https://example.com/music2.mp3');
+INSERT INTO graphics_ground (graphics_ground_id, name, source) VALUES 
+(1, 'Chamber 1 battlefiel', 'https://example.com/ground.png'), 
+(2, 'Chamber 1 battlefield Locked', 'https://example.com/ground_locked.png');
 
+INSERT INTO graphics_wall (graphics_wall_id, name, source) VALUES 
+(1, 'Chamber 1 wall', 'https://example.com/wall.png');
 
-INSERT INTO graphics (source) VALUES 
-('https://example.com/graphics1.png'), 
-('https://example.com/graphics2.png');
+INSERT INTO music (music_id, source) VALUES 
+(1, 'https://example.com/music1.mp3');
 
-
-INSERT INTO scene (name, description, screen_type, screen_id, graphics_id) VALUES 
-('Battle at the River', 'A battle scene set near a river.', 'fullscreen', 1, 1);
-
+INSERT INTO scene (scene_id, name, description, graphics_ground_id, graphics_wall_id) VALUES 
+(1, 'Battle at the River', 'A battle scene set near a river.', 1, 1);
 
 INSERT INTO scene_music (scene_id, music_id) VALUES 
-(1, 1), 
-(1, 2);
+(1, 1);
 
-
-INSERT INTO battlemap_tracker (locked, graphics_id, graphicsLocked_id) VALUES 
-(false, 1, 2);
+INSERT INTO battlemap_tracker (battlemapTracker_id, loot, xp, enemies, locked, graphics_id, graphicsLocked_id) VALUES 
+(1, 'Old Fish', '200 xp', 'Archer', false, 1, 2);
