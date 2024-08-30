@@ -1,10 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.engine import URL
-
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
+
 load_dotenv()
 
 DRIVERNAME = os.environ.get('DRIVERNAME')
@@ -22,10 +22,18 @@ url = URL.create(
     database=POSTGRES_DB,
     port=PORT
 )
+
 engine = create_engine(url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+def init_db():
+    from db.seed import seed_data
+    db: Session = SessionLocal()
+    try:
+        seed_data(db)
+    finally:
+        db.close()
 
 def get_db():
     db = SessionLocal()

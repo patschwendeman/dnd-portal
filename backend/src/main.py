@@ -1,25 +1,16 @@
 from fastapi import FastAPI
-from sqlalchemy.orm import Session
-#from routes import scene  
-from db.database import engine, SessionLocal
+
+from db.database import engine, init_db
 from db.models import Base
-from db.seed import seed_data
+from routes.scenes import scenes_router
+from routes.battlemaps import battlemaps_router
+
 
 
 app = FastAPI()
-
-# Create database tables
 Base.metadata.create_all(bind=engine)
 
-# Include the router
-#app.include_router(scene.router, prefix="/scenes", tags=["scenes"])
-
-
-def init_db():
-    db: Session = SessionLocal()
-    try:
-        seed_data(db)
-    finally:
-        db.close()
+app.include_router(scenes_router)
+app.include_router(battlemaps_router)
 
 init_db()
