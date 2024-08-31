@@ -12,8 +12,8 @@ battlemaps_router = APIRouter()
 
 
 @battlemaps_router.get("/battlemaps")
-def read_battlemaps(map_filter: Optional[bool] = Query(None), db: Session = Depends(get_db)):
-    battlemap = BattlemapService.read_battlemaps(db, map_filter)
+def read_battlemaps(filter_element: Optional[bool] = Query(None), db: Session = Depends(get_db)):
+    battlemap = BattlemapService.read_battlemaps(db, filter_element)
     if battlemap is None:
         raise HTTPException(status_code=404, detail="Battlemap not found")
     return battlemap
