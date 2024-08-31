@@ -1,8 +1,8 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine import URL
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -27,13 +27,6 @@ engine = create_engine(url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-def init_db():
-    from db.seed import seed_data
-    db: Session = SessionLocal()
-    try:
-        seed_data(db)
-    finally:
-        db.close()
 
 def get_db():
     db = SessionLocal()

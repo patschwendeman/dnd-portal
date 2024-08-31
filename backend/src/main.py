@@ -1,9 +1,11 @@
 from fastapi import FastAPI
-
-from db.database import engine, init_db
+from sqlalchemy.orm import Session
+from db.database import engine, get_db
 from db.models import Base
+from db.seed import seed_data
 from routes.scenes import scenes_router
 from routes.battlemaps import battlemaps_router
+
 
 
 
@@ -13,4 +15,6 @@ Base.metadata.create_all(bind=engine)
 app.include_router(scenes_router)
 app.include_router(battlemaps_router)
 
-init_db()
+
+db: Session = next(get_db())
+seed_data(db)
