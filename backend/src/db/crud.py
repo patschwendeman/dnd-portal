@@ -1,5 +1,7 @@
-from typing import Type, TypeVar, Optional, Dict, Any
-from sqlalchemy.orm import Session
+from typing import List, Type, TypeVar, Optional, Dict, Any
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm.query import Query
+from db.models import Scene
 
 T = TypeVar('T')
 
@@ -8,6 +10,16 @@ def read_all(db: Session, model: Type[T]) -> Optional[T]:
 
 def read_by_id(db: Session, model: Type[T], model_id: int) -> Optional[T]:
     return db.query(model).filter(model.id == model_id).first()
+
+def read_join_all(db: Session) -> List[Scene]:
+    query: Query = db.query(Scene).options(
+        joinedload(Scene.graphics_wall),
+        joinedload(Scene.graphics_ground),
+        joinedload(Scene.battlemaps),
+        joinedload(Scene.music)
+    )
+    scenes = query.all()
+    return scenes
 
 def create(db: Session, model: Type[T], data: Dict[str, Any]) -> T:
     instance = model(**data)

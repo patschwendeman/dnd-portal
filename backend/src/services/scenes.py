@@ -1,5 +1,6 @@
+from typing import List, Optional
 from sqlalchemy.orm import Session
-from db.crud import read_by_id, read_all
+from db.crud import read_by_id, read_all, read_join_all
 from db.models import Scene
 
 
@@ -13,8 +14,15 @@ class SceneService:
         return scenes
     
     @staticmethod
-    def read_scene_by_id(db: Session, scene_id: int) -> Scene:
+    def read_scene_by_id(scene_id: int, db: Session) -> Scene:
         scene = read_by_id(db, Scene, scene_id)
         if not scene:
             raise ValueError("Scene not found")
         return scene
+    
+    @staticmethod
+    def read_scene_details(db: Session) -> List[Scene]:
+        scenes = read_join_all(db)
+        if not scenes:
+            raise ValueError("No scenes found")
+        return scenes
