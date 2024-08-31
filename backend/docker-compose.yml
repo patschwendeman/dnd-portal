@@ -41,5 +41,13 @@ services:
     volumes:
       - ./src:/app
 
+  lint:
+    build:
+      context: .
+    container_name: lint
+    command: pylint /app/src
+    volumes:
+      - .:/app
+
 volumes:
   postgres_data:
