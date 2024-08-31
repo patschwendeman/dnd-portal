@@ -15,7 +15,7 @@ def read_scenes(db: Session = Depends(get_db)):
     return scene
 
 @scenes_router.get("/scenes/{scene_id}")
-def read_scene_by_id(scene_id, db: Session = Depends(get_db)):
+def read_scene_by_id(scene_id: int, db: Session = Depends(get_db)):
     scene = SceneService.read_scene_by_id(db, scene_id)
     if scene is None:
         raise HTTPException(status_code=404, detail="Scene not found")
