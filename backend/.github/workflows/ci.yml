@@ -50,3 +50,20 @@ jobs:
       - name: Run tests in Docker container
         run: |
           docker run --rm your-local-image:latest python -m unittest discover -s __tests__ -p "*.py"
+  
+  lint:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: built-image
+
+      - name: Load Docker image
+        run: docker load -i your-local-image.tar
+
+      - name: Run lint in Docker container
+        run: |
+          docker run --rm your-local-image:latest pylint src/
