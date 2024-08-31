@@ -23,7 +23,7 @@ class Music(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     source = Column(String)
-    scene = relationship('Scene')
+    scene = relationship('Scene', back_populates='music', uselist=False)
 
 class BattleMap(Base):
     __tablename__ = 'battlemaps'
@@ -48,4 +48,5 @@ class Scene(Base):
     graphics_ground = relationship("GraphicsGround", back_populates="scene", uselist=False)
     battlemaps_id = Column(Integer, ForeignKey('battlemaps.id'), unique=True)
     battlemaps = relationship("BattleMap", back_populates="scene", uselist=False)
-    music_id = Column(ForeignKey('music.id'))
+    music_id = Column(Integer, ForeignKey('music.id'))
+    music = relationship("Music", back_populates="scene", uselist=False)
