@@ -1,6 +1,6 @@
 import React from 'react'
 import { FunctionComponent, ReactElement } from "react"
-import { Map } from "../../components/map/Map"
+import { MapOverview } from "../../components/map_overview/MapOverview"
 import './AdminScreen.css'
 
 const AdminScreen: FunctionComponent = (): ReactElement => {
@@ -9,7 +9,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
         <div className='admin-screen'>
             <div className='sidebar-right'>
                 <div className='sidebar__map-container'>
-                    <Map />
+                    <MapOverview gap="2px" src="/test.jpg" />
                 </div>
                 
             </div>
