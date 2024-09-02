@@ -1,9 +1,8 @@
 import React from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
-import { AdminScreen } from "../sceens/admin/AdminScreen"
-import './App.css'
-import { WallScreen } from '../sceens/wall/WallScreen';
-import { GroundScreen } from '../sceens/ground/GroundScreen';
+import { AdminScreen } from "../sceens/AdminScreen"
+import { WallScreen } from '../sceens/WallScreen';
+import { GroundScreen } from '../sceens/GroundScreen';
 
 function App() {
   return (
