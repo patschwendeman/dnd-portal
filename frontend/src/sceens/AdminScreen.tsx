@@ -51,16 +51,25 @@ const BottomBar = styled.div`
 
 const AdminScreen: FunctionComponent = (): ReactElement => {
 
+    // Propably seperate fight scenes and non fight scenes
+    function handleSceneSelection(id: number): number {
+        // OpenDialogue
+        // DialoguOptionHandler   [Take in to Dialog Component and givs back option]
+        // If (DialoguOptionHandler === false) return
+        // getSceneID
+        // handleAcriveScene(sceneID)
+        return id
+
+    }
+
     return(
         <Screen>
             <SidebarRight>
                 <SidebarMapContainer>
-                    <MapOverview gap="2px" src="/test.jpg" />
+                    <MapOverview gap="2px" src="/test.jpg" handleSceneSelection={handleSceneSelection}  />
                 </SidebarMapContainer>
-                
             </SidebarRight>
             <BottomBar></BottomBar>
-
         </Screen>
         
     )
