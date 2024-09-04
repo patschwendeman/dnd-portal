@@ -1,14 +1,6 @@
-import React from 'react';
-import { FunctionComponent, ReactElement } from "react";
+import React, { FunctionComponent, ReactElement } from "react";
 import styled from 'styled-components';
 
-
-interface MapElementPropsProps {
-    src: string;
-    handleSceneSelection(id: number): number
-    keyProp: number;
-    
-}
 
 const MapContainer = styled.div`
     background-color: rgb(184, 184, 184);
@@ -30,9 +22,15 @@ const MapImage = styled.img`
     border-radius: 5px;
 `;
 
-const MapElement: FunctionComponent<MapElementPropsProps> = ({ src, handleSceneSelection, keyProp }): ReactElement => {
+interface MapElementProps {
+    src: string;
+    handleSceneSelection?(id: number): number
+    keyProp: number;   
+}
+
+const MapElement: FunctionComponent<MapElementProps> = ({ src, handleSceneSelection, keyProp }): ReactElement => {
     return (
-        <MapContainer onClick={() => handleSceneSelection(keyProp)}>
+        <MapContainer onClick={() => handleSceneSelection?.(keyProp)}>
             <MapImage src={src} alt="" />
         </MapContainer>
     );
