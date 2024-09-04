@@ -1,5 +1,4 @@
-import React from 'react'
-import { FunctionComponent, ReactElement } from "react"
+import React,{ FunctionComponent, ReactElement } from "react"
 import { MapOverview } from "../components/MapOverview"
 import styled from 'styled-components';
 
@@ -34,17 +33,13 @@ const BackgroundImage = styled.img`
 
 
 const WallScreen: FunctionComponent = (): ReactElement => {
-
     return(
         <Screen>
             <BackgroundImage src="/test.jpg" alt="" /> 
             <MapContainer> 
                 <MapOverview gap="10px" src="/test.jpg" />
             </MapContainer>
-            
-          
         </Screen>       
     )
-
 }
 export { WallScreen }
