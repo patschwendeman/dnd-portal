@@ -1,7 +1,10 @@
-import React from 'react'
-import { FunctionComponent, ReactElement } from "react"
-import { MapOverview } from "../components/MapOverview"
+import React, { useContext, FunctionComponent, ReactElement, useEffect, useState } from 'react'
 import styled from 'styled-components';
+import { MapOverview } from "../components/MapOverview"
+import { ActiveSceneContext } from '../context/context';
+import { getSceneDetails } from '../app/service/scenes';
+import { getBattlemaps } from '../app/service/battlemaps';
+import { Battlemap } from '../models/models';
 
 
 const Screen = styled.div`
@@ -50,16 +53,19 @@ const BottomBar = styled.div`
 `;
 
 const AdminScreen: FunctionComponent = (): ReactElement => {
+    const { activeScene, setActiveScene } = useContext(ActiveSceneContext);
+    const [sceneDetails, setSceneDetails] = useState([])
+    const [battlemaps, setBattlemaps] = useState<Battlemap[]>([]);
 
     // Propably seperate fight scenes and non fight scenes
     function handleSceneSelection(id: number): number {
+        setActiveScene(id);
         // OpenDialogue
         // DialoguOptionHandler   [Take in to Dialog Component and givs back option]
         // If (DialoguOptionHandler === false) return
         // getSceneID
         // handleAcriveScene(sceneID)
         return id
-
     }
 
     return(

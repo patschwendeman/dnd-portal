@@ -1,6 +1,7 @@
 import React,{ FunctionComponent, ReactElement } from "react";
 import { MapElement } from './MapElement'
 import styled from 'styled-components';
+import { Battlemap, BattlemapLight } from "../models/models";
 
 
 const ContainerBattlemaps = styled.div`
@@ -22,42 +23,14 @@ const BattlemapsColumn = styled.div`
 
 interface MapOverviewProps {
     gap: string,
-    src: string
+    src: string,
+    battlemaps: Battlemap[] | BattlemapLight[]
     handleSceneSelection?(id: number): number
 }
 
-const MapOverview: FunctionComponent<MapOverviewProps> = ({ gap, src, handleSceneSelection }): ReactElement => {
-
-    interface MockItem {
-        id: number;
-    }
-    
-    interface MockData {
-        items: MockItem[];
-    }
-
-    const Mock: MockData  = {
-        "items": [
-          { "id": 1 },
-          { "id": 2 },
-          { "id": 3 },
-          { "id": 4 },
-          { "id": 5 },
-          { "id": 6 },
-          { "id": 7 },
-          { "id": 8 },
-          { "id": 9 },
-          { "id": 10 },
-          { "id": 11 },
-          { "id": 12 },
-          { "id": 13 },
-          { "id": 14 },
-          { "id": 15 },
-          { "id": 16 }
-        ]
-      }
+const MapOverview: FunctionComponent<MapOverviewProps> = ({battlemaps, gap, src, handleSceneSelection }): ReactElement => {
       
-      const count = Math.sqrt(Mock.items.length);
+      const count = Math.sqrt(battlemaps.length);
       
       return (
         <ContainerBattlemaps style={{ gap: gap }}>
@@ -65,13 +38,13 @@ const MapOverview: FunctionComponent<MapOverviewProps> = ({ gap, src, handleScen
                 <BattlemapsColumn style={{ gap: gap }} key={colIndex}>
                     {[...Array(count)].map((_, mapIndex) => {
                         const itemIndex = colIndex * count + mapIndex;
-                        if (itemIndex < Mock.items.length) {
+                        if (itemIndex < battlemaps.length) {
                             return (
                                 <MapElement 
                                     src={src} 
                                     handleSceneSelection={handleSceneSelection} 
-                                    key={Mock.items[itemIndex].id}
-                                    keyProp={Mock.items[itemIndex].id}>    
+                                    key={battlemaps[itemIndex].id}
+                                    keyProp={battlemaps[itemIndex].id}>    
                                 </MapElement>
                             );
                         }
