@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { AdminScreen } from "../sceens/AdminScreen"
 import { WallScreen } from '../sceens/WallScreen';
 import { GroundScreen } from '../sceens/GroundScreen';
-import { ActiveSceneContext } from './context/context';
+import { ActiveSceneContext } from '../context/context';
 
 function App() {
   const [activeScene, setActiveScene] = useState<number>(() => {
