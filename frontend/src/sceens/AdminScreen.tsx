@@ -2,8 +2,8 @@ import React, { useContext, FunctionComponent, ReactElement, useEffect, useState
 import styled from 'styled-components';
 import { MapOverview } from "../components/MapOverview"
 import { ActiveSceneContext } from '../context/context';
-import { getSceneDetails } from '../app/service/scenes';
-import { getBattlemaps } from '../app/service/battlemaps';
+import { getSceneDetails } from '../service/scenes';
+import { getBattlemaps } from '../service/battlemaps';
 import { Battlemap } from '../models/models';
 
 
