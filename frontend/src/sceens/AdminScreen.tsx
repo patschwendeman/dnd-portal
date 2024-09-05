@@ -57,6 +57,16 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     const [sceneDetails, setSceneDetails] = useState([])
     const [battlemaps, setBattlemaps] = useState<Battlemap[]>([]);
 
+    useEffect(() => {
+        getSceneDetails(setSceneDetails);
+        getBattlemaps(setBattlemaps)
+    }, []);
+
+    useEffect(() => {
+        if (battlemaps && battlemaps.length > 0) {
+            console.log(battlemaps);
+        }
+    }, [battlemaps]);
     // Propably seperate fight scenes and non fight scenes
     function handleSceneSelection(id: number): number {
         setActiveScene(id);
@@ -72,7 +82,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
         <Screen>
             <SidebarRight>
                 <SidebarMapContainer>
-                    <MapOverview gap="2px" src="/test.jpg" handleSceneSelection={handleSceneSelection}  />
+                    <MapOverview battlemaps={battlemaps} gap="2px" src="/test.jpg" handleSceneSelection={handleSceneSelection}  />
                 </SidebarMapContainer>
             </SidebarRight>
             <BottomBar></BottomBar>
