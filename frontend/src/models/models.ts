@@ -8,3 +8,8 @@ export interface Battlemap {
   name: string;
   source_clear: string;
 }
+
+export interface BattlemapLight {
+  id: number;
+  source: string;
+}
