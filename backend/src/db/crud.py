@@ -1,6 +1,7 @@
 from typing import List, Type, TypeVar, Optional, Dict, Any
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.orm.query import Query
+from sqlalchemy import asc
 from db.models import Scene
 
 T = TypeVar('T')
@@ -18,7 +19,7 @@ def read_join_all(db: Session) -> List[Scene]:
         joinedload(Scene.battlemaps),
         joinedload(Scene.music)
     )
-    scenes = query.all()
+    scenes = query.order_by(asc(Scene.id)).all()
     return scenes
 
 def create(db: Session, model: Type[T], data: Dict[str, Any]) -> T:
