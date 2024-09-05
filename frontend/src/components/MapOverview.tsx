@@ -1,14 +1,7 @@
-import React from 'react'
-import { FunctionComponent, ReactElement } from "react";
+import React,{ FunctionComponent, ReactElement } from "react";
 import { MapElement } from './MapElement'
 import styled from 'styled-components';
 
-
-interface MapOverviewProps {
-    gap: string,
-    src: string
-    handleSceneSelection(id: number): number
-}
 
 const ContainerBattlemaps = styled.div`
     display: flex;
@@ -26,6 +19,12 @@ const BattlemapsColumn = styled.div`
     flex: 1;
     gap: 2px;
 `;
+
+interface MapOverviewProps {
+    gap: string,
+    src: string
+    handleSceneSelection?(id: number): number
+}
 
 const MapOverview: FunctionComponent<MapOverviewProps> = ({ gap, src, handleSceneSelection }): ReactElement => {
 
