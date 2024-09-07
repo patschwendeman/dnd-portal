@@ -1,6 +1,8 @@
-import React,{ FunctionComponent, ReactElement } from "react"
+import React,{ FunctionComponent, ReactElement, useEffect, useState } from "react"
 import { MapOverview } from "../components/MapOverview"
 import styled from 'styled-components';
+import { getBattlemapsfiltered } from '../service/battlemaps';
+import { Map } from '../models/models';
 
 
 const Screen = styled.div`
@@ -33,11 +35,22 @@ const BackgroundImage = styled.img`
 
 
 const WallScreen: FunctionComponent = (): ReactElement => {
+    const [battlemaps, setBattlemaps] = useState<Map[]>([]);
+    useEffect(() => {
+        getBattlemapsfiltered(setBattlemaps, { filter_element: true });
+    }, []);
+
+    useEffect(() => {
+        if (battlemaps && battlemaps.length > 0) {
+            console.log(battlemaps);
+        }
+    }, [battlemaps]);
+
     return(
         <Screen>
             <BackgroundImage src="/test.jpg" alt="" /> 
             <MapContainer> 
-                <MapOverview gap="10px" src="/test.jpg" />
+                <MapOverview battlemaps={battlemaps} gap="10px"/>
             </MapContainer>
         </Screen>       
     )
