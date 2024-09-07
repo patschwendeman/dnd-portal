@@ -6,6 +6,7 @@ import { ActiveSceneContext } from '../context/context'
 import { Map, SceneDetail } from '../models/models'
 import { getBattlemapsfiltered } from '../service/battlemaps'
 import { getSceneDetails } from '../service/scenes'
+import { Dialogue } from '../components/Dialogue'
 
 const Screen = styled.div`
     display: flex;
@@ -56,39 +57,49 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     const {activeScene, setActiveScene } = useContext(ActiveSceneContext)
     const [sceneDetails, setSceneDetails] = useState<SceneDetail[]>([])
     const [battlemaps, setBattlemaps] = useState<Map[]>([])
+    const [dialogueVisibility, setDialogueVisibility] = useState<boolean>(false)
+    const [sceneOption, setSceneOption] = useState<SceneDetail>()
 
     useEffect(() => {
         getSceneDetails(setSceneDetails)
         getBattlemapsfiltered(setBattlemaps, { players: false })
     }, [])
 
-    const getSceneId = (mapId: number, sceneDetails: SceneDetail[]): number => {
-        const scene = sceneDetails.find(scene => scene.battlemaps_id === mapId)
-        return scene ? scene.id : 1
-    }
 
     function handleSceneSelection(mapId: number) {
-        const sceneId = getSceneId(mapId, sceneDetails)
-        setActiveScene(sceneId)
-        // OpenDialogue
-        // DialoguOptionHandler   [Take in to Dialog Component and givs back option]
-        // If (DialoguOptionHandler === false) return
-        // getSceneID
-        // handleAcriveScene(sceneID)
-        return sceneId
+        const scene = getSceneByMapId(mapId, sceneDetails)
+        setDialogueVisibility(true)
+        setSceneOption(scene)
+        
+        return scene.id
     }
 
-    return(
-        <Screen>
-            <SidebarRight>
-                <SidebarMapContainer>
-                    <MapOverview battlemaps={battlemaps} gap='3px' handleSceneSelection={handleSceneSelection}  />
-                </SidebarMapContainer>
-            </SidebarRight>
-            <BottomBar></BottomBar>
-        </Screen>
-        
-    )
+    function handleDialogueOption(option: boolean){
+        if(option === true){
+            if(sceneOption) {
+                setActiveScene(sceneOption.id) 
+            }  
+            else {
+                throw new Error(`Scene option not found`)
+            }
+        }
+        setDialogueVisibility(false)
+    }
 
+
+
+    return(
+        <>
+            <Dialogue isVisible={dialogueVisibility} sceneOption={sceneOption} handleDialogueOption={handleDialogueOption}/>
+            <Screen>
+                <SidebarRight>
+                    <SidebarMapContainer>
+                        <MapOverview battlemaps={battlemaps} gap='3px' handleSceneSelection={handleSceneSelection}  />
+                    </SidebarMapContainer>
+                </SidebarRight>
+                <BottomBar></BottomBar>
+            </Screen>
+        </>      
+    )
 }
 export { AdminScreen }
