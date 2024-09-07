@@ -3,8 +3,8 @@ import styled from 'styled-components';
 import { MapOverview } from "../components/MapOverview"
 import { ActiveSceneContext } from '../context/context';
 import { getSceneDetails } from '../service/scenes';
-import { getBattlemaps } from '../service/battlemaps';
-import { Battlemap } from '../models/models';
+import { getBattlemapsfiltered } from '../service/battlemaps';
+import { Map } from '../models/models';
 
 
 const Screen = styled.div`
@@ -55,11 +55,11 @@ const BottomBar = styled.div`
 const AdminScreen: FunctionComponent = (): ReactElement => {
     const { activeScene, setActiveScene } = useContext(ActiveSceneContext);
     const [sceneDetails, setSceneDetails] = useState([])
-    const [battlemaps, setBattlemaps] = useState<Battlemap[]>([]);
+    const [battlemaps, setBattlemaps] = useState<Map[]>([]);
 
     useEffect(() => {
         getSceneDetails(setSceneDetails);
-        getBattlemaps(setBattlemaps)
+        getBattlemapsfiltered(setBattlemaps, { filter_element: false })
     }, []);
 
     useEffect(() => {
@@ -82,7 +82,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
         <Screen>
             <SidebarRight>
                 <SidebarMapContainer>
-                    <MapOverview battlemaps={battlemaps} gap="2px" src="/test.jpg" handleSceneSelection={handleSceneSelection}  />
+                    <MapOverview battlemaps={battlemaps} gap="3px" handleSceneSelection={handleSceneSelection}  />
                 </SidebarMapContainer>
             </SidebarRight>
             <BottomBar></BottomBar>

@@ -1,7 +1,7 @@
 import React,{ FunctionComponent, ReactElement } from "react";
 import { MapElement } from './MapElement'
 import styled from 'styled-components';
-import { Battlemap, BattlemapLight } from "../models/models";
+import { Map } from "../models/models";
 
 
 const ContainerBattlemaps = styled.div`
@@ -23,14 +23,21 @@ const BattlemapsColumn = styled.div`
 
 interface MapOverviewProps {
     gap: string,
-    src: string,
-    battlemaps: Battlemap[] | BattlemapLight[]
+    battlemaps: Map[] | undefined
     handleSceneSelection?(id: number): number
 }
 
-const MapOverview: FunctionComponent<MapOverviewProps> = ({battlemaps, gap, src, handleSceneSelection }): ReactElement => {
-      
-      const count = Math.sqrt(battlemaps.length);
+const MapOverview: FunctionComponent<MapOverviewProps> = ({battlemaps, gap, handleSceneSelection }): ReactElement => {
+
+    let maps: Map[] = Array.from({ length: 16 }, (_, index) => ({
+        id: index + 1    
+    }));
+
+    if(battlemaps)  {
+        maps = battlemaps
+    }
+     
+    const count = Math.sqrt(maps.length);
       
       return (
         <ContainerBattlemaps style={{ gap: gap }}>
@@ -38,13 +45,13 @@ const MapOverview: FunctionComponent<MapOverviewProps> = ({battlemaps, gap, src,
                 <BattlemapsColumn style={{ gap: gap }} key={colIndex}>
                     {[...Array(count)].map((_, mapIndex) => {
                         const itemIndex = colIndex * count + mapIndex;
-                        if (itemIndex < battlemaps.length) {
+                        if (maps && itemIndex < maps.length) {
                             return (
                                 <MapElement 
-                                    src={src} 
+                                    src={maps[itemIndex].source} 
                                     handleSceneSelection={handleSceneSelection} 
-                                    key={battlemaps[itemIndex].id}
-                                    keyProp={battlemaps[itemIndex].id}>    
+                                    key={maps[itemIndex].id}
+                                    keyProp={maps[itemIndex].id}>    
                                 </MapElement>
                             );
                         }

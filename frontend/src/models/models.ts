@@ -9,7 +9,7 @@ export interface Battlemap {
   source_clear: string;
 }
 
-export interface BattlemapLight {
+export interface Map {
   id: number;
-  source: string;
+  source?: string;
 }

@@ -9,7 +9,8 @@ const MapContainer = styled.div`
     position: relative;
     flex-grow: 1;
     border-radius: 5px;
-    border: solid 1px transparent;
+    border : 1px solid #242424;
+
 `;
 
 const MapImage = styled.img`
@@ -23,15 +24,20 @@ const MapImage = styled.img`
 `;
 
 interface MapElementProps {
-    src: string;
+    src?: string;
     handleSceneSelection?(id: number): number
-    keyProp: number;   
+    keyProp: number | undefined;   
 }
 
 const MapElement: FunctionComponent<MapElementProps> = ({ src, handleSceneSelection, keyProp }): ReactElement => {
+    const handleClick = () => {
+        if (keyProp !== undefined && handleSceneSelection) {
+            handleSceneSelection(keyProp);
+        }
+    };
     return (
-        <MapContainer onClick={() => handleSceneSelection?.(keyProp)}>
-            <MapImage src={src} alt="" />
+        <MapContainer  onClick={handleClick}>
+             {src && <MapImage src={src} alt="" />}
         </MapContainer>
     );
 };
