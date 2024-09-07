@@ -13,3 +13,13 @@ def filter_locked_battlemaps(battlemaps):
                 'source': battlemap.source_clear
             })
     return filtered_battlemaps
+
+def filter_battlemaps(battlemaps):
+    filtered_battlemaps = []
+
+    for battlemap in battlemaps:
+         filtered_battlemaps.append({
+                'id': battlemap.id,
+                'source': battlemap.source_clear
+            })
+    return filtered_battlemaps

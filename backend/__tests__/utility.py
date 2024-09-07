@@ -3,7 +3,7 @@ import os
 import unittest
 import json
 from __tests__.battlemap import BattleMap
-from src.services.utility import filter_locked_battlemaps
+from src.services.utility import filter_battlemaps, filter_locked_battlemaps
 
 
 test_data_clear = [
@@ -53,16 +53,38 @@ test_data_locked = [
     )
 ]
 
-
-
-
-
 class TestFilterLockedBattlemaps(unittest.TestCase):
 
     def test_should_return_clear_data(self):
         filtered_battlemaps = filter_locked_battlemaps(test_data_clear)
-        self.assertEqual(filtered_battlemaps, ["https://example.com/battle.png", "https://example.com/battle.png"], "Returned clear data")
+        expected_result = [
+            {'id': test_data_clear[0].id, 'source': test_data_clear[0].source_clear},
+            {'id': test_data_clear[1].id, 'source': test_data_clear[1].source_clear}
+        ]
+        self.assertEqual(filtered_battlemaps, expected_result, "Returned clear data")
 
     def test_should_return_locked_data(self):
         filtered_battlemaps = filter_locked_battlemaps(test_data_locked)
-        self.assertEqual(filtered_battlemaps, ["https://example.com/battle_locked.png", "https://example.com/battle_locked.png"], "Returned locked data")
+        expected_result = [
+            {'id': test_data_locked[0].id, 'source': test_data_locked[0].source_locked},
+            {'id': test_data_locked[1].id, 'source': test_data_locked[1].source_locked}
+        ]
+        self.assertEqual(filtered_battlemaps, expected_result, "Returned locked data")
+
+class TestFilterBattlemaps(unittest.TestCase):
+
+    def test_should_return_clear_data(self):
+        filtered_battlemaps = filter_battlemaps(test_data_clear)
+        expected_result = [
+            {'id': test_data_clear[0].id, 'source': test_data_clear[0].source_clear},
+            {'id': test_data_clear[1].id, 'source': test_data_clear[1].source_clear}
+        ]
+        self.assertEqual(filtered_battlemaps, expected_result, "Returned clear data")
+
+    def test_should_return_clear_data(self):
+        filtered_battlemaps = filter_battlemaps(test_data_locked)
+        expected_result = [
+            {'id': test_data_locked[0].id, 'source': test_data_locked[0].source_clear},
+            {'id': test_data_locked[1].id, 'source': test_data_locked[1].source_clear}
+        ]
+        self.assertEqual(filtered_battlemaps, expected_result, "Returned locked data")

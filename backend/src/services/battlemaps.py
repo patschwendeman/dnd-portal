@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from db.crud import read_by_id, read_all, update
 from db.models import BattleMap
-from services.utility import filter_locked_battlemaps
+from services.utility import filter_battlemaps, filter_locked_battlemaps
 
 
 class BattlemapService:
@@ -13,6 +13,8 @@ class BattlemapService:
         battlemaps = read_all(db, BattleMap)
         if filter == True:
             battlemaps = filter_locked_battlemaps(battlemaps)
+        if filter == False:
+            battlemaps = filter_battlemaps(battlemaps)
         if not battlemaps:
             raise ValueError("BattleMap not found")
         return battlemaps
