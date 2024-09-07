@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 import { MapOverview } from '../components/MapOverview'
 import { ActiveSceneContext } from '../context/context'
-import { Map } from '../models/models'
+import { Map, SceneDetail } from '../models/models'
 import { getBattlemapsfiltered } from '../service/battlemaps'
 import { getSceneDetails } from '../service/scenes'
 
@@ -54,7 +54,7 @@ const BottomBar = styled.div`
 
 const AdminScreen: FunctionComponent = (): ReactElement => {
     const {activeScene, setActiveScene } = useContext(ActiveSceneContext)
-    const [sceneDetails, setSceneDetails] = useState([])
+    const [sceneDetails, setSceneDetails] = useState<SceneDetail[]>([])
     const [battlemaps, setBattlemaps] = useState<Map[]>([])
 
     useEffect(() => {
@@ -62,20 +62,20 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
         getBattlemapsfiltered(setBattlemaps, { players: false })
     }, [])
 
-    useEffect(() => {
-        if (battlemaps && battlemaps.length > 0) {
-            console.log(battlemaps)
-        }
-    }, [battlemaps])
-    // Propably seperate fight scenes and non fight scenes
-    function handleSceneSelection(id: number): number {
-        setActiveScene(id)
+    const getSceneId = (mapId: number, sceneDetails: SceneDetail[]): number => {
+        const scene = sceneDetails.find(scene => scene.battlemaps_id === mapId)
+        return scene ? scene.id : 1
+    }
+
+    function handleSceneSelection(mapId: number) {
+        const sceneId = getSceneId(mapId, sceneDetails)
+        setActiveScene(sceneId)
         // OpenDialogue
         // DialoguOptionHandler   [Take in to Dialog Component and givs back option]
         // If (DialoguOptionHandler === false) return
         // getSceneID
         // handleAcriveScene(sceneID)
-        return id
+        return sceneId
     }
 
     return(
