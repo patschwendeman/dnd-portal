@@ -1,8 +1,8 @@
 import { FunctionComponent, ReactElement } from 'react'
 import styled from 'styled-components'
 
+import { MapElement } from './MapElement'
 import { SceneDetail } from '../models/models'
-import { MapElement } from './MapElement';
 
 // Definiere die Prop-Typen für LayoutContainer
 interface LayoutContainerProps {

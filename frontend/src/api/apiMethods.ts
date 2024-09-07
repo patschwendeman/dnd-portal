@@ -8,6 +8,6 @@ export const getData = async (
     const response = await apiClient.get(path, { params })
     return response.data
   } catch (error) {
-    throw error
+    console.error(error)
   }
 }
