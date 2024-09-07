@@ -1,6 +1,6 @@
-import React from 'react'
-import { FunctionComponent, ReactElement } from "react"
+import React, { useContext, FunctionComponent, ReactElement } from 'react'
 import styled from 'styled-components';
+import { ActiveSceneContext } from '../context/context';
 
 
 const Screen = styled.div`
@@ -23,12 +23,15 @@ const BackgroundImage = styled.img`
 `;
 
 const GroundScreen: FunctionComponent = (): ReactElement => {
+    const { activeScene } = useContext(ActiveSceneContext);
 
     return(
-        <Screen>
-            <BackgroundImage src="/test.jpg" alt="" />  
-        </Screen>       
-    )
+        <><Screen>
+            <BackgroundImage src="/test.jpg" alt="" />
 
+        </Screen>
+        <p>{activeScene}</p>
+        </> 
+    )
 }
 export { GroundScreen }
