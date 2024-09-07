@@ -1,12 +1,13 @@
 import { useContext, FunctionComponent, ReactElement, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
+import { Dialogue } from '../components/Dialogue'
 import { MapOverview } from '../components/MapOverview'
 import { ActiveSceneContext } from '../context/context'
 import { Map, SceneDetail } from '../models/models'
 import { getBattlemapsfiltered } from '../service/battlemaps'
 import { getSceneDetails } from '../service/scenes'
-import { Dialogue } from '../components/Dialogue'
+import { getSceneByMapId } from '../utils/utils'
 
 const Screen = styled.div`
     display: flex;
@@ -54,7 +55,7 @@ const BottomBar = styled.div`
 `
 
 const AdminScreen: FunctionComponent = (): ReactElement => {
-    const {activeScene, setActiveScene } = useContext(ActiveSceneContext)
+    const {setActiveScene } = useContext(ActiveSceneContext)
     const [sceneDetails, setSceneDetails] = useState<SceneDetail[]>([])
     const [battlemaps, setBattlemaps] = useState<Map[]>([])
     const [dialogueVisibility, setDialogueVisibility] = useState<boolean>(false)
@@ -64,7 +65,6 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
         getSceneDetails(setSceneDetails)
         getBattlemapsfiltered(setBattlemaps, { players: false })
     }, [])
-
 
     function handleSceneSelection(mapId: number) {
         const scene = getSceneByMapId(mapId, sceneDetails)
@@ -80,7 +80,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
                 setActiveScene(sceneOption.id) 
             }  
             else {
-                throw new Error(`Scene option not found`)
+                throw new Error('Scene option not found')
             }
         }
         setDialogueVisibility(false)
