@@ -1,7 +1,7 @@
-import React, { useContext, FunctionComponent, ReactElement } from 'react'
-import styled from 'styled-components';
-import { ActiveSceneContext } from '../context/context';
+import { useContext, FunctionComponent, ReactElement } from 'react'
+import styled from 'styled-components'
 
+import { ActiveSceneContext } from '../context/context'
 
 const Screen = styled.div`
     display: flex;
@@ -14,20 +14,19 @@ const Screen = styled.div`
     bottom: 0;
     align-items: center;
     justify-content: center;
-`;
+`
 
 const BackgroundImage = styled.img`
     width: 100%;
     z-index: 1;
     position: fixed;
-`;
+`
 
 const GroundScreen: FunctionComponent = (): ReactElement => {
-    const { activeScene } = useContext(ActiveSceneContext);
-
+    const { activeScene } = useContext(ActiveSceneContext)
     return(
         <><Screen>
-            <BackgroundImage src="/test.jpg" alt="" />
+            <BackgroundImage src='/test.jpg' alt='' />
 
         </Screen>
         <p>{activeScene}</p>

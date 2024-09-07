@@ -1,9 +1,9 @@
-import React,{ FunctionComponent, ReactElement, useEffect, useState } from "react"
-import { MapOverview } from "../components/MapOverview"
-import styled from 'styled-components';
-import { getBattlemapsfiltered } from '../service/battlemaps';
-import { Map } from '../models/models';
+import { FunctionComponent, ReactElement, useEffect, useState } from 'react'
+import styled from 'styled-components'
 
+import { MapOverview } from '../components/MapOverview'
+import { Map } from '../models/models'
+import { getBattlemapsfiltered } from '../service/battlemaps'
 
 const Screen = styled.div`
     display: flex;
@@ -16,7 +16,7 @@ const Screen = styled.div`
     bottom: 0;
     align-items: center;
     justify-content: center;
-`;
+`
 
 const MapContainer = styled.div`
     display: flex;
@@ -25,32 +25,31 @@ const MapContainer = styled.div`
     align-items: center;
     justify-content: center;
     z-index: 99999;
-`;
+`
 
 const BackgroundImage = styled.img`
     width: 100%;
     z-index: 1;
     position: fixed;
-`;
-
+`
 
 const WallScreen: FunctionComponent = (): ReactElement => {
-    const [battlemaps, setBattlemaps] = useState<Map[]>([]);
+    const [battlemaps, setBattlemaps] = useState<Map[]>([])
     useEffect(() => {
-        getBattlemapsfiltered(setBattlemaps, { filter_element: true });
-    }, []);
+        getBattlemapsfiltered(setBattlemaps, { players: true })
+    }, [])
 
     useEffect(() => {
         if (battlemaps && battlemaps.length > 0) {
-            console.log(battlemaps);
+            console.log(battlemaps)
         }
-    }, [battlemaps]);
+    }, [battlemaps])
 
     return(
         <Screen>
-            <BackgroundImage src="/test.jpg" alt="" /> 
+            <BackgroundImage src='/test.jpg' alt='' /> 
             <MapContainer> 
-                <MapOverview battlemaps={battlemaps} gap="10px"/>
+                <MapOverview battlemaps={battlemaps} gap='10px'/>
             </MapContainer>
         </Screen>       
     )

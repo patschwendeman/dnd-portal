@@ -1,6 +1,5 @@
-import React, { FunctionComponent, ReactElement } from "react";
-import styled from 'styled-components';
-
+import { FunctionComponent, ReactElement } from 'react'
+import styled from 'styled-components'
 
 const MapContainer = styled.div`
     background-color: rgb(184, 184, 184);
@@ -11,7 +10,7 @@ const MapContainer = styled.div`
     border-radius: 5px;
     border : 1px solid #242424;
 
-`;
+`
 
 const MapImage = styled.img`
     position: absolute !important;
@@ -21,25 +20,25 @@ const MapImage = styled.img`
     height: 100%;
     object-fit: cover;
     border-radius: 5px;
-`;
+`
 
 interface MapElementProps {
-    src?: string;
+    src?: string
     handleSceneSelection?(id: number): number
-    keyProp: number | undefined;   
+    keyProp: number | undefined   
 }
 
 const MapElement: FunctionComponent<MapElementProps> = ({ src, handleSceneSelection, keyProp }): ReactElement => {
     const handleClick = () => {
         if (keyProp !== undefined && handleSceneSelection) {
-            handleSceneSelection(keyProp);
+            handleSceneSelection(keyProp)
         }
-    };
+    }
     return (
         <MapContainer  onClick={handleClick}>
-             {src && <MapImage src={src} alt="" />}
+             {src && <MapImage src={src} alt='' />}
         </MapContainer>
-    );
-};
+    )
+}
 
-export { MapElement };
+export { MapElement }
