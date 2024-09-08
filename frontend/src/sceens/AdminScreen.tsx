@@ -7,7 +7,7 @@ import { ActiveSceneContext } from '../context/context'
 import { Map, SceneDetail } from '../models/models'
 import { getBattlemapsfiltered } from '../service/battlemaps'
 import { getSceneDetails } from '../service/scenes'
-import { getSceneByMapId } from '../utils/utils'
+import { getSceneByKey } from '../utils/utils'
 
 const Screen = styled.div`
     display: flex;
@@ -67,7 +67,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     }, [])
 
     function handleSceneSelection(mapId: number) {
-        const scene = getSceneByMapId(mapId, sceneDetails)
+        const scene = getSceneByKey('battlemaps_id', mapId, sceneDetails)
         setDialogueVisibility(true)
         setSceneOption(scene)
         

@@ -1,12 +1,13 @@
 import { SceneDetail } from '../models/models'
 
-export const getSceneByMapId = (
-  mapId: number,
+export const getSceneByKey = <K extends keyof SceneDetail>(
+  key: K,
+  value: SceneDetail[K],
   sceneDetails: SceneDetail[]
 ): SceneDetail => {
-  const scene = sceneDetails.find((scene) => scene.battlemaps_id === mapId)
+  const scene = sceneDetails.find((scene) => scene[key] === value)
   if (!scene) {
-    throw new Error(`Scene with battlemap id ${mapId} not found`)
+    throw new Error(`Scene with ${String(key)} ${value} not found`)
   }
   return scene
 }

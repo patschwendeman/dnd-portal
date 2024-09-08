@@ -2,15 +2,16 @@ import { describe, it, expect } from 'vitest'
 
 import data from './SceneDetailMock.json'
 import { SceneDetail } from '../../src/models/models'
-import { getSceneByMapId } from '../../src/utils/utils'
+import { getSceneByKey } from '../../src/utils/utils'
 
-describe('should return scene by battlemaps_id', () => {
+describe('should return scene by key', () => {
   const SceneDetailMock: SceneDetail[] = data
+  const battlemapKey = 'battlemaps_id'
 
-  it('should return scene', () => {
+  it('should return scene by battlemap id', () => {
     const battlemapsId = SceneDetailMock[0].battlemaps_id
     if (battlemapsId !== null) {
-      const scene = getSceneByMapId(battlemapsId, SceneDetailMock)
+      const scene = getSceneByKey(battlemapKey, battlemapsId, SceneDetailMock)
       expect(scene).toBe(SceneDetailMock[0])
     } else {
       throw new Error('battlemaps_id is null')
@@ -20,7 +21,7 @@ describe('should return scene by battlemaps_id', () => {
   it('should return type SceneDetail', () => {
     const battlemapsId = SceneDetailMock[0].battlemaps_id
     if (battlemapsId !== null) {
-      const scene = getSceneByMapId(battlemapsId, SceneDetailMock)
+      const scene = getSceneByKey(battlemapKey, battlemapsId, SceneDetailMock)
       expect(typeof scene).toBe(typeof SceneDetailMock[0])
     } else {
       throw new Error('battlemaps_id is null')
@@ -28,8 +29,8 @@ describe('should return scene by battlemaps_id', () => {
   })
 
   it('should throw error', () => {
-    expect(() => getSceneByMapId(9999, SceneDetailMock)).toThrow(
-      'Scene with battlemap id 9999 not found'
+    expect(() => getSceneByKey(battlemapKey, 9999, SceneDetailMock)).toThrow(
+      'Scene with ' + battlemapKey + ' 9999 not found'
     )
   })
 })
