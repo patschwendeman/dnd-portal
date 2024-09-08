@@ -5,11 +5,19 @@ from db.models import Base
 from db.seed import seed_data
 from routes.scenes import scenes_router
 from routes.battlemaps import battlemaps_router
-
-
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 Base.metadata.create_all(bind=engine)
 
 app.include_router(scenes_router)
