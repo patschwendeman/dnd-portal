@@ -1,0 +1,125 @@
+[
+    {
+        "name": "Example Scene",
+        "graphics_wall_id": 1,
+        "graphics_ground_id": 1,
+        "battlemaps_id": 1,
+        "id": 1,
+        "description": "This is an example scene for testing purposes.",
+        "fight": true,
+        "music_id": 1,
+        "battlemaps": {
+            "xp": "500",
+            "loot": "gold, sword",
+            "enemies": "goblin, orc",
+            "locked": false,
+            "source_locked": "https://example.com/map_locked.png",
+            "id": 1,
+            "name": "Dungeon",
+            "source_clear": "https://example.com/map_clear.png"
+        },
+        "graphics_ground": {
+            "name": "Grassland",
+            "source": "https://example.com/ground_grassland.png",
+            "id": 1
+        },
+        "graphics_wall": {
+            "name": "Castle Wall",
+            "source": "https://example.com/wall_castle.png",
+            "id": 1
+        },
+        "music": {
+            "name": "Battle Theme",
+            "source": "https://example.com/battle_theme.mp3",
+            "id": 1
+        }
+    },
+    {
+        "name": "Example Scene",
+        "graphics_wall_id": 2,
+        "graphics_ground_id": 2,
+        "battlemaps_id": 2,
+        "id": 2,
+        "description": "This is an example scene for testing purposes.",
+        "fight": true,
+        "music_id": 2,
+        "battlemaps": {
+            "xp": "500",
+            "loot": "gold, sword",
+            "enemies": "goblin, orc",
+            "locked": true,
+            "source_locked": "https://example.com/map_locked.png",
+            "id": 2,
+            "name": "Dungeon",
+            "source_clear": "https://example.com/map_clear.png"
+        },
+        "graphics_ground": {
+            "name": "Grassland",
+            "source": "https://example.com/ground_grassland.png",
+            "id": 2
+        },
+        "graphics_wall": {
+            "name": "Castle Wall",
+            "source": "https://example.com/wall_castle.png",
+            "id": 2
+        },
+        "music": {
+            "name": "Battle Theme",
+            "source": "https://example.com/battle_theme.mp3",
+            "id": 2
+        }
+    },
+    {
+        "name": "Example Scene",
+        "graphics_wall_id": 3,
+        "graphics_ground_id": 3,
+        "battlemaps_id": null,
+        "id": 3,
+        "description": "This is an example scene for testing purposes.",
+        "fight": true,
+        "music_id": 3,
+        "battlemaps": null,
+        "graphics_ground": {
+            "name": "Grassland",
+            "source": "https://example.com/ground_grassland.png",
+            "id": 3
+        },
+        "graphics_wall": {
+            "name": "Castle Wall",
+            "source": "https://example.com/wall_castle.png",
+            "id": 3
+        },
+        "music": {
+            "name": "Battle Theme",
+            "source": "https://example.com/battle_theme.mp3",
+            "id": 3
+        }
+    },
+    {
+        "name": "Example Scene",
+        "graphics_wall_id": 4,
+        "graphics_ground_id": 4,
+        "battlemaps_id": null,
+        "id": 4,
+        "description": "This is an example scene for testing purposes.",
+        "fight": false,
+        "music_id": 4,
+        "battlemaps": null,
+        "graphics_ground": {
+            "name": "Grassland",
+            "source": "https://example.com/ground_grassland.png",
+            "id": 4
+        },
+        "graphics_wall": {
+            "name": "Castle Wall",
+            "source": "https://example.com/wall_castle.png",
+            "id": 4
+        },
+        "music": {
+            "name": "Battle Theme",
+            "source": "https://example.com/battle_theme.mp3",
+            "id": 4
+        }
+    }
+
+]
