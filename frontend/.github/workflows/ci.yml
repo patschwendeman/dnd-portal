@@ -38,6 +38,25 @@ jobs:
         with:
           name: react-app-image
           path: react-app.tar.gz
+  
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Download Docker image
+        uses: actions/download-artifact@v3
+        with:
+          name: react-app-image
+          path: ./
+
+      - name: Load Docker image
+        run: |
+          gunzip -c react-app.tar.gz | docker load
+
+      - name: Run Testing
+        run: |
+          docker run --rm react-app npm run test:unit
 
   lint:
     runs-on: ubuntu-latest
