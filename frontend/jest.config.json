@@ -1,5 +1,6 @@
 {
     "preset": "ts-jest",
-    "testMatch": ["**/__tests__/bdd/steps/*.ts"]
+    "testMatch": ["**/__tests__/bdd/steps/*.ts"],
+    "testTimeout": 10000
 }
   

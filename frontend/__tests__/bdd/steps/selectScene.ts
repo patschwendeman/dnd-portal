@@ -22,15 +22,18 @@ defineFeature(feature, (test) => {
     then,
     and,
   }) => {
+    const fightScene = 'https://example.com/battle1.png'
+
     given('I am on the admin screen', async () => {
       await driver.get('http://localhost:5173')
-
       await sleep(2000)
     })
 
     when('I click on a fight scene', async () => {
-      const map = await driver.findElements(By.css('div.sc-blHHSb.gNTpti'))
-      map[1].click()
+      const map = await driver.findElement(
+        By.css('[data-test-id="https://example.com/battle1.png"]')
+      )
+      map.click()
     })
 
     and('I click the Confirm button', async () => {
@@ -42,12 +45,15 @@ defineFeature(feature, (test) => {
 
     and('I go to ground screen', async () => {
       await driver.get('http://localhost:5173/ground')
+      await sleep(1000)
     })
 
     then('I see the correct battle map', async () => {
-      const pElement = await driver.findElement(By.tagName('p'))
-      const pText = await pElement.getText()
-      expect(pText).toBe('2')
+      const image = await driver.findElement(
+        By.css('[data-test-id="groundImg"]')
+      )
+      const imageSrc = await image.getAttribute('src')
+      expect(imageSrc).toBe(fightScene)
     })
   })
 })

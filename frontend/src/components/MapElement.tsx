@@ -35,7 +35,7 @@ const MapElement: FunctionComponent<MapElementProps> = ({ src, handleSceneSelect
         }
     }
     return (
-        <MapContainer  onClick={handleClick}>
+        <MapContainer data-test-id={src} onClick={handleClick}>
              {src && <MapImage src={src} alt='' />}
         </MapContainer>
     )
