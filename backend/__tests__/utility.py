@@ -1,7 +1,5 @@
 
-import os
 import unittest
-import json
 from __tests__.battlemap import BattleMap
 from src.services.utility import filter_battlemaps, filter_locked_battlemaps
 
