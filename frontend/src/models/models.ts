@@ -3,7 +3,7 @@ export interface Battlemap {
   loot: string
   enemies: string
   locked: boolean
-  source_locked: string
+  source: string
   id: number
   name: string
   source_clear: string
