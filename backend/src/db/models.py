@@ -33,7 +33,7 @@ class BattleMap(Base):
     xp = Column(String)
     enemies = Column(String)
     locked = Column(Boolean)
-    source_clear = Column(String)
+    source= Column(String)
     source_locked = Column(String)
     scene = relationship("Scene", back_populates="battlemaps", uselist=False)
 

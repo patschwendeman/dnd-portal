@@ -1,8 +1,8 @@
 class BattleMap:
-    def __init__(self, name, id, source_clear, loot, xp, enemies, locked, source_locked):
+    def __init__(self, name, id, source, loot, xp, enemies, locked, source_locked):
         self.name = name
         self.id = id
-        self.source_clear = source_clear
+        self.source = source
         self.loot = loot
         self.xp = xp
         self.enemies = enemies
