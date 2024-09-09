@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 from sqlalchemy.orm import Session
 from db.crud import read_by_id, read_all, read_join_all
 from db.models import Scene
@@ -25,4 +25,14 @@ class SceneService:
         scenes = read_join_all(db)
         if not scenes:
             raise ValueError("No scenes found")
+        return scenes
+    
+    @staticmethod
+    def read_scene_detail_by_id(scene_id: int, db: Session) -> Scene:
+        scenes = read_join_all(db)
+        for scene in scenes:
+            if scene.id == scene_id:
+                return scene
+        if not scenes:
+            raise ValueError("No scene found")
         return scenes
