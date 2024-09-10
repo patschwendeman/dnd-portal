@@ -1,7 +1,8 @@
-import { useContext, FunctionComponent, ReactElement } from 'react'
+import { useContext, FunctionComponent, ReactElement, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { ActiveSceneContext } from '../context/context'
+import { handleGroundScreen } from '../service/scenes'
 
 const Screen = styled.div`
     display: flex;
@@ -24,12 +25,19 @@ const BackgroundImage = styled.img`
 
 const GroundScreen: FunctionComponent = (): ReactElement => {
     const { activeScene } = useContext(ActiveSceneContext)
-    return(
-        <><Screen>
-            <BackgroundImage src='/test.jpg' alt='' />
+    const [imageSRC, setImageSRC] = useState<string>('')
 
-        </Screen>
-        <p>{activeScene}</p>
+    useEffect(() => {
+        handleGroundScreen(activeScene, 'battlemaps', setImageSRC)
+    }, [activeScene])
+
+    return(
+        <>
+            <Screen>
+                <BackgroundImage data-test-id='groundImg' src={imageSRC} alt='' />
+
+            </Screen>
+            <p>{activeScene}</p>
         </> 
     )
 }
