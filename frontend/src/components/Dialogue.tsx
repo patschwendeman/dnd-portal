@@ -6,11 +6,17 @@ import { SceneDetail } from '../models/models'
 
 // Definiere die Prop-Typen für LayoutContainer
 interface LayoutContainerProps {
+  $isVisible: boolean;
+}
+
+interface DialogueProps {
   isVisible: boolean;
+  sceneOption: SceneDetail | undefined;
+  handleDialogueOption: (option: boolean) => void;
 }
 
 const LayoutContainer = styled.div<LayoutContainerProps>`
-  display: ${props => (props.isVisible ? 'flex' : 'none')}; // Display setzen basierend auf isVisible
+  display: ${props => (props.$isVisible ? 'flex' : 'none')}; // Display setzen basierend auf $isVisible
   width: 100%;
   height: 100%;
   position: fixed;
@@ -30,9 +36,9 @@ const DialogueContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-
   background-color: white;
 `
+
 const MapContainer = styled.div`
   width: 100%;
   background-color: white;
@@ -45,7 +51,6 @@ const ButtonContainer = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-
 `
 
 const ConfirmButton = styled.button`
@@ -53,20 +58,15 @@ const ConfirmButton = styled.button`
   height: 50px;
   background-color: white;
 `
+
 const DeclineButton = styled.button`
   width: 200px;
   height: 50px;
   background-color: white;
 `
 
-interface DialogueProps {
-  isVisible: boolean;
-  sceneOption: SceneDetail | undefined;
-  handleDialogueOption: (option: boolean) => void;
-}
-
 const Dialogue: FunctionComponent<DialogueProps> = ({ isVisible, sceneOption, handleDialogueOption}): ReactElement => (
-    <LayoutContainer isVisible={isVisible}>
+    <LayoutContainer $isVisible={isVisible}>
     <DialogueContainer>
         <MapContainer>
             <MapElement src={sceneOption?.battlemaps?.source_clear} keyProp={undefined} />
@@ -81,6 +81,5 @@ const Dialogue: FunctionComponent<DialogueProps> = ({ isVisible, sceneOption, ha
     </DialogueContainer>
   </LayoutContainer>
 )
-
 
 export { Dialogue }
