@@ -1,7 +1,6 @@
 import { FunctionComponent, ReactElement } from 'react'
 import styled from 'styled-components'
 
-import { MapElement } from './MapElement'
 import { SceneDetail } from '../models/models'
 
 interface LayoutContainerProps {
@@ -38,11 +37,6 @@ const DialogueContainer = styled.div`
   background-color: white;
 `
 
-const MapContainer = styled.div`
-  width: 100%;
-  background-color: white;
-`
-
 const ButtonContainer = styled.div`
   width: 70%;
   height: 100%;
@@ -64,19 +58,20 @@ const DeclineButton = styled.button`
   background-color: white;
 `
 
+const DialogueImage = styled.img`
+    width: 100%;
+    height: 100%;
+`
+
 const Dialogue: FunctionComponent<DialogueProps> = ({ isVisible, sceneOption, handleDialogueOption}): ReactElement => (
     <LayoutContainer $isVisible={isVisible}>
     <DialogueContainer>
-        <MapContainer>
-            <MapElement src={sceneOption?.battlemaps?.source_clear} keyProp={undefined} />
-        </MapContainer>
-        
+          <DialogueImage src={sceneOption?.battlemaps?.source} alt="" ></DialogueImage>
         <p>{sceneOption?.name}</p>
         <ButtonContainer>
             <ConfirmButton onClick={() => handleDialogueOption(true)}>Confirm</ConfirmButton>
             <DeclineButton onClick={() => handleDialogueOption(false)}>Decline</DeclineButton>
         </ButtonContainer>
-        
     </DialogueContainer>
   </LayoutContainer>
 )
