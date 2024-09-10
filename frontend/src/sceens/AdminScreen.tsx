@@ -56,6 +56,7 @@ const BottomBar = styled.div`
 
 const AdminScreen: FunctionComponent = (): ReactElement => {
     const {setActiveScene } = useContext(ActiveSceneContext)
+    const {setActiveSceneId, activeSceneId } = useContext(ActiveSceneContext)
     const [sceneDetails, setSceneDetails] = useState<SceneDetail[]>([])
     const [battlemaps, setBattlemaps] = useState<Map[]>([])
     const [dialogueVisibility, setDialogueVisibility] = useState<boolean>(false)

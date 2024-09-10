@@ -24,12 +24,12 @@ const BackgroundImage = styled.img`
 `
 
 const GroundScreen: FunctionComponent = (): ReactElement => {
-    const { activeScene } = useContext(ActiveSceneContext)
+    const { activeSceneId } = useContext(ActiveSceneContext)
     const [imageSRC, setImageSRC] = useState<string>('')
 
     useEffect(() => {
-        handleGroundScreen(activeScene, 'battlemaps', setImageSRC)
-    }, [activeScene])
+        handleGroundScreen(activeSceneId, 'battlemaps', setImageSRC)
+    }, [activeSceneId])
 
     return(
         <>
@@ -37,7 +37,7 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
                 <BackgroundImage data-test-id='groundImg' src={imageSRC} alt='' />
 
             </Screen>
-            <p>{activeScene}</p>
+            <p>{activeSceneId}</p>
         </> 
     )
 }

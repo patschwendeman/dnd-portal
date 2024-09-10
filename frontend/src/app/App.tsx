@@ -7,20 +7,20 @@ import { GroundScreen } from '../sceens/GroundScreen'
 import { WallScreen } from '../sceens/WallScreen'
 
 function App() {
-  const [activeScene, setActiveScene] = useState<number>(() => {
-    const savedScene = localStorage.getItem('activeScene')
+  const [activeSceneId, setActiveSceneId] = useState<number>(() => {
+    const savedScene = localStorage.getItem('activeSceneId')
     return savedScene ? parseInt(savedScene, 10) : 1 
   })
 
   useEffect(() => {
-    localStorage.setItem('activeScene', activeScene.toString())
-  }, [activeScene])
+    localStorage.setItem('activeSceneId', activeSceneId.toString())
+  }, [activeSceneId])
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'activeScene') {
-        const newActiveScene = event.newValue ? parseInt(event.newValue, 10) : 1
-        setActiveScene(newActiveScene)
+      if (event.key === 'activeSceneId') {
+        const newactiveSceneId = event.newValue ? parseInt(event.newValue, 10) : 1
+        setActiveSceneId(newactiveSceneId)
       }
     }
     window.addEventListener('storage', handleStorageChange)
@@ -30,7 +30,7 @@ function App() {
   }, [])
 
   return (
-    <ActiveSceneContext.Provider value={{ activeScene, setActiveScene }}>
+    <ActiveSceneContext.Provider value={{ activeSceneId, setActiveSceneId }}>
       <Router>      
         <div className='app'>
           <Routes>
