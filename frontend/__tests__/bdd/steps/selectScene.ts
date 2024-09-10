@@ -9,7 +9,7 @@ defineFeature(feature, (test) => {
   let driver: WebDriver
 
   beforeEach(async () => {
-    driver = await new Builder().forBrowser('firefox').build()
+    driver = new Builder().forBrowser('firefox').build() as WebDriver
   })
 
   afterEach(async () => {
