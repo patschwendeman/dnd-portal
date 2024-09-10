@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "vitest run",
     "test:e2e": "start-server-and-test 'vite dev --port 5173' http://localhost:5173 jest",
     "preview": "vite preview",
