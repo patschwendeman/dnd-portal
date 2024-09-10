@@ -55,17 +55,28 @@ const BottomBar = styled.div`
 `
 
 const AdminScreen: FunctionComponent = (): ReactElement => {
-    const {setActiveScene } = useContext(ActiveSceneContext)
     const {setActiveSceneId, activeSceneId } = useContext(ActiveSceneContext)
     const [sceneDetails, setSceneDetails] = useState<SceneDetail[]>([])
     const [battlemaps, setBattlemaps] = useState<Map[]>([])
     const [dialogueVisibility, setDialogueVisibility] = useState<boolean>(false)
     const [sceneOption, setSceneOption] = useState<SceneDetail>()
+    const [activeMapId, setActiveMapId] = useState<number>(0)
 
     useEffect(() => {
         getSceneDetails(setSceneDetails)
         getBattlemapsfiltered(setBattlemaps, { players: false })
     }, [])
+
+    useEffect(() => {
+        if (sceneDetails.length > 0) {
+            const activeScene = getSceneByKey('id', activeSceneId, sceneDetails)
+            if (activeScene.battlemaps_id) {
+                setActiveMapId(activeScene.battlemaps_id)
+            } else {
+                console.warn(`Scene with id ${activeSceneId} not found`)
+            }
+        }
+    }, [activeSceneId, sceneDetails])
 
     function handleSceneSelection(mapId: number) {
         const scene = getSceneByKey('battlemaps_id', mapId, sceneDetails)
@@ -78,7 +89,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     function handleDialogueOption(option: boolean){
         if(option === true){
             if(sceneOption) {
-                setActiveScene(sceneOption.id) 
+                setActiveSceneId(sceneOption.id)
             }  
             else {
                 throw new Error('Scene option not found')
@@ -87,15 +98,13 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
         setDialogueVisibility(false)
     }
 
-
-
     return(
         <>
             <Dialogue isVisible={dialogueVisibility} sceneOption={sceneOption} handleDialogueOption={handleDialogueOption}/>
             <Screen>
                 <SidebarRight>
                     <SidebarMapContainer>
-                        <MapOverview battlemaps={battlemaps} gap='3px' handleSceneSelection={handleSceneSelection}  />
+                        <MapOverview activeMapId={activeMapId} battlemaps={battlemaps} gap='3px' handleSceneSelection={handleSceneSelection}  />
                     </SidebarMapContainer>
                 </SidebarRight>
                 <BottomBar></BottomBar>
