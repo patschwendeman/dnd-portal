@@ -54,7 +54,6 @@ export default [
       'no-console': ['warn'],
       'no-var': 'error',
       camelcase: ['error', { properties: 'always' }],
-      'arrow-body-style': ['error', 'as-needed'],
       strict: ['error', 'global'],
       'styled-components-a11y/alt-text': 'warn',
       'styled-components-a11y/anchor-is-valid': 'warn',
