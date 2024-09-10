@@ -4,7 +4,6 @@ import styled from 'styled-components'
 import { MapElement } from './MapElement'
 import { SceneDetail } from '../models/models'
 
-// Definiere die Prop-Typen für LayoutContainer
 interface LayoutContainerProps {
   $isVisible: boolean;
 }

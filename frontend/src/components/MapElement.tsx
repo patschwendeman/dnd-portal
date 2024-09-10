@@ -35,7 +35,6 @@ const MapElement: FunctionComponent<MapElementProps> = ({ activeMapId, src, hand
         }
     }
 
-    // Prüfe, ob der aktuelle MapElement aktiv ist
     const isActive = keyProp === activeMapId
 
     return (
