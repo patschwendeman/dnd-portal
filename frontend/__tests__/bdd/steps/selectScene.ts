@@ -5,6 +5,12 @@ const feature = loadFeature('__tests__/bdd/features/selectScene.feature')
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
+function getRandomNumber(min, max) {
+  min = Math.ceil(min)
+  max = Math.floor(max)
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
 defineFeature(feature, (test) => {
   let driver: WebDriver
 
@@ -22,7 +28,8 @@ defineFeature(feature, (test) => {
     then,
     and,
   }) => {
-    const fightScene = 'https://example.com/battl2.png'
+    const randomFightSceneNumber = getRandomNumber(1, 16)
+    const fightScene = `https://example.com/battle${randomFightSceneNumber}.png`
 
     given('I am on the admin screen', async () => {
       await driver.get('http://localhost:5173')
@@ -31,7 +38,7 @@ defineFeature(feature, (test) => {
 
     when('I click on a fight scene', async () => {
       const map = await driver.findElement(
-        By.css('[data-test-id="https://example.com/battl2.png"]')
+        By.css(`[data-test-id="${fightScene}"]`)
       )
       map.click()
     })
