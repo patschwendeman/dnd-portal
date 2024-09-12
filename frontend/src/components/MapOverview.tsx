@@ -1,7 +1,8 @@
-import { FunctionComponent, ReactElement } from 'react'
+import { FunctionComponent, ReactElement, useContext, useEffect } from 'react'
 import styled from 'styled-components'
 
 import { MapElement } from './MapElement'
+import { ActiveMapContext } from '../context/context'
 import { Map } from '../models/models'
 
 const ContainerBattlemaps = styled.div`
@@ -22,13 +23,18 @@ const BattlemapsColumn = styled.div`
 `
 
 interface MapOverviewProps {
-    activeMapId: number,
     gap: string,
     battlemaps: Map[] | undefined
     handleSceneSelection?(id: number): number
 }
 
-const MapOverview: FunctionComponent<MapOverviewProps> = ({activeMapId, battlemaps, gap, handleSceneSelection }): ReactElement => {
+const MapOverview: FunctionComponent<MapOverviewProps> = ({ battlemaps, gap, handleSceneSelection }): ReactElement => {
+
+    const { activeMapId } = useContext(ActiveMapContext)
+
+    useEffect(() => {
+        console.log(activeMapId)
+    }, [activeMapId])
 
     let maps: Map[] = Array.from({ length: 16 }, (_, index) => ({
         id: index + 1    

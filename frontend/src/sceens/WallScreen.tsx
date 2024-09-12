@@ -1,7 +1,8 @@
-import { FunctionComponent, ReactElement, useEffect, useState } from 'react'
+import { FunctionComponent, ReactElement, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { MapOverview } from '../components/MapOverview'
+import { ActiveSceneContext } from '../context/context'
 import { Map } from '../models/models'
 import { getBattlemapsfiltered } from '../service/battlemaps'
 
@@ -34,16 +35,12 @@ const BackgroundImage = styled.img`
 `
 
 const WallScreen: FunctionComponent = (): ReactElement => {
+    const { activeSceneId } = useContext(ActiveSceneContext)
     const [battlemaps, setBattlemaps] = useState<Map[]>([])
+    
     useEffect(() => {
         getBattlemapsfiltered(setBattlemaps, { players: true })
     }, [])
-
-    useEffect(() => {
-        if (battlemaps && battlemaps.length > 0) {
-            console.log(battlemaps)
-        }
-    }, [battlemaps])
 
     return(
         <Screen>

@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 import { Dialogue } from '../components/Dialogue'
 import { MapOverview } from '../components/MapOverview'
-import { ActiveSceneContext } from '../context/context'
+import { ActiveMapContext, ActiveSceneContext } from '../context/context'
 import { Map, SceneDetail } from '../models/models'
 import { getBattlemapsfiltered } from '../service/battlemaps'
 import { getSceneDetails } from '../service/scenes'
@@ -55,12 +55,12 @@ const BottomBar = styled.div`
 `
 
 const AdminScreen: FunctionComponent = (): ReactElement => {
-    const {setActiveSceneId, activeSceneId } = useContext(ActiveSceneContext)
+    const { setActiveSceneId, activeSceneId } = useContext(ActiveSceneContext)
+    const { setActiveMapId } = useContext(ActiveMapContext)
     const [sceneDetails, setSceneDetails] = useState<SceneDetail[]>([])
     const [battlemaps, setBattlemaps] = useState<Map[]>([])
     const [dialogueVisibility, setDialogueVisibility] = useState<boolean>(false)
     const [sceneOption, setSceneOption] = useState<SceneDetail>()
-    const [activeMapId, setActiveMapId] = useState<number>(0)
 
     useEffect(() => {
         getSceneDetails(setSceneDetails)
@@ -68,7 +68,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     }, [])
 
     useEffect(() => {
-        if (sceneDetails.length > 0) {
+        if (sceneDetails && sceneDetails.length > 0) {
             const activeScene = getSceneByKey('id', activeSceneId, sceneDetails)
             if (activeScene.battlemaps_id) {
                 setActiveMapId(activeScene.battlemaps_id)
@@ -104,7 +104,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
             <Screen>
                 <SidebarRight>
                     <SidebarMapContainer>
-                        <MapOverview activeMapId={activeMapId} battlemaps={battlemaps} gap='3px' handleSceneSelection={handleSceneSelection}  />
+                        <MapOverview battlemaps={battlemaps} gap='3px' handleSceneSelection={handleSceneSelection}  />
                     </SidebarMapContainer>
                 </SidebarRight>
                 <BottomBar></BottomBar>
