@@ -1,20 +1,22 @@
-import { FunctionComponent, ReactElement } from 'react'
+import { FunctionComponent, ReactElement, useContext } from 'react'
 import styled from 'styled-components'
 
+import { ActiveSceneContext } from '../context/context'
 import { SceneDetail } from '../models/models'
 
 interface LayoutContainerProps {
-  $isVisible: boolean;
+  isVisible: boolean;
 }
 
 interface DialogueProps {
   isVisible: boolean;
   sceneOption: SceneDetail | undefined;
-  handleDialogueOption: (option: boolean) => void;
+  handleDialogueOption: (option: boolean, sceneOption: SceneDetail | undefined, setActiveSceneId: React.Dispatch<React.SetStateAction<number>>, setDialogueVisibility: React.Dispatch<React.SetStateAction<boolean>>) => void;
+  setDialogueVisibility: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const LayoutContainer = styled.div<LayoutContainerProps>`
-  display: ${props => (props.$isVisible ? 'flex' : 'none')}; // Display setzen basierend auf $isVisible
+  display: ${({ isVisible }) => (isVisible ? 'flex' : 'none')};
   width: 100%;
   height: 100%;
   position: fixed;
@@ -63,17 +65,33 @@ const DialogueImage = styled.img`
     height: 100%;
 `
 
-const Dialogue: FunctionComponent<DialogueProps> = ({ isVisible, sceneOption, handleDialogueOption}): ReactElement => (
-    <LayoutContainer $isVisible={isVisible}>
-    <DialogueContainer>
-          <DialogueImage src={sceneOption?.battlemaps?.source} alt="" ></DialogueImage>
+const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogueOption, isVisible, setDialogueVisibility }): ReactElement => {
+  const { setActiveSceneId } = useContext(ActiveSceneContext)
+
+  const handleConfirm = () => {
+    if (sceneOption) {
+      handleDialogueOption(true, sceneOption, setActiveSceneId, setDialogueVisibility)
+    } else {
+      console.error('Scene option is undefined')
+    }
+  }
+
+  const handleDecline = () => {
+    handleDialogueOption(false, sceneOption, setActiveSceneId, setDialogueVisibility)
+  }
+
+  return (
+    <LayoutContainer isVisible={isVisible}>
+      <DialogueContainer>
+        <DialogueImage src={sceneOption?.battlemaps?.source} alt={sceneOption?.name || 'Scene Image'} />
         <p>{sceneOption?.name}</p>
         <ButtonContainer>
-            <ConfirmButton data-test-id='confirm-button' onClick={() => handleDialogueOption(true)}>Confirm</ConfirmButton>
-            <DeclineButton data-test-id='declane-button' onClick={() => handleDialogueOption(false)}>Decline</DeclineButton>
+          <ConfirmButton data-test-id='confirm-button' onClick={handleConfirm}>Confirm</ConfirmButton>
+          <DeclineButton data-test-id='decline-button' onClick={handleDecline}>Decline</DeclineButton>
         </ButtonContainer>
-    </DialogueContainer>
-  </LayoutContainer>
-)
+      </DialogueContainer>
+    </LayoutContainer>
+  )
+}
 
 export { Dialogue }

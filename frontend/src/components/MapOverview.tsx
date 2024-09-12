@@ -25,7 +25,7 @@ const BattlemapsColumn = styled.div`
 interface MapOverviewProps {
     gap: string,
     battlemaps: Map[] | undefined
-    handleSceneSelection?(id: number): number
+    handleSceneSelection?(id: number): void
 }
 
 const MapOverview: FunctionComponent<MapOverviewProps> = ({ battlemaps, gap, handleSceneSelection }): ReactElement => {
@@ -49,17 +49,17 @@ const MapOverview: FunctionComponent<MapOverviewProps> = ({ battlemaps, gap, han
       return (
         <ContainerBattlemaps style={{ gap: gap }}>
             {[...Array(count)].map((_, colIndex) => (
-                <BattlemapsColumn style={{ gap: gap }} key={colIndex}>
+                <BattlemapsColumn style={{ gap: gap }} key={ colIndex }>
                     {[...Array(count)].map((_, mapIndex) => {
                         const itemIndex = colIndex * count + mapIndex
                         if (maps && itemIndex < maps.length) {
                             return (
                                 <MapElement 
-                                    activeMapId={activeMapId}
-                                    src={maps[itemIndex].source} 
-                                    handleSceneSelection={handleSceneSelection} 
-                                    key={maps[itemIndex].id}
-                                    keyProp={maps[itemIndex].id}>    
+                                    activeMapId={ activeMapId }
+                                    src={ maps[itemIndex].source } 
+                                    handleSceneSelection={ handleSceneSelection } 
+                                    key={ maps[itemIndex].id }
+                                    keyProp={ maps[itemIndex].id }>    
                                 </MapElement>
                             )
                         }

@@ -12,3 +12,14 @@ export const handleGroundScreen = async <K extends keyof SceneDetail>(id: number
     const src = getMediaSRC(scene, key)
     setMediaSource(src)
 }
+
+export const handleDialogue = (option: boolean, sceneOption: SceneDetail | undefined, setActiveSceneId: React.Dispatch<React.SetStateAction<number>>, setDialogueVisibility: React.Dispatch<React.SetStateAction<boolean>>) => {
+    if (option === true) {
+        if (sceneOption) {
+            setActiveSceneId(sceneOption.id)
+        } else {
+            throw new Error('Scene option not found')
+        }
+    }
+    setDialogueVisibility(false)
+}
