@@ -1,7 +1,6 @@
-fastapi
-uvicorn[standard]
-sqlalchemy
-python-dotenv
-psycopg2-binary
-pylint
-pydantic
+fastapi==0.114.1
+uvicorn[standard]==0.30.6
+sqlalchemy==2.0.34
+psycopg2-binary==2.9.9
+pylint==3.2.7
+pydantic==2.9.1
