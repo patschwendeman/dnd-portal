@@ -11,3 +11,17 @@ export const getData = async (
     console.error(error)
   }
 }
+
+export const updateData = async (path: string, id: number) => {
+  try {
+    const body = {
+      updates: {
+        locked: false,
+      },
+    }
+    const response = await apiClient.put(path + id, body)
+    return response.data
+  } catch (error) {
+    console.error(error)
+  }
+}

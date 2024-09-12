@@ -40,7 +40,7 @@ const WallScreen: FunctionComponent = (): ReactElement => {
     
     useEffect(() => {
         getBattlemapsfiltered(setBattlemaps, { players: true })
-    }, [])
+    }, [activeSceneId])
 
     return(
         <Screen>

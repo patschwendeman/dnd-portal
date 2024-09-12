@@ -1,4 +1,4 @@
-import { getData } from '../api/apiMethods'
+import { getData, updateData } from '../api/apiMethods'
 import { SceneDetail } from '../models/models'
 import { getMediaSRC } from '../utils/utils'
 
@@ -15,11 +15,16 @@ export const handleGroundScreen = async <K extends keyof SceneDetail>(id: number
 
 export const handleDialogue = (option: boolean, sceneOption: SceneDetail | undefined, setActiveSceneId: React.Dispatch<React.SetStateAction<number>>, setDialogueVisibility: React.Dispatch<React.SetStateAction<boolean>>) => {
     if (option === true) {
-        if (sceneOption) {
-            setActiveSceneId(sceneOption.id)
-        } else {
-            throw new Error('Scene option not found')
+        if (!sceneOption) {
+            throw new Error('Scene option not found')   
         }
+        setActiveSceneId(sceneOption.id)
+            if(sceneOption.fight === true) {
+                if(!sceneOption.battlemaps_id) {
+                    throw new Error('Battlemap not found')
+                }
+                updateData('battlemaps/', sceneOption.battlemaps_id)
+            }
     }
     setDialogueVisibility(false)
 }
