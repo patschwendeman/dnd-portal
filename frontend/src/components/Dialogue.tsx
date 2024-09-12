@@ -69,8 +69,8 @@ const Dialogue: FunctionComponent<DialogueProps> = ({ isVisible, sceneOption, ha
           <DialogueImage src={sceneOption?.battlemaps?.source} alt="" ></DialogueImage>
         <p>{sceneOption?.name}</p>
         <ButtonContainer>
-            <ConfirmButton onClick={() => handleDialogueOption(true)}>Confirm</ConfirmButton>
-            <DeclineButton onClick={() => handleDialogueOption(false)}>Decline</DeclineButton>
+            <ConfirmButton data-test-id='confirm-button' onClick={() => handleDialogueOption(true)}>Confirm</ConfirmButton>
+            <DeclineButton data-test-id='declane-button' onClick={() => handleDialogueOption(false)}>Decline</DeclineButton>
         </ButtonContainer>
     </DialogueContainer>
   </LayoutContainer>

@@ -22,7 +22,7 @@ defineFeature(feature, (test) => {
     then,
     and,
   }) => {
-    const fightScene = 'https://example.com/battle1.png'
+    const fightScene = 'https://example.com/battl2.png'
 
     given('I am on the admin screen', async () => {
       await driver.get('http://localhost:5173')
@@ -31,16 +31,17 @@ defineFeature(feature, (test) => {
 
     when('I click on a fight scene', async () => {
       const map = await driver.findElement(
-        By.css('[data-test-id="https://example.com/battle1.png"]')
+        By.css('[data-test-id="https://example.com/battl2.png"]')
       )
       map.click()
     })
 
     and('I click the Confirm button', async () => {
       const confirmButton = await driver.findElement(
-        By.css('.sc-ghWlax.cttZKM')
+        By.css('[data-test-id="confirm-button"]')
       )
-      await confirmButton.click()
+      confirmButton.click()
+      await sleep(1000)
     })
 
     and('I go to ground screen', async () => {
