@@ -6,8 +6,13 @@ from db.models import Scene
 
 T = TypeVar('T')
 
-def read_all(db: Session, model: Type[T]) -> Optional[T]:
-    return db.query(model).all()
+class Base:
+    id = None 
+
+def read_all(db: Session, model: Type[Base]) -> List[Base]:
+    query: Query = db.query(model)
+    elements_ordered = query.order_by(asc(model.id)).all()
+    return elements_ordered
 
 def read_by_id(db: Session, model: Type[T], model_id: int) -> Optional[T]:
     return db.query(model).filter(model.id == model_id).first()
