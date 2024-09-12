@@ -38,10 +38,10 @@ export const getMediaSRC = <K extends keyof SceneDetail>(
 ): string => {
   const value = scene[key]
 
-  if (isSourcePropertyValid(value)) {
-    return value.source
+  if (!isSourcePropertyValid(value)) {
+    throw new Error(
+      `Source of ${key} not found or does not have a 'source' property`
+    )
   }
-  throw new Error(
-    `Source of ${key} not found or does not have a 'source' property`
-  )
+  return value.source
 }
