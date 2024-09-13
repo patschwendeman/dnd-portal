@@ -3,6 +3,7 @@ import styled from 'styled-components'
 
 import { Dialogue } from '../components/Dialogue'
 import { MapOverview } from '../components/MapOverview'
+import { SideMaps } from '../components/SideMaps'
 import { ActiveMapContext, ActiveSceneContext } from '../context/context'
 import { Map, SceneDetail } from '../models/models'
 import { getBattlemapsfiltered } from '../service/battlemaps'
@@ -106,7 +107,9 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
                         />
                     </SidebarMapContainer>
                 </SidebarRight>
-                <BottomBar></BottomBar>
+                <BottomBar>
+                    <SideMaps sidemaps={battlemaps} handleSceneSelection={handleSceneSelection} />
+                </BottomBar>
             </Screen>
         </>
     )
