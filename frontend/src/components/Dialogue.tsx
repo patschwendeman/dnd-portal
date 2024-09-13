@@ -4,9 +4,6 @@ import styled from 'styled-components'
 import { ActiveSceneContext } from '../context/context'
 import { SceneDetail } from '../models/models'
 
-interface LayoutContainerProps {
-  isVisible: boolean;
-}
 
 interface DialogueProps {
   isVisible: boolean;
@@ -15,8 +12,8 @@ interface DialogueProps {
   setDialogueVisibility: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const LayoutContainer = styled.div<LayoutContainerProps>`
-  display: ${({ isVisible }) => (isVisible ? 'flex' : 'none')};
+const LayoutContainer = styled.div<{$isVisible: boolean}>`
+  display: ${({ $isVisible }) => ($isVisible ? 'flex' : 'none')};
   width: 100%;
   height: 100%;
   position: fixed;
@@ -81,7 +78,7 @@ const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogu
   }
 
   return (
-    <LayoutContainer isVisible={isVisible}>
+    <LayoutContainer $isVisible={isVisible}>
       <DialogueContainer>
         <DialogueImage src={sceneOption?.battlemaps?.source} alt={sceneOption?.name || 'Scene Image'} />
         <p>{sceneOption?.name}</p>

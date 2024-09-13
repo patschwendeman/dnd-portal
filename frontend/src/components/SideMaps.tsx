@@ -5,13 +5,10 @@ import { MapElement } from './MapElement'
 import { ActiveMapContext } from '../context/context'
 import { Map } from '../models/models'
 
-interface ContainerSideMapsProps {
-    count: number;
-  }
 
-const ContainerSideMaps = styled.div<ContainerSideMapsProps>`
+const ContainerSideMaps = styled.div<{ $count: number }>`
     height: 75%;
-    width: ${({ count }) => (count * 100)}px;
+    width: ${({ $count }) => ($count * 100)}px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -42,7 +39,7 @@ const SideMaps: FunctionComponent<SideMapsProps> = ({ sidemaps , handleSceneSele
     const count = maps.length
       
       return (
-        <ContainerSideMaps count={count}>
+        <ContainerSideMaps $count={count}>
             {[...Array(count)].map((_, mapIndex) => {
                 if (maps) {
                     return (
