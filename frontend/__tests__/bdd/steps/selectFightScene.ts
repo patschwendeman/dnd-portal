@@ -1,7 +1,7 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import { Builder, By, WebDriver } from 'selenium-webdriver'
 
-const feature = loadFeature('__tests__/bdd/features/selectScene.feature')
+const feature = loadFeature('__tests__/bdd/features/selectFightScene.feature')
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -15,7 +15,7 @@ defineFeature(feature, (test) => {
   let driver: WebDriver
 
   beforeEach(async () => {
-    driver = new Builder().forBrowser('firefox').build() as WebDriver
+    driver = new Builder().forBrowser('chrome').build() as WebDriver
   })
 
   afterEach(async () => {
@@ -62,6 +62,49 @@ defineFeature(feature, (test) => {
       )
       const imageSrc = await image.getAttribute('src')
       expect(imageSrc).toBe(fightScene)
+    })
+  })
+
+  test('I select a fight scene to see the updated map overview at the wall screen', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    const randomFightSceneNumber = getRandomNumber(1, 16)
+    const fightScene = `https://example.com/battle${randomFightSceneNumber}.png`
+
+    given('I am on the admin screen', async () => {
+      await driver.get('http://localhost:5173')
+      await sleep(2000)
+    })
+
+    when('I click on a fight scene', async () => {
+      const map = await driver.findElement(
+        By.css(`[data-test-id="${fightScene}"]`)
+      )
+      map.click()
+    })
+
+    and('I click the Confirm button', async () => {
+      const confirmButton = await driver.findElement(
+        By.css('[data-test-id="confirm-button"]')
+      )
+      confirmButton.click()
+      await sleep(1000)
+    })
+
+    and('I go to wall screen', async () => {
+      await driver.get('http://localhost:5173/wall')
+      await sleep(1000)
+    })
+
+    then('I see the updated map overview', async () => {
+      await sleep(1000)
+      const map = await driver.findElement(
+        By.css(`[data-test-id="${fightScene}"]`)
+      )
+      expect(map).toBeDefined()
     })
   })
 })
