@@ -47,7 +47,7 @@ const MapOverview: FunctionComponent<MapOverviewProps> = ({ battlemaps, gap, han
     const count = Math.sqrt(maps.length)
       
       return (
-        <ContainerBattlemaps style={{ gap: gap }}>
+        <ContainerBattlemaps data-test-id='container-battlemaps' style={{ gap: gap }}>
             {[...Array(count)].map((_, colIndex) => (
                 <BattlemapsColumn style={{ gap: gap }} key={ colIndex }>
                     {[...Array(count)].map((_, mapIndex) => {
