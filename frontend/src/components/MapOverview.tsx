@@ -59,7 +59,9 @@ const MapOverview: FunctionComponent<MapOverviewProps> = ({ battlemaps, gap, han
                                     src={ maps[itemIndex].source } 
                                     handleSceneSelection={ handleSceneSelection } 
                                     key={ maps[itemIndex].id }
-                                    keyProp={ maps[itemIndex].id }>    
+                                    keyProp={ maps[itemIndex].id }
+                                    isMainMap={ true }
+                                    >    
                                 </MapElement>
                             )
                         }
