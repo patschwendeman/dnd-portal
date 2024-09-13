@@ -36,11 +36,14 @@ const MapOverview: FunctionComponent<MapOverviewProps> = ({ battlemaps, gap, han
         console.log(activeMapId)
     }, [activeMapId])
 
-    let maps: Map[] = Array.from({ length: 16 }, (_, index) => ({
-        id: index + 1    
-    }))
+    let maps: Map[]
 
-    if(battlemaps)  {
+    if(!battlemaps)  {
+        maps = Array.from({ length: 16 }, (_, index) => ({
+            id: index + 1    
+        }))
+    } 
+    else {
         maps = battlemaps
     }
      
