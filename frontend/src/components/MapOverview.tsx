@@ -31,11 +31,6 @@ interface MapOverviewProps {
 const MapOverview: FunctionComponent<MapOverviewProps> = ({ battlemaps, gap, handleSceneSelection }): ReactElement => {
 
     const { activeMapId } = useContext(ActiveMapContext)
-
-    useEffect(() => {
-        console.log(activeMapId)
-    }, [activeMapId])
-
     let maps: Map[]
 
     if(!battlemaps)  {

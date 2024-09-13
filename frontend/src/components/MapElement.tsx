@@ -35,7 +35,6 @@ const MapElement: FunctionComponent<MapElementProps> = ({ activeMapId, src, hand
             handleSceneSelection(keyProp)
         }
     }
-    console.log(isMainMap)
     const isActive = keyProp === activeMapId
 
     return (
