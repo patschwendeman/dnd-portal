@@ -5,7 +5,7 @@ from db.database import engine, get_db
 from db.models import Base
 from db.seed import seed_data
 from routes.scenes import scenes_router
-from routes.battlemaps import battlemaps_router
+from routes.maps import maps_router
 
 
 app = FastAPI()
@@ -21,7 +21,7 @@ app.add_middleware(
 Base.metadata.create_all(bind=engine)
 
 app.include_router(scenes_router)
-app.include_router(battlemaps_router)
+app.include_router(maps_router)
 
 
 db: Session = next(get_db())
