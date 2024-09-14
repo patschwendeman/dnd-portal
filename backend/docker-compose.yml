@@ -48,6 +48,8 @@ services:
     command: pylint /app/src
     volumes:
       - .:/app
+    environment:
+    - PYTHONPATH=/app/src
   
   test:
     build:
