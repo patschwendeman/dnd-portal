@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import List, Type, TypeVar, Optional, Dict, Any
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.orm.query import Query
@@ -6,8 +7,9 @@ from db.models import Scene
 
 T = TypeVar('T')
 
+@dataclass
 class Base:
-    id = None 
+    id = None
 
 def read_all(db: Session, model: Type[Base]) -> List[Base]:
     query: Query = db.query(model)

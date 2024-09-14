@@ -18,8 +18,8 @@ def filter_battlemaps(battlemaps):
     filtered_battlemaps = []
 
     for battlemap in battlemaps:
-         filtered_battlemaps.append({
-                'id': battlemap.id,
-                'source': battlemap.source
-            })
+        filtered_battlemaps.append({
+            'id': battlemap.id,
+            'source': battlemap.source
+        })
     return filtered_battlemaps
