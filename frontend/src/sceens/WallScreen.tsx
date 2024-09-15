@@ -3,8 +3,10 @@ import styled from 'styled-components'
 
 import { MapOverview } from '../components/MapOverview'
 import { ActiveSceneContext } from '../context/context'
-import { Map } from '../models/models'
+import { Map, SceneDetail } from '../models/models'
 import { getBattlemapsfiltered } from '../service/battlemaps'
+import { getSceneDetails } from '../service/scenes'
+import { getSceneByKey } from '../utils/utils'
 
 const Screen = styled.div`
     display: flex;
@@ -21,11 +23,13 @@ const Screen = styled.div`
 
 const MapContainer = styled.div`
     display: flex;
-    width: 60%;
-    height: 60%;
+    width: 1200px;
+    height: 700px;
     align-items: center;
     justify-content: center;
     z-index: 99999;
+    background-color: #000000b6;
+    border-radius: 10px;
 `
 
 const BackgroundImage = styled.img`
@@ -37,16 +41,39 @@ const BackgroundImage = styled.img`
 const WallScreen: FunctionComponent = (): ReactElement => {
     const { activeSceneId } = useContext(ActiveSceneContext)
     const [battlemaps, setBattlemaps] = useState<Map[]>([])
+    const [sceneDetails, setSceneDetails] = useState<SceneDetail[]>([])
+    const [isActiveMainMap, setIsActiveMainMap] = useState<boolean>(false)
+
+    useEffect(() => {
+        getSceneDetails(setSceneDetails)
+    }, [])
     
     useEffect(() => {
         getBattlemapsfiltered(setBattlemaps, { players: true })
     }, [activeSceneId])
 
+    useEffect(() => {
+        if (sceneDetails.length > 0) {
+            const activeScene = getSceneByKey('id', activeSceneId, sceneDetails)
+            if(activeScene.fight === true) {
+                if (!activeScene.battlemaps_id) {
+                    throw new Error('active Scene not found')
+                }
+                if(activeScene.battlemaps_id) {
+                    setIsActiveMainMap(true)
+                }
+            }
+            else {
+                setIsActiveMainMap(false)
+            }           
+        }
+    }, [activeSceneId, sceneDetails])
+
     return(
         <Screen>
             <BackgroundImage src='/test.jpg' alt='' /> 
             <MapContainer> 
-                <MapOverview battlemaps={battlemaps} gap='10px'/>
+                <MapOverview battlemaps={battlemaps} gap='10px' isActiveMainMap={ isActiveMainMap }/>
             </MapContainer>
         </Screen>       
     )
