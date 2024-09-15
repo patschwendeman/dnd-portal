@@ -10,9 +10,18 @@ export const getSceneDetails = async (setSceneDetails: React.Dispatch<React.SetS
     setSceneDetails(scenes)
 }
 
-export const handleGroundScreen = async <K extends keyof SceneDetail>(id: number, key: K, setMediaSource: React.Dispatch<React.SetStateAction<string>>) => {
-    const scene =  await getData(`scenes/details/${id}`)
-    const src = getMediaSRC(scene, key)
+export const handleGroundScreen = async (id: number, setMediaSource: React.Dispatch<React.SetStateAction<string>>) => {
+    const scene: SceneDetail =  await getData(`scenes/details/${id}`)
+    if(!scene) {
+        throw new Error('Scene detail not found')
+    }
+    let src
+    if(scene.fight === true){
+        src = getMediaSRC(scene, 'battlemaps')
+    }
+    else {
+        src = scene.graphics_ground.source
+    } 
     setMediaSource(src)
 }
 

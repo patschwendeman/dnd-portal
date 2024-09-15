@@ -28,17 +28,13 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
     const [imageSRC, setImageSRC] = useState<string>('')
 
     useEffect(() => {
-        handleGroundScreen(activeSceneId, 'battlemaps', setImageSRC)
+        handleGroundScreen(activeSceneId, setImageSRC)
     }, [activeSceneId])
 
     return(
-        <>
-            <Screen>
-                <BackgroundImage data-test-id='groundImg' src={imageSRC} alt='' />
-
-            </Screen>
-            <p>{activeSceneId}</p>
-        </> 
+        <Screen>
+            <BackgroundImage data-test-id='groundImg' src={imageSRC} alt='' />
+        </Screen> 
     )
 }
 export { GroundScreen }
