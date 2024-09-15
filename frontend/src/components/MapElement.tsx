@@ -4,9 +4,10 @@ import styled from 'styled-components'
 interface MapElementProps {
     activeMapId: number,
     src?: string,
-    handleSceneSelection?(id: number): void, 
+    handleSceneSelection?(id: number, isMainMap: boolean): void, 
     keyProp?: number,
-    isMainMap: boolean
+    isMainMap: boolean,
+    isActiveMainMap: boolean
 }
 
 const MapContainer = styled.div<{ $isActive: boolean, $isMainMap: boolean }>`
@@ -29,13 +30,13 @@ const MapImage = styled.img`
     border-radius: 5px;
 `
 
-const MapElement: FunctionComponent<MapElementProps> = ({ activeMapId, src, handleSceneSelection, keyProp, isMainMap }): ReactElement => {
+const MapElement: FunctionComponent<MapElementProps> = ({ activeMapId, src, handleSceneSelection, keyProp, isMainMap, isActiveMainMap }): ReactElement => {
     const handleClick = () => {
         if (keyProp !== undefined && handleSceneSelection) {
-            handleSceneSelection(keyProp)
+            handleSceneSelection(keyProp, isMainMap)
         }
     }
-    const isActive = keyProp === activeMapId
+    const isActive = keyProp === activeMapId && isMainMap === isActiveMainMap
 
     return (
         <MapContainer data-test-id={src} $isActive={isActive} onClick={handleClick} $isMainMap={isMainMap}>

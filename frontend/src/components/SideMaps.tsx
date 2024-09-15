@@ -17,10 +17,11 @@ const ContainerSideMaps = styled.div<{ $count: number }>`
 
 interface SideMapsProps {
     sidemaps: Map[] | undefined
-    handleSceneSelection?(id: number): void
+    handleSceneSelection?(id: number, isMainMap: boolean): void
+    isActiveMainMap: boolean
 }
 
-const SideMaps: FunctionComponent<SideMapsProps> = ({ sidemaps , handleSceneSelection }): ReactElement => {
+const SideMaps: FunctionComponent<SideMapsProps> = ({ sidemaps , handleSceneSelection, isActiveMainMap }): ReactElement => {
 
     const { activeMapId } = useContext(ActiveMapContext)
 
@@ -49,7 +50,8 @@ const SideMaps: FunctionComponent<SideMapsProps> = ({ sidemaps , handleSceneSele
                             handleSceneSelection={ handleSceneSelection } 
                             key={ maps[mapIndex].id }
                             keyProp={ maps[mapIndex].id }
-                            isMainMap={ false }>    
+                            isMainMap={ false }
+                            isActiveMainMap={ isActiveMainMap }>    
                         </MapElement>
                     )
                 }
