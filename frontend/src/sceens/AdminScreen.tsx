@@ -1,6 +1,7 @@
 import { useContext, FunctionComponent, ReactElement, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
+import backgroundMusic from '../../public/journey.mp3'
 import { Dialogue } from '../components/Dialogue'
 import { MapOverview } from '../components/MapOverview'
 import { SideMaps } from '../components/SideMaps'
@@ -9,6 +10,7 @@ import { Map, SceneDetail } from '../models/models'
 import { getBattlemapsfiltered, getsidemaps } from '../service/battlemaps'
 import { getSceneDetails, handleDialogue } from '../service/scenes'
 import { getSceneByKey } from '../utils/utils'
+
 
 const Screen = styled.div`
     display: flex;
@@ -66,6 +68,18 @@ const BottomBar = styled.div`
     justify-content: center;
 `
 
+const StartMusicButton = styled.button`
+    position: absolute;
+    left: 20px;
+    padding: 10px 20px;
+    background-color: #4b4b4b;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 99;
+`
+
 const AdminScreen: FunctionComponent = (): ReactElement => {
     const { activeSceneId, setActiveSceneId } = useContext(ActiveSceneContext)
     const { setActiveMapId } = useContext(ActiveMapContext)
@@ -76,11 +90,31 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     const [sidemaps, setSidemaps] = useState<Map[]>([])
     const [isActiveMainMap, setIsActiveMainMap] = useState<boolean>(false)
 
+    const [isMusicPlaying, setIsMusicPlaying] = useState<boolean>(false)
+    const [activeMusicSRC, setActiveMusicSRC] = useState<string>(backgroundMusic)
+    const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
+
     useEffect(() => {
         getSceneDetails(setSceneDetails)
         getBattlemapsfiltered(setBattlemaps, { players: false })
         getsidemaps(setSidemaps)
     }, [])
+
+    useEffect(() => {
+        if (audio) {
+            audio.pause()
+            audio.currentTime = 0
+        }
+    
+        const newAudio = new Audio(activeMusicSRC)
+        newAudio.loop = true
+        setAudio(newAudio)
+    
+        if (isMusicPlaying) {
+            newAudio.play()
+                .catch((err) => { throw new Error(`Failed to play new music: ${err}`) })
+        }
+    }, [activeMusicSRC])
 
     useEffect(() => {
         if (sceneDetails.length > 0) {
@@ -97,9 +131,24 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
             else {
                 setActiveMapId(activeScene.id)
                 setIsActiveMainMap(false)
-            }           
+            } 
+            setActiveMusicSRC(activeScene.music.source)   
         }
-    }, [activeSceneId, sceneDetails])
+    }, [activeSceneId])
+
+    const handleStartMusic = () => {
+        if (!audio){ return}
+
+        if (!isMusicPlaying) {
+            audio.play()
+                .then(() => setIsMusicPlaying(true))
+                .catch((err) => { throw new Error(`Failed to play new music: ${err}`) })
+        } else {
+            audio.pause()
+            setIsMusicPlaying(false)
+        }
+    }
+
 
     const handleSceneSelection = (mapId: number, isMainMap: boolean) => {
  
@@ -123,7 +172,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     }
 
     return(
-        <>
+        <>               
             <Dialogue
                 sceneOption={sceneOption}
                 handleDialogueOption={handleDialogueOption}
@@ -144,6 +193,9 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
                     </SidebarMapContainer>
                 </SidebarRight>
                 <BottomBar>
+                <StartMusicButton onClick={handleStartMusic}>
+                    Play
+                </StartMusicButton>
                     <SideMaps sidemaps={sidemaps} handleSceneSelection={handleSceneSelection} isActiveMainMap={ isActiveMainMap }/>
                 </BottomBar>
             </Screen>
