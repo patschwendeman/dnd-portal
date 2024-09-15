@@ -21,8 +21,8 @@ const Screen = styled.div`
     justify-content: center;
 `
 
-const MapContainer = styled.div`
-    display: flex;
+const MapContainer = styled.div<{$isVisible: boolean}>`
+    display: ${({ $isVisible }) => ($isVisible ? 'flex' : 'none')};
     width: 1200px;
     height: 700px;
     align-items: center;
@@ -40,6 +40,7 @@ const BackgroundImage = styled.img`
 
 const WallScreen: FunctionComponent = (): ReactElement => {
     const { activeSceneId } = useContext(ActiveSceneContext)
+    const [activeScene, setActiveScene] = useState<SceneDetail>()
     const [battlemaps, setBattlemaps] = useState<Map[]>([])
     const [sceneDetails, setSceneDetails] = useState<SceneDetail[]>([])
     const [isActiveMainMap, setIsActiveMainMap] = useState<boolean>(false)
@@ -55,6 +56,7 @@ const WallScreen: FunctionComponent = (): ReactElement => {
     useEffect(() => {
         if (sceneDetails.length > 0) {
             const activeScene = getSceneByKey('id', activeSceneId, sceneDetails)
+            setActiveScene(activeScene)
             if(activeScene.fight === true) {
                 if (!activeScene.battlemaps_id) {
                     throw new Error('active Scene not found')
@@ -71,8 +73,8 @@ const WallScreen: FunctionComponent = (): ReactElement => {
 
     return(
         <Screen>
-            <BackgroundImage src='/test.jpg' alt='' /> 
-            <MapContainer> 
+            <BackgroundImage src={activeScene?.graphics_wall.source} alt='' /> 
+            <MapContainer $isVisible={isActiveMainMap}> 
                 <MapOverview battlemaps={battlemaps} gap='10px' isActiveMainMap={ isActiveMainMap }/>
             </MapContainer>
         </Screen>       
