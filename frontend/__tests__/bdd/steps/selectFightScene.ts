@@ -107,4 +107,46 @@ defineFeature(feature, (test) => {
       expect(map).toBeDefined()
     })
   })
+
+  test('I select a fight scene to see the correct wall image at the wall screen', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    const randomFightSceneNumber = getRandomNumber(1, 16)
+    const fightScene = `https://example.com/battle${randomFightSceneNumber}.png`
+    const fightWallImage = 'https://example.com/Fight.png'
+
+    given('I am on the admin screen', async () => {
+      await driver.get('http://localhost:5173')
+      await sleep(2000)
+    })
+
+    when('I click on a fight scene', async () => {
+      const map = await driver.findElement(
+        By.css(`[data-test-id="${fightScene}"]`)
+      )
+      map.click()
+    })
+
+    and('I click the Confirm button', async () => {
+      const confirmButton = await driver.findElement(
+        By.css('[data-test-id="confirm-button"]')
+      )
+      confirmButton.click()
+      await sleep(1000)
+    })
+
+    and('I go to wall screen', async () => {
+      await driver.get('http://localhost:5173/wall')
+      await sleep(1000)
+    })
+
+    then('I see the correct wall image', async () => {
+      const image = await driver.findElement(By.css('[data-test-id="wallImg"]'))
+      const imageSrc = await image.getAttribute('src')
+      expect(imageSrc).toBe(fightWallImage)
+    })
+  })
 })
