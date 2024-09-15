@@ -13,7 +13,7 @@ maps_router = APIRouter()
 @maps_router.get("/maps/sidemaps")
 def read_sidemaps(players: Optional[bool] = Query(None), db: Session = Depends(get_db)):
     maptype = 'sidemap'
-    sidemaps = MapsService.read_maps(db, players, maptype)
+    sidemaps = MapsService.read_maps(players, db, maptype)
     if sidemaps is None:
         raise HTTPException(status_code=404, detail="sideemaps not found")
     return sidemaps
@@ -21,7 +21,7 @@ def read_sidemaps(players: Optional[bool] = Query(None), db: Session = Depends(g
 @maps_router.get("/maps/battlemaps")
 def read_battlemaps(players: Optional[bool] = Query(None), db: Session = Depends(get_db)):
     maptype = 'battlemap'
-    battlemap = MapsService.read_maps(db, players, maptype)
+    battlemap = MapsService.read_maps(players, db, maptype)
     if battlemap is None:
         raise HTTPException(status_code=404, detail="Battlemaps not found")
     return battlemap
