@@ -10,12 +10,12 @@ class MapsService:
 
     @staticmethod
     def read_maps(filter_condition: Optional[bool], db: Session, maptype) -> json:
-        if maptype == "battlemaps":
+        if maptype == "battlemap":
             maps = BattlemapService.read_battlemaps(db, filter_condition)
-        elif maptype == "sidemaps":
+        elif maptype == "sidemap":
             maps = SidemapsService.read_sidemaps(db)
         else:
-            maps = None
+            raise ValueError("Maps not found")
         if not maps:
             raise ValueError("Maps not found")
         return maps
@@ -29,8 +29,7 @@ class MapsService:
 
     @staticmethod
     def update_map(db: Session, map_id: int, data) -> BattleMap:
-        updates = data.updates
-        updated_map = BattlemapService.update_battlemap(db, map_id, updates)
+        updated_map = BattlemapService.update_battlemap(db, map_id, data)
         if not updated_map:
             raise ValueError("updated map not found")
         return updated_map
