@@ -66,11 +66,11 @@ const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogu
   const { setActiveSceneId } = useContext(ActiveSceneContext)
 
   const handleConfirm = () => {
-    if (sceneOption) {
-      handleDialogueOption(true, sceneOption, setActiveSceneId, setDialogueVisibility)
-    } else {
-      console.error('Scene option is undefined')
+    if (!sceneOption) {
+      
+      throw new Error('Scene option is undefined')
     }
+    handleDialogueOption(true, sceneOption, setActiveSceneId, setDialogueVisibility)
   }
 
   const handleDecline = () => {
