@@ -99,7 +99,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
                 setIsActiveMainMap(false)
             }           
         }
-    }, [activeSceneId, sceneDetails, setActiveMapId])
+    }, [activeSceneId, sceneDetails])
 
     const handleSceneSelection = (mapId: number, isMainMap: boolean) => {
  
