@@ -4,6 +4,9 @@ import { getMediaSRC } from '../utils/utils'
 
 export const getSceneDetails = async (setSceneDetails: React.Dispatch<React.SetStateAction<SceneDetail[]>>) => {
     const scenes =  await getData('scenes/details/')
+    if(!scenes) {
+        throw new Error('Scene details not found')   
+    }
     setSceneDetails(scenes)
 }
 
@@ -23,7 +26,7 @@ export const handleDialogue = (option: boolean, sceneOption: SceneDetail | undef
                 if(!sceneOption.battlemaps_id) {
                     throw new Error('Battlemap not found')
                 }
-                updateData('battlemaps/', sceneOption.battlemaps_id)
+                updateData('maps/battlemaps/', sceneOption.battlemaps_id)
             }
     }
     setDialogueVisibility(false)
