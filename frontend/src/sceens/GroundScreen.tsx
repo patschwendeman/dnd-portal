@@ -15,6 +15,7 @@ const Screen = styled.div`
     bottom: 0;
     align-items: center;
     justify-content: center;
+    font-family: "Poppins", sans-serif;
 `
 
 const BackgroundImage = styled.img`

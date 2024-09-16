@@ -22,6 +22,7 @@ const MapControl = styled.div`
     align-items: center;
     justify-content: center;
     z-index: 99999 !important;
+    font-family: "Poppins", sans-serif;
 `
 
 const Screen = styled.div`
