@@ -6,6 +6,11 @@ export const getBattlemaps = async (setBattlemaps: React.Dispatch<React.SetState
     setBattlemaps(battlemaps)
 }
 
+export const getBattlemapById = async (setBattlemap: React.Dispatch<React.SetStateAction<Map[]>>, id: number) => {
+    const battlemap =  await getData(`maps/battlemaps/${id}`)
+    setBattlemap(battlemap)
+}
+
 export const getsidemaps = async (setSidemaps: React.Dispatch<React.SetStateAction<Map[]>>) => {
     const sidemaps =  await getData('maps/sidemaps/')
     setSidemaps(sidemaps)
