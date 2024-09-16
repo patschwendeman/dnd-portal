@@ -2,6 +2,7 @@ import { useContext, FunctionComponent, ReactElement, useEffect, useState } from
 import styled from 'styled-components'
 
 import backgroundMusic from '../../public/journey.mp3'
+import { BattleDetailsSideBar } from '../components/BattleDetailsSideBar'
 import { Dialogue } from '../components/Dialogue'
 import { MapOverview } from '../components/MapOverview'
 import { SideMaps } from '../components/SideMaps'
@@ -23,6 +24,7 @@ const Screen = styled.div`
     bottom: 0;
     align-items: center;
     justify-content: center;
+    font-family: "Poppins", sans-serif;
 `
 
 const SidebarRight = styled.div`
@@ -37,14 +39,7 @@ const SidebarRight = styled.div`
     background-color: #242424;
 `
 
-const BattleDetails = styled.div`
-    width: 100%;
-    height: 100%;
-    display: flex;
-    top: 0;
-    right: 0;
-    background-color: blue;
-`
+
 
 const SidebarMapContainer = styled.div`
     width: 100%;
@@ -181,8 +176,8 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
             />
             <Screen>
                 <SidebarRight>
-                <BattleDetails>
-                </BattleDetails>
+                    <BattleDetailsSideBar />
+                
                     <SidebarMapContainer>
                         <MapOverview
                             battlemaps={battlemaps}
