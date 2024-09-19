@@ -2,7 +2,10 @@ import { useContext, FunctionComponent, ReactElement, useEffect, useState } from
 import styled from 'styled-components'
 
 import { ActiveSceneContext } from '../context/context'
-import { handleGroundScreen } from '../service/scenes'
+import { SceneDetail } from '../models/models'
+import { getGroundScreenData } from '../service/groundScreen'
+import { getMediaSRC } from '../utils/utils'
+
 
 const Screen = styled.div`
     display: flex;
@@ -28,8 +31,29 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
     const { activeSceneId } = useContext(ActiveSceneContext)
     const [imageSRC, setImageSRC] = useState<string>('')
 
-    useEffect(() => {
-        handleGroundScreen(activeSceneId, setImageSRC)
+    const handleGroundScreen = (activeScene: SceneDetail) => {
+        let src
+        if (activeScene.fight === true) {
+            src = getMediaSRC(activeScene, 'battlemaps')
+            
+        } else {
+            src = activeScene.graphics_ground.source
+        }
+
+        setImageSRC(src)
+    }
+
+    const fetchGroundScreenData = async () => {
+        try {
+            const activeScene = await getGroundScreenData(activeSceneId)
+            handleGroundScreen(activeScene) 
+        } catch (err) {
+            throw new Error(`Error fetching active scene data: ${err}`)
+        }
+    }
+
+    useEffect(() => { 
+        fetchGroundScreenData()
     }, [activeSceneId])
 
     return(
