@@ -4,9 +4,7 @@ import styled from 'styled-components'
 import { MapOverview } from '../components/MapOverview'
 import { ActiveSceneContext } from '../context/context'
 import { Map, SceneDetail } from '../models/models'
-import { getBattlemapsfiltered } from '../service/battlemaps'
-import { getSceneDetails } from '../service/scenes'
-import { getSceneByKey } from '../utils/utils'
+import { getWallScreenData } from '../service/WallScreen'
 
 const MapControl = styled.div`
     display: flex;
@@ -70,8 +68,8 @@ const Button = styled.button`
     border: none;
 
     &:hover {
-    background-color: #000000b6;
-    color: white;
+        background-color: #000000b6;
+        color: white;
     }
 `
 
@@ -79,39 +77,23 @@ const WallScreen: FunctionComponent = (): ReactElement => {
     const { activeSceneId } = useContext(ActiveSceneContext)
     const [activeScene, setActiveScene] = useState<SceneDetail>()
     const [battlemaps, setBattlemaps] = useState<Map[]>([])
-    const [sceneDetails, setSceneDetails] = useState<SceneDetail[]>([])
     const [isActiveMainMap, setIsActiveMainMap] = useState<boolean>(false) 
     const [worldMapVisiblity, setWorldMapVisiblity] = useState<boolean>(false)
     const [mainMapsVisiblity, setMainMapsVisiblity] = useState<boolean>(isActiveMainMap)
 
-    useEffect(() => {
-        getSceneDetails(setSceneDetails)
-    }, [])
-    
-    useEffect(() => {
-        getBattlemapsfiltered(setBattlemaps, { players: true })
-    }, [activeSceneId])
-
-    useEffect(() => {
-        if (sceneDetails.length > 0) {
-            const activeScene = getSceneByKey('id', activeSceneId, sceneDetails)
-            setActiveScene(activeScene)
-            if(activeScene.fight === true) {
-                if (!activeScene.battlemaps_id) {
-                    throw new Error('active Scene not found')
-                }
-                if(activeScene.battlemaps_id) {
-                    setIsActiveMainMap(true)
-                    setMainMapsVisiblity(true)
-                    
-                }
-            }
-            else {
-                setIsActiveMainMap(false)
-                setMainMapsVisiblity(false)
-            }                  
+    const handleWallScreenData = (activeScene: SceneDetail, battlemaps: Map[]) => {
+        setActiveScene(activeScene)
+        setBattlemaps(battlemaps)
+        setWorldMapVisiblity(false)
+        if(activeScene.fight === true) {
+            setIsActiveMainMap(true)
+            setMainMapsVisiblity(true)
         }
-    }, [activeSceneId, sceneDetails])
+        else {
+            setIsActiveMainMap(false)
+            setMainMapsVisiblity(false)
+        }
+    }
 
     function handleMapsVisibility(option: number) {
         if (option === 1) {
@@ -125,7 +107,20 @@ const WallScreen: FunctionComponent = (): ReactElement => {
             setWorldMapVisiblity(false)
         }
     }
-    
+
+    const fetchWallScreenData = async () => {
+        try {
+            const [activeScene, battlemaps] = await getWallScreenData(activeSceneId)
+            handleWallScreenData(activeScene, battlemaps)
+        } catch (err) {
+            throw new Error(`Error fetching wall data: ${err}`)
+        }
+    }
+
+    useEffect(() => {
+        fetchWallScreenData()
+    }, [activeSceneId])
+
     return(
         <Screen>
             <BackgroundImage data-test-id='wallImg' src={activeScene?.graphics_wall.source} alt='' /> 
