@@ -2,15 +2,15 @@ import { useContext, FunctionComponent, ReactElement, useEffect, useState } from
 import styled from 'styled-components'
 
 import backgroundMusic from '../../public/journey.mp3'
-import { BattleDetailsSideBar } from '../components/BattleDetailsSideBar'
+/* import voice from '../../public/voice_1.mp3' */
+/* import { BattleDetailsSideBar } from '../components/BattleDetailsSideBar' */
 import { Dialogue } from '../components/Dialogue'
 import { MapOverview } from '../components/MapOverview'
 import { SideMaps } from '../components/SideMaps'
 import { ActiveMapContext, ActiveSceneContext } from '../context/context'
 import { Map, SceneDetail } from '../models/models'
-import { getBattlemapsfiltered, getsidemaps } from '../service/battlemaps'
-import { getSceneDetails, handleDialogue } from '../service/scenes'
-import { getSceneByKey } from '../utils/utils'
+import { getAdminData, getSceneById, handleDialogue } from '../service/adminScreen'
+import { filterSceneByKey } from '../utils/utils'
 
 
 const Screen = styled.div`
@@ -63,7 +63,7 @@ const BottomBar = styled.div`
     justify-content: center;
 `
 
-const StartMusicButton = styled.button`
+const AudioControlButton = styled.button`
     position: absolute;
     left: 20px;
     padding: 10px 20px;
@@ -78,24 +78,41 @@ const StartMusicButton = styled.button`
 const AdminScreen: FunctionComponent = (): ReactElement => {
     const { activeSceneId, setActiveSceneId } = useContext(ActiveSceneContext)
     const { setActiveMapId } = useContext(ActiveMapContext)
-    const [sceneDetails, setSceneDetails] = useState<SceneDetail[]>([])
-    const [battlemaps, setBattlemaps] = useState<Map[]>([])
+    const [scenesDetails, setScenesDetails] = useState<SceneDetail[]>([])
+    const [, setActiveScene] = useState<SceneDetail>()
+    
     const [dialogueVisibility, setDialogueVisibility] = useState<boolean>(false)
     const [sceneOption, setSceneOption] = useState<SceneDetail | undefined>()
-    const [sidemaps, setSidemaps] = useState<Map[]>([])
-    const [isActiveMainMap, setIsActiveMainMap] = useState<boolean>(false)
 
+    const [battlemaps, setBattlemaps] = useState<Map[]>([])
+    const [sidemaps, setSidemaps] = useState<Map[]>([])
+    const [isMainMap, setIsMainMap] = useState<boolean>(false)
+    
     const [isMusicPlaying, setIsMusicPlaying] = useState<boolean>(false)
     const [activeMusicSRC, setActiveMusicSRC] = useState<string>(backgroundMusic)
     const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
 
-    useEffect(() => {
-        getSceneDetails(setSceneDetails)
-        getBattlemapsfiltered(setBattlemaps, { players: false })
-        getsidemaps(setSidemaps)
-    }, [])
+    const handleAdminData = (sidemaps: Map[], battlemaps: Map[], scenesDetails: SceneDetail[]) => {
+        setBattlemaps(battlemaps)
+        setSidemaps(sidemaps)
+        setScenesDetails(scenesDetails)
+    }
 
-    useEffect(() => {
+    const handleAudioControl = () => {
+        if (!audio){ 
+            return
+        }
+        if (!isMusicPlaying) {
+            audio.play()
+                .then(() => setIsMusicPlaying(true))
+                .catch((err) => { throw new Error(`Failed to play new music: ${err}`) })
+        } else {
+            audio.pause()
+            setIsMusicPlaying(false)
+        }
+    }
+
+    const handleAudio = () => {
         if (audio) {
             audio.pause()
             audio.currentTime = 0
@@ -109,55 +126,58 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
             newAudio.play()
                 .catch((err) => { throw new Error(`Failed to play new music: ${err}`) })
         }
-    }, [activeMusicSRC])
+    }
 
-    useEffect(() => {
-        if (sceneDetails.length > 0) {
-            const activeScene = getSceneByKey('id', activeSceneId, sceneDetails)
-            if(activeScene.fight === true) {
-                if (!activeScene.battlemaps_id) {
-                    throw new Error('active Scene not found')
-                }
-                if(activeScene.battlemaps_id) {
-                    setActiveMapId(activeScene.battlemaps_id)
-                    setIsActiveMainMap(true)
-                }
-            }
-            else {
-                setActiveMapId(activeScene.id)
-                setIsActiveMainMap(false)
-            } 
-            setActiveMusicSRC(activeScene.music.source)   
-        }
-    }, [activeSceneId])
-
-    const handleStartMusic = () => {
-        if (!audio){ return}
-
-        if (!isMusicPlaying) {
-            audio.play()
-                .then(() => setIsMusicPlaying(true))
-                .catch((err) => { throw new Error(`Failed to play new music: ${err}`) })
+    const handleActiveScene = (activeScene: SceneDetail) => {
+        setActiveScene(activeScene)
+        setIsMainMap(activeScene.fight)
+        setActiveMusicSRC(activeScene.music.source)
+        /* setActiveMusicSRC(voice) */
+        if (activeScene.fight === true && activeScene.battlemaps_id) {
+            setActiveMapId(activeScene.battlemaps_id)
         } else {
-            audio.pause()
-            setIsMusicPlaying(false)
+            setActiveMapId(activeScene.id)
+        }   
+        handleAudio()
+    }
+
+    const fetchAdminData = async () => {
+        try {
+            const [sidemaps, battlemaps, scenesDetails] = await getAdminData()
+            handleAdminData(sidemaps, battlemaps, scenesDetails)
+        } catch (err) {
+            throw new Error(`Error fetching admin data: ${err}`)
+        }   
+    }
+
+    const fetchActiveScene = async () => {
+        try {
+            const activeScene = await getSceneById(activeSceneId)
+            handleActiveScene(activeScene) 
+        } catch (err) {
+            throw new Error(`Error fetching active scene data: ${err}`)
         }
     }
 
+    useEffect(() => {  
+        fetchAdminData()
+    }, [])
+
+    useEffect(() => { 
+        fetchActiveScene()
+    }, [activeSceneId])
 
     const handleSceneSelection = (mapId: number, isMainMap: boolean) => {
- 
         let scene
         if(isMainMap === true) {
-            scene = getSceneByKey('battlemaps_id', mapId, sceneDetails)
+            scene = filterSceneByKey('battlemaps_id', mapId, scenesDetails)
         }
         else {
-            scene = getSceneByKey('id', mapId, sceneDetails)
+            scene = filterSceneByKey('id', mapId, scenesDetails)
         }
         if (!scene) {
             throw new Error('No Scene to scelect not found')
         }
-        
         setDialogueVisibility(true)
         setSceneOption(scene)
     }
@@ -176,22 +196,22 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
             />
             <Screen>
                 <SidebarRight>
-                    <BattleDetailsSideBar />
+                    {/* <BattleDetailsSideBar activeScene={ activeScene }/> */}
                 
                     <SidebarMapContainer>
                         <MapOverview
                             battlemaps={battlemaps}
                             gap='3px'
                             handleSceneSelection={handleSceneSelection}
-                            isActiveMainMap={ isActiveMainMap }
+                            isActiveMainMap={ isMainMap }
                         />
                     </SidebarMapContainer>
                 </SidebarRight>
                 <BottomBar>
-                <StartMusicButton onClick={handleStartMusic}>
+                <AudioControlButton onClick={handleAudioControl}>
                     Play
-                </StartMusicButton>
-                    <SideMaps sidemaps={sidemaps} handleSceneSelection={handleSceneSelection} isActiveMainMap={ isActiveMainMap }/>
+                </AudioControlButton>
+                    <SideMaps sidemaps={sidemaps} handleSceneSelection={handleSceneSelection} isActiveMainMap={ isMainMap }/>
                 </BottomBar>
             </Screen>
         </>
