@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import backgroundMusic from '../../public/journey.mp3'
 /* import voice from '../../public/voice_1.mp3' */
 /* import { BattleDetailsSideBar } from '../components/BattleDetailsSideBar' */
+import { BattleDetailsSideBar } from '../components/BattleDetailsSideBar'
 import { Dialogue } from '../components/Dialogue'
 import { MapOverview } from '../components/MapOverview'
 import { SideMaps } from '../components/SideMaps'
@@ -79,7 +80,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     const { activeSceneId, setActiveSceneId } = useContext(ActiveSceneContext)
     const { setActiveMapId } = useContext(ActiveMapContext)
     const [scenesDetails, setScenesDetails] = useState<SceneDetail[]>([])
-    const [, setActiveScene] = useState<SceneDetail>()
+    const [activeScene, setActiveScene] = useState<SceneDetail>()
     
     const [dialogueVisibility, setDialogueVisibility] = useState<boolean>(false)
     const [sceneOption, setSceneOption] = useState<SceneDetail | undefined>()
@@ -196,8 +197,6 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
             />
             <Screen>
                 <SidebarRight>
-                    {/* <BattleDetailsSideBar activeScene={ activeScene }/> */}
-                
                     <SidebarMapContainer>
                         <MapOverview
                             battlemaps={battlemaps}

@@ -1,9 +1,7 @@
-import { FunctionComponent, ReactElement, useContext, useState } from 'react'
+import { FunctionComponent, ReactElement, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { ActiveMapContext } from '../context/context'
-import { SceneDetail } from '../models/models'
-import { getBattlemapById } from '../service/battlemaps'
+import { Battlemap, SceneDetail } from '../models/models'
 
 const BattleDetailsContainer = styled.div`
     width: 100%;
@@ -12,14 +10,15 @@ const BattleDetailsContainer = styled.div`
     top: 0;
     right: 0;
 `
-const BattleDetails = styled.div`
+const BattleDetails = styled.div<{$isFightScene: boolean}>`
     width: 100%;
     height: 85%;
-    display: flex;
+    display: ${({ $isFightScene }) => ($isFightScene ? 'flex' : 'none')};
     margin: 30px 10px 30px;
-    background-color: rgb(184, 184, 184);
+    background-color: #161b23;
+    color: #F0F6FC;
     border-radius: 9px;
-    padding: 10px;
+    padding: 20px;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
@@ -32,13 +31,12 @@ const BattleDetailHeader = styled.div`
     align-items: center;
     justify-content: center;
     text-align: center;
-    border-bottom: 3px solid black;
 `
 const BattleDetailContent = styled.div`
     width: 100%;
     height: 28%;
     display: flex;
-    border-bottom: 1px solid black;
+    border-top: 1px solid #3d444db3;
 `
 
 const ContentContainer = styled.div`
@@ -48,63 +46,83 @@ const ContentContainer = styled.div`
 
 `
 
+interface BattleDetailsSideBarProps {
+    activeScene: SceneDetail | undefined;
+  }
 
+const BattleDetailsSideBar: FunctionComponent<BattleDetailsSideBarProps> = ({ activeScene }): ReactElement => {
+    const [activeBattleMap, setActiveBattleMap] = useState<Battlemap>()
+    const [battleData, setBattleData] = useState<{ enemies: string[], loot: string[] }>({ enemies: [], loot: [] })
 
-const BattleDetailsSideBar: FunctionComponent = (): ReactElement => {
-    const { activeMapId } = useContext(ActiveMapContext)
-    const [battlemap, setBattlemap] = useState()
+    const splitStringByComma = (input: string): string[] => {
+        return input.split(',').map(str => str.trim())
+    }
 
-    getBattlemapById(setBattlemap, activeMapId)
+    const updateBattleData = (battlemap: Battlemap) => {
+        const enemies = splitStringByComma(battlemap.enemies || 'NONE')
+        const loot = splitStringByComma(battlemap.loot || 'NONE')
+        setBattleData({ enemies, loot })
+    }
 
+    const handleBattleData = () => {
+        if(!activeScene){
+            throw new Error('No active scene found')
+        }
+        if(!activeScene?.battlemaps){
+            throw new Error('No battle map found')
+        }
+        const selectedBattleMap = activeScene.battlemaps
+        setActiveBattleMap(selectedBattleMap)
+        updateBattleData(selectedBattleMap)
+    }
 
+    useEffect(() => {  
+        handleBattleData()
+    }, [activeScene])
 
+    return (
+        <BattleDetailsContainer>
+            <BattleDetails $isFightScene={!!activeScene?.fight}>
+                <BattleDetailHeader>
+                    <strong>{activeBattleMap?.name}</strong>
+                </BattleDetailHeader>
+                <BattleDetailContent>
+                    <ContentContainer>
+                        <p>Enemies:</p>
+                    </ContentContainer>
+                    <ContentContainer>
+                        <ul>
+                            {battleData.enemies.map((enemy, index) => (
+                                <li key={index}>{enemy}</li>
+                            ))}
+                        </ul>
+                    </ContentContainer>
+                </BattleDetailContent>
+                <BattleDetailContent>
+                    <ContentContainer>
+                        <p>Loot:</p>
+                    </ContentContainer>
+                    <ContentContainer>
+                        <ul>
+                            <li>XP: {activeBattleMap?.xp}</li>
+                            {battleData.loot.map((item, index) => (
+                                <li key={index}>{item}</li>
+                            ))}
+                        </ul>
+                    </ContentContainer>
+                </BattleDetailContent>
+                <BattleDetailContent>
+                    <ContentContainer>
+                        <p>Notes:</p>
+                    </ContentContainer>
+                    <ContentContainer>
+                        <p>{activeScene?.description || 'No notes available.'}</p>
+                    </ContentContainer>
+                </BattleDetailContent>
 
-  return (
-    <BattleDetailsContainer>
-        <BattleDetails>
-            <BattleDetailHeader>
-                MAP 1
-            </BattleDetailHeader>
-            <BattleDetailContent>
-                <ContentContainer>
-                    <p>Enemies:</p>
-                </ContentContainer>
-                <ContentContainer>
-                    <ul>
-                        <li>Bandit</li>
-                        <li>Bandit</li>
-                        <li>Bandit</li>
-                        <li>Bandit</li>
-                        <li>Bandit</li>
-                    </ul>
-                </ContentContainer>
-                
-                
-            </BattleDetailContent>
-            <BattleDetailContent>
-            <ContentContainer>
-                    <p>Loot:</p>
-                </ContentContainer>
-                <ContentContainer>
-                    <ul>
-                        <li>200 xp</li>
-                        <li>300 Gold</li>
-                        <li>Sword</li>
-                    </ul>
-                </ContentContainer>
-            </BattleDetailContent>
-            <BattleDetailContent>
-            <ContentContainer>
-                    <p>Notes:</p>
-                </ContentContainer>
-                <ContentContainer>
-                        <p>dasdas asdd dsa das asdad  asd da das ad  a das das das ads d s</p>
-                </ContentContainer>
-            </BattleDetailContent>
-
-        </BattleDetails>
-    </BattleDetailsContainer>
-  )
+            </BattleDetails>
+        </BattleDetailsContainer>
+    )
 }
 
 export { BattleDetailsSideBar }
