@@ -65,15 +65,12 @@ const BattleDetailsSideBar: FunctionComponent<BattleDetailsSideBarProps> = ({ ac
     }
 
     const handleBattleData = () => {
-        if(!activeScene){
-            throw new Error('No active scene found')
-        }
-        if(!activeScene?.battlemaps){
-            throw new Error('No battle map found')
-        }
+       if(activeScene?.battlemaps) {
         const selectedBattleMap = activeScene.battlemaps
         setActiveBattleMap(selectedBattleMap)
         updateBattleData(selectedBattleMap)
+       }
+        
     }
 
     useEffect(() => {  
