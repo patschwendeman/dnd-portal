@@ -5,6 +5,7 @@ import backgroundMusic from '../../public/journey.mp3'
 /* import voice from '../../public/voice_1.mp3' */
 import { BattleDetailsSideBar } from '../components/BattleDetailsSideBar'
 import { Dialogue } from '../components/Dialogue'
+import { DocumentReader } from '../components/DocumentReader'
 import { MapOverview } from '../components/MapOverview'
 import { SideMaps } from '../components/SideMaps'
 import { ActiveMapContext, ActiveSceneContext } from '../context/context'
@@ -212,6 +213,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
                 </AudioControlButton>
                     <SideMaps sidemaps={sidemaps} handleSceneSelection={handleSceneSelection} isActiveMainMap={ isMainMap }/>
                 </BottomBar>
+                <DocumentReader />
             </Screen>
         </>
     )
