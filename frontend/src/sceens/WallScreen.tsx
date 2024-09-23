@@ -20,7 +20,7 @@ const MapControl = styled.div`
     align-items: center;
     justify-content: center;
     z-index: 99999 !important;
-    font-family: "Poppins", sans-serif;
+    background-color: ${(props) => props.theme.colors.dark};
 `
 
 const Screen = styled.div`
@@ -34,7 +34,12 @@ const Screen = styled.div`
     bottom: 0;
     align-items: center;
     justify-content: center;
-
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    background-color: ${(props) => props.theme.colors.secondary};
+    color: ${(props) => props.theme.colors.text.color};
+    a {
+        color: ${(props) => props.theme.colors.primary};
+    }
     &:hover ${MapControl} {
     opacity: 1;
     visibility: visible;
@@ -48,7 +53,7 @@ const MapContainer = styled.div<{$isVisible: boolean}>`
     align-items: center;
     justify-content: center;
     z-index: 99999;
-    background-color: #000000b6;
+    background-color: ${(props) => props.theme.colors.background};
     border-radius: 10px;
 `
 
@@ -58,19 +63,19 @@ const BackgroundImage = styled.img`
     position: fixed;
 `
 
-
-const Button = styled.button`
+const Button = styled.div<{$isActive: boolean}>`
     margin: 0 10px 0 10px; 
     width: 120px;
     height: 40px;
     cursor: pointer;
     border-radius: 6px;
     border: none;
-
-    &:hover {
-        background-color: #000000b6;
-        color: white;
-    }
+    background-color: ${(props) => (props.$isActive ? props.theme.colors.primary : props.theme.colors.secondary)};
+    color: ${(props) => props.theme.colors.text.color};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 `
 
 const WallScreen: FunctionComponent = (): ReactElement => {
@@ -80,6 +85,7 @@ const WallScreen: FunctionComponent = (): ReactElement => {
     const [isActiveMainMap, setIsActiveMainMap] = useState<boolean>(false) 
     const [worldMapVisiblity, setWorldMapVisiblity] = useState<boolean>(false)
     const [mainMapsVisiblity, setMainMapsVisiblity] = useState<boolean>(isActiveMainMap)
+    const [activeButton, setActiveButton] = useState<number | null>(null)
 
     const handleWallScreenData = (activeScene: SceneDetail, battlemaps: Map[]) => {
         setActiveScene(activeScene)
@@ -96,6 +102,7 @@ const WallScreen: FunctionComponent = (): ReactElement => {
     }
 
     function handleMapsVisibility(option: number) {
+        setActiveButton(option)
         if (option === 1) {
             setMainMapsVisiblity(true)
             setWorldMapVisiblity(false)
@@ -131,9 +138,9 @@ const WallScreen: FunctionComponent = (): ReactElement => {
                 <p>Hey</p>
             </MapContainer>
             <MapControl>
-                <Button onClick={() => handleMapsVisibility(1)}>Map_1</Button> 
-                <Button onClick={() => handleMapsVisibility(2)}>Map_2</Button> 
-                <Button onClick={() => handleMapsVisibility(3)}>OFF</Button> 
+                <Button onClick={() => handleMapsVisibility(1)} $isActive={activeButton === 1}>Battle</Button> 
+                <Button onClick={() => handleMapsVisibility(2)} $isActive={activeButton === 2}>World</Button> 
+                <Button onClick={() => handleMapsVisibility(3)} $isActive={activeButton === 3}>OFF</Button> 
             </MapControl>
         </Screen>       
     )

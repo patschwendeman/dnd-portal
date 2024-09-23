@@ -18,7 +18,12 @@ const Screen = styled.div`
     bottom: 0;
     align-items: center;
     justify-content: center;
-    font-family: "Poppins", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    background-color: ${(props) => props.theme.colors.background};;
+    color: ${(props) => props.theme.colors.text.color};
+    a {
+        color: ${(props) => props.theme.colors.primary};
+    }
 `
 
 const BackgroundImage = styled.img`

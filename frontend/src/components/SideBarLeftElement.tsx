@@ -6,7 +6,7 @@ const NavigationElement = styled.div<{$isElementActive: boolean}>`
   display: flex;
   width: 100%;
   height: 20px;
-  background-color:${({ $isElementActive }) => ($isElementActive ? '#4493F8' : '#0e1117')};
+  background-color:${( props ) => (props.$isElementActive ? props.theme.colors.primary : props.theme.colors.background)};
   border-radius: 5px;
   margin: 5px;
   align-items: center;
@@ -14,6 +14,7 @@ const NavigationElement = styled.div<{$isElementActive: boolean}>`
   text-align: center;
   color: white;
   cursor: pointer;
+  padding: 5px;
 `
 
 interface SideBarLeftElementProps {

@@ -11,13 +11,14 @@ interface MapElementProps {
 }
 
 const MapContainer = styled.div<{ $isActive: boolean, $isMainMap: boolean }>`
-    background-color: rgb(184, 184, 184);
+    background-color:${(props) => props.theme.colors.secondary};
     padding-top: ${props => props.$isMainMap ? '56.25%' : '0'};
     position: relative;
     flex-grow: 1;
     border-radius: 5px;
-    border: 1px solid ${props => props.$isActive ? 'rgba(255, 0, 0, 1)' : '#242424'};
-    box-shadow: ${props => props.$isActive ? '0 0 10px rgba(255, 0, 0, 1)' : 'none'};
+    border-style: solid;
+    border: 1px solid ${props => props.$isActive ? props.theme.colors.primary : props.theme.colors.border};
+    box-shadow: ${props => props.$isActive ? '0 0 10px' + props.theme.colors.primary : 'none'};
 `
 
 const MapImage = styled.img`

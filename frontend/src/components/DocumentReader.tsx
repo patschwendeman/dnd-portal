@@ -17,7 +17,7 @@ const SidebarLeft = styled.div`
   bottom: 50px;
   width: 130px;
   height: 100%;
-  background-color: #161b23;
+  background-color: ${(props) => props.theme.colors.secondary};
   padding: 20px 15px 0 15px;
 `
 
@@ -36,40 +36,24 @@ const Background = styled.div`
   flex-direction: column;
   width: 100%;
   height: 100%;
-  background-color: #0e1117;
-  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-y: auto;
 `
 
 const Page = styled.div`
   width: 60%;
   padding: 30px 100px;
   margin: 10px 0;
-  border: 1px solid #3d444db3;
-
+  border: 1px solid ${(props) => props.theme.colors.border};
   h1 {
     padding-bottom: 0.3em;
-    border-bottom: 1px solid #3d444db3;
-    color: #f0f6fc;
+    border-bottom: 1px solid ${(props) => props.theme.colors.border};
   }
-  
-  h2 {
-    color: #f0f6fc;
-  }
-
-  h3 {
-    color: #f0f6fc;
-  }
-  
   p {
-    color: #f0f6fc;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
     font-size: 16px;
     line-height: 1.5;
     word-wrap: break-word;
   }
-
   ul {
-    color: #f0f6fc;
     padding-left: 2em;
     display: block;
     list-style-type: disc;
@@ -78,15 +62,9 @@ const Page = styled.div`
     padding-inline-start: 40px;
     line-height: 1.5;
   }
-
   li {
-    color: #f0f6fc;
     line-height: 1.5;
-  }
-
-  a {
-    color: #4493f8;
-  }
+  } 
 `
 
 const DocumentReader: FunctionComponent = (): ReactElement => {

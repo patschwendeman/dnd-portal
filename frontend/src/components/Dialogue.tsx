@@ -23,17 +23,17 @@ const LayoutContainer = styled.div<{$isVisible: boolean}>`
   bottom: 0;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.932);
+  background-color: ${(props) => props.theme.colors.overlay};
   z-index: 99999;
 `
 
 const DialogueContainer = styled.div`
   width: 600px;
-  height: 500px;
+  height: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: white;
+  background-color: ${(props) => props.theme.colors.secondary};
 `
 
 const ButtonContainer = styled.div`
@@ -43,18 +43,28 @@ const ButtonContainer = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+  cursor: pointer;
+  z-index: 999;
 `
 
 const ConfirmButton = styled.button`
   width: 200px;
   height: 50px;
-  background-color: white;
+  background-color: ${(props) => props.theme.colors.primary};
+  border: none;
+  border-radius: 5px;
+  color: ${(props) => props.theme.colors.text.color};
+  cursor: pointer;
+  z-index: 999;
 `
 
 const DeclineButton = styled.button`
   width: 200px;
   height: 50px;
-  background-color: white;
+  background-color: ${(props) => props.theme.colors.background};
+  border: none;
+  border-radius: 5px;
+  color: ${(props) => props.theme.colors.text.color};
 `
 
 const DialogueImage = styled.img`

@@ -13,7 +13,6 @@ import { Map, SceneDetail } from '../models/models'
 import { getAdminData, getSceneById, handleDialogue } from '../service/adminScreen'
 import { filterSceneByKey } from '../utils/utils'
 
-
 const Screen = styled.div`
     display: flex;
     width: 100%;
@@ -25,7 +24,12 @@ const Screen = styled.div`
     bottom: 0;
     align-items: center;
     justify-content: center;
-    font-family: "Poppins", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    background-color: ${(props) => props.theme.colors.background};
+    color: ${(props) => props.theme.colors.text.color};
+    a {
+        color: ${(props) => props.theme.colors.primary};
+    };
 `
 
 const SidebarRight = styled.div`
@@ -37,10 +41,9 @@ const SidebarRight = styled.div`
     right: 0;
     bottom: 50px;
     width: 400px;
-    background-color: #242424;
+    background-color: #0E1117;
+    border-left: 1px solid #3d444db3
 `
-
-
 
 const SidebarMapContainer = styled.div`
     width: 100%;
@@ -48,7 +51,7 @@ const SidebarMapContainer = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #4b4b4b;
+    background-color: #0E1117;
     padding: 20px 0;
 `
 
@@ -59,36 +62,52 @@ const BottomBar = styled.div`
     width: 100%;
     height: 50px;
     display: flex;
-    background-color: #242424;
+    background-color: ${(props) => props.theme.colors.dark};
     align-items: center;
     justify-content: center;
 `
 
-const AudioControlButton = styled.button`
+const AudioControlButton = styled.div<{$isMusicPlaying: boolean}>`
     position: absolute;
     left: 20px;
     padding: 10px 20px;
-    background-color: #4b4b4b;
-    color: white;
+    background-color: ${(props) => (props.$isMusicPlaying ? props.theme.colors.primary : props.theme.colors.secondary)};
+    color: ${(props) => props.theme.colors.text.color};
     border: none;
     border-radius: 5px;
     cursor: pointer;
     z-index: 99;
 `
 
-const AdminScreen: FunctionComponent = (): ReactElement => {
+const ThemeToggleButton = styled.button`
+    position: absolute;
+    right: 20px;
+    padding: 10px 20px;
+    background-color: ${(props) => props.theme.colors.secondary};
+    color: ${(props) => props.theme.colors.text.color};
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 99;
+`
+
+interface AdminScreenProps {
+    toggleTheme: () => void;
+}
+
+const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): ReactElement => {
     const { activeSceneId, setActiveSceneId } = useContext(ActiveSceneContext)
     const { setActiveMapId } = useContext(ActiveMapContext)
     const [scenesDetails, setScenesDetails] = useState<SceneDetail[]>([])
     const [activeScene, setActiveScene] = useState<SceneDetail>()
-    
+
     const [dialogueVisibility, setDialogueVisibility] = useState<boolean>(false)
     const [sceneOption, setSceneOption] = useState<SceneDetail | undefined>()
 
     const [battlemaps, setBattlemaps] = useState<Map[]>([])
     const [sidemaps, setSidemaps] = useState<Map[]>([])
     const [isMainMap, setIsMainMap] = useState<boolean>(false)
-    
+
     const [isMusicPlaying, setIsMusicPlaying] = useState<boolean>(false)
     const [activeMusicSRC, setActiveMusicSRC] = useState<string>(backgroundMusic)
     const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
@@ -100,7 +119,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     }
 
     const handleAudioControl = () => {
-        if (!audio){ 
+        if (!audio) { 
             return
         }
         if (!isMusicPlaying) {
@@ -177,7 +196,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
             scene = filterSceneByKey('id', mapId, scenesDetails)
         }
         if (!scene) {
-            throw new Error('No Scene to scelect not found')
+            throw new Error('No Scene to select not found')
         }
         setDialogueVisibility(true)
         setSceneOption(scene)
@@ -208,10 +227,13 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
                     </SidebarMapContainer>
                 </SidebarRight>
                 <BottomBar>
-                <AudioControlButton onClick={handleAudioControl}>
-                    Play
-                </AudioControlButton>
+                    <AudioControlButton $isMusicPlaying={ isMusicPlaying } onClick={handleAudioControl}>
+                        {isMusicPlaying ? 'Pause' : 'Play'}
+                    </AudioControlButton>
                     <SideMaps sidemaps={sidemaps} handleSceneSelection={handleSceneSelection} isActiveMainMap={ isMainMap }/>
+                    <ThemeToggleButton onClick={toggleTheme}>
+                        Theme
+                    </ThemeToggleButton>
                 </BottomBar>
                 <DocumentReader />
             </Screen>

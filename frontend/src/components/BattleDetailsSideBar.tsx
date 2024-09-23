@@ -15,8 +15,7 @@ const BattleDetails = styled.div<{$isFightScene: boolean}>`
     height: 85%;
     display: ${({ $isFightScene }) => ($isFightScene ? 'flex' : 'none')};
     margin: 30px 10px 30px;
-    background-color: #161b23;
-    color: #F0F6FC;
+    background-color: ${(props) => props.theme.colors.secondary};
     border-radius: 9px;
     padding: 20px;
     flex-direction: column;
@@ -36,7 +35,7 @@ const BattleDetailContent = styled.div`
     width: 100%;
     height: 28%;
     display: flex;
-    border-top: 1px solid #3d444db3;
+    border-top: 1px solid ${(props) => props.theme.colors.border};
 `
 
 const ContentContainer = styled.div`
