@@ -17,7 +17,6 @@ const SidebarLeft = styled.div`
   bottom: 50px;
   width: 130px;
   height: 100%;
-  background-color: ${(props) => props.theme.colors.secondary};
   padding: 20px 15px 0 15px;
 `
 

@@ -1,14 +1,13 @@
-// lightTheme.ts
 export const lightTheme = {
   colors: {
-    primary: '#0061F2',
-    secondary: '#F1F1F1',
-    dark: '#FFFFFF',
-    border: '#DDDDDD',
-    background: '#FFFFFF',
-    overlay: 'rgba(0, 0, 0, 0.1)',
+    primary: '#AD3131',
+    secondary: '#3D271C',
+    dark: 'black',
+    border: '#956F01',
+    background: '#140701',
+    overlay: 'rgba(0, 0, 0, 0.850)',
     text: {
-      color: '#333333',
+      color: '#CBAB96',
     },
   },
 }

@@ -6,7 +6,7 @@ const NavigationElement = styled.div<{$isElementActive: boolean}>`
   display: flex;
   width: 100%;
   height: 20px;
-  background-color:${( props ) => (props.$isElementActive ? props.theme.colors.primary : props.theme.colors.background)};
+  background-color:${( props ) => (props.$isElementActive ? props.theme.colors.primary : props.theme.colors.secondary)};
   border-radius: 5px;
   margin: 5px;
   align-items: center;
