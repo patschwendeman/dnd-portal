@@ -32,6 +32,10 @@ function App() {
   }, [activeMapId])
 
   useEffect(() => {
+    localStorage.setItem('isDarkTheme', JSON.stringify(isDarkTheme))
+  }, [isDarkTheme])
+
+  useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === 'activeSceneId') {
         const newActiveSceneId = event.newValue ? parseInt(event.newValue, 10) : 1
@@ -40,6 +44,10 @@ function App() {
       if (event.key === 'activeMapId') {
         const newActiveMapId = event.newValue ? parseInt(event.newValue, 10) : 0
         setActiveMapId(newActiveMapId)
+      }
+      if (event.key === 'isDarkTheme') {
+        const newTheme = event.newValue ? JSON.parse(event.newValue) : true
+        setIsDarkTheme(newTheme)
       }
     }
     window.addEventListener('storage', handleStorageChange)
@@ -59,7 +67,7 @@ function App() {
           <Router>      
             <div className='app'>
               <Routes>
-                <Route path='/' element={ <AdminScreen toggleTheme={toggleTheme} /> } />
+                <Route path='/' element={ <AdminScreen toggleTheme={toggleTheme} isDarkTheme={isDarkTheme} /> } />
                 <Route path='/wall' element={ <WallScreen /> } />
                 <Route path='/ground' element={ <GroundScreen /> } />
               </Routes>

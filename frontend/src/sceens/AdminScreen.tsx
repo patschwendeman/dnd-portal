@@ -41,8 +41,6 @@ const SidebarRight = styled.div`
     right: 0;
     bottom: 50px;
     width: 400px;
-    background-color: #0E1117;
-    border-left: 1px solid #3d444db3
 `
 
 const SidebarMapContainer = styled.div`
@@ -51,7 +49,6 @@ const SidebarMapContainer = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #0E1117;
     padding: 20px 0;
 `
 
@@ -93,9 +90,10 @@ const ThemeToggleButton = styled.button`
 
 interface AdminScreenProps {
     toggleTheme: () => void;
+    isDarkTheme: boolean;
 }
 
-const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): ReactElement => {
+const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme, isDarkTheme  }): ReactElement => {
     const { activeSceneId, setActiveSceneId } = useContext(ActiveSceneContext)
     const { setActiveMapId } = useContext(ActiveMapContext)
     const [scenesDetails, setScenesDetails] = useState<SceneDetail[]>([])
@@ -232,7 +230,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
                     </AudioControlButton>
                     <SideMaps sidemaps={sidemaps} handleSceneSelection={handleSceneSelection} isActiveMainMap={ isMainMap }/>
                     <ThemeToggleButton onClick={toggleTheme}>
-                        Theme
+                        {isDarkTheme ? 'Cyber' : 'Classic'}
                     </ThemeToggleButton>
                 </BottomBar>
                 <DocumentReader />
