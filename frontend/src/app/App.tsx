@@ -5,6 +5,7 @@ import { ThemeProvider } from 'styled-components'
 import { ActiveMapContext, ActiveSceneContext } from '../context/context'
 import { AdminScreen } from '../sceens/AdminScreen'
 import { GroundScreen } from '../sceens/GroundScreen'
+import { DnDScreen } from '../sceens/players/DnDScreen'
 import { WallScreen } from '../sceens/WallScreen'
 import { darkTheme } from '../style/darkTheme'
 import { lightTheme } from '../style/lightTheme'
@@ -67,9 +68,10 @@ function App() {
           <Router>      
             <div className='app'>
               <Routes>
-                <Route path='/' element={ <AdminScreen toggleTheme={toggleTheme} isDarkTheme={isDarkTheme} /> } />
+                <Route path='/' element={ <DnDScreen /> } />
                 <Route path='/wall' element={ <WallScreen /> } />
                 <Route path='/ground' element={ <GroundScreen /> } />
+                <Route path='/admin'  element={ <AdminScreen toggleTheme={toggleTheme} isDarkTheme={isDarkTheme} /> } />
               </Routes>
             </div>
           </Router>

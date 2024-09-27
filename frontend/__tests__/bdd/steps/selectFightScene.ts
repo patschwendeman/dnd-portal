@@ -32,7 +32,7 @@ defineFeature(feature, (test) => {
     const fightScene = `https://example.com/battle${randomFightSceneNumber}.png`
 
     given('I am on the admin screen', async () => {
-      await driver.get('http://localhost:5173')
+      await driver.get('http://localhost:5173/admin')
       await sleep(2000)
     })
 
@@ -75,7 +75,7 @@ defineFeature(feature, (test) => {
     const fightScene = `https://example.com/battle${randomFightSceneNumber}.png`
 
     given('I am on the admin screen', async () => {
-      await driver.get('http://localhost:5173')
+      await driver.get('http://localhost:5173/admin')
       await sleep(2000)
     })
 
@@ -119,7 +119,7 @@ defineFeature(feature, (test) => {
     const fightWallImage = 'https://example.com/Fight.png'
 
     given('I am on the admin screen', async () => {
-      await driver.get('http://localhost:5173')
+      await driver.get('http://localhost:5173/admin')
       await sleep(2000)
     })
 

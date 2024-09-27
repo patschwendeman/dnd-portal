@@ -37,7 +37,7 @@ defineFeature(feature, (test) => {
     const noneFightSceneImageSource = `https://example.com/${noneFightScene}.png`
 
     given('I am on the admin screen', async () => {
-      await driver.get('http://localhost:5173')
+      await driver.get('http://localhost:5173/admin')
       await sleep(2000)
     })
 

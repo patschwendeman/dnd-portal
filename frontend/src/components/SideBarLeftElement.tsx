@@ -18,10 +18,10 @@ const NavigationElement = styled.div<{$isElementActive: boolean}>`
 `
 
 interface SideBarLeftElementProps {
-    name: string
-    selectedStoryIndex: number
-    handleStorySelect(id: number): void
-    index: number
+  name: string
+  selectedStoryIndex: number
+  handleStorySelect(id: number): void
+  index: number
 }
 
 const SideBarLeftElement: FunctionComponent<SideBarLeftElementProps> = ({ name, selectedStoryIndex, handleStorySelect, index }): ReactElement => {
@@ -31,7 +31,6 @@ const SideBarLeftElement: FunctionComponent<SideBarLeftElementProps> = ({ name, 
           { name}
         </NavigationElement>
     )
-
 }
 
 export { SideBarLeftElement }
