@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     permissions:
       contents: read
       packages: write
@@ -41,11 +40,9 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/react-app:${{ github.sha }} .
-
-      - name: Push Docker image to GHCR
-        run: |
-          docker push ghcr.io/${{ github.repository_owner }}/react-app:${{ github.sha }}
+          docker buildx build --platform linux/arm64 \
+            -t ghcr.io/${{ github.repository_owner }}/react-app:${{ github.sha }} \
+            --push .
 
   test:
     runs-on: ubuntu-latest
