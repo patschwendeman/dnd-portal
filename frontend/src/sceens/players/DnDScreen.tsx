@@ -1,6 +1,9 @@
 import { FunctionComponent, ReactElement, useState } from 'react'
 import styled from 'styled-components'
 
+import turnImg from '/rotate.png'
+
+
 const Background = styled.div`
   display: flex;
     width: 100%;
@@ -12,9 +15,10 @@ const Background = styled.div`
     bottom: 0;
     align-items: center;
     justify-content: center;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
     background-color: ${(props) => props.theme.colors.background};
     color: ${(props) => props.theme.colors.text.color};
+    user-select: none;
     a {
         color: ${(props) => props.theme.colors.primary};
     }
@@ -62,11 +66,11 @@ const Text = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 14px;
   margin-bottom: 10px;
 
   @media (max-width: 739px) {
-    font-size: 16px !important;
+    font-size: 10px !important;
   }
 `
 
@@ -241,12 +245,12 @@ const DnDScreen: FunctionComponent = (): ReactElement => {
   return (
     <Background>
     <Overlay>
-      <img src="assets/icons/refresh.png" alt="refresh" />
+      <img src={turnImg} alt='refresh' />
     </Overlay>
     <SkillBar>
       <SkillBarSection>
         <Text>Aktion</Text>
-        <Skill $variant="action" onClick={() => ActionHandler(action, setAction)}>
+        <Skill $variant='action' onClick={() => ActionHandler(action, setAction)}>
           <IconSection>
             <ActionIcon $action={action} />
           </IconSection>
@@ -256,7 +260,7 @@ const DnDScreen: FunctionComponent = (): ReactElement => {
 
       <SkillBarSection>
         <Text>Bonusaktion</Text>
-        <Skill $variant="bonus" onClick={() => ActionHandler(bonusAction, setBonusAction)}>
+        <Skill $variant='bonus' onClick={() => ActionHandler(bonusAction, setBonusAction)}>
           <IconSection>
             <BonusIcon $bonusAction={bonusAction} />
           </IconSection>
@@ -266,7 +270,7 @@ const DnDScreen: FunctionComponent = (): ReactElement => {
 
       <SkillBarSection>
         <Text>Bewegung</Text>
-        <Skill $variant="movement">
+        <Skill $variant='movement'>
           <IconSection>
             <MovementIcon />
             <MovementIcon />
@@ -291,7 +295,7 @@ const DnDScreen: FunctionComponent = (): ReactElement => {
 
       <SkillBarSection>
         <Text>Spezial</Text>
-        <Skill $variant="special" onClick={() => SpellHandler(special, setSpecial, specialMax)}>
+        <Skill $variant='special' onClick={() => SpellHandler(special, setSpecial, specialMax)}>
           {[...Array(3)].map((_, i) => (
             <SpecialSlot key={i} $currentSlots={special} $id={i+1}  />
           ))}
