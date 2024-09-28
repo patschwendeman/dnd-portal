@@ -68,7 +68,7 @@ function App() {
           <Router>      
             <div className='app'>
               <Routes>
-                <Route path='/' element={ <DnDScreen /> } />
+                <Route path='/' element={ <DnDScreen toggleTheme={toggleTheme} /> } />
                 <Route path='/wall' element={ <WallScreen /> } />
                 <Route path='/ground' element={ <GroundScreen /> } />
                 <Route path='/admin'  element={ <AdminScreen toggleTheme={toggleTheme} isDarkTheme={isDarkTheme} /> } />

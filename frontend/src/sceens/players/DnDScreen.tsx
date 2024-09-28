@@ -1,7 +1,9 @@
 import { FunctionComponent, ReactElement, useState } from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
+import { ReactSVG } from 'react-svg'
 
 import turnImg from '/rotate.png'
+import settingsIcon from '/settings.svg'
 
 
 const Background = styled.div`
@@ -19,9 +21,6 @@ const Background = styled.div`
     background-color: ${(props) => props.theme.colors.background};
     color: ${(props) => props.theme.colors.text.color};
     user-select: none;
-    a {
-        color: ${(props) => props.theme.colors.primary};
-    }
 `
 
 const Overlay = styled.div`
@@ -66,7 +65,7 @@ const Text = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 15px;
   margin-bottom: 10px;
 
   @media (max-width: 739px) {
@@ -197,7 +196,39 @@ const FlexRow = styled.div`
   justify-content: space-around;
 `
 
-const DnDScreen: FunctionComponent = (): ReactElement => {
+const ThemeToggleButton = styled.button`
+    position: fixed;
+    left: 12px;
+    top: 12px;
+    display: flex;
+    padding: 6px;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    background-color: ${(props) => props.theme.colors.secondary};
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    div {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100%;
+    height: 100%;
+    }
+    svg {
+      width: 100%;
+      height: 100%; 
+    }
+`
+
+interface DnDScreenProps {
+  toggleTheme: () => void;
+}
+
+const DnDScreen: FunctionComponent<DnDScreenProps> = ({ toggleTheme }): ReactElement => {
+  const theme = useTheme()
 
   const SpellMax: Record<number, number> = {
     1: 4,
@@ -245,8 +276,16 @@ const DnDScreen: FunctionComponent = (): ReactElement => {
   return (
     <Background>
     <Overlay>
-      <img src={turnImg} alt='refresh' />
+      <img src={turnImg} alt='turn around' />
     </Overlay>
+    <ThemeToggleButton onClick={toggleTheme}>
+        <ReactSVG
+        src={settingsIcon}
+        beforeInjection={(svg) => {
+          svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
+        }}
+      />
+    </ThemeToggleButton>
     <SkillBar>
       <SkillBarSection>
         <Text>Aktion</Text>
