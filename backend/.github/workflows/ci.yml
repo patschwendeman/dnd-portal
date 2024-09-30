@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-  
+
     permissions:
         contents: read
         packages: write
@@ -34,15 +34,11 @@ jobs:
         id: build_image
         run: |
           docker buildx build \
+            --platform linux/amd64,linux/arm64 \
             --file Dockerfile \
             --tag ghcr.io/${{ github.repository_owner }}/python-app:${{ github.sha }} \
             --tag ghcr.io/${{ github.repository_owner }}/python-app:latest \
-            --load .
-
-      - name: Push Docker image to GHCR
-        run: |
-          docker push ghcr.io/${{ github.repository_owner }}/python-app:${{ github.sha }}
-          docker push ghcr.io/${{ github.repository_owner }}/python-app:latest
+            --push .
 
   test:
     runs-on: ubuntu-latest
@@ -62,7 +58,7 @@ jobs:
       - name: Run tests in Docker container
         run: |
           docker run --rm ghcr.io/${{ github.repository_owner }}/python-app:${{ github.sha }} python -m unittest discover -s __tests__ -p "*.py"
-  
+          
   lint:
     runs-on: ubuntu-latest
     needs: build

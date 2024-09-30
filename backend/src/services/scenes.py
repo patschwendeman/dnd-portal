@@ -1,7 +1,7 @@
 from typing import List
 from sqlalchemy.orm import Session
-from db.crud import read_by_id, read_all, read_join_all
-from db.models import Scene
+from src.db.crud import read_by_id, read_all, read_join_all
+from src.db.models import Scene
 
 
 class SceneService:

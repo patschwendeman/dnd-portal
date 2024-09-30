@@ -3,9 +3,9 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from db.schema import BattleMapUpdate
-from db.database import get_db
-from services.maps import MapsService
+from src.db.schema import BattleMapUpdate
+from src.db.database import get_db
+from src.services.maps import MapsService
 
 
 maps_router = APIRouter()

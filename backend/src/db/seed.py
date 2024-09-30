@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from db.models import Scene, GraphicsWall, GraphicsGround, BattleMap, Music
+from src.db.models import Scene, GraphicsWall, GraphicsGround, BattleMap, Music
 
 # pylint: disable=too-few-public-methods
 

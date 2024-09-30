@@ -1,9 +1,9 @@
 import json
 from typing import Optional
 from sqlalchemy.orm import Session
-from db.models import BattleMap
-from services.battlemaps import BattlemapService
-from services.sidemaps import SidemapsService
+from src.db.models import BattleMap
+from src.services.battlemaps import BattlemapService
+from src.services.sidemaps import SidemapsService
 
 
 class MapsService:

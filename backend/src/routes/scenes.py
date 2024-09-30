@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from services.scenes import SceneService
-from db.database import get_db
+from src.services.scenes import SceneService
+from src.db.database import get_db
 
 
 scenes_router = APIRouter()

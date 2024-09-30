@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from db.database import engine, get_db
-from db.models import Base
-from db.seed import seed_data
-from routes.scenes import scenes_router
-from routes.maps import maps_router
+from src.db.database import engine, get_db
+from src.db.models import Base
+from src.db.seed import seed_data
+from src.routes.scenes import scenes_router
+from src.routes.maps import maps_router
 
 
 app = FastAPI()

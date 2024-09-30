@@ -3,7 +3,7 @@ from typing import List, Type, TypeVar, Optional, Dict, Any
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.orm.query import Query
 from sqlalchemy import asc
-from db.models import Scene
+from src.db.models import Scene
 
 T = TypeVar('T')
 

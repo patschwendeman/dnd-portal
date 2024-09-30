@@ -1,7 +1,7 @@
 import json
 from sqlalchemy.orm import Session
-from db.crud import read_all
-from db.models import Scene
+from src.db.crud import read_all
+from src.db.models import Scene
 
 
 class SidemapsService:
