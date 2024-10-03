@@ -30,11 +30,11 @@ defineFeature(feature, (test) => {
     then,
     and,
   }) => {
-    const noneFightScenes = ['Forest', 'Shop', 'Tavern']
+    const noneFightScenes = ['forest', 'shop', 'tavern']
     const randomNoneFightSceneNumber = getRandomNumber(0, 2)
     const noneFightScene = noneFightScenes[randomNoneFightSceneNumber]
 
-    const noneFightSceneImageSource = `https://example.com/${noneFightScene}.png`
+    const noneFightSceneImageSource = `/assets/wall_screen/${noneFightScene}.jpg`
 
     given('I am on the admin screen', async () => {
       await driver.get('http://localhost:5173/admin')
@@ -64,7 +64,7 @@ defineFeature(feature, (test) => {
     then('I see the correct wall image', async () => {
       const image = await driver.findElement(By.css('[data-test-id="wallImg"]'))
       const imageSrc = await image.getAttribute('src')
-      expect(imageSrc).toBe(noneFightSceneImageSource)
+      expect(imageSrc).toBe(`http://localhost:5173${noneFightSceneImageSource}`)
     })
   })
 })

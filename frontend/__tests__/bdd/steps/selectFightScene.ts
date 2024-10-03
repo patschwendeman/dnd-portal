@@ -116,7 +116,7 @@ defineFeature(feature, (test) => {
   }) => {
     const randomFightSceneNumber = getRandomNumber(1, 16)
     const fightScene = `https://example.com/battle${randomFightSceneNumber}.png`
-    const fightWallImage = 'https://example.com/Fight.png'
+    const fightWallImage = 'http://localhost:5173/assets/wall_screen/fight.jpg'
 
     given('I am on the admin screen', async () => {
       await driver.get('http://localhost:5173/admin')
