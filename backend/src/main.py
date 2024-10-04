@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from src.db.database import engine, get_db
 from src.db.models import Base
-from src.db.seed import seed_data
+from src.db.seed import run_seeder
 from src.routes.scenes import scenes_router
 from src.routes.maps import maps_router
 
@@ -25,4 +25,4 @@ app.include_router(maps_router)
 
 
 db: Session = next(get_db())
-seed_data(db)
+run_seeder(db)
