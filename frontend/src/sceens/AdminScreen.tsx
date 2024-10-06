@@ -1,8 +1,8 @@
 import { useContext, FunctionComponent, ReactElement, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import backgroundMusic from '../../public/journey.mp3'
-/* import voice from '../../public/voice_1.mp3' */
+import defaultMusic2 from '../../public//assets/music/side_maps/forest/Aincient_Stones.mp3'
+import defaultMusic from '../../public//assets/music/side_maps/forest/From_Past_To_Present.mp3'
 import { BattleDetailsSideBar } from '../components/BattleDetailsSideBar'
 import { Dialogue } from '../components/Dialogue'
 import { DocumentReader } from '../components/DocumentReader'
@@ -107,13 +107,35 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme, isDarkT
     const [isMainMap, setIsMainMap] = useState<boolean>(false)
 
     const [isMusicPlaying, setIsMusicPlaying] = useState<boolean>(false)
-    const [activeMusicSRC, setActiveMusicSRC] = useState<string>(backgroundMusic)
+    const [activeMusicSRC, setActiveMusicSRC] = useState<string>(defaultMusic)
+    const [musicPlaylist,] = useState<string[]>([defaultMusic, defaultMusic2])
+    const [lastTrack, setLastTrack] = useState<string>('')
+
     const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
 
     const handleAdminData = (sidemaps: Map[], battlemaps: Map[], scenesDetails: SceneDetail[]) => {
         setBattlemaps(battlemaps)
         setSidemaps(sidemaps)
         setScenesDetails(scenesDetails)
+        const initialTrack = getRandomTrack()
+        setActiveMusicSRC(initialTrack)
+    }
+
+    const getRandomTrack = () => {
+        if (musicPlaylist.length <= 1) {
+            return musicPlaylist[0]
+        }
+    
+        let randomIndex = 0
+    
+        do {
+            randomIndex = Math.floor(Math.random() * musicPlaylist.length)
+        } while (musicPlaylist[randomIndex] === lastTrack)
+    
+        const selectedTrack = musicPlaylist[randomIndex]
+        setLastTrack(selectedTrack)
+    
+        return selectedTrack
     }
 
     const handleAudioControl = () => {
@@ -136,8 +158,14 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme, isDarkT
             audio.currentTime = 0
         }
     
-        const newAudio = new Audio(activeMusicSRC)
-        newAudio.loop = true
+        const randomTrack = getRandomTrack()
+        const newAudio = new Audio(randomTrack)
+        newAudio.loop = false
+
+        newAudio.onended = () => {
+            const nextTrack = getRandomTrack()
+            setActiveMusicSRC(nextTrack)
+        }
         setAudio(newAudio)
     
         if (isMusicPlaying) {
@@ -149,14 +177,12 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme, isDarkT
     const handleActiveScene = (activeScene: SceneDetail) => {
         setActiveScene(activeScene)
         setIsMainMap(activeScene.fight)
-        setActiveMusicSRC(activeScene.music.source)
-        /* setActiveMusicSRC(voice) */
+        setActiveMusicSRC(activeScene.music.source[0])
         if (activeScene.fight === true && activeScene.battlemaps_id) {
             setActiveMapId(activeScene.battlemaps_id)
         } else {
             setActiveMapId(activeScene.id)
         }   
-        handleAudio()
     }
 
     const fetchAdminData = async () => {
@@ -184,6 +210,12 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme, isDarkT
     useEffect(() => { 
         fetchActiveScene()
     }, [activeSceneId])
+
+    useEffect(() => {
+        if (activeMusicSRC) {
+            handleAudio()
+        }
+    }, [activeMusicSRC])
 
     const handleSceneSelection = (mapId: number, isMainMap: boolean) => {
         let scene
