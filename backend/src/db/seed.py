@@ -6,7 +6,7 @@ from src.db.models import Scene, GraphicsWall, GraphicsGround, BattleMap, Music
 SEED_DATA_PATH = os.path.join(os.path.dirname(__file__), 'data', 'seed_data.json')
 
 def load_seed_data(file_path):
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', encoding='utf-8') as file:
         return json.load(file)
 
 def bulk_insert(db: Session, model, data):
