@@ -38,5 +38,5 @@ export interface SceneDetail {
   battlemaps: Battlemap | null
   graphics_ground: Screen
   graphics_wall: Screen
-  music: Music
+  music: Music[]
 }

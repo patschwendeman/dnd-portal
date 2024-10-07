@@ -9,7 +9,7 @@ import { DocumentReader } from '../components/DocumentReader'
 import { MapOverview } from '../components/MapOverview'
 import { SideMaps } from '../components/SideMaps'
 import { ActiveMapContext, ActiveSceneContext } from '../context/context'
-import { Map, SceneDetail } from '../models/models'
+import { Map, Music, SceneDetail } from '../models/models'
 import { getAdminData, getSceneById, handleDialogue } from '../service/adminScreen'
 import { filterSceneByKey } from '../utils/utils'
 
@@ -108,7 +108,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme, isDarkT
 
     const [isMusicPlaying, setIsMusicPlaying] = useState<boolean>(false)
     const [activeMusicSRC, setActiveMusicSRC] = useState<string>(defaultMusic)
-    const [musicPlaylist,] = useState<string[]>([defaultMusic, defaultMusic2])
+    const [musicPlaylist, setMusicPlaylist] = useState<string[]>([defaultMusic, defaultMusic2])
     const [lastTrack, setLastTrack] = useState<string>('')
 
     const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
@@ -160,7 +160,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme, isDarkT
     
         const randomTrack = getRandomTrack()
         const newAudio = new Audio(randomTrack)
-        newAudio.loop = false
+        newAudio.loop = false	
 
         newAudio.onended = () => {
             const nextTrack = getRandomTrack()
@@ -170,14 +170,26 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme, isDarkT
     
         if (isMusicPlaying) {
             newAudio.play()
-                .catch((err) => { throw new Error(`Failed to play new music: ${err}`) })
+                .catch((err) => { 
+                    throw new Error(`Failed to play new music: ${err}`) 
+                })
         }
     }
 
+    const extractMusicSources = (musicObject: Music[]) => {
+        if (!Array.isArray(musicObject)) {
+            throw new Error('Input must be an array')
+        }
+        return musicObject.map(item => item.source)
+    }
+
     const handleActiveScene = (activeScene: SceneDetail) => {
+        const currentPlayList = extractMusicSources(activeScene.music)
         setActiveScene(activeScene)
         setIsMainMap(activeScene.fight)
-        setActiveMusicSRC(activeScene.music.source[0])
+        const randomTrack = getRandomTrack()
+        setActiveMusicSRC(randomTrack)
+        setMusicPlaylist(currentPlayList)
         if (activeScene.fight === true && activeScene.battlemaps_id) {
             setActiveMapId(activeScene.battlemaps_id)
         } else {
