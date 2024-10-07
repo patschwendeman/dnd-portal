@@ -1,8 +1,14 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from src.db.database import Base
 
 # pylint: disable=too-few-public-methods
+
+scene_music_association = Table(
+    'scene_music_association', Base.metadata,
+    Column('scene_id', Integer, ForeignKey('scene.id')),
+    Column('music_id', Integer, ForeignKey('music.id'))
+)
 
 class GraphicsWall(Base):
     __tablename__ = 'graphics_wall'
@@ -23,7 +29,7 @@ class Music(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     source = Column(String)
-    scene = relationship('Scene', back_populates='music', uselist=False)
+    scenes = relationship('Scene', secondary=scene_music_association, back_populates='music')
 
 class BattleMap(Base):
     __tablename__ = 'battlemaps'
@@ -50,4 +56,4 @@ class Scene(Base):
     battlemaps_id = Column(Integer, ForeignKey('battlemaps.id'), unique=True)
     battlemaps = relationship("BattleMap", back_populates="scene", uselist=False)
     music_id = Column(Integer, ForeignKey('music.id'))
-    music = relationship("Music", back_populates="scene", uselist=False)
+    music = relationship('Music', secondary=scene_music_association, back_populates='scenes')

@@ -28,7 +28,12 @@ def seed_data(db: Session, data):
         bulk_insert(db, Music, data["music"])
 
     if not db.query(Scene).first():
-        bulk_insert(db, Scene, data["scenes"])
+        for scene_data in data["scenes"]:
+            music_ids = scene_data.pop("music_id", [])
+            scene = Scene(**scene_data)
+            scene.music = db.query(Music).filter(Music.id.in_(music_ids)).all()
+            db.add(scene)
+        db.commit()
 
 def run_seeder(db: Session):
     seed_data_from_json = load_seed_data(SEED_DATA_PATH)
