@@ -5,6 +5,7 @@ import { MapOverview } from '../components/MapOverview'
 import { ActiveSceneContext } from '../context/context'
 import { Map, SceneDetail } from '../models/models'
 import { getWallScreenData } from '../service/WallScreen'
+import MapEnvironmentSrc from './../../public/assets/images/ground_screen/mapOverview.jpg'
 
 const MapControl = styled.div`
     display: flex;
@@ -21,6 +22,12 @@ const MapControl = styled.div`
     justify-content: center;
     z-index: 99999 !important;
     background-color: ${(props) => props.theme.colors.dark};
+`
+
+const MapEnvironment = styled.img`
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 `
 
 const Screen = styled.div`
@@ -135,7 +142,7 @@ const WallScreen: FunctionComponent = (): ReactElement => {
                 <MapOverview battlemaps={battlemaps} gap='10px' isActiveMainMap={ isActiveMainMap } isAdminScreen={ false }/>
             </MapContainer>
             <MapContainer $isVisible={worldMapVisiblity}> 
-                <p>Hey</p>
+            <MapEnvironment src={MapEnvironmentSrc} ></MapEnvironment>
             </MapContainer>
             <MapControl>
                 <Button onClick={() => handleMapsVisibility(1)} $isActive={activeButton === 1}>Battle</Button> 
