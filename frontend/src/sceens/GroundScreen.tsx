@@ -28,6 +28,7 @@ const Screen = styled.div`
 
 const BackgroundImage = styled.img`
     width: 100%;
+    height: 100%;
     z-index: 1;
     position: fixed;
 `
