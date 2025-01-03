@@ -15,6 +15,7 @@ const NavigationElement = styled.div<{$isElementActive: boolean}>`
   color: white;
   cursor: pointer;
   padding: 5px;
+  color: ${(props) => props.theme.colors.text.color};
 `
 
 interface SideBarLeftElementProps {
