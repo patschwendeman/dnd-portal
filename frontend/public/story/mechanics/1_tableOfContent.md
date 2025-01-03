@@ -3,6 +3,7 @@
 1. [Angriffswurf](#angriffswurf)
 2. [Initiative](#initiative)
 3. [Gelegenheitsangriff](#gelegenheitsangriff)
-4. [Rettungswurf](#rettungswurf)
-5. [Verstecken](#verstecken)
+3. [Rasten](#rasten)
+5. [Rettungswurf](#rettungswurf)
+6. [Verstecken](#verstecken)
 

@@ -1,5 +1,8 @@
 
 # Inhaltsverzeichnis
+
+* Zum Levelaufstieg ist eine Rast notwendig
+
 1. [Level 1](#level_1)
 2. [Level 2:      300xp](#level_2)
 3. [Level 3:      900xp](#level_3)
