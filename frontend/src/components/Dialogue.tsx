@@ -29,11 +29,11 @@ const LayoutContainer = styled.div<{$isVisible: boolean}>`
 
 const DialogueContainer = styled.div`
   width: 600px;
-  height: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: ${(props) => props.theme.colors.secondary};
+  color: ${(props) => props.theme.colors.text.color};
 `
 
 const ButtonContainer = styled.div`
@@ -45,6 +45,7 @@ const ButtonContainer = styled.div`
   justify-content: space-between;
   cursor: pointer;
   z-index: 999;
+  margin-bottom: 30px;
 `
 
 const ConfirmButton = styled.button`
@@ -90,7 +91,7 @@ const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogu
   return (
     <LayoutContainer $isVisible={isVisible}>
       <DialogueContainer>
-        <DialogueImage src={sceneOption?.battlemaps?.source} alt={sceneOption?.name || 'Scene Image'} />
+        <DialogueImage src={sceneOption?.battlemaps?.source || sceneOption?.graphics_wall?.source} alt={sceneOption?.name || 'Scene Image'} />
         <p>{sceneOption?.name}</p>
         <ButtonContainer>
           <ConfirmButton data-test-id='confirm-button' onClick={handleConfirm}>Confirm</ConfirmButton>
