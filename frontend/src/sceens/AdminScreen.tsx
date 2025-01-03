@@ -265,6 +265,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme, isDarkT
                             gap='3px'
                             handleSceneSelection={handleSceneSelection}
                             isActiveMainMap={ isMainMap }
+                            isAdminScreen={ true }
                         />
                     </SidebarMapContainer>
                 </SidebarRight>

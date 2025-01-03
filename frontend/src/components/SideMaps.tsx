@@ -51,7 +51,9 @@ const SideMaps: FunctionComponent<SideMapsProps> = ({ sidemaps , handleSceneSele
                             key={ maps[mapIndex].id }
                             keyProp={ maps[mapIndex].id }
                             isMainMap={ false }
-                            isActiveMainMap={ isActiveMainMap }>    
+                            isActiveMainMap={ isActiveMainMap }
+                            isAdminScreen={ true } 
+                            >  
                         </MapElement>
                     )
                 }

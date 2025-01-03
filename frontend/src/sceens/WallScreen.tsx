@@ -132,7 +132,7 @@ const WallScreen: FunctionComponent = (): ReactElement => {
         <Screen>
             <BackgroundImage data-test-id='wallImg' src={activeScene?.graphics_wall.source} alt='' /> 
             <MapContainer $isVisible={mainMapsVisiblity}> 
-                <MapOverview battlemaps={battlemaps} gap='10px' isActiveMainMap={ isActiveMainMap }/>
+                <MapOverview battlemaps={battlemaps} gap='10px' isActiveMainMap={ isActiveMainMap } isAdminScreen={ false }/>
             </MapContainer>
             <MapContainer $isVisible={worldMapVisiblity}> 
                 <p>Hey</p>

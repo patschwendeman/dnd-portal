@@ -27,9 +27,10 @@ interface MapOverviewProps {
     battlemaps: Map[] | undefined
     handleSceneSelection?(id: number, isMainMap: boolean): void
     isActiveMainMap: boolean
+    isAdminScreen: boolean
 }
 
-const MapOverview: FunctionComponent<MapOverviewProps> = ({ battlemaps, gap, handleSceneSelection, isActiveMainMap }): ReactElement => {
+const MapOverview: FunctionComponent<MapOverviewProps> = ({ battlemaps, gap, handleSceneSelection, isActiveMainMap, isAdminScreen }): ReactElement => {
 
     const { activeMapId } = useContext(ActiveMapContext)
     let maps: Map[]
@@ -61,6 +62,7 @@ const MapOverview: FunctionComponent<MapOverviewProps> = ({ battlemaps, gap, han
                                     keyProp={ maps[itemIndex].id }
                                     isMainMap={ true }
                                     isActiveMainMap={ isActiveMainMap }
+                                    isAdminScreen={ isAdminScreen }
                                     >    
                                 </MapElement>
                             )
