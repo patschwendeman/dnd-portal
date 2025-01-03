@@ -204,6 +204,7 @@ const ResourceBarPlayer: FunctionComponent = (): ReactElement => {
         2: 3,
         3: 3,
         4: 2,
+        5: 1,
       }
       const specialMax = 3
     
@@ -214,6 +215,7 @@ const ResourceBarPlayer: FunctionComponent = (): ReactElement => {
       const [spell2, setSpell2] = useState<number>(SpellMax[2])
       const [spell3, setSpell3] = useState<number>(SpellMax[3])
       const [spell4, setSpell4] = useState<number>(SpellMax[4])
+      const [spell5, setSpell5] = useState<number>(SpellMax[5])
     
       const [special, setSpecial] = useState<number>(1)
     
@@ -239,7 +241,8 @@ const ResourceBarPlayer: FunctionComponent = (): ReactElement => {
         { spell: spell1, setSpell: setSpell1, tier: 1, name: 'I', max: 4 },
         { spell: spell2, setSpell: setSpell2, tier: 2, name: 'II', max: 4 },
         { spell: spell3, setSpell: setSpell3, tier: 3, name: 'III', max: 3 },
-        { spell: spell4, setSpell: setSpell4, tier: 4, name: 'IV', max: 4 },
+        { spell: spell4, setSpell: setSpell4, tier: 4, name: 'IV', max: 2 },
+        { spell: spell5, setSpell: setSpell5, tier: 5, name: 'V', max: 1 },
       ]
 
     return(
