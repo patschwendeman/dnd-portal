@@ -34,7 +34,7 @@ defineFeature(feature, (test) => {
     const randomNoneFightSceneNumber = getRandomNumber(0, 2)
     const noneFightScene = noneFightScenes[randomNoneFightSceneNumber]
 
-    const noneFightSceneImageSource = `/assets/wall_screen/${noneFightScene}.jpg`
+    const noneFightSceneImageSource = `/assets/images/wall_screen/${noneFightScene}.jpg`
 
     given('I am on the admin screen', async () => {
       await driver.get('http://localhost:5173/admin')

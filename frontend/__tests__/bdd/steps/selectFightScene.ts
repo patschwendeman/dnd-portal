@@ -28,8 +28,8 @@ defineFeature(feature, (test) => {
     then,
     and,
   }) => {
-    const randomFightSceneNumber = getRandomNumber(1, 16)
-    const fightScene = `https://example.com/battle${randomFightSceneNumber}.png`
+    const randomFightSceneNumber = getRandomNumber(1, 25)
+    const fightScene = `/assets/images/maps/battle_${randomFightSceneNumber}.jpg`
 
     given('I am on the admin screen', async () => {
       await driver.get('http://localhost:5173/admin')
@@ -61,7 +61,7 @@ defineFeature(feature, (test) => {
         By.css('[data-test-id="groundImg"]')
       )
       const imageSrc = await image.getAttribute('src')
-      expect(imageSrc).toBe(fightScene)
+      expect(imageSrc).toBe(`http://localhost:5173${fightScene}`)
     })
   })
 
@@ -71,8 +71,8 @@ defineFeature(feature, (test) => {
     then,
     and,
   }) => {
-    const randomFightSceneNumber = getRandomNumber(1, 16)
-    const fightScene = `https://example.com/battle${randomFightSceneNumber}.png`
+    const randomFightSceneNumber = getRandomNumber(1, 25)
+    const fightScene = `/assets/images/maps/battle_${randomFightSceneNumber}.jpg`
 
     given('I am on the admin screen', async () => {
       await driver.get('http://localhost:5173/admin')
@@ -115,8 +115,9 @@ defineFeature(feature, (test) => {
     and,
   }) => {
     const randomFightSceneNumber = getRandomNumber(1, 16)
-    const fightScene = `https://example.com/battle${randomFightSceneNumber}.png`
-    const fightWallImage = 'http://localhost:5173/assets/wall_screen/fight.jpg'
+    const fightScene = `/assets/images/maps/battle_${randomFightSceneNumber}.jpg`
+    const fightWallImage =
+      'http://localhost:5173/assets/images/wall_screen/fight.jpg'
 
     given('I am on the admin screen', async () => {
       await driver.get('http://localhost:5173/admin')
