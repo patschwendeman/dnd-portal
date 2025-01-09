@@ -14,8 +14,8 @@ const SidebarLeft = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  top: 0;
   left: 0;
+  margin-top: 100px;
   bottom: 50px;
   width: 130px;
   height: 100%;
@@ -40,7 +40,10 @@ const StoryReaderContainer = styled.div`
 
 const Background = styled.div`
   display: flex;
-  padding-bottom: 50px;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  margin-top: 50px;
+  margin-bottom: 50px;
   align-items: center;
   flex-direction: column;
   width: 100%;

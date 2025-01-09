@@ -14,7 +14,7 @@ const BattleDetails = styled.div<{$isFightScene: boolean}>`
     width: 100%;
     height: 85%;
     display: ${({ $isFightScene }) => ($isFightScene ? 'flex' : 'none')};
-    margin: 30px 10px 30px;
+    margin: 17px 10px 10px;
     background-color: ${(props) => props.theme.colors.secondary};
     border-radius: 9px;
     padding: 20px;
