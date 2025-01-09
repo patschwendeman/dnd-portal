@@ -28,6 +28,14 @@ const StoryReaderContainer = styled.div`
   padding-right: 400px;
   width: 100%;
   height: 100%;
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  &:hover {
+    ::-webkit-scrollbar-thumb {
+      background: ${(props) => props.theme.colors.border}; 
+    }
+  }
 `
 
 const Background = styled.div`
