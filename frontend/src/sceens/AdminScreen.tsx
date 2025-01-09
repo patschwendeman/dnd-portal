@@ -1,7 +1,6 @@
 import { useContext, FunctionComponent, ReactElement, useEffect, useState } from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
-import defaultMusic2 from '../../public//assets/music/side_maps/forest/Aincient_Stones.mp3'
 import defaultMusic from '../../public//assets/music/side_maps/forest/From_Past_To_Present.mp3'
 import { BattleDetailsSideBar } from '../components/BattleDetailsSideBar'
 import { Dialogue } from '../components/Dialogue'
@@ -11,7 +10,12 @@ import { SideMaps } from '../components/SideMaps'
 import { ActiveMapContext, ActiveSceneContext } from '../context/context'
 import { Map, Music, SceneDetail } from '../models/models'
 import { getAdminData, getSceneById, handleDialogue } from '../service/adminScreen'
-import { filterSceneByKey } from '../utils/utils'
+import { filterSceneByKey, handleAudio, handleAudioControl, getRandomTrack } from '../utils/utils'
+
+import { ReactSVG } from 'react-svg'
+
+import playIcon from '/assets/icons/play.svg'
+import pauseIcon from '/assets/icons/pause.svg'
 
 const Screen = styled.div`
     display: flex;
@@ -37,7 +41,7 @@ const SidebarRight = styled.div`
     display: flex;
     flex-direction: column;
     align-items: end;
-    top: 0;
+    top: 50px;
     right: 0;
     bottom: 50px;
     width: 400px;
@@ -65,35 +69,31 @@ const BottomBar = styled.div`
 `
 
 const AudioControlButton = styled.div<{$isMusicPlaying: boolean}>`
+    display: flex;
+    justify-content: center;
+    align-items: center;
     position: absolute;
     left: 20px;
-    padding: 10px 20px;
+    padding: 7px 25px;
     background-color: ${(props) => (props.$isMusicPlaying ? props.theme.colors.primary : props.theme.colors.secondary)};
     color: ${(props) => props.theme.colors.text.color};
     border: none;
     border-radius: 5px;
     cursor: pointer;
     z-index: 99;
-`
-
-const ThemeToggleButton = styled.button`
-    position: absolute;
-    right: 20px;
-    padding: 10px 20px;
-    background-color: ${(props) => props.theme.colors.secondary};
-    color: ${(props) => props.theme.colors.text.color};
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    z-index: 99;
+    svg {
+      width: 15px;
+      height: 15px; 
+    }
 `
 
 interface AdminScreenProps {
     toggleTheme: () => void;
-    isDarkTheme: boolean;
 }
 
-const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme, isDarkTheme  }): ReactElement => {
+const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): ReactElement => {
+    const theme = useTheme()
+
     const { activeSceneId, setActiveSceneId } = useContext(ActiveSceneContext)
     const { setActiveMapId } = useContext(ActiveMapContext)
     const [scenesDetails, setScenesDetails] = useState<SceneDetail[]>([])
@@ -108,7 +108,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme, isDarkT
 
     const [isMusicPlaying, setIsMusicPlaying] = useState<boolean>(false)
     const [activeMusicSRC, setActiveMusicSRC] = useState<string>(defaultMusic)
-    const [musicPlaylist, setMusicPlaylist] = useState<string[]>([defaultMusic, defaultMusic2])
+    const [musicPlaylist, setMusicPlaylist] = useState<string[]>([defaultMusic])
     const [lastTrack, setLastTrack] = useState<string>('')
 
     const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
@@ -117,63 +117,8 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme, isDarkT
         setBattlemaps(battlemaps)
         setSidemaps(sidemaps)
         setScenesDetails(scenesDetails)
-        const initialTrack = getRandomTrack()
+        const initialTrack = getRandomTrack(musicPlaylist, lastTrack)
         setActiveMusicSRC(initialTrack)
-    }
-
-    const getRandomTrack = () => {
-        if (musicPlaylist.length <= 1) {
-            return musicPlaylist[0]
-        }
-    
-        let randomIndex = 0
-    
-        do {
-            randomIndex = Math.floor(Math.random() * musicPlaylist.length)
-        } while (musicPlaylist[randomIndex] === lastTrack)
-    
-        const selectedTrack = musicPlaylist[randomIndex]
-        setLastTrack(selectedTrack)
-    
-        return selectedTrack
-    }
-
-    const handleAudioControl = () => {
-        if (!audio) { 
-            return
-        }
-        if (!isMusicPlaying) {
-            audio.play()
-                .then(() => setIsMusicPlaying(true))
-                .catch((err) => { throw new Error(`Failed to play new music: ${err}`) })
-        } else {
-            audio.pause()
-            setIsMusicPlaying(false)
-        }
-    }
-
-    const handleAudio = () => {
-        if (audio) {
-            audio.pause()
-            audio.currentTime = 0
-        }
-    
-        const randomTrack = getRandomTrack()
-        const newAudio = new Audio(randomTrack)
-        newAudio.loop = false	
-
-        newAudio.onended = () => {
-            const nextTrack = getRandomTrack()
-            setActiveMusicSRC(nextTrack)
-        }
-        setAudio(newAudio)
-    
-        if (isMusicPlaying) {
-            newAudio.play()
-                .catch((err) => { 
-                    throw new Error(`Failed to play new music: ${err}`) 
-                })
-        }
     }
 
     const extractMusicSources = (musicObject: Music[]) => {
@@ -187,7 +132,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme, isDarkT
         const currentPlayList = extractMusicSources(activeScene.music)
         setActiveScene(activeScene)
         setIsMainMap(activeScene.fight)
-        const randomTrack = getRandomTrack()
+        const randomTrack = getRandomTrack(musicPlaylist, lastTrack)
         setActiveMusicSRC(randomTrack)
         setMusicPlaylist(currentPlayList)
         if (activeScene.fight === true && activeScene.battlemaps_id) {
@@ -225,7 +170,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme, isDarkT
 
     useEffect(() => {
         if (activeMusicSRC) {
-            handleAudio()
+            handleAudio(isMusicPlaying, setLastTrack,  setActiveMusicSRC, musicPlaylist, lastTrack, setAudio, audio)
         }
     }, [activeMusicSRC])
 
@@ -270,13 +215,15 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme, isDarkT
                     </SidebarMapContainer>
                 </SidebarRight>
                 <BottomBar>
-                    <AudioControlButton $isMusicPlaying={ isMusicPlaying } onClick={handleAudioControl}>
-                        {isMusicPlaying ? 'Pause' : 'Play'}
+                    <AudioControlButton $isMusicPlaying={ isMusicPlaying } onClick={() => handleAudioControl(audio, isMusicPlaying, setIsMusicPlaying)}>
+                        <ReactSVG
+                            src={isMusicPlaying ? pauseIcon : playIcon}
+                            beforeInjection={(svg) => {
+                            svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
+                            }}
+                        />
                     </AudioControlButton>
                     <SideMaps sidemaps={sidemaps} handleSceneSelection={handleSceneSelection} isActiveMainMap={ isMainMap }/>
-                    <ThemeToggleButton onClick={toggleTheme}>
-                        {isDarkTheme ? 'Cyber' : 'Classic'}
-                    </ThemeToggleButton>
                 </BottomBar>
                 <DocumentReader />
             </Screen>
