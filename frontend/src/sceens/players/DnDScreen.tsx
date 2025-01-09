@@ -3,7 +3,7 @@ import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
 
 import turnImg from '/rotate.png'
-import settingsIcon from '/settings.svg'
+import settingsIcon from '/assets/icons/settings.svg'
 
 import { ResourceBarPlayer } from '../../components/ResourceBarPlayer'
 

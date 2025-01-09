@@ -45,5 +45,3 @@ export const handleDialogue = (
   }
   setDialogueVisibility(false)
 }
-
-export const handleAudio = () => {}

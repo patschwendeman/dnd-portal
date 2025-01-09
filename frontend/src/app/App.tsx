@@ -73,7 +73,7 @@ function App() {
                 <Route path='/spells' element={ <DnDSpellsScreen toggleTheme={toggleTheme} /> } />
                 <Route path='/wall' element={ <WallScreen /> } />
                 <Route path='/ground' element={ <GroundScreen /> } />
-                <Route path='/admin'  element={ <AdminScreen toggleTheme={toggleTheme} isDarkTheme={isDarkTheme} /> } />
+                <Route path='/admin'  element={ <AdminScreen toggleTheme={toggleTheme} /> } />
               </Routes>
             </div>
           </Router>
