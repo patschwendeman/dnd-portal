@@ -1,6 +1,7 @@
-import React, { FunctionComponent, ReactElement, useEffect, useState } from 'react'
+import React, { FunctionComponent, ReactElement, useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
+import { ReactSVG } from 'react-svg'
 
 import { SideBarLeftElement } from './SideBarLeftElement'
 
@@ -9,6 +10,8 @@ const markdownFilesFight = import.meta.glob('../../public/story/fight/*.md')
 const markdownFilesNoneFight = import.meta.glob('../../public/story/noneFight/*.md')
 const markdownFilesLeveling = import.meta.glob('../../public/story/leveling/*.md')
 const markdownFilesMechanics = import.meta.glob('../../public/story/mechanics/*.md')
+
+import arrowUpIcon from '/assets/icons/arrowUp.svg'
 
 const SidebarLeft = styled.div`
   display: flex;
@@ -38,6 +41,30 @@ const StoryReaderContainer = styled.div`
   }
 `
 
+const TopLink = styled.button<{ isVisible: boolean }>`
+  display: 'flex';
+  position: absolute;
+  width: 45px;
+  height: 45px;
+  border-radius: 5px;
+  background-color: ${(props) => (props.theme.colors.secondary)};
+  bottom: 65px;
+  right: 420px;
+  cursor: pointer;
+  color: ${(props) => props.theme.colors.text.color} !important; 
+  border: none;
+  justify-content: center;
+  align-items: center;
+  opacity: ${(props) => (props.isVisible ? 1 : 0)}; /* Steuerung der Sichtbarkeit */
+  transition: opacity 0.3s ease-in-out;
+  
+
+  svg {
+      width: 100%;
+      height: 100%; 
+    }
+  `
+
 const Background = styled.div`
   display: flex;
   padding-bottom: 5px;
@@ -49,6 +76,7 @@ const Background = styled.div`
   width: 100%;
   height: 100%;
   overflow-y: auto;
+  scroll-behavior: smooth;
 `
 
 const Page = styled.div`
@@ -78,8 +106,8 @@ const Page = styled.div`
     line-height: 1.5;
   } 
   .markdown-image {
-  width: 100%;
-  height: auto; /* Erhält das Seitenverhältnis */
+    width: 100%;
+    height: auto;
 }
 `
 
@@ -108,8 +136,11 @@ function HeadingRenderer(props: { level: number; children: React.ReactNode }): R
 }
 
 const DocumentReader: FunctionComponent = (): ReactElement => {
+  const theme = useTheme()
   const [markdownContent, setMarkdownContent] = useState<string[]>([])
   const [selectedStoryIndex, setSelectedStoryIndex] = useState<number>(0)
+  const [isVisible, setIsVisible] = useState(false)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const markdownLists = [markdownFilesMain, markdownFilesFight, markdownFilesNoneFight, markdownFilesLeveling, markdownFilesMechanics]
 
@@ -133,6 +164,28 @@ const DocumentReader: FunctionComponent = (): ReactElement => {
     loadMarkdownFiles()
   }, [selectedStoryIndex])
 
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      setIsVisible(scrollContainerRef.current.scrollTop > 200)
+    }
+  }
+
+  const scrollToTop = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      })
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+
   const handleStorySelect = (index: number) => {
     setSelectedStoryIndex(index)
   }
@@ -147,7 +200,7 @@ const DocumentReader: FunctionComponent = (): ReactElement => {
         <SideBarLeftElement name='Mechaniken' selectedStoryIndex={ selectedStoryIndex } handleStorySelect={ handleStorySelect } index={4} />
       </SidebarLeft>
       <StoryReaderContainer>
-        <Background>
+        <Background ref={scrollContainerRef} onScroll={handleScroll}>
           {markdownContent.map((content, index) => (
             <Page key={index}>
               <ReactMarkdown
@@ -165,6 +218,14 @@ const DocumentReader: FunctionComponent = (): ReactElement => {
               </ReactMarkdown>
             </Page>
           ))}
+            <TopLink onClick={scrollToTop} isVisible={isVisible}>
+              <ReactSVG
+                  src={arrowUpIcon}
+                  beforeInjection={(svg) => {
+                  svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
+                  }}
+              />
+            </TopLink>
         </Background>
       </StoryReaderContainer>
     </>
