@@ -1,5 +1,5 @@
 
-## Inhaltsverzeichnis
+# Inhaltsverzeichnis
 1. [Intro](#dialog)
 2. [Taverne](#taverne---zum-verzauberte-krug)
 

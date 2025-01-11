@@ -5,6 +5,7 @@
 * Skills:
 * Trefferpunkte: w10 oder 6 + Konst. Modifikator
 * Ausrüstungsklasse Selten freigeschalten
+* Übungsbobus steigt auf +3
 * Zauberslots: 
     * Stufe 1: (3)
 
@@ -13,6 +14,7 @@
 * Skills:
 * Trefferpunkte: w8 oder 5 + Konst. Modifikator
 * Ausrüstungsklasse Selten freigeschalten
+* Übungsbobus steigt auf +3
 * Zauberslots: 
     * Stufe 1: (4)
     * Stufe 2: (2)
@@ -22,6 +24,7 @@
 * Skills:
 * Trefferpunkte: w6 oder 4 + Konst. Modifikator
 * Ausrüstungsklasse Selten freigeschalten
+* Übungsbobus steigt auf +3
 * Zauberslots: 
     * Stufe 1: (4)
     * Stufe 2: (2)
@@ -31,4 +34,5 @@
 * Skills: [Assassine](https://dnd5e.wikidot.com/rogue:assassin)
 * Trefferpunkte: w8 oder 5 + Konst. Modifikator
 * Ausrüstungsklasse Selten freigeschalten
+* Übungsbobus steigt auf +3
 * Zauberslots:

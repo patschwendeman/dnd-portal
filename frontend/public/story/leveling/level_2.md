@@ -19,7 +19,7 @@
 * Skills:
 * Trefferpunkte: w6 oder 4 + Konst. Modifikator
 * Zauberslots: 
-    * Stufe 1: (3)
+    * Stufe 1: (4)
 
 ## Rogue
 * Spells:

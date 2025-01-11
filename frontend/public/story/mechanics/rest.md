@@ -3,4 +3,4 @@
 Rasten füllt die Trefferpunkte und alle ressourcen vollständig auf 
 
 * Rasten kostet 1x Nahrung
-* Zum Levelaufstieg ist eine Rast notwendig
+* Ein mal pro Langer Rast hat man die Möglichkeit kurz zu Rasten was die gesammte TP wiederherstellt

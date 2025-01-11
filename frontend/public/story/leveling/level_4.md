@@ -2,7 +2,7 @@
 
 ## Paladin
 * Spells: [Schutz vor Gut und Böse](https://mythical.ink/de/rpg-tools/dnd-spell-list/60)
-* Skills:
+* Skills: Extra Attack
 * Trefferpunkte: w10 oder 6 + Konst. Modifikator
 * Zauberslots:
     * Stufe 1: (3)
@@ -25,6 +25,6 @@
 
 ## Rogue
 * Spells:
-* Skills: [Alert](https://dnd5e.wikidot.com/feat:alert)
+* Skills: [Alert](https://dnd5e.wikidot.com/feat:alert), Extra Attack
 * Trefferpunkte: w8 oder 5 + Konst. Modifikator
 * Zauberslots:

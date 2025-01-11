@@ -15,4 +15,4 @@
     2. Rüstung (3 - 4)
 
 ## Türe
-* Schlossknacken Probe 16
+* Schlossknacken Probe 10

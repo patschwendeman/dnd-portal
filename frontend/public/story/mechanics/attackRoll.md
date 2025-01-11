@@ -1,5 +1,8 @@
 # Angriffswurf
 
+* Zuerst wird der Angriffswurf ausgeführt **W20 + ÜB + Attribut Mult. (Str oder Gesch)**
+* Anschließend wird der Schaden ermittelt **Waffenschaden + Attribut Mult. (Str oder Gesch)**
+
 ## Kritischer Erfolg beim Angriffswurf (20)
 
 * Automatischer Treffer unabhängig von der RK
