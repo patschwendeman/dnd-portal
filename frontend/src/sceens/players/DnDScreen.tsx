@@ -1,12 +1,19 @@
 import { FunctionComponent, ReactElement } from 'react'
 import { ReactSVG } from 'react-svg'
-import styled, { useTheme } from 'styled-components'
+import styled, { useTheme, keyframes } from 'styled-components'
 
-import turnImg from '/rotate.png'
+import turnImg from '/assets/icons/phone.svg'
 import settingsIcon from '/assets/icons/settings.svg'
 
 import { ResourceBarPlayer } from '../../components/ResourceBarPlayer'
 
+const rotateAnimation = keyframes`
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-90deg); }
+  50% { transform: rotate(-90deg); }
+  75% { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
+`
 
 const Background = styled.div`
   display: flex;
@@ -29,20 +36,21 @@ const Overlay = styled.div`
   position: fixed;
   width: 100%;
   height: 100%;
-  background-color: black;
+  background-color: ${(props) => props.theme.colors.background};
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9;
-  img {
-    width: 30%;
-    z-index: 10;
-  }
+  svg {
+      width: 400px;
+      height: 400px;
+      color: ${(props) => props.theme.colors.text.color} !important;
+      animation: ${rotateAnimation} 6s infinite ease-in-out;
+    }
   @media (min-width: 650px) {
     display: none;
   }
 `
-
 
 const ThemeToggleButton = styled.button`
     position: fixed;
@@ -68,6 +76,7 @@ const ThemeToggleButton = styled.button`
     svg {
       width: 100%;
       height: 100%; 
+      color: ${(props) => props.theme.colors.text.color} !important;
     }
 `
 
@@ -80,7 +89,13 @@ const DnDScreen: FunctionComponent<DnDScreenProps> = ({ toggleTheme }): ReactEle
   return (
     <Background>
     <Overlay>
-      <img src={turnImg} alt='turn around' />
+
+      <ReactSVG
+        src={turnImg}
+        beforeInjection={(svg) => {
+          svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
+        }}
+      />
     </Overlay>
     <ThemeToggleButton onClick={toggleTheme}>
         <ReactSVG
