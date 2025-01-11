@@ -7,6 +7,7 @@ import { Dialogue } from '../components/Dialogue'
 import { DocumentReader } from '../components/DocumentReader'
 import { MapOverview } from '../components/MapOverview'
 import { SideMaps } from '../components/SideMaps'
+import { TopBar } from '../components/TopBar'
 import { ActiveMapContext, ActiveSceneContext } from '../context/context'
 import { Map, Music, SceneDetail } from '../models/models'
 import { getAdminData, getSceneById, handleDialogue } from '../service/adminScreen'
@@ -202,6 +203,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
                 setDialogueVisibility={setDialogueVisibility}
             />
             <Screen>
+            <TopBar toggleTheme={toggleTheme} />
                 <SidebarRight>
                     <BattleDetailsSideBar activeScene={ activeScene }/>
                     <SidebarMapContainer>
