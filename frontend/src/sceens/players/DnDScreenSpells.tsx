@@ -2,7 +2,7 @@ import { FunctionComponent, ReactElement } from 'react'
 import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
 
-import settingsIcon from '/settings.svg'
+import settingsIcon from '/assets/icons/settings.svg'
 
 import { ResourceBarPlayer } from '../../components/ResourceBarPlayer'
 import { SliderPlayer } from '../../components/SliderPlayer'
