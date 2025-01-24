@@ -51,12 +51,15 @@ const ThemeToggleButton = styled.button`
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    width: 100%;
+    height: 100%;
     }
     svg {
       width: 100%;
       height: 100%; 
+      color: ${(props) => props.theme.colors.text.color} !important;
     }
-    @media (max-width: 649px) {
+      @media (max-width: 649px) {
       top: 12px;
   }
 `
@@ -72,11 +75,11 @@ const DnDSpellsScreen: FunctionComponent<DnDScreenProps> = ({ toggleTheme }): Re
   <Background>
     <SliderPlayer />
     <ThemeToggleButton onClick={toggleTheme}>
-        <ReactSVG
-          src={settingsIcon}
-          beforeInjection={(svg) => {
-            svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
-          }}
+    <ReactSVG
+        src={settingsIcon}
+        beforeInjection={(svg) => {
+          svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
+        }}
       />
     </ThemeToggleButton>
     <SpellBarPlayer />
