@@ -29,6 +29,7 @@ const SpellBar = styled.div`
     white-space: nowrap;
     align-items: center;
     padding: 5px 20px;
+    margin-left: 10px;
 
     &::-webkit-scrollbar {
         display: none;
