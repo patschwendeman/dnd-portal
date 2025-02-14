@@ -12,7 +12,7 @@
     * Stufe 1: (2)
 
 ## Mage
-* Spells: [Donnerschlag](https://mythical.ink/de/rpg-tools/dnd-spell-list/344), [Toll the Dead (Zaubertrick)](https://dnd5e.wikidot.com/spell:toll-the-dead), [magisches Geschos](https://mythical.ink/de/rpg-tools/dnd-spell-list/53), [Magier Rüstung](https://mythical.ink/de/rpg-tools/dnd-spell-list/51), [Schild](https://mythical.ink/de/rpg-tools/dnd-spell-list/70), Feuerstrahl
+* Spells: [Donnerschlag](https://mythical.ink/de/rpg-tools/dnd-spell-list/344), [magisches Geschos](https://mythical.ink/de/rpg-tools/dnd-spell-list/53), [Magier Rüstung](https://mythical.ink/de/rpg-tools/dnd-spell-list/51), [Schild](https://mythical.ink/de/rpg-tools/dnd-spell-list/70), Feuerstrahl
 * Skills:
 * Zauberslots: 
     * Stufe 1: (3)

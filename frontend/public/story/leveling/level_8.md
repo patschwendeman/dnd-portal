@@ -1,7 +1,7 @@
 # Level_8
 
 ## Paladin
-* Spells: [Aura der Reinheit](https://mythical.ink/de/rpg-tools/dnd-spell-list/100)
+* Spells: 
 * Skills:
 * Trefferpunkte: w10 oder 6 + Konst. Modifikator
 * Zauberslots:
@@ -10,7 +10,7 @@
     * Stufe 3: (1)
 
 ## Bard
-* Spells: [Mantle of Inspiration ^Upgrade](https://dnd5e.wikidot.com/bard:glamour)
+* Spells:
 * Skills:
 * Trefferpunkte: w8 oder 5 + Konst. Modifikator
 * Zauberslots: 
@@ -32,6 +32,6 @@
 
 ## Rogue
 * Spells:
-* Skills: ?
+* Skills: 
 * Trefferpunkte: w8 oder 5 + Konst. Modifikator
 * Zauberslots:

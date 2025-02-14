@@ -9,7 +9,7 @@
     * Stufe 2: (2)
 
 ## Bard
-* Spells: [Massen Heilendes Wort](https://mythical.ink/de/rpg-tools/dnd-spell-list/130), [Quelle der Insiration], [Magie bannen](https://mythical.ink/de/rpg-tools/dnd-spell-list/118)
+* Spells: [Massen Heilendes Wort](https://mythical.ink/de/rpg-tools/dnd-spell-list/130)
 * Skills:
 * Trefferpunkte: w8 oder 5 + Konst. Modifikator
 * Attributerhöhung: +1

@@ -9,7 +9,7 @@
 
 ## Bard
 * Spells: -
-* Skills: [Badische Inspiration upgrade](https://gamecows.com/de/bardische-Inspiration-5e/#how-can-you-use-bardic-inspiration),
+* Skills: [Badische Inspiration upgrade](https://gamecows.com/de/bardische-Inspiration-5e/#how-can-you-use-bardic-inspiration), [Magie bannen](https://mythical.ink/de/rpg-tools/dnd-spell-list/118)
 * Trefferpunkte: w8 oder 5 + Konst. Modifikator
 * Zauberslots: 
     * Stufe 1: (4)

@@ -1,7 +1,7 @@
 # Level_3
 
 ## Paladin
-* Spells: [Divine Health](https://roll20.net/compendium/dnd5e/Paladin#toc_13), [Champion Challenge](http://dnd5ecompendium.wikidot.com/oathchdiv3rd:crown), [Befehl](https://mythical.ink/de/rpg-tools/dnd-spell-list/11)
+* Spells: [Divine Health](https://roll20.net/compendium/dnd5e/Paladin#toc_13), [Befehl](https://mythical.ink/de/rpg-tools/dnd-spell-list/11)
 * Skills:
 * Trefferpunkte: w10 oder 6 + Konst. Modifikator
 * Ausrüstungsklasse Selten freigeschalten
@@ -10,8 +10,8 @@
     * Stufe 1: (3)
 
 ## Bard
-* Spells: [Wunden heilen](https://mythical.ink/de/rpg-tools/dnd-spell-list/15), [schwache Genesung](https://mythical.ink/de/rpg-tools/dnd-spell-list/92)
-* Skills:
+* Spells: [Wunden heilen](https://mythical.ink/de/rpg-tools/dnd-spell-list/15)
+* Skills: Unterklasse Wissen
 * Trefferpunkte: w8 oder 5 + Konst. Modifikator
 * Ausrüstungsklasse Selten freigeschalten
 * Übungsbobus steigt auf +3
@@ -20,7 +20,7 @@
     * Stufe 2: (2)
 
 ## Mage
-* Spells: [Zerbersten](https://mythical.ink/de/rpg-tools/dnd-spell-list/315), [Tasha’s Mind Whip](https://dnd5e.wikidot.com/spell:tashas-mind-whip)
+* Spells: [Zerbersten](https://mythical.ink/de/rpg-tools/dnd-spell-list/315)
 * Skills:
 * Trefferpunkte: w6 oder 4 + Konst. Modifikator
 * Ausrüstungsklasse Selten freigeschalten
