@@ -12,7 +12,7 @@ const BattleDetailsContainer = styled.div`
 `
 const BattleDetails = styled.div<{$isFightScene: boolean}>`
     width: 100%;
-    height: 85%;
+    height: 220px;
     display: ${({ $isFightScene }) => ($isFightScene ? 'flex' : 'none')};
     margin: 17px 10px 10px;
     background-color: ${(props) => props.theme.colors.secondary};
@@ -25,7 +25,7 @@ const BattleDetails = styled.div<{$isFightScene: boolean}>`
 
 const BattleDetailHeader = styled.div`
     width: 100%;
-    height: 40px;
+    height: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -33,7 +33,7 @@ const BattleDetailHeader = styled.div`
 `
 const BattleDetailContent = styled.div`
     width: 100%;
-    height: 28%;
+    height: 40%;
     display: flex;
     border-top: 1px solid ${(props) => props.theme.colors.border};
 `
@@ -107,14 +107,7 @@ const BattleDetailsSideBar: FunctionComponent<BattleDetailsSideBarProps> = ({ ac
                         </ul>
                     </ContentContainer>
                 </BattleDetailContent>
-                <BattleDetailContent>
-                    <ContentContainer>
-                        <p>Notes:</p>
-                    </ContentContainer>
-                    <ContentContainer>
-                        <p>{activeScene?.description || 'No notes available.'}</p>
-                    </ContentContainer>
-                </BattleDetailContent>
+                
 
             </BattleDetails>
         </BattleDetailsContainer>
