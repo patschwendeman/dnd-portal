@@ -1,6 +1,7 @@
 import { useContext, FunctionComponent, ReactElement, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
+import { GridOverlay } from '../components/GridOverlay'
 import { ActiveSceneContext } from '../context/context'
 import { SceneDetail } from '../models/models'
 import { getGroundScreenData } from '../service/groundScreen'
@@ -64,6 +65,7 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
 
     return(
         <Screen>
+            <GridOverlay />
             <BackgroundImage data-test-id='groundImg' src={imageSRC} alt='' />
         </Screen> 
     )
