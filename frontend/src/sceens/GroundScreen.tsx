@@ -2,6 +2,7 @@ import { useContext, FunctionComponent, ReactElement, useEffect, useState } from
 import styled from 'styled-components'
 
 import { GridOverlay } from '../components/GridOverlay'
+import { ScreenControlBar } from '../components/ScreenControlBar'
 import { ActiveSceneContext } from '../context/context'
 import { SceneDetail } from '../models/models'
 import { getGroundScreenData } from '../service/groundScreen'
@@ -37,6 +38,10 @@ const BackgroundImage = styled.img`
 const GroundScreen: FunctionComponent = (): ReactElement => {
     const { activeSceneId } = useContext(ActiveSceneContext)
     const [imageSRC, setImageSRC] = useState<string>('')
+    const [gritColor, setGritColor] = useState<string>('')
+    const [,setActiveButton] = useState<number | null>(null)
+
+    const buttonLabels = ['BLACK', 'WHITE', 'OFF']
 
     const handleGroundScreen = (activeScene: SceneDetail) => {
         let src
@@ -48,6 +53,17 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
         }
 
         setImageSRC(src)
+    }
+
+    function handleGridVisibility(option: number) {
+        setActiveButton(option)
+        if (option === 0) {
+            setGritColor('black')
+        } else if (option === 1) {
+            setGritColor('white')
+        } else {
+            setGritColor('transparent')
+        }
     }
 
     const fetchGroundScreenData = async () => {
@@ -65,8 +81,9 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
 
     return(
         <Screen>
-            <GridOverlay />
+            <GridOverlay gritColor={ gritColor } />
             <BackgroundImage data-test-id='groundImg' src={imageSRC} alt='' />
+            <ScreenControlBar onVisibilityChange={handleGridVisibility} buttonLabels={buttonLabels}/>
         </Screen> 
     )
 }
