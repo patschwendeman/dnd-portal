@@ -39,6 +39,7 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
     const { activeSceneId } = useContext(ActiveSceneContext)
     const [imageSRC, setImageSRC] = useState<string>('')
     const [gritColor, setGritColor] = useState<string>('')
+    const [gritSize, setGritSize] = useState<number>(100)
     const [,setActiveButton] = useState<number | null>(null)
 
     const buttonLabels = ['BLACK', 'WHITE', 'OFF']
@@ -66,6 +67,10 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
         }
     }
 
+    function handleGridSize(option: number) {
+        setGritSize(option)
+    }
+
     const fetchGroundScreenData = async () => {
         try {
             const activeScene = await getGroundScreenData(activeSceneId)
@@ -81,9 +86,9 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
 
     return(
         <Screen>
-            <GridOverlay gritColor={ gritColor } />
+            <GridOverlay gritColor={ gritColor } gritSize={ gritSize } />
             <BackgroundImage data-test-id='groundImg' src={imageSRC} alt='' />
-            <ScreenControlBar onVisibilityChange={handleGridVisibility} buttonLabels={buttonLabels}/>
+            <ScreenControlBar onVisibilityChange={handleGridVisibility} onSliderChange={handleGridSize} buttonLabels={buttonLabels}/>
         </Screen> 
     )
 }

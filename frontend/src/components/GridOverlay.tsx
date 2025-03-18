@@ -4,6 +4,7 @@ import styled from 'styled-components'
 
 interface GridOverlayProps {
     gritColor: string,
+    gritSize: number
 }
 
 const Overlay = styled.div`
@@ -23,7 +24,7 @@ const GridLine = styled.div<{ $i: number, $width: number, $height: number, $left
     background-color: ${props => props.$gritColor};
 `
 
-const GridOverlay: FunctionComponent<GridOverlayProps> = ({ gritColor }): ReactElement => {
+const GridOverlay: FunctionComponent<GridOverlayProps> = ({ gritColor, gritSize }): ReactElement => {
     const [screenSize, setScreenSize] = useState({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -41,7 +42,7 @@ const GridOverlay: FunctionComponent<GridOverlayProps> = ({ gritColor }): ReactE
         return () => window.removeEventListener('resize', handleResize)
     }, [])
 
-    const dpi = window.devicePixelRatio * 96
+    const dpi = window.devicePixelRatio * gritSize
     const gridSize = dpi 
 
     console.log(window.innerHeight)

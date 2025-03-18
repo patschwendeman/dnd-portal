@@ -1,3 +1,5 @@
+import Box from '@mui/material/Box'
+import Slider from '@mui/material/Slider'
 import { FunctionComponent, ReactElement, useState } from 'react'
 import styled from 'styled-components'
 
@@ -50,18 +52,64 @@ const Button = styled.div<{$isActive: boolean}>`
     text-align: center;
 `
 
+const StyledSlider = styled(Slider)`
+  & .MuiSlider-thumb {
+    background-color: ${(props) => props.theme.colors.text.color};
+    &:focus,
+    &:hover,
+    &:active {
+      box-shadow: none;
+    }
+  }
+  & .MuiSlider-rail {
+    background-color: ${(props) => props.theme.colors.secondary};
+    height: 10px;
+    
+  }
+  & .MuiSlider-track {
+    background-color: ${(props) => props.theme.colors.primary};
+    height: 10px;
+    border: none;
+  }
+  & .MuiSlider-mark {
+    background-color: ${(props) => props.theme.colors.text.color};
+    height: 5px;
+    width: 5px;
+    border-radius: 50%;
+  }
+  & .MuiSlider-markLabel {
+    color: ${(props) => props.theme.colors.text.color};
+    font-size: 0.75rem;
+  }
+  & .MuiSlider-valueLabel {
+    background-color: ${(props) => props.theme.colors.secondary};
+    color: ${(props) => props.theme.colors.text.color};
+    font-size: 0.8rem;
+    border-radius: 6px;
+    padding: 4px 8px;
+  }
+`
+
 interface ScreenControlBarProps {
-    onVisibilityChange: (option: number) => void;
-    buttonLabels: string[];
+    onVisibilityChange: (option: number) => void
+    onSliderChange?: (option: number) => void
+    buttonLabels: string[]
 }
 
-const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({ onVisibilityChange, buttonLabels }): ReactElement => {
-
+const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({ onVisibilityChange, onSliderChange, buttonLabels }): ReactElement => {
     const [activeButton, setActiveButton] = useState<number | null>(null)
+    const [sliderValue, setSliderValue] = useState<number>(100)
 
     function handleVisibility(option: number) {
         setActiveButton(option)
         onVisibilityChange(option)
+    }
+
+    function handleSliderChange(event: Event, option: number | number[]) {
+        if(onSliderChange) {
+            setSliderValue(option as number)
+            onSliderChange(option as number)
+        }
     }
 
     return(
@@ -76,6 +124,22 @@ const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({ onVisibili
                         { label }
                     </Button>
                 ))}
+               {onSliderChange && (
+                    <Box sx={{ width: 200, margin: 1 }}>
+                        <StyledSlider
+                            aria-label="DPI"
+                            defaultValue={100}
+                            value={sliderValue}
+                            onChange={handleSliderChange}
+                            valueLabelDisplay="auto"
+                            shiftStep={100}
+                            step={10}
+                            marks
+                            min={100}
+                            max={200}
+                        />
+                    </Box>
+                )}
             </ControlBar>
         </Overlay>
     )
