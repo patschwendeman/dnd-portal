@@ -44,9 +44,6 @@ const GridOverlay: FunctionComponent<GridOverlayProps> = ({ gritColor, gritSize 
 
     const dpi = window.devicePixelRatio * gritSize
     const gridSize = dpi 
-
-    console.log(window.innerHeight)
-
     const gridLines = []
 
     for (let i = 0; i < screenSize.width; i += gridSize) {
