@@ -19,9 +19,10 @@ class MapsService:
         filtered_maps = []
         for scene in scenes:
             if scene.main is filter_main:
+                source = scene.graphics_ground.source if scene.main else scene.graphics_wall.source
                 filtered_maps.append({
                     'id': scene.id,
-                    'source': scene.graphics_wall.source
+                    'source': source
                 })
 
         return filtered_maps
