@@ -23,7 +23,6 @@ def read_join_all(db: Session) -> List[Scene]:
     query: Query = db.query(Scene).options(
         joinedload(Scene.graphics_wall),
         joinedload(Scene.graphics_ground),
-        joinedload(Scene.battlemaps),
         joinedload(Scene.music)
     )
     scenes = query.order_by(asc(Scene.id)).all()

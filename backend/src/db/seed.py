@@ -1,7 +1,7 @@
 import json
 import os
 from sqlalchemy.orm import Session
-from src.db.models import Scene, GraphicsWall, GraphicsGround, BattleMap, Music
+from src.db.models import Scene, GraphicsWall, GraphicsGround, Music
 
 SEED_DATA_PATH = os.path.join(os.path.dirname(__file__), 'data', 'seed_data.json')
 
@@ -14,10 +14,6 @@ def bulk_insert(db: Session, model, data):
     db.commit()
 
 def seed_data(db: Session, data):
-
-    if not db.query(BattleMap).first():
-        bulk_insert(db, BattleMap, data["battle_maps"])
-
     if not db.query(GraphicsWall).first():
         bulk_insert(db, GraphicsWall, data["graphics_walls"])
 

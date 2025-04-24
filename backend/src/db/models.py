@@ -22,6 +22,7 @@ class GraphicsGround(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     source = Column(String)
+    main = Column(Boolean)
     scene = relationship("Scene", back_populates="graphics_ground", uselist=False)
 
 class Music(Base):
@@ -31,29 +32,15 @@ class Music(Base):
     source = Column(String)
     scenes = relationship('Scene', secondary=scene_music_association, back_populates='music')
 
-class BattleMap(Base):
-    __tablename__ = 'battlemaps'
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    loot = Column(String)
-    xp = Column(String)
-    enemies = Column(String)
-    locked = Column(Boolean)
-    source= Column(String)
-    source_locked = Column(String)
-    scene = relationship("Scene", back_populates="battlemaps", uselist=False)
-
 class Scene(Base):
     __tablename__ = 'scene'
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     description = Column(Text)
-    fight = Column(Boolean)
+    main = Column(Boolean)
     graphics_wall_id = Column(Integer, ForeignKey('graphics_wall.id'))
     graphics_wall = relationship("GraphicsWall", back_populates="scene", uselist=False)
     graphics_ground_id = Column(Integer, ForeignKey('graphics_ground.id'), unique=True)
     graphics_ground = relationship("GraphicsGround", back_populates="scene", uselist=False)
-    battlemaps_id = Column(Integer, ForeignKey('battlemaps.id'), unique=True)
-    battlemaps = relationship("BattleMap", back_populates="scene", uselist=False)
     music_id = Column(Integer, ForeignKey('music.id'))
     music = relationship('Music', secondary=scene_music_association, back_populates='scenes')
