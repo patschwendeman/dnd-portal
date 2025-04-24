@@ -45,13 +45,7 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
     const buttonLabels = ['BLACK', 'WHITE', 'OFF']
 
     const handleGroundScreen = (activeScene: SceneDetail) => {
-        let src
-        if (activeScene.fight === true) {
-            src = getMediaSRC(activeScene, 'battlemaps')
-            
-        } else {
-            src = activeScene.graphics_ground.source
-        }
+        const src = activeScene.graphics_ground.source
 
         setImageSRC(src)
     }

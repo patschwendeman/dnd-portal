@@ -12,9 +12,9 @@ function getRandomNumber(min: number, max: number) {
 
 describe('should return scene by key', () => {
   const SceneDetailMock: SceneDetail[] = data
-  const key = 'id'
+  const key = 'graphics_ground_id'
 
-  it('should return scene by battlemap id', () => {
+  it('should return scene by graphics_ground_id', () => {
     const value = SceneDetailMock[0].graphics_ground.id
     if (value !== null) {
       const scene = filterSceneByKey(key, value, SceneDetailMock)

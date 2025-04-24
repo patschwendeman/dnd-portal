@@ -1,20 +1,20 @@
-import { getData, updateData } from '../api/apiMethods'
+import { getData } from '../api/apiMethods'
 import { SceneDetail } from '../models/models'
 
 export const getAdminData = async () => {
-  const sidemaps = await getData('maps/sidemaps/')
-  const battlemaps = await getData('maps/battlemaps/', { players: false })
+  const sidemaps = await getData('maps/side/')
+  const mainmaps = await getData('maps/main/', { players: false })
   const scenesDetails = await getData('scenes/details/')
   if (!sidemaps) {
     throw new Error('Sidemaps not found')
   }
-  if (!battlemaps) {
-    throw new Error('Battlemaps not found')
+  if (!mainmaps) {
+    throw new Error('Mainmaps not found')
   }
   if (!scenesDetails) {
     throw new Error('Scenes details not found')
   }
-  return [sidemaps, battlemaps, scenesDetails]
+  return [sidemaps, mainmaps, scenesDetails]
 }
 
 export const getSceneById = async (id: number) => {
@@ -36,12 +36,6 @@ export const handleDialogue = (
       throw new Error('Scene option not found')
     }
     setActiveSceneId(sceneOption.id)
-    if (sceneOption.fight === true) {
-      if (!sceneOption.battlemaps_id) {
-        throw new Error('Battlemap not found')
-      }
-      updateData('maps/battlemaps/', sceneOption.battlemaps_id)
-    }
   }
   setDialogueVisibility(false)
 }

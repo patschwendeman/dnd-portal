@@ -2,7 +2,7 @@ import { useContext, FunctionComponent, ReactElement, useEffect, useState } from
 import styled, { useTheme } from 'styled-components'
 
 import defaultMusic from '../../public//assets/music/side_maps/forest/From_Past_To_Present.mp3'
-import { BattleDetailsSideBar } from '../components/BattleDetailsSideBar'
+import { DetailsSideBar } from '../components/DetailsSideBar'
 import { Dialogue } from '../components/Dialogue'
 import { DocumentReader } from '../components/DocumentReader'
 import { MapOverview } from '../components/MapOverview'
@@ -103,7 +103,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
     const [dialogueVisibility, setDialogueVisibility] = useState<boolean>(false)
     const [sceneOption, setSceneOption] = useState<SceneDetail | undefined>()
 
-    const [battlemaps, setBattlemaps] = useState<Map[]>([])
+    const [mainmaps, setMainmaps] = useState<Map[]>([])
     const [sidemaps, setSidemaps] = useState<Map[]>([])
     const [isMainMap, setIsMainMap] = useState<boolean>(false)
 
@@ -114,8 +114,8 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
 
     const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
 
-    const handleAdminData = (sidemaps: Map[], battlemaps: Map[], scenesDetails: SceneDetail[]) => {
-        setBattlemaps(battlemaps)
+    const handleAdminData = (sidemaps: Map[], mainmaps: Map[], scenesDetails: SceneDetail[]) => {
+        setMainmaps(mainmaps)
         setSidemaps(sidemaps)
         setScenesDetails(scenesDetails)
         const initialTrack = getRandomTrack(musicPlaylist, lastTrack)
@@ -132,21 +132,17 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
     const handleActiveScene = (activeScene: SceneDetail) => {
         const currentPlayList = extractMusicSources(activeScene.music)
         setActiveScene(activeScene)
-        setIsMainMap(activeScene.fight)
+        setIsMainMap(activeScene.main)
         const randomTrack = getRandomTrack(musicPlaylist, lastTrack)
         setActiveMusicSRC(randomTrack)
         setMusicPlaylist(currentPlayList)
-        if (activeScene.fight === true && activeScene.battlemaps_id) {
-            setActiveMapId(activeScene.battlemaps_id)
-        } else {
-            setActiveMapId(activeScene.id)
-        }   
+        setActiveMapId(activeScene.id)  
     }
 
     const fetchAdminData = async () => {
         try {
-            const [sidemaps, battlemaps, scenesDetails] = await getAdminData()
-            handleAdminData(sidemaps, battlemaps, scenesDetails)
+            const [sidemaps, mainmaps, scenesDetails] = await getAdminData()
+            handleAdminData(sidemaps, mainmaps, scenesDetails)
         } catch (err) {
             throw new Error(`Error fetching admin data: ${err}`)
         }   
@@ -175,14 +171,8 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
         }
     }, [activeMusicSRC])
 
-    const handleSceneSelection = (mapId: number, isMainMap: boolean) => {
-        let scene
-        if(isMainMap === true) {
-            scene = filterSceneByKey('battlemaps_id', mapId, scenesDetails)
-        }
-        else {
-            scene = filterSceneByKey('id', mapId, scenesDetails)
-        }
+    const handleSceneSelection = (mapId: number) => {
+        const scene = filterSceneByKey('id', mapId, scenesDetails)
         if (!scene) {
             throw new Error('No Scene to select not found')
         }
@@ -205,10 +195,10 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
             <Screen>
             <TopBar toggleTheme={toggleTheme} />
                 <SidebarRight>
-                    <BattleDetailsSideBar activeScene={ activeScene }/>
+                    <DetailsSideBar activeScene={ activeScene }/>
                     <SidebarMapContainer>
                         <MapOverview
-                            battlemaps={battlemaps}
+                            mainmaps={mainmaps}
                             gap='3px'
                             handleSceneSelection={handleSceneSelection}
                             isActiveMainMap={ isMainMap }
