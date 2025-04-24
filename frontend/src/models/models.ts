@@ -30,12 +30,10 @@ export interface SceneDetail {
   name: string
   graphics_wall_id: number
   graphics_ground_id: number
-  battlemaps_id: number | null
   id: number
   description: string
-  fight: boolean
+  main: boolean
   music_id: number
-  battlemaps: Battlemap | null
   graphics_ground: Screen
   graphics_wall: Screen
   music: Music[]
