@@ -91,7 +91,7 @@ const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogu
   return (
     <LayoutContainer $isVisible={isVisible}>
       <DialogueContainer>
-        <DialogueImage src={sceneOption?.battlemaps?.source || sceneOption?.graphics_wall?.source} alt={sceneOption?.name || 'Scene Image'} />
+        <DialogueImage src={sceneOption?.graphics_wall?.source} alt={sceneOption?.name || 'Scene Image'} />
         <p>{sceneOption?.name}</p>
         <ButtonContainer>
           <ConfirmButton data-test-id='confirm-button' onClick={handleConfirm}>Confirm</ConfirmButton>

@@ -60,33 +60,29 @@ export const handleAudio = (
   musicPlaylist: string[],
   lastTrack: string,
   setAudio: React.Dispatch<React.SetStateAction<HTMLAudioElement | null>>,
-  audio: HTMLAudioElement | null // passierte Audio Instanz hier
+  audio: HTMLAudioElement | null
 ): void => {
   const getNewTrack = () => getRandomTrack(musicPlaylist, lastTrack)
 
   const randomTrack = getNewTrack()
 
-  // Falls eine alte Audioinstanz existiert, stoppen und freigeben
   if (audio) {
     audio.pause()
-    audio.currentTime = 0 // Setze die Wiedergabezeit zurück
+    audio.currentTime = 0
   }
 
-  // Erzeuge eine neue Instanz von Audio
   const newAudio = new Audio(randomTrack)
   newAudio.loop = false
   newAudio.volume = 0.1
 
-  // Wenn die Musik zu Ende ist, spiele den nächsten Track
   newAudio.onended = () => {
     const nextTrack = getNewTrack()
     setActiveMusicSRC(nextTrack)
     setLastTrack(nextTrack)
   }
 
-  setAudio(newAudio) // Setze die neue Audioinstanz
+  setAudio(newAudio)
 
-  // Wenn Musik abgespielt werden soll, starte die Wiedergabe
   if (isMusicPlaying) {
     newAudio.play().catch((err) => {
       throw new Error(`Failed to play new music: ${err}`)

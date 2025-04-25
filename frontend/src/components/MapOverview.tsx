@@ -5,7 +5,7 @@ import { MapElement } from './MapElement'
 import { ActiveMapContext } from '../context/context'
 import { Map } from '../models/models'
 
-const ContainerBattlemaps = styled.div`
+const ContainerMainmaps = styled.div`
     display: flex;
     width: 100%;
     gap: 2px;
@@ -14,7 +14,7 @@ const ContainerBattlemaps = styled.div`
     padding: 30px 10px 30px 10px;
 `
 
-const BattlemapsColumn = styled.div`
+const MainmapsColumn = styled.div`
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -24,32 +24,32 @@ const BattlemapsColumn = styled.div`
 
 interface MapOverviewProps {
     gap: string,
-    battlemaps: Map[] | undefined
+    mainmaps: Map[] | undefined
     handleSceneSelection?(id: number, isMainMap: boolean): void
     isActiveMainMap: boolean
     isAdminScreen: boolean
 }
 
-const MapOverview: FunctionComponent<MapOverviewProps> = ({ battlemaps, gap, handleSceneSelection, isActiveMainMap, isAdminScreen }): ReactElement => {
+const MapOverview: FunctionComponent<MapOverviewProps> = ({ mainmaps, gap, handleSceneSelection, isActiveMainMap, isAdminScreen }): ReactElement => {
 
     const { activeMapId } = useContext(ActiveMapContext)
     let maps: Map[]
 
-    if(!battlemaps)  {
+    if(!mainmaps)  {
         maps = Array.from({ length: 16 }, (_, index) => ({
             id: index + 1    
         }))
     } 
     else {
-        maps = battlemaps
+        maps = mainmaps
     }
      
     const count = Math.sqrt(maps.length)
       
       return (
-        <ContainerBattlemaps data-test-id='container-battlemaps' style={{ gap: gap }}>
+        <ContainerMainmaps data-test-id='container-mainmaps' style={{ gap: gap }}>
             {[...Array(count)].map((_, colIndex) => (
-                <BattlemapsColumn style={{ gap: gap }} key={ colIndex }>
+                <MainmapsColumn style={{ gap: gap }} key={ colIndex }>
                     {[...Array(count)].map((_, mapIndex) => {
                         const itemIndex = colIndex * count + mapIndex
                         if (maps && itemIndex < maps.length) {
@@ -69,9 +69,9 @@ const MapOverview: FunctionComponent<MapOverviewProps> = ({ battlemaps, gap, han
                         }
                         return null
                     })}
-                </BattlemapsColumn>
+                </MainmapsColumn>
             ))}
-        </ContainerBattlemaps>
+        </ContainerMainmaps>
     )
 }
 export { MapOverview }

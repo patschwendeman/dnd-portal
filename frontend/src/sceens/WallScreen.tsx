@@ -54,7 +54,7 @@ const BackgroundImage = styled.img`
 const WallScreen: FunctionComponent = (): ReactElement => {
     const { activeSceneId } = useContext(ActiveSceneContext)
     const [activeScene, setActiveScene] = useState<SceneDetail>()
-    const [battlemaps, setBattlemaps] = useState<Map[]>([])
+    const [mainmaps, setMainmaps] = useState<Map[]>([])
     const [isActiveMainMap, setIsActiveMainMap] = useState<boolean>(false) 
     const [worldMapVisiblity, setWorldMapVisiblity] = useState<boolean>(false)
     const [mainMapsVisiblity, setMainMapsVisiblity] = useState<boolean>(isActiveMainMap)
@@ -62,11 +62,11 @@ const WallScreen: FunctionComponent = (): ReactElement => {
 
     const buttonLabels = ['BATTLE', 'WORLD', 'OFF']
 
-    const handleWallScreenData = (activeScene: SceneDetail, battlemaps: Map[]) => {
+    const handleWallScreenData = (activeScene: SceneDetail, mainmaps: Map[]) => {
         setActiveScene(activeScene)
-        setBattlemaps(battlemaps)
+        setMainmaps(mainmaps)
         setWorldMapVisiblity(false)
-        if(activeScene.fight === true) {
+        if(activeScene.main === true) {
             setIsActiveMainMap(true)
             setMainMapsVisiblity(true)
         }
@@ -92,8 +92,8 @@ const WallScreen: FunctionComponent = (): ReactElement => {
 
     const fetchWallScreenData = async () => {
         try {
-            const [activeScene, battlemaps] = await getWallScreenData(activeSceneId)
-            handleWallScreenData(activeScene, battlemaps)
+            const [activeScene, mainmaps] = await getWallScreenData(activeSceneId)
+            handleWallScreenData(activeScene, mainmaps)
         } catch (err) {
             throw new Error(`Error fetching wall data: ${err}`)
         }
@@ -107,7 +107,7 @@ const WallScreen: FunctionComponent = (): ReactElement => {
         <Screen>
             <BackgroundImage data-test-id='wallImg' src={activeScene?.graphics_wall.source} alt='' /> 
             <MapContainer $isVisible={mainMapsVisiblity}> 
-                <MapOverview battlemaps={battlemaps} gap='10px' isActiveMainMap={ isActiveMainMap } isAdminScreen={ false }/>
+                <MapOverview mainmaps={mainmaps} gap='10px' isActiveMainMap={ isActiveMainMap } isAdminScreen={ false }/>
             </MapContainer>
             <MapContainer $isVisible={worldMapVisiblity}> 
             <MapEnvironment src={MapEnvironmentSrc} ></MapEnvironment>
