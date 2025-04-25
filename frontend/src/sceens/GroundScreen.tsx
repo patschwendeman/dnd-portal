@@ -6,7 +6,6 @@ import { ScreenControlBar } from '../components/ScreenControlBar'
 import { ActiveSceneContext } from '../context/context'
 import { SceneDetail } from '../models/models'
 import { getGroundScreenData } from '../service/groundScreen'
-import { getMediaSRC } from '../utils/utils'
 
 
 const Screen = styled.div`
@@ -39,7 +38,7 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
     const { activeSceneId } = useContext(ActiveSceneContext)
     const [imageSRC, setImageSRC] = useState<string>('')
     const [gritColor, setGritColor] = useState<string>('')
-    const [gritSize, setGritSize] = useState<number>(100)
+    const [gridOption, setGridOption] = useState<number>(100)
     const [,setActiveButton] = useState<number | null>(null)
 
     const buttonLabels = ['BLACK', 'WHITE', 'OFF']
@@ -50,19 +49,16 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
         setImageSRC(src)
     }
 
-    function handleGridVisibility(option: number) {
-        setActiveButton(option)
-        if (option === 0) {
-            setGritColor('black')
-        } else if (option === 1) {
-            setGritColor('white')
-        } else {
-            setGritColor('transparent')
-        }
+    const handleGroundScreen = (activeScene: SceneDetail) => {
+        const src = activeScene.graphics_ground.source 
+        setMediaSRC(src)
+        setMediaType(determineMediaType(src))
     }
 
-    function handleGridSize(option: number) {
-        setGritSize(option)
+
+    const handleGridVisibility = (option: number) => {
+        setActiveButton(option)
+        setGridColor(option === 0 ? 'black' : option === 1 ? 'white' : 'transparent')
     }
 
     const fetchGroundScreenData = async () => {

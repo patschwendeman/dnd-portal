@@ -21,20 +21,6 @@ export const filterSceneByKey = <K extends keyof SceneDetail>(
   return scene
 }
 
-export const getMediaSRC = <K extends keyof SceneDetail>(
-  scene: SceneDetail,
-  key: K
-): string => {
-  const value = scene[key]
-
-  if (!isSourcePropertyValid(value)) {
-    throw new Error(
-      `Source of ${key} not found or does not have a 'source' property`
-    )
-  }
-  return value.source
-}
-
 export const getRandomTrack = (
   musicPlaylist: string[],
   lastTrack: string
