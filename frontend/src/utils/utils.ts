@@ -1,14 +1,5 @@
 import { SceneDetail } from '../models/models'
 
-const isSourcePropertyValid = (obj: unknown): obj is { source: string } => {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    'source' in obj &&
-    typeof (obj as { source: string }).source === 'string'
-  )
-}
-
 export const filterSceneByKey = <K extends keyof SceneDetail>(
   key: K,
   value: SceneDetail[K],

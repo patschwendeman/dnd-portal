@@ -31,13 +31,22 @@ const BackgroundImage = styled.img`
     width: 100%;
     height: 100%;
     z-index: 1;
+    object-fit: cover;
+    position: fixed;
+`
+
+const BackgroundVideo = styled.video`
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    object-fit: cover;
     position: fixed;
 `
 
 const GroundScreen: FunctionComponent = (): ReactElement => {
     const { activeSceneId } = useContext(ActiveSceneContext)
     const [imageSRC, setImageSRC] = useState<string>('')
-    const [gritColor, setGritColor] = useState<string>('')
+    const [gridColor, setGridColor] = useState<string>('')
     const [gridOption, setGridOption] = useState<number>(100)
     const [,setActiveButton] = useState<number | null>(null)
 
@@ -76,10 +85,10 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
 
     return(
         <Screen>
-            <GridOverlay gritColor={ gritColor } gritSize={ gritSize } />
             <BackgroundImage data-test-id='groundImg' src={imageSRC} alt='' />
-            <ScreenControlBar onVisibilityChange={handleGridVisibility} onSliderChange={handleGridSize} buttonLabels={buttonLabels}/>
-        </Screen> 
+        <GridOverlay gridColor={gridColor} gridOption={gridOption} />
+        <ScreenControlBar onVisibilityChange={handleGridVisibility} onSliderChange={setGridOption} buttonLabels={buttonLabels} />
+    </Screen> 
     )
 }
 export { GroundScreen }
