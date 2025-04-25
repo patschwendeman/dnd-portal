@@ -3,8 +3,8 @@ import styled from 'styled-components'
 
 
 interface GridOverlayProps {
-    gritColor: string,
-    gritSize: number
+    gridColor: string,
+    gridOption: number
 }
 
 const Overlay = styled.div`
@@ -15,16 +15,16 @@ const Overlay = styled.div`
     width: 100%;
     height: 100%;
 `
-const GridLine = styled.div<{ $i: number, $width: number, $height: number, $left: number, $top: number, $gritColor: string }>`
+const GridLine = styled.div<{ $i: number, $width: number, $height: number, $left: number, $top: number, $gridColor: string }>`
     position: absolute;
     left: ${props => props.$left}px;
     top: ${props => props.$top}px;
     width: ${props => props.$width}px;
     height: ${props => props.$height}px;
-    background-color: ${props => props.$gritColor};
+    background-color: ${props => props.$gridColor};
 `
 
-const GridOverlay: FunctionComponent<GridOverlayProps> = ({ gritColor, gritSize }): ReactElement => {
+const GridOverlay: FunctionComponent<GridOverlayProps> = ({ gridColor, gridOption }): ReactElement => {
     const [screenSize, setScreenSize] = useState({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -42,7 +42,7 @@ const GridOverlay: FunctionComponent<GridOverlayProps> = ({ gritColor, gritSize 
         return () => window.removeEventListener('resize', handleResize)
     }, [])
 
-    const dpi = window.devicePixelRatio * gritSize
+    const dpi = window.devicePixelRatio * gridOption
     const gridSize = dpi 
     const gridLines = []
 
@@ -55,7 +55,7 @@ const GridOverlay: FunctionComponent<GridOverlayProps> = ({ gritColor, gritSize 
                 $height={screenSize.height}
                 $left={i}
                 $top={0}
-                $gritColor={gritColor}
+                $gridColor={gridColor}
             ></GridLine>
         )
     }
@@ -69,7 +69,7 @@ const GridOverlay: FunctionComponent<GridOverlayProps> = ({ gritColor, gritSize 
                 $height= {2}
                 $left={0}
                 $top={i}
-                $gritColor={gritColor}
+                $gridColor={gridColor}
             ></GridLine>
         )
     }
