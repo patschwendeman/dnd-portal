@@ -45,17 +45,27 @@ const BackgroundVideo = styled.video`
 
 const GroundScreen: FunctionComponent = (): ReactElement => {
     const { activeSceneId } = useContext(ActiveSceneContext)
-    const [imageSRC, setImageSRC] = useState<string>('')
+    const [mediaSRC, setMediaSRC] = useState<string>('')
+    const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null)
     const [gridColor, setGridColor] = useState<string>('')
     const [gridOption, setGridOption] = useState<number>(100)
     const [,setActiveButton] = useState<number | null>(null)
 
     const buttonLabels = ['BLACK', 'WHITE', 'OFF']
 
-    const handleGroundScreen = (activeScene: SceneDetail) => {
-        const src = activeScene.graphics_ground.source
-
-        setImageSRC(src)
+    const determineMediaType = (src: string): 'image' | 'video' | null => {
+        const imageExtensions = ['.jpg', '.jpeg', '.png']
+        const videoExtensions = ['.mp4', '.webm', '.mkv']
+    
+        const lowerSrc = src.toLowerCase()
+    
+        if (videoExtensions.some(ext => lowerSrc.endsWith(ext))) {
+            return 'video'
+        }
+        if (imageExtensions.some(ext => lowerSrc.endsWith(ext))) {
+            return 'image'
+        }
+        return null
     }
 
     const handleGroundScreen = (activeScene: SceneDetail) => {
@@ -85,8 +95,11 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
 
     return(
         <Screen>
-            <BackgroundImage data-test-id='groundImg' src={imageSRC} alt='' />
         <GridOverlay gridColor={gridColor} gridOption={gridOption} />
+        {mediaType === 'image' && <BackgroundImage src={mediaSRC} alt='Background' />}
+        {mediaType === 'video' && (
+            <BackgroundVideo autoPlay loop muted src={mediaSRC} />
+        )}
         <ScreenControlBar onVisibilityChange={handleGridVisibility} onSliderChange={setGridOption} buttonLabels={buttonLabels} />
     </Screen> 
     )
