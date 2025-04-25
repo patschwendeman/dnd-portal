@@ -27,15 +27,7 @@ const Screen = styled.div`
     }
 `
 
-const BackgroundImage = styled.img`
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    object-fit: cover;
-    position: fixed;
-`
-
-const BackgroundVideo = styled.video`
+const BackgroundMedia = styled.video`
     width: 100%;
     height: 100%;
     z-index: 1;
@@ -52,6 +44,12 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
     const [,setActiveButton] = useState<number | null>(null)
 
     const buttonLabels = ['BLACK', 'WHITE', 'OFF']
+
+    const gridColorMap: Record<number, string> = {
+        0: 'black',
+        1: 'white',
+        2: 'transparent',
+    }
 
     const determineMediaType = (src: string): 'image' | 'video' | null => {
         const imageExtensions = ['.jpg', '.jpeg', '.png']
@@ -77,7 +75,7 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
 
     const handleGridVisibility = (option: number) => {
         setActiveButton(option)
-        setGridColor(option === 0 ? 'black' : option === 1 ? 'white' : 'transparent')
+        setGridColor(gridColorMap[option] || 'transparent')
     }
 
     const fetchGroundScreenData = async () => {
@@ -95,13 +93,11 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
 
     return(
         <Screen>
-        <GridOverlay gridColor={gridColor} gridOption={gridOption} />
-        {mediaType === 'image' && <BackgroundImage src={mediaSRC} alt='Background' />}
-        {mediaType === 'video' && (
-            <BackgroundVideo autoPlay loop muted src={mediaSRC} />
-        )}
-        <ScreenControlBar onVisibilityChange={handleGridVisibility} onSliderChange={setGridOption} buttonLabels={buttonLabels} />
-    </Screen> 
+            <GridOverlay gridColor={gridColor} gridOption={gridOption} />
+            {mediaType === 'image' && <BackgroundMedia as="img" src={mediaSRC} alt="Background" />}
+            {mediaType === 'video' && <BackgroundMedia src={mediaSRC} autoPlay loop muted />}
+            <ScreenControlBar onVisibilityChange={handleGridVisibility} onSliderChange={setGridOption} buttonLabels={buttonLabels} />
+        </Screen> 
     )
 }
 export { GroundScreen }
