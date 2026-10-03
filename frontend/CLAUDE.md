@@ -79,5 +79,6 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
 
 ## CI
 
-`../.github/workflows/frontend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter `frontend/` Docker-Image bauen (ghcr.io), darin `npm run test:unit` und
-`npm run lint`. Build, `tsc` und E2E laufen nicht in CI.
+`../.github/workflows/frontend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter
+`frontend/` zwei parallele Jobs direkt auf dem Runner (Node 18, npm-Cache, `npm ci`): `lint` (`npm run lint`) und
+`test` (`npm run test:unit`). Build, `tsc` und E2E laufen nicht in CI.

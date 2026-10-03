@@ -93,8 +93,15 @@ Merge-, Revert- und `fixup!`/`squash!`-Nachrichten lässt der Hook durch. Die At
 ## CI
 
 `.github/workflows/backend.yml` und `.github/workflows/frontend.yml` laufen bei Pushes auf `main` und `development`,
-jeweils nur bei Änderungen im zugehörigen Ordner (bzw. an der Workflow-Datei selbst): Docker-Image bauen und nach
-`ghcr.io/<owner>/dnd-portal-backend` bzw. `dnd-portal-frontend` pushen, darin Tests und Lint ausführen.
+jeweils nur bei Änderungen im zugehörigen Ordner (bzw. an der Workflow-Datei selbst). Je Workflow laufen zwei
+parallele Jobs `lint` und `test` direkt auf dem Runner (`ubuntu-latest`):
+
+- **Frontend** (in `frontend/`): Node 18 über `actions/setup-node` mit npm-Cache, `npm ci`, dann `npm run lint`
+  bzw. `npm run test:unit`.
+- **Backend** (in `backend/`): Python 3.11 über `actions/setup-python` mit pip-Cache,
+  `pip install -r requirements.txt`, dann `pylint src/` bzw. `python -m unittest discover -s __tests__ -p "*.py"`.
+
+Schlägt Lint oder Test fehl, ist der Workflow rot. Build, `tsc` und E2E laufen nicht in CI.
 
 ## Archiv
 

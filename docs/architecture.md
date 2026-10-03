@@ -85,6 +85,6 @@ pgAdmin (5050) und die API (8000, uvicorn `--reload`). Es gibt keine `.env.examp
 | Lint | `pylint src/` (`.pylintrc`) | `npm run lint` (ESLint flat config, einfache Quotes, keine Semikolons) |
 | Unit-Tests | `python -m unittest discover -s __tests__` – aktuell **keine Tests** | `npm run test:unit` (vitest, nur `utils.spec.ts`) |
 | E2E | – | `npm run test:e2e` (jest-cucumber + Selenium/Chrome, braucht Backend; teilweise veraltet) |
-| CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: Docker-Image bauen (ghcr), dann Tests + Lint im Image | `.github/workflows/frontend.yml` – analog für `frontend/`; kein Build/`tsc`/E2E in CI |
+| CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: parallele Jobs `lint` (`pylint src/`) und `test` (unittest) direkt auf dem Runner, Python 3.11 mit pip-Cache | `.github/workflows/frontend.yml` – analog für `frontend/`: Jobs `lint` und `test` (`npm run test:unit`), Node 18 mit npm-Cache, `npm ci`; kein Build/`tsc`/E2E in CI |
 
 Die alten Branches `test` und `v1-roguelike` (verworfen) der früheren Einzel-Repos liegen als Tags `archive/{backend,frontend}-{test,v1-roguelike}` vor.

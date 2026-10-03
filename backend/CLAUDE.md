@@ -62,5 +62,6 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**. 
 
 ## CI
 
-`../.github/workflows/backend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter `backend/` Docker-Image bauen (ghcr.io, amd64+arm64), darin Tests und
-`pylint src/` ausführen.
+`../.github/workflows/backend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter
+`backend/` zwei parallele Jobs direkt auf dem Runner (Python 3.11, pip-Cache, `pip install -r requirements.txt`):
+`lint` (`pylint src/`) und `test` (`python -m unittest discover -s __tests__ -p "*.py"`).
