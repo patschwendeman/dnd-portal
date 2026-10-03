@@ -1,8 +1,8 @@
-# dnd-portal-backend
+# backend (dnd-portal)
 
 REST-API + PostgreSQL für das DnD Portal. Liefert Szenen mit ihren Wall-/Ground-Bildern und Musik-Playlists an das
-Frontend (`dnd-portal-frontend`). Projektübergreifender Kontext (Vision, Screens, Begriffe, bekannte Probleme) liegt
-eine Ebene höher in `../CLAUDE.md` und `../docs/` (nicht versioniert).
+Frontend (`../frontend`). Projektübergreifender Kontext (Vision, Screens, Begriffe, bekannte Probleme) liegt
+eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 
 ## Stack
 
@@ -48,19 +48,19 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**. 
 ## Wichtig beim Ändern
 
 - **API-Vertrag:** Das Frontend spiegelt die Antwort von `/scenes/details` im Interface `SceneDetail`
-  (`dnd-portal-frontend/src/models/models.ts`). Feld- oder Pfadänderungen dort mitziehen.
-- **`source`-Pfade** in `seed_data.json` verweisen auf Dateien in `dnd-portal-frontend/public/` (z. B.
+  (`../frontend/src/models/models.ts`). Feld- oder Pfadänderungen dort mitziehen.
+- **`source`-Pfade** in `seed_data.json` verweisen auf Dateien in `../frontend/public/` (z. B.
   `/assets/images/ground_screen/battle_1.jpg`). Das Backend liefert keine Dateien aus.
 - **Seed:** Referenzen (`graphics_wall_id`, `graphics_ground_id`, `music_id`-Liste) sind Autoincrement-IDs in
   Dateireihenfolge – Einträge nicht umsortieren. Der Seeder befüllt nur leere Tabellen; Änderungen an der JSON
   erfordern einen DB-Reset (z. B. `docker compose down -v`).
 - **Keine Migrationen:** `create_all` legt nur fehlende Tabellen an; Schemaänderungen brauchen ebenfalls einen DB-Reset.
 - `Scene.main == true` = Kampfszene (Mainmap), `false` = Nicht-Kampfszene (Sidemap). Alte Namen
-  (`battlemap`, `sidemap`, `fight`) nicht wieder einführen; Branch `v1-roguelike` ist verworfen.
+  (`battlemap`, `sidemap`, `fight`) nicht wieder einführen; `v1-roguelike` (Tags `archive/*`) ist verworfen.
 - Bekannte Bugs (500 statt 404, `/scenes/details/{id}` gibt bei unbekannter ID die Liste zurück, ungenutzte Spalten
   u. a.): siehe `../docs/known-issues.md`.
 
 ## CI
 
-`.github/workflows/ci.yml`: bei Push auf `main`/`test` Docker-Image bauen (ghcr.io, amd64+arm64), darin Tests und
+`../.github/workflows/backend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter `backend/` Docker-Image bauen (ghcr.io, amd64+arm64), darin Tests und
 `pylint src/` ausführen.

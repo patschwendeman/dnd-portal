@@ -1,10 +1,13 @@
-name: CI Pipeline
+name: Backend CI
 
 on:
   push:
     branches:
       - main
-      - test
+      - development
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend.yml"
 
 jobs:
   build:
@@ -35,10 +38,10 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
-            --file Dockerfile \
-            --tag ghcr.io/${{ github.repository_owner }}/python-app:${{ github.sha }} \
-            --tag ghcr.io/${{ github.repository_owner }}/python-app:latest \
-            --push .
+            --file backend/Dockerfile \
+            --tag ghcr.io/${{ github.repository_owner }}/dnd-portal-backend:${{ github.sha }} \
+            --tag ghcr.io/${{ github.repository_owner }}/dnd-portal-backend:latest \
+            --push backend
 
   test:
     runs-on: ubuntu-latest
@@ -53,11 +56,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pull Docker image from GHCR
-        run: docker pull ghcr.io/${{ github.repository_owner }}/python-app:${{ github.sha }}
+        run: docker pull ghcr.io/${{ github.repository_owner }}/dnd-portal-backend:${{ github.sha }}
 
       - name: Run tests in Docker container
         run: |
-          docker run --rm ghcr.io/${{ github.repository_owner }}/python-app:${{ github.sha }} python -m unittest discover -s __tests__ -p "*.py"
+          docker run --rm ghcr.io/${{ github.repository_owner }}/dnd-portal-backend:${{ github.sha }} python -m unittest discover -s __tests__ -p "*.py"
           
   lint:
     runs-on: ubuntu-latest
@@ -72,8 +75,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pull Docker image from GHCR
-        run: docker pull ghcr.io/${{ github.repository_owner }}/python-app:${{ github.sha }}
+        run: docker pull ghcr.io/${{ github.repository_owner }}/dnd-portal-backend:${{ github.sha }}
 
       - name: Run lint in Docker container
         run: |
-          docker run --rm ghcr.io/${{ github.repository_owner }}/python-app:${{ github.sha }} pylint src/
+          docker run --rm ghcr.io/${{ github.repository_owner }}/dnd-portal-backend:${{ github.sha }} pylint src/

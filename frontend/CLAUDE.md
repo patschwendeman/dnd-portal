@@ -1,9 +1,9 @@
-# dnd-portal-frontend
+# frontend (dnd-portal)
 
 UI des DnD Portals: Admin Screen (Spielleiter), Player Screen (Smartphone), Wall Screen (Atmosphäre) und
-Ground Screen (digitales Spielbrett). Holt Szenen vom Backend (`dnd-portal-backend`) und liefert alle Medien
+Ground Screen (digitales Spielbrett). Holt Szenen vom Backend (`../backend`) und liefert alle Medien
 (Bilder, Musik, Sounds, Markdown-Notizen) selbst aus `public/` aus. Projektübergreifender Kontext (Vision, Screens
-Soll/Ist, Begriffe, bekannte Probleme) liegt eine Ebene höher in `../CLAUDE.md` und `../docs/` (nicht versioniert).
+Soll/Ist, Begriffe, bekannte Probleme) liegt eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 
 ## Stack
 
@@ -73,11 +73,11 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
 - Player-Ressourcen (`ResourceBarPlayer`) sind reiner lokaler State; Zauberplatz-Maxima sind hart codiert (`SpellMax`).
 - `eslint-plugin-react-hooks` ist installiert, aber nicht aktiv – `useEffect`-Abhängigkeiten nicht blind „reparieren“,
   ohne das Verhalten zu prüfen.
-- `/spells` und die Ressource „Bewegung“ sind Work in Progress; Branch `v1-roguelike` ist verworfen
+- `/spells` und die Ressource „Bewegung“ sind Work in Progress; `v1-roguelike` (Tags `archive/*`) ist verworfen
   (Reste: `updateData`, `map_locked.png`).
 - Weitere bekannte Bugs/Altlasten: `../docs/known-issues.md`.
 
 ## CI
 
-`.github/workflows/ci.yml`: bei Push auf `main`/`test` Docker-Image bauen (ghcr.io), darin `npm run test:unit` und
+`../.github/workflows/frontend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter `frontend/` Docker-Image bauen (ghcr.io), darin `npm run test:unit` und
 `npm run lint`. Build, `tsc` und E2E laufen nicht in CI.
