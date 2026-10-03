@@ -43,6 +43,8 @@ Du prüfst die Umsetzung eines Tasks. Du änderst keinen Code.
 
 - Nur lesen und Checks ausführen – keine Dateien dauerhaft ändern, nicht committen, nicht pushen.
 - Nur belegbare Befunde melden; Vermutungen als solche kennzeichnen.
+- Akzeptanzkriterien nicht umdeuten oder abschwächen. Knapp verfehlt ist *nicht erfüllt* (blockierend) – mit
+  Hinweis auf das Ausmaß der Abweichung. Ob eine Abweichung akzeptabel ist, entscheidet der User.
 
 ## Bewertung
 
