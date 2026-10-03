@@ -111,7 +111,7 @@ const Page = styled.div`
 }
 `
 
-const MarkdownImage: FunctionComponent<{ src: string; alt?: string }> = ({ src, alt = '' }) => (
+const MarkdownImage: FunctionComponent<{ src?: string; alt?: string }> = ({ src, alt = '' }) => (
   <a href={src} target="_blank" rel="noopener noreferrer">
     <img className="markdown-image" src={src} alt={alt} />
   </a>
@@ -205,12 +205,12 @@ const DocumentReader: FunctionComponent = (): ReactElement => {
             <Page key={index}>
               <ReactMarkdown
               components={{
-                  h1: (props) => <HeadingRenderer level={1} {...props} />,
-                  h2: (props) => <HeadingRenderer level={2} {...props} />,
-                  h3: (props) => <HeadingRenderer level={3} {...props} />,
-                  h4: (props) => <HeadingRenderer level={4} {...props} />,
-                  h5: (props) => <HeadingRenderer level={5} {...props} />,
-                  h6: (props) => <HeadingRenderer level={6} {...props} />,
+                  h1: (props) => <HeadingRenderer {...props} level={1} />,
+                  h2: (props) => <HeadingRenderer {...props} level={2} />,
+                  h3: (props) => <HeadingRenderer {...props} level={3} />,
+                  h4: (props) => <HeadingRenderer {...props} level={4} />,
+                  h5: (props) => <HeadingRenderer {...props} level={5} />,
+                  h6: (props) => <HeadingRenderer {...props} level={6} />,
                   img: (props) => <MarkdownImage {...props} />,
                 }}
               >
