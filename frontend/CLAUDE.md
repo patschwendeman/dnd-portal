@@ -14,7 +14,12 @@ react-slick. Tests: vitest (Unit), jest-cucumber + selenium-webdriver (BDD/E2E).
 ## Befehle
 
 ```bash
-npm run dev          # Vite-Dev-Server auf 0.0.0.0:5173
+# im Monorepo-Root: ganze Anwendung in Docker (Frontend mit Hot-Reload, ./ gemountet)
+docker compose up --build    # Frontend :5173, API :8000, DB :5432
+# in frontend/: nur Frontend in Docker
+docker compose up --build
+
+npm run dev          # Vite-Dev-Server auf 0.0.0.0:5173 (nativ, ohne Docker)
 npm run build        # tsc -b && vite build
 npm run typecheck    # tsc -b (nur Typprüfung)
 npm run lint         # ESLint (eslint.config.js)
@@ -23,6 +28,10 @@ npm run test:e2e     # jest-cucumber + Selenium/Chrome; braucht laufendes Backen
 ```
 
 Das Backend muss auf `http://localhost:8000/` laufen (fest in `src/api/apiClient.ts`, keine Env-Variablen).
+
+Node-Version: `.nvmrc` (`18`, von CI und nvm/fnm gelesen) und `Dockerfile` (`node:18-slim`) synchron halten.
+Im Container liegt `node_modules` in einem eigenen Volume; nach Änderungen an `package.json` mit
+`docker compose up --build -V` neu aufbauen.
 
 ## Routen
 
@@ -81,6 +90,6 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
 ## CI
 
 `../.github/workflows/frontend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter
-`frontend/` vier Jobs direkt auf dem Runner (Node 18, npm-Cache, `npm ci`): zuerst `build` (`npx vite build`),
+`frontend/` vier Jobs direkt auf dem Runner (Node aus `.nvmrc`, npm-Cache, `npm ci`): zuerst `build` (`npx vite build`),
 danach parallel `typecheck` (`npm run typecheck`, also `tsc -b`), `lint` (`npm run lint`) und `test`
 (`npm run test:unit`), alle mit `needs: build` – bricht der Build, laufen sie nicht. E2E läuft nicht in CI.

@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:17
-    container_name: dnd_postgres_db
+    container_name: dnd-postgres_db
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -16,9 +16,10 @@ services:
       retries: 5
 
   pgadmin:
-    container_name: pgadmin4_container
+    container_name: dnd-pgadmin4
     image: dpage/pgadmin4
     restart: always
+    profiles: [tools]
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
@@ -28,8 +29,9 @@ services:
   app:
     build:
       context: .
-    container_name: dnd_fastapi
+    container_name: dnd-fastapi_backend
     working_dir: /app
+    env_file: .env
     command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     depends_on:
       db:

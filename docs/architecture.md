@@ -71,12 +71,23 @@ IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement).
 
 ## Lokal starten
 
-**Backend** (`backend/`): `.env` mit `DRIVERNAME`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`,
-`HOST`, `PORT` (+ `PGADMIN_DEFAULT_EMAIL/PASSWORD` für pgAdmin); `docker compose up` startet Postgres (5432),
-pgAdmin (5050) und die API (8000, uvicorn `--reload`). Es gibt keine `.env.example`.
+Die ganze Anwendung läuft lokal in Docker und wird aus dem Root gestartet. `compose.yaml` bindet per `include`
+`backend/docker-compose.yml` (mit `backend/.env` für die Interpolation) und `frontend/docker-compose.yml` ein.
 
-**Frontend** (`frontend/`): `npm install`, `npm run dev` → http://localhost:5173
-(`/admin`, `/wall`, `/ground`, `/`). Benötigt das Backend auf :8000.
+**Voraussetzung:** `backend/.env` (gitignored) aus `backend/.env.example` anlegen: `DRIVERNAME`, `POSTGRES_USER`,
+`POSTGRES_PASSWORD`, `POSTGRES_DB`, `HOST` (`db` = Service-Name im Compose-Netz), `PORT`,
+`PGADMIN_DEFAULT_EMAIL/PASSWORD`. Die API erhält sie per `env_file`; `backend/.dockerignore` hält die `.env` aus dem Image.
+
+| Befehl (im Root) | Wirkung |
+|---|---|
+| `docker compose up --build` | `db` (Postgres :5432), `app` (API :8000, uvicorn `--reload`, `backend/src` gemountet), `react-app` (Vite :5173, `frontend/` gemountet) |
+| `docker compose --profile tools up` | zusätzlich `pgadmin` (:5050) |
+| `docker compose logs -f <service>` | Logs verfolgen |
+| `docker compose down` | stoppen; mit `-v` auch DB-Volume löschen (DB-Reset, Seeder läuft neu) |
+
+UI unter http://localhost:5173 (`/admin`, `/wall`, `/ground`, `/`); das Frontend ruft die API über
+`http://localhost:8000/` auf. Einzelstart weiterhin mit `docker compose up` in `backend/` bzw. `frontend/`.
+Node-Version: `frontend/.nvmrc` (CI) und `frontend/Dockerfile` (`node:18-slim`) synchron halten.
 
 ## Qualitätssicherung
 
@@ -85,6 +96,6 @@ pgAdmin (5050) und die API (8000, uvicorn `--reload`). Es gibt keine `.env.examp
 | Lint | `pylint src/` (`.pylintrc`) | `npm run lint` (ESLint flat config, einfache Quotes, keine Semikolons) |
 | Unit-Tests | `python -m unittest discover -s __tests__` – aktuell **keine Tests** | `npm run test:unit` (vitest, nur `utils.spec.ts`) |
 | E2E | – | `npm run test:e2e` (jest-cucumber + Selenium/Chrome, braucht Backend; teilweise veraltet) |
-| CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: parallele Jobs `lint` (`pylint src/`) und `test` (unittest) direkt auf dem Runner, Python 3.11 mit pip-Cache | `.github/workflows/frontend.yml` – analog für `frontend/`: zuerst Job `build` (`vite build`), danach parallel `typecheck` (`tsc -b`), `lint` und `test` (`npm run test:unit`) mit `needs: build`, Node 18 mit npm-Cache, `npm ci`; kein E2E in CI |
+| CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: parallele Jobs `lint` (`pylint src/`) und `test` (unittest) direkt auf dem Runner, Python 3.11 mit pip-Cache | `.github/workflows/frontend.yml` – analog für `frontend/`: zuerst Job `build` (`vite build`), danach parallel `typecheck` (`tsc -b`), `lint` und `test` (`npm run test:unit`) mit `needs: build`, Node aus `frontend/.nvmrc` (18) mit npm-Cache, `npm ci`; kein E2E in CI |
 
 Die alten Branches `test` und `v1-roguelike` (verworfen) der früheren Einzel-Repos liegen als Tags `archive/{backend,frontend}-{test,v1-roguelike}` vor.

@@ -36,7 +36,7 @@ Stand: Analyse vom 2026-09-27. Punkte mit „(ungeprüft)“ wurden aus dem Code
 - Ungenutzt: `index.css`, `App.css`, `src/assets/react.svg`, `updateData()`, `public/test.jpg` (~12 MB),
   `public/journey.mp3`, `public/voice_1.mp3`, `public/rotate.png`, `public/vite.svg`, `public/story/fight/test.py`.
 - `eslint-plugin-react-hooks` installiert, aber nicht aktiv; viele `useEffect`-Abhängigkeiten fehlen.
-- Docker-Image startet den Vite-Dev-Server statt eines Production-Builds.
+- Docker-Image startet den Vite-Dev-Server (gedacht für die lokale Entwicklung mit Hot-Reload); ein Production-Image fehlt.
 - `vite build` warnt: Haupt-Chunk ~547 kB > 500 kB (kein Code-Splitting).
 - README ist das unveränderte Vite-Template.
 

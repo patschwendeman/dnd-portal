@@ -1,0 +1,8 @@
+# Lokale Entwicklung: DB, API und Frontend mit einem Befehl aus dem Root starten.
+#   docker compose up                    # db :5432, app :8000, react-app :5173
+#   docker compose --profile tools up    # zusätzlich pgAdmin :5050
+# Die Services sind in den Teil-Dateien definiert und lassen sich dort weiterhin einzeln starten.
+include:
+  - path: backend/docker-compose.yml
+    env_file: backend/.env
+  - path: frontend/docker-compose.yml

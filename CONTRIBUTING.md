@@ -90,13 +90,33 @@ git config core.hooksPath .githooks
 Merge-, Revert- und `fixup!`/`squash!`-Nachrichten lässt der Hook durch. Die Attribution von Claude Code ist in
 `.claude/settings.json` abgeschaltet.
 
+## Lokale Entwicklung
+
+Die ganze Anwendung läuft in Docker und startet aus dem Root (Details:
+[docs/architecture.md](docs/architecture.md#lokal-starten)):
+
+```bash
+cp backend/.env.example backend/.env    # einmalig, Platzhalter ersetzen (gitignored)
+docker compose up --build               # db, app (API :8000), react-app (UI :5173), mit Hot-Reload
+docker compose --profile tools up       # zusätzlich pgAdmin :5050
+docker compose logs -f <service>
+docker compose down                     # -v setzt zusätzlich die DB zurück
+```
+
+- Die Services haben feste Containernamen (`dnd-postgres_db`, `dnd-fastapi_backend`, `dnd-pgadmin4`, `dnd-react_frontend`):
+  Root-Start und Einzelstart in `backend/` bzw. `frontend/` können nicht gleichzeitig existieren – vorher im
+  jeweils anderen Ordner `docker compose down`.
+- Alte Container aus den früheren Einzel-Repos belegen dieselben Ports (5432, 8000, 5050, 5173) – vorher stoppen.
+- Root- und Einzelstart sind verschiedene Compose-Projekte und nutzen getrennte DB-Volumes.
+- Nach Änderungen an `frontend/package.json`: `docker compose up --build -V` (erneuert das `node_modules`-Volume).
+
 ## CI
 
 `.github/workflows/backend.yml` und `.github/workflows/frontend.yml` laufen bei Pushes auf `main` und `development`,
 jeweils nur bei Änderungen im zugehörigen Ordner (bzw. an der Workflow-Datei selbst). Die Jobs laufen direkt
 auf dem Runner (`ubuntu-latest`):
 
-- **Frontend** (in `frontend/`): vier Jobs – Node 18 über `actions/setup-node` mit npm-Cache, `npm ci`. Zuerst läuft
+- **Frontend** (in `frontend/`): vier Jobs – Node aus `frontend/.nvmrc` über `actions/setup-node` mit npm-Cache, `npm ci`. Zuerst läuft
   `build` (`npx vite build`), danach parallel `typecheck` (`npm run typecheck`, also `tsc -b`), `lint`
   (`npm run lint`) und `test` (`npm run test:unit`), alle mit `needs: build`; bricht der Build, laufen sie nicht.
 - **Backend** (in `backend/`): zwei parallele Jobs `lint` und `test` – Python 3.11 über `actions/setup-python` mit pip-Cache,
