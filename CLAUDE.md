@@ -26,6 +26,10 @@ Teil-spezifischer Kontext (Befehle, Struktur, Konventionen): `frontend/CLAUDE.md
 
 ## Wichtige Leitplanken
 
+- **Branches:** Gearbeitet und committet wird ausschließlich auf `development` (keine Feature-/Hotfix-Branches).
+  Niemals auf `main` committen oder pushen – `main` erhält Änderungen nur per Pull Request von `development`.
+  Details: [CONTRIBUTING.md](CONTRIBUTING.md).
+
 - **Soll vs. Ist:** Die Docs trennen Vision („Soll“) und aktuellen Code-Stand („Ist“). Nicht annehmen, dass ein
   beschriebenes Soll-Feature bereits existiert – im Zweifel im Code prüfen.
 - **Setup am Spieltisch:** Ein Rechner mit mehreren Monitoren; Admin, Wall und Ground laufen als Fenster im selben
