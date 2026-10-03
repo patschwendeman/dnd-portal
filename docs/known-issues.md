@@ -37,6 +37,7 @@ Stand: Analyse vom 2026-09-27. Punkte mit „(ungeprüft)“ wurden aus dem Code
   `public/journey.mp3`, `public/voice_1.mp3`, `public/rotate.png`, `public/vite.svg`, `public/story/fight/test.py`.
 - `eslint-plugin-react-hooks` installiert, aber nicht aktiv; viele `useEffect`-Abhängigkeiten fehlen.
 - Docker-Image startet den Vite-Dev-Server statt eines Production-Builds.
+- `vite build` warnt: Haupt-Chunk ~547 kB > 500 kB (kein Code-Splitting).
 - README ist das unveränderte Vite-Template.
 
 ## Altlasten aus `v1-roguelike` (verworfen)

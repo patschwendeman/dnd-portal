@@ -80,5 +80,6 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
 ## CI
 
 `../.github/workflows/frontend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter
-`frontend/` zwei parallele Jobs direkt auf dem Runner (Node 18, npm-Cache, `npm ci`): `lint` (`npm run lint`) und
-`test` (`npm run test:unit`). Build, `tsc` und E2E laufen nicht in CI.
+`frontend/` drei Jobs direkt auf dem Runner (Node 18, npm-Cache, `npm ci`): zuerst `build` (`npm run build`, also
+`tsc -b && vite build`), danach parallel `lint` (`npm run lint`) und `test` (`npm run test:unit`), beide mit
+`needs: build` – bricht der Build, laufen sie nicht. E2E läuft nicht in CI.

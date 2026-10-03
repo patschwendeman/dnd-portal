@@ -5,3 +5,4 @@
 | Key | Typ | Titel | Status | Datei |
 |---|---|---|---|---|
 | DND-1 | setup | CI ohne Docker-Image: Lint und Tests direkt auf dem Runner | Fertig | [DND-1-ci-without-docker.md](DND-1-ci-without-docker.md) |
+| DND-2 | setup | CI: Frontend-Build (tsc + vite build) | Fertig | [DND-2-ci-frontend-build.md](DND-2-ci-frontend-build.md) |
