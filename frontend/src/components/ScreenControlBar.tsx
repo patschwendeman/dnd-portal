@@ -105,7 +105,7 @@ const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({ onVisibili
         onVisibilityChange(option)
     }
 
-    function handleSliderChange(event: Event, option: number | number[]) {
+    function handleSliderChange(_event: Event, option: number | number[]) {
         if(onSliderChange) {
             setSliderValue(option as number)
             onSliderChange(option as number)

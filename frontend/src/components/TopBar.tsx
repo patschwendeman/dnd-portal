@@ -164,7 +164,7 @@ const TopBar: FunctionComponent<AdminScreenProps> = ({
 
   return (
     <Bar>
-      {healAtmos.map((content, i) => (
+      {healAtmos.map((_, i) => (
         <AtmoButton onClick={() => playAtmoSounds(healAtmos[i].sound)} key={i}>
           <ReactSVG
             src={healAtmos[i].icon}
@@ -175,7 +175,7 @@ const TopBar: FunctionComponent<AdminScreenProps> = ({
         </AtmoButton>
       ))}
       <Seperator></Seperator>
-      {buffAtmos.map((content, i) => (
+      {buffAtmos.map((_, i) => (
         <AtmoButton onClick={() => playAtmoSounds(buffAtmos[i].sound)} key={i}>
           <ReactSVG
             src={buffAtmos[i].icon}
@@ -186,7 +186,7 @@ const TopBar: FunctionComponent<AdminScreenProps> = ({
         </AtmoButton>
       ))}
       <Seperator></Seperator>
-      {spellsAtmos.map((content, i) => (
+      {spellsAtmos.map((_, i) => (
         <AtmoButton
           onClick={() => playAtmoSounds(spellsAtmos[i].sound)}
           key={i}
@@ -200,7 +200,7 @@ const TopBar: FunctionComponent<AdminScreenProps> = ({
         </AtmoButton>
       ))}
       <Seperator></Seperator>
-      {debuffAtmos.map((content, i) => (
+      {debuffAtmos.map((_, i) => (
         <AtmoButton
           onClick={() => playAtmoSounds(debuffAtmos[i].sound)}
           key={i}
@@ -214,7 +214,7 @@ const TopBar: FunctionComponent<AdminScreenProps> = ({
         </AtmoButton>
       ))}
       <Seperator></Seperator>
-      {otherAtmos.map((content, i) => (
+      {otherAtmos.map((_, i) => (
         <AtmoButton onClick={() => playAtmoSounds(otherAtmos[i].sound)} key={i}>
           <ReactSVG
             src={otherAtmos[i].icon}
