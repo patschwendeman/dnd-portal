@@ -16,6 +16,7 @@ react-slick. Tests: vitest (Unit), jest-cucumber + selenium-webdriver (BDD/E2E).
 ```bash
 npm run dev          # Vite-Dev-Server auf 0.0.0.0:5173
 npm run build        # tsc -b && vite build
+npm run typecheck    # tsc -b (nur Typprüfung)
 npm run lint         # ESLint (eslint.config.js)
 npm run test:unit    # vitest (__tests__/unit)
 npm run test:e2e     # jest-cucumber + Selenium/Chrome; braucht laufendes Backend auf :8000
@@ -80,6 +81,6 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
 ## CI
 
 `../.github/workflows/frontend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter
-`frontend/` drei Jobs direkt auf dem Runner (Node 18, npm-Cache, `npm ci`): zuerst `build` (`npm run build`, also
-`tsc -b && vite build`), danach parallel `lint` (`npm run lint`) und `test` (`npm run test:unit`), beide mit
-`needs: build` – bricht der Build, laufen sie nicht. E2E läuft nicht in CI.
+`frontend/` vier Jobs direkt auf dem Runner (Node 18, npm-Cache, `npm ci`): zuerst `build` (`npx vite build`),
+danach parallel `typecheck` (`npm run typecheck`, also `tsc -b`), `lint` (`npm run lint`) und `test`
+(`npm run test:unit`), alle mit `needs: build` – bricht der Build, laufen sie nicht. E2E läuft nicht in CI.

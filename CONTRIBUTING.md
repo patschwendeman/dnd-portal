@@ -96,13 +96,13 @@ Merge-, Revert- und `fixup!`/`squash!`-Nachrichten lässt der Hook durch. Die At
 jeweils nur bei Änderungen im zugehörigen Ordner (bzw. an der Workflow-Datei selbst). Die Jobs laufen direkt
 auf dem Runner (`ubuntu-latest`):
 
-- **Frontend** (in `frontend/`): drei Jobs – Node 18 über `actions/setup-node` mit npm-Cache, `npm ci`. Zuerst läuft
-  `build` (`npm run build`, also `tsc -b && vite build`), danach parallel `lint` (`npm run lint`) und `test`
-  (`npm run test:unit`), beide mit `needs: build`; bricht der Build, laufen sie nicht.
+- **Frontend** (in `frontend/`): vier Jobs – Node 18 über `actions/setup-node` mit npm-Cache, `npm ci`. Zuerst läuft
+  `build` (`npx vite build`), danach parallel `typecheck` (`npm run typecheck`, also `tsc -b`), `lint`
+  (`npm run lint`) und `test` (`npm run test:unit`), alle mit `needs: build`; bricht der Build, laufen sie nicht.
 - **Backend** (in `backend/`): zwei parallele Jobs `lint` und `test` – Python 3.11 über `actions/setup-python` mit pip-Cache,
   `pip install -r requirements.txt`, dann `pylint src/` bzw. `python -m unittest discover -s __tests__ -p "*.py"`.
 
-Schlägt ein Job fehl (Lint, Test oder Frontend-Build inkl. Typprüfung), ist der Workflow rot. E2E-Tests laufen
+Schlägt ein Job fehl (Build, Typecheck, Lint oder Test), ist der Workflow rot. E2E-Tests laufen
 nicht in CI.
 
 ## Archiv
