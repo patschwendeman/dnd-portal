@@ -7,7 +7,10 @@
 | `development` | Arbeits-Branch. Alle Änderungen – Features, Fixes, Doku, auch dringende Fixes – werden hier committet. |
 | `main` | Release-Stand. Erhält Änderungen ausschließlich per Pull Request von `development`. |
 
-- Es gibt **keine** separaten Feature- oder Hotfix-Branches.
+- Es gibt **keine** separaten Feature- oder Hotfix-Branches – mit einer Ausnahme: **geparkte Features**.
+  Unfertige Features ohne aktuelle Priorität werden auf einem Branch `feature/<name>` abgelegt und aus
+  `development` entfernt. Dort wird nicht weiterentwickelt; zum Fortsetzen wird das Feature zurück nach
+  `development` geholt. Aktuell geparkt: `feature/spells-screen` (Player-Variante `/spells`).
 - Auf `main` wird **nie direkt** committet oder gepusht.
 - Releases werden **nicht** getaggt.
 

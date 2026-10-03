@@ -26,7 +26,8 @@ Teil-spezifischer Kontext (Befehle, Struktur, Konventionen): `frontend/CLAUDE.md
 
 ## Wichtige Leitplanken
 
-- **Branches:** Gearbeitet und committet wird ausschließlich auf `development` (keine Feature-/Hotfix-Branches).
+- **Branches:** Gearbeitet und committet wird ausschließlich auf `development` (keine Feature-/Hotfix-Branches;
+  Ausnahme: geparkte, unfertige Features auf `feature/<name>`, z. B. `feature/spells-screen` – dort nicht arbeiten).
   Niemals auf `main` committen oder pushen – `main` erhält Änderungen nur per Pull Request von `development`.
   Details: [CONTRIBUTING.md](CONTRIBUTING.md).
 - **Commits:** Nachricht nach Schema `^(feat|fix|chore|docs|refactor|test|style|setup)(\([A-Z]+-[0-9]+\))?: .+`,

@@ -8,8 +8,8 @@ Soll/Ist, Begriffe, bekannte Probleme) liegt eine Ebene höher in `../CLAUDE.md`
 ## Stack
 
 React 18 · Vite 5 · TypeScript 5 (strict, `noUnusedLocals/Parameters`) · react-router-dom 6 (`BrowserRouter`) ·
-styled-components 6 (Haupt-Styling + Themes) · MUI nur für `Box`/`Slider` · axios · react-markdown · react-svg ·
-react-slick. Tests: vitest (Unit), jest-cucumber + selenium-webdriver (BDD/E2E).
+styled-components 6 (Haupt-Styling + Themes) · MUI nur für `Box`/`Slider` · axios · react-markdown · react-svg.
+Tests: vitest (Unit), jest-cucumber + selenium-webdriver (BDD/E2E).
 
 ## Befehle
 
@@ -41,7 +41,6 @@ Im Container liegt `node_modules` in einem eigenen Volume; nach Änderungen an `
 | `/wall` | Wall | `src/sceens/WallScreen.tsx` |
 | `/ground` | Ground | `src/sceens/GroundScreen.tsx` |
 | `/` | Player | `src/sceens/players/DnDScreen.tsx` |
-| `/spells` | Player (Work in Progress) | `src/sceens/players/DnDScreenSpells.tsx` |
 
 ## Struktur & Datenfluss
 
@@ -83,7 +82,7 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
 - Player-Ressourcen (`ResourceBarPlayer`) sind reiner lokaler State; Zauberplatz-Maxima sind hart codiert (`SpellMax`).
 - `eslint-plugin-react-hooks` ist installiert, aber nicht aktiv – `useEffect`-Abhängigkeiten nicht blind „reparieren“,
   ohne das Verhalten zu prüfen.
-- `/spells` und die Ressource „Bewegung“ sind Work in Progress; `v1-roguelike` (Tags `archive/*`) ist verworfen
+- Die Ressource „Bewegung“ ist Work in Progress; `/spells` ist auf dem Branch `feature/spells-screen` geparkt; `v1-roguelike` (Tags `archive/*`) ist verworfen
   (Reste: `updateData`, `map_locked.png`).
 - Weitere bekannte Bugs/Altlasten: `../docs/known-issues.md`.
 

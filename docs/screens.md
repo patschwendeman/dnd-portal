@@ -5,7 +5,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 | Screen | Route | Gerät | Komponente |
 |---|---|---|---|
 | Admin | `/admin` | Rechner des Spielleiters | `src/sceens/AdminScreen.tsx` |
-| Player | `/` (WIP-Variante: `/spells`) | Smartphone je Spieler | `src/sceens/players/DnDScreen.tsx`, `DnDScreenSpells.tsx` |
+| Player | `/` | Smartphone je Spieler | `src/sceens/players/DnDScreen.tsx` |
 | Wall | `/wall` | Monitor (vertikal/Wand) | `src/sceens/WallScreen.tsx` |
 | Ground | `/ground` | Monitor liegend auf dem Tisch | `src/sceens/GroundScreen.tsx` |
 
@@ -59,9 +59,10 @@ Zähler 0, Icon deaktiviert → nächste Runde: erneut tippen → wieder aktiv.
 - State nur lokal (`useState`): nicht gespeichert, nicht mit Backend/Admin verbunden; Reload setzt zurück.
   Werte sind nicht pro Charakter konfigurierbar.
 
-### WIP: `/spells`
-Variante mit Zauberleiste (`SpellBarPlayer`: 20 Platzhalter-Icons, fester Text „Rage“) und Karussell
-(`SliderPlayer`: 3 Platzhalter-Karten) plus `ResourceBarPlayer`. Work in Progress.
+### Geparkt: `/spells`
+Unfertige Variante mit Zauberleiste (`SpellBarPlayer`: 20 Platzhalter-Icons, fester Text „Rage“) und Karussell
+(`SliderPlayer`: 3 Platzhalter-Karten) plus `ResourceBarPlayer`. Aktuell keine Priorität: aus `development`
+entfernt und auf dem Branch `feature/spells-screen` geparkt (siehe CONTRIBUTING.md, „Branches“).
 
 ---
 

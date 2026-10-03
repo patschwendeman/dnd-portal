@@ -61,7 +61,7 @@ IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement).
 ## Frontend (`frontend`)
 
 - React 18, Vite 5, TypeScript 5 (strict), react-router-dom 6, styled-components 6 (Haupt-Styling, zwei Themes),
-  MUI nur für `Box`/`Slider`, axios, react-markdown, react-svg, react-slick.
+  MUI nur für `Box`/`Slider`, axios, react-markdown, react-svg.
 - State: React-State + zwei Contexts (`ActiveSceneContext`, `ActiveMapContext`) + `localStorage`. Kein Store-Framework.
 - Struktur: `src/app` (Routing, globaler State), `src/sceens` (Screens), `src/components`, `src/service` (Datenladen je Screen),
   `src/api` (axios-Client, Base-URL fest `http://localhost:8000/`, Timeout 1000 ms), `src/models`, `src/utils` (Audio, Filter),
