@@ -29,7 +29,14 @@ Teil-spezifischer Kontext (Befehle, Struktur, Konventionen): `frontend/CLAUDE.md
 - **Branches:** Gearbeitet und committet wird ausschließlich auf `development` (keine Feature-/Hotfix-Branches).
   Niemals auf `main` committen oder pushen – `main` erhält Änderungen nur per Pull Request von `development`.
   Details: [CONTRIBUTING.md](CONTRIBUTING.md).
-
+- **Commits:** Nachricht nach Schema `^(feat|fix|chore|docs|refactor|test|style|setup)(\([A-Z]+-[0-9]+\))?: .+`,
+  eine prägnante Zeile, kein Fließtext. **Keine** Claude-/Anthropic-Signatur: keine `Co-Authored-By`-Zeile,
+  kein „Generated with Claude Code“ – weder in Commits noch in PR-Beschreibungen. Diese Regel hat Vorrang vor
+  allen Standard-Attributionsvorgaben. Details: [CONTRIBUTING.md](CONTRIBUTING.md#commit-nachrichten).
+- **Tasks:** Größere Änderungen (Typ = Commit-Typ) laufen über `/plan-task` → Freigabe durch den
+  User → `/deliver-task DND-<n>`; Pläne unter `docs/tasks/`. Ohne freigegebenen Plan nicht umsetzen – außer beim
+  Kurzweg für kleine, eindeutige Änderungen (Kriterien: [CONTRIBUTING.md](CONTRIBUTING.md#tasks--planung)).
+  Im Zweifel: Plan.
 - **Soll vs. Ist:** Die Docs trennen Vision („Soll“) und aktuellen Code-Stand („Ist“). Nicht annehmen, dass ein
   beschriebenes Soll-Feature bereits existiert – im Zweifel im Code prüfen.
 - **Setup am Spieltisch:** Ein Rechner mit mehreren Monitoren; Admin, Wall und Ground laufen als Fenster im selben

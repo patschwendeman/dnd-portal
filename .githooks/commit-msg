@@ -1,0 +1,27 @@
+#!/bin/sh
+# Validates commit messages against the project convention (see CONTRIBUTING.md).
+
+msg_file="$1"
+subject=$(grep -v '^#' "$msg_file" | head -n 1)
+
+case "$subject" in
+  "Merge "*|"Revert "*|"fixup! "*|"squash! "*|"amend! "*) exit 0 ;;
+esac
+
+pattern='^(feat|fix|chore|docs|refactor|test|style|setup)(\([A-Z]+-[0-9]+\))?: .+'
+
+if ! printf '%s\n' "$subject" | grep -Eq "$pattern"; then
+  echo "commit-msg: invalid commit message:" >&2
+  echo "  $subject" >&2
+  echo "Expected: <type>[(TICKET-123)]: <short description>" >&2
+  echo "Types: feat, fix, chore, docs, refactor, test, style, setup" >&2
+  echo "Example: feat: add grid toggle to ground screen" >&2
+  exit 1
+fi
+
+if grep -v '^#' "$msg_file" | grep -Eiq 'co-authored-by:.*(claude|anthropic)|generated with \[?claude code'; then
+  echo "commit-msg: AI signatures or co-author trailers are not allowed (see CONTRIBUTING.md)." >&2
+  exit 1
+fi
+
+exit 0
