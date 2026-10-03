@@ -5,7 +5,7 @@ import styled, { useTheme, keyframes } from 'styled-components'
 import turnImg from '/assets/icons/phone.svg'
 import settingsIcon from '/assets/icons/settings.svg'
 
-import { ResourceBarPlayer } from '../../components/ResourceBarPlayer'
+import { ResourceBarPlayer } from '../components/ResourceBarPlayer'
 
 const rotateAnimation = keyframes`
   0% { transform: rotate(0deg); }
@@ -80,11 +80,11 @@ const ThemeToggleButton = styled.button`
     }
 `
 
-interface DnDScreenProps {
+interface PlayerScreenProps {
   toggleTheme: () => void;
 }
 
-const DnDScreen: FunctionComponent<DnDScreenProps> = ({ toggleTheme }): ReactElement => {
+const PlayerScreen: FunctionComponent<PlayerScreenProps> = ({ toggleTheme }): ReactElement => {
   const theme = useTheme()
   return (
     <Background>
@@ -110,4 +110,4 @@ const DnDScreen: FunctionComponent<DnDScreenProps> = ({ toggleTheme }): ReactEle
   )
 }
 
-export { DnDScreen }
+export { PlayerScreen }

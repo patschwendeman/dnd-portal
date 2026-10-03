@@ -3,7 +3,7 @@
 | Begriff (fachlich) | Bedeutung | Im Code |
 |---|---|---|
 | Spielleiter / Admin | Erzählt die Geschichte, spielt alle NPCs, steuert die App | Route `/admin`, `AdminScreen` |
-| Spieler | Spielt einen Charakter, nutzt den Player Screen | Route `/` (`DnDScreen`); geparkt: `/spells` (Branch `feature/spells-screen`) |
+| Spieler | Spielt einen Charakter, nutzt den Player Screen | Route `/` (`PlayerScreen`); geparkt: `/spells` (Branch `feature/spells-screen`) |
 | NPC | Nicht-Spieler-Charakter, freundlich oder feindlich, vom Spielleiter gespielt | kein eigenes Datenmodell; Infos nur in Markdown-Notizen |
 | Szene | Situation, die der Spielleiter aktiviert; bündelt Wall-Bild, Ground-Bild und Musik | Tabelle/Model `Scene` (Backend), `SceneDetail` (Frontend) |
 | Kampfszene | Szene mit taktischem Kampf | `Scene.main == true` → „Mainmap“, Endpoint `/maps/main` |

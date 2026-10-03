@@ -3,10 +3,10 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 
 import { ActiveMapContext, ActiveSceneContext } from '../context/context'
-import { AdminScreen } from '../sceens/AdminScreen'
-import { GroundScreen } from '../sceens/GroundScreen'
-import { DnDScreen } from '../sceens/players/DnDScreen'
-import { WallScreen } from '../sceens/WallScreen'
+import { AdminScreen } from '../screens/AdminScreen'
+import { GroundScreen } from '../screens/GroundScreen'
+import { PlayerScreen } from '../screens/PlayerScreen'
+import { WallScreen } from '../screens/WallScreen'
 import { darkTheme } from '../style/darkTheme'
 import { lightTheme } from '../style/lightTheme'
 
@@ -68,7 +68,7 @@ function App() {
           <Router>      
             <div className='app'>
               <Routes>
-                <Route path='/' element={ <DnDScreen toggleTheme={toggleTheme} /> } />
+                <Route path='/' element={ <PlayerScreen toggleTheme={toggleTheme} /> } />
                 <Route path='/wall' element={ <WallScreen /> } />
                 <Route path='/ground' element={ <GroundScreen /> } />
                 <Route path='/admin'  element={ <AdminScreen toggleTheme={toggleTheme} /> } />

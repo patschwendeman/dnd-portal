@@ -4,12 +4,12 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 
 | Screen | Route | Gerät | Komponente |
 |---|---|---|---|
-| Admin | `/admin` | Rechner des Spielleiters | `src/sceens/AdminScreen.tsx` |
-| Player | `/` | Smartphone je Spieler | `src/sceens/players/DnDScreen.tsx` |
-| Wall | `/wall` | Monitor (vertikal/Wand) | `src/sceens/WallScreen.tsx` |
-| Ground | `/ground` | Monitor liegend auf dem Tisch | `src/sceens/GroundScreen.tsx` |
+| Admin | `/admin` | Rechner des Spielleiters | `src/screens/AdminScreen.tsx` |
+| Player | `/` | Smartphone je Spieler | `src/screens/PlayerScreen.tsx` |
+| Wall | `/wall` | Monitor (vertikal/Wand) | `src/screens/WallScreen.tsx` |
+| Ground | `/ground` | Monitor liegend auf dem Tisch | `src/screens/GroundScreen.tsx` |
 
-(Pfade relativ zu `frontend/`. Der Ordner heißt tatsächlich `sceens`.)
+(Pfade relativ zu `frontend/`.)
 
 ---
 

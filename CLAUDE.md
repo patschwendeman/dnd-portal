@@ -23,6 +23,8 @@ Teil-spezifischer Kontext (Befehle, Struktur, Konventionen): `frontend/CLAUDE.md
 - [docs/screens.md](docs/screens.md) – Admin, Player, Wall, Ground: jeweils Soll und Ist
 - [docs/architecture.md](docs/architecture.md) – Zusammenspiel von Frontend und Backend, API, Datenmodell, Synchronisation, Assets, Setup
 - [docs/known-issues.md](docs/known-issues.md) – bekannte Lücken, Bugs, Altlasten
+- [frontend/DESIGN.md](frontend/DESIGN.md) – Style Guide: Tokens, Layout-Regeln, Bausteine, Farbrollen und Themes
+  (Arbeitsdokumente: Mappings je Screen, Audit, Mockups in `frontend/design/`)
 
 ## Wichtige Leitplanken
 

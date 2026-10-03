@@ -5,6 +5,9 @@ Ground Screen (digitales Spielbrett). Holt Szenen vom Backend (`../backend`) und
 (Bilder, Musik, Sounds, Markdown-Notizen) selbst aus `public/` aus. Projektübergreifender Kontext (Vision, Screens
 Soll/Ist, Begriffe, bekannte Probleme) liegt eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 
+Gestaltungsregeln, Tokens und Farbrollen stehen in [DESIGN.md](DESIGN.md). Die Mappings je Screen (welcher Wert in
+welcher Komponente wie umgestellt wird), das Audit und die Mockups liegen in [design/](design/).
+
 ## Stack
 
 React 18 · Vite 5 · TypeScript 5 (strict, `noUnusedLocals/Parameters`) · react-router-dom 6 (`BrowserRouter`) ·
@@ -37,17 +40,17 @@ Im Container liegt `node_modules` in einem eigenen Volume; nach Änderungen an `
 
 | Pfad | Screen | Datei |
 |---|---|---|
-| `/admin` | Admin | `src/sceens/AdminScreen.tsx` |
-| `/wall` | Wall | `src/sceens/WallScreen.tsx` |
-| `/ground` | Ground | `src/sceens/GroundScreen.tsx` |
-| `/` | Player | `src/sceens/players/DnDScreen.tsx` |
+| `/admin` | Admin | `src/screens/AdminScreen.tsx` |
+| `/wall` | Wall | `src/screens/WallScreen.tsx` |
+| `/ground` | Ground | `src/screens/GroundScreen.tsx` |
+| `/` | Player | `src/screens/PlayerScreen.tsx` |
 
 ## Struktur & Datenfluss
 
 ```
 src/app/App.tsx      Routing, Theme, globaler State (activeSceneId, activeMapId, isDarkTheme) + localStorage-Sync
 src/context/         ActiveSceneContext, ActiveMapContext
-src/sceens/          Screens (Ordnername ist ein Tippfehler von "screens")
+src/screens/         Screens
 src/components/      UI-Bausteine (TopBar, DocumentReader, MapOverview, GridOverlay, ScreenControlBar, ResourceBarPlayer …)
 src/service/         Datenladen je Screen (getAdminData, getWallScreenData, getGroundScreenData …)
 src/api/             axios-Client (apiClient.ts) und getData/updateData (apiMethods.ts)
