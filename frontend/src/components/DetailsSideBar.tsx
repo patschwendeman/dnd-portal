@@ -1,48 +1,60 @@
 import { FunctionComponent, ReactElement } from 'react'
 import styled from 'styled-components'
 
+import { Label } from './Label'
 import { SceneDetail } from '../models/models'
+import { textStyle } from '../style/tokens'
 
-const DetailsContainer = styled.div`
-    width: 100%;
-    height: 100%;
-    display: flex;
-    top: 0;
-    right: 0;
-`
+const LABEL_COLUMN_WIDTH = '96px'
+
 const Details = styled.div`
     width: 100%;
-    height: 220px;
-    display: 'flex';
-    margin: 17px 10px 10px;
+    height: auto;
+    display: flex;
+    margin: 0;
     background-color: ${(props) => props.theme.colors.secondary};
-    border-radius: 9px;
-    padding: 20px;
+    border-radius: ${(props) => props.theme.radius.lg};
+    padding: ${(props) => props.theme.space[5]};
     flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: stretch;
 `
 
 const DetailHeader = styled.div`
     width: 100%;
-    height: 5px;
+    height: auto;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: ${(props) => props.theme.space[1]};
+    text-align: left;
 `
+
+const SceneName = styled.strong`
+    ${textStyle('lg')}
+    font-weight: ${(props) => props.theme.fontWeight.semibold};
+`
+
+const SceneDescription = styled.p`
+    ${textStyle('sm')}
+`
+
+const DetailRows = styled.div`
+    display: flex;
+    flex-direction: column;
+    margin-top: ${(props) => props.theme.space[5]};
+`
+
 const DetailContent = styled.div`
     width: 100%;
-    height: 40%;
-    display: flex;
-    border-top: 1px solid ${(props) => props.theme.colors.border};
-`
-
-const ContentContainer = styled.div`
-    width: 50%;
-    height: 100%;
-    display: flex;
-
+    height: auto;
+    display: grid;
+    grid-template-columns: ${LABEL_COLUMN_WIDTH} 1fr;
+    align-items: baseline;
+    gap: ${(props) => props.theme.space[3]};
+    padding: ${(props) => props.theme.space[3]} 0;
+    border-top: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.border};
+    ${textStyle('sm')}
 `
 
 interface DetailsSideBarProps {
@@ -52,31 +64,23 @@ interface DetailsSideBarProps {
 const DetailsSideBar: FunctionComponent<DetailsSideBarProps> = ({ activeScene }): ReactElement => {
 
     return (
-        <DetailsContainer>
-            <Details>
-                <DetailHeader>
-                    <strong>{activeScene?.name}</strong>
-                </DetailHeader>
+        <Details>
+            <DetailHeader>
+                <Label>Aktive Szene</Label>
+                <SceneName>{activeScene?.name}</SceneName>
+                <SceneDescription>{activeScene?.description}</SceneDescription>
+            </DetailHeader>
+            <DetailRows>
                 <DetailContent>
-                    <ContentContainer>
-                        <p>Enemies:</p>
-                    </ContentContainer>
-                    <ContentContainer>
-                        <strong>{activeScene?.description}</strong>
-                    </ContentContainer>
+                    <Label>Enemies</Label>
+                    <span>–</span>
                 </DetailContent>
                 <DetailContent>
-                    <ContentContainer>
-                        <p>Loot:</p>
-                    </ContentContainer>
-                    <ContentContainer>
-
-                    </ContentContainer>
+                    <Label>Loot</Label>
+                    <span>–</span>
                 </DetailContent>
-                
-
-            </Details>
-        </DetailsContainer>
+            </DetailRows>
+        </Details>
     )
 }
 

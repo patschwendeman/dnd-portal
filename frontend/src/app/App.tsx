@@ -8,7 +8,8 @@ import { GroundScreen } from '../screens/GroundScreen'
 import { PlayerScreen } from '../screens/PlayerScreen'
 import { WallScreen } from '../screens/WallScreen'
 import { darkTheme } from '../style/darkTheme'
-import { lightTheme } from '../style/lightTheme'
+import { tavernTheme } from '../style/tavernTheme'
+import { tokens } from '../style/tokens'
 
 function App() {
   const [activeSceneId, setActiveSceneId] = useState<number>(() => {
@@ -62,7 +63,7 @@ function App() {
   }
 
   return (
-    <ThemeProvider theme={isDarkTheme ? darkTheme : lightTheme}>
+    <ThemeProvider theme={{ ...tokens, colors: (isDarkTheme ? darkTheme : tavernTheme).colors }}>
       <ActiveSceneContext.Provider value={{ activeSceneId, setActiveSceneId }}>
         <ActiveMapContext.Provider value={{ activeMapId, setActiveMapId }}>
           <Router>      

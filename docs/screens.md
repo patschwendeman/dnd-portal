@@ -22,16 +22,24 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - Verschiedene Sounds abspielen.
 
 ### Ist
-- **Szenenauswahl:** Rechte Sidebar mit Kachelraster aller Kampfszenen (`MapOverview`), untere Leiste mit den
-  Nicht-Kampfszenen (`SideMaps`). Klick öffnet einen Bestätigungsdialog (`Dialogue`) mit Wall-Bild und Name;
-  „Confirm“ setzt `activeSceneId` → alle Screens wechseln.
-- **Szenen-Details:** `DetailsSideBar` zeigt Name und Beschreibung; „Enemies:“ und „Loot:“ sind nur statische Labels.
-- **Notizen:** `DocumentReader` in der Mitte mit Tabs Main, Fight, Side, Leveling, Mechaniken
+- **Layout** (seit DND-4 nach [frontend/DESIGN.md](../frontend/DESIGN.md), Mockups v2): Grid aus drei Zeilen –
+  Top-Bar, Hauptbereich, Bottom-Bar. Der Hauptbereich hat drei Spalten: links die Notizen-Navigation, in der Mitte die
+  Notizen, rechts die Karten „Aktive Szene“ und „Kampfszenen“. Schrift Inter (lokal über `@fontsource/inter`).
+- **Szenenauswahl:** Karte „Kampfszenen“ rechts mit Anzahl und Kachelraster aller Kampfszenen (`MapOverview`),
+  Bottom-Bar mittig mit dem Label „Szenen“ und den Nicht-Kampfszenen (`SideMaps`). Alle Kacheln 16:9, die aktive mit
+  Outline in `primary`. Klick öffnet einen Bestätigungsdialog (`Dialogue`) mit Wall-Bild, Label „Szene wechseln“,
+  Name, Beschreibung und den Buttons Decline (links) und Confirm (rechts); „Confirm“ setzt `activeSceneId` → alle
+  Screens wechseln.
+- **Szenen-Details:** `DetailsSideBar` ist die Karte „Aktive Szene“ mit Name und Beschreibung; die Zeilen „Enemies“
+  und „Loot“ sind nur statische Labels mit dem Platzhalter „–“.
+- **Notizen:** `DocumentReader` in der Mitte mit Label „Notizen“ und Tabs Main, Fight, Side, Leveling, Mechaniken
   (Quelle `public/story/{main,fight,noneFight,leveling,mechanics}/*.md`). Inhaltsverzeichnis-Links, Bilder öffnen in neuem Tab.
   Der Ordner `noneFight` existiert nicht → Tab „Side“ ist leer.
-- **Musik:** Play/Pause-Button; spielt zufällige Tracks aus der Playlist der aktiven Szene (Lautstärke 0.1).
-- **Sounds:** `TopBar` mit Buttons für Soundeffekte (Heilung/Trank, Buff, Zauber, Debuff, Lock).
-- Theme-Umschalter (Settings-Icon).
+- **Musik:** Bottom-Bar links: Play/Pause-Button, daneben Label „Musik“ und der Titel des aktuellen Tracks (aus dem
+  Dateinamen abgeleitet, `getMusicTitle`); spielt zufällige Tracks aus der Playlist der aktiven Szene (Lautstärke 0.1).
+- **Sounds:** `TopBar` mit Titel „DnD Portal“ links und mittig den Buttons für Soundeffekte in Gruppen
+  (Heilung/Trank, Buff, Zauber, Debuff, Lock), getrennt durch senkrechte Linien.
+- Theme-Umschalter (Settings-Icon rechts in der Top-Bar).
 
 ---
 

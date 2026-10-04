@@ -1,7 +1,8 @@
 # Style Guide
 
-Stand: 2026-10-04 (Branch `development`). Verbindliche Gestaltungsregeln für das Frontend. Noch nicht im Code
-umgesetzt. Der Umbau folgt Screen für Screen nach den Mappings.
+Stand: 2026-10-04 (Branch `development`). Verbindliche Gestaltungsregeln für das Frontend. Der Umbau folgt Screen
+für Screen nach den Mappings. Umgesetzt sind die Grundlagen ([Architektur](#architektur)) und der Admin Screen
+(DND-4). Wall und Ground folgen.
 
 **Geltung:** Admin, Wall und Ground. Der Player Screen folgt später. Seine festen Farben sind unter
 [2.5](#25-farben-außerhalb-der-themes) erfasst.
@@ -12,7 +13,7 @@ umgesetzt. Der Umbau folgt Screen für Screen nach den Mappings.
   [ground-mapping.md](design/ground-mapping.md). Dort steht, welcher Wert in welcher Komponente wie umgestellt wird.
 - Mockups v2: [admin](design/mockups/v2/admin.png), [admin-dialog](design/mockups/v2/admin-dialog.png), [wall](design/mockups/v2/wall.png),
   [wall-world](design/mockups/v2/wall-world.png), [wall-1366](design/mockups/v2/wall-1366.png), [ground](design/mockups/v2/ground.png).
-- Themes: `frontend/src/style/darkTheme.ts`, `frontend/src/style/lightTheme.ts` (wird zu `tavernTheme.ts`, siehe
+- Themes: `frontend/src/style/darkTheme.ts`, `frontend/src/style/tavernTheme.ts` (früher `lightTheme.ts`, siehe
   [Entscheidungen](#3-entscheidungen)).
 
 Der Guide hat zwei Teile:
@@ -42,9 +43,14 @@ Components lesen beides auf dieselbe Weise: `props.theme.space[5]`, `props.theme
 
 Dazu kommen:
 
-- `style/styled.d.ts` – typisiert `DefaultTheme`. Fehlt heute, deshalb prüft TypeScript Zugriffe auf das Theme nicht.
-- `style/GlobalStyle.ts` – `createGlobalStyle` für die Grundregeln aus [1.1](#11-grundsätze). Fehlt heute,
-  `index.css` wird nicht importiert.
+- `style/styled.d.ts` – typisiert `DefaultTheme` (Typ von `tokens` plus `colors`). TypeScript prüft damit Zugriffe
+  auf das Theme.
+- `style/GlobalStyle.ts` – `createGlobalStyle` für die Grundregeln aus [1.1](#11-grundsätze). Gilt für Admin, Wall
+  und Ground, nicht für den Player. Er wird nicht in `App.tsx`, sondern als `<GlobalStyle />` im jeweiligen Screen
+  gerendert (jeder Screen läuft in einem eigenen Fenster). Bisher bindet ihn nur `AdminScreen` ein, Wall und Ground
+  folgen mit ihrem Umbau. `index.css` wird nicht importiert.
+- `style/tokens.ts` enthält außerdem den Helper `textStyle(stufe)`, der Schriftgröße und Zeilenhöhe einer
+  `text.*`-Stufe gemeinsam setzt (K4). `text.<stufe>` ist ein Objekt `{ fontSize, lineHeight }`.
 
 Namensraum: `theme.text.*` sind Schrift-Tokens, `theme.colors.text.color` ist eine Farbrolle. Beide bleiben getrennt.
 
@@ -57,7 +63,8 @@ Namensraum: `theme.text.*` sind Schrift-Tokens, `theme.colors.text.color` ist ei
 - **4px-Raster:** Jeder Abstand und jede Größe kommt aus einem Token. Feste px-Werte gibt es nur als benannte
   Layout-Konstante ([1.3](#13-layout-konstanten)).
 - **Globale Grundregeln:** `box-sizing: border-box` und `margin: 0` für alle Elemente. Schrift, Größe und Zeilenhöhe
-  des Body: `font.family.base`, `text.md`.
+  des Body: `font.family.base`, `text.md`. Gilt für Admin, Wall und Ground, nicht für den Player (`GlobalStyle`, siehe
+  [Architektur](#architektur)).
 - **Nichts vom Browser übernehmen:** Überschriften, Absätze, Listen und Buttons werden explizit gestylt
   (Größe, Abstand, Padding-Reset).
 - **Layout per Grid und Flex:** Bereiche werden über `display: grid` und `gap` angeordnet, nicht über
@@ -120,14 +127,14 @@ Namensraum: `theme.text.*` sind Schrift-Tokens, `theme.colors.text.color` ist ei
 | `size.icon` | 20px | alle Icons |
 | `size.badge` | 32px | Kachelnummer |
 | `size.button.minWidth` | 112px | Mindestbreite von Text-Buttons |
-| `size.bar` | 56px | Top-Bar, Höhe der schwebenden Steuerleiste |
+| `size.bar.md` | 56px | Top-Bar, Höhe der schwebenden Steuerleiste |
 | `size.bar.lg` | 80px | Bottom-Bar im Admin |
 
 Entfallen: `size.icon.sm`, `size.icon.lg` (K1), `size.control.sm`, `fontSize.*` (ersetzt durch `text.*`).
 
 **Ebenen (`z-index`)** (Entscheidung O4)
 
-| Token | Wert | Wofür | Heute |
+| Token | Wert | Wofür | Vor dem Umbau |
 |---|---|---|---|
 | `layer.base` | 0 | normaler Inhalt | – |
 | `layer.raised` | 1 | lokal innerhalb einer Komponente, z. B. Nummer über dem Kachelbild | 99 (`MapOverlay`, `NumberIcon`) |
@@ -135,10 +142,10 @@ Entfallen: `size.icon.sm`, `size.icon.lg` (K1), `size.control.sm`, `fontSize.*` 
 | `layer.grid` | 10 | Raster-Ebene auf dem Ground | 99 (`GridOverlay`) |
 | `layer.panel` | 20 | Overlay-Panel auf der Wall | 99999 (`MapContainer` in `WallScreen`) |
 | `layer.controls` | 30 | Hover-Fläche mit Steuerleiste | 99999 (`ScreenControlBar`) |
-| `layer.dialog` | 40 | Dialog mit Abdunklung | 99999 (`Dialogue`) |
+| `layer.dialog` | 40 | Dialog mit Abdunklung | 99999 (`Dialogue`, seit DND-4 `layer.dialog`) |
 
-Entfallen ersatzlos, weil das Grid-Layout sie überflüssig macht: 99 und 999 an `AudioControlButton`, `AtmoButton`,
-`ThemeToggleButton`, 999 an `ButtonContainer` und `ConfirmButton` im Dialog. Player Screen (9 und 1) folgt mit dessen
+Entfallen ersatzlos (seit DND-4), weil das Grid-Layout sie überflüssig macht: 99 und 999 an `AudioControlButton`,
+`AtmoButton`, `ThemeToggleButton`, 999 an `ButtonContainer` und `ConfirmButton` im Dialog. Player Screen (9 und 1) folgt mit dessen
 Umbau.
 
 ### 1.3 Layout-Konstanten
@@ -348,7 +355,7 @@ Wiederkehrende Elemente. In den Components werden sie gleich umgesetzt, am beste
 
 | Eigenschaft | Wert |
 |---|---|
-| Höhe | `size.bar` |
+| Höhe | `size.bar.md` |
 | Aufbau | Grid `240px 1fr 240px`: Titel links, Sound-Gruppen mittig, Settings rechts |
 | Innenabstand | `0 space.5` |
 | Gruppen | `space.4` mit Trennlinie (`borderWidth.thin` × `size.icon`, `border`), Buttons in der Gruppe `space.1` |
@@ -377,7 +384,7 @@ Wiederkehrende Elemente. In den Components werden sie gleich umgesetzt, am beste
 
 | Screen | Aufbau | Details |
 |---|---|---|
-| Admin | Grid in Zeilen `size.bar` / `1fr` / `size.bar.lg`. Mittlere Zeile: Grid in Spalten `200px 1fr 400px`, `gap` und Innenabstand `space.5`. Links Navigation, Mitte Notizen, rechts Karten. | [admin-mapping.md](design/admin-mapping.md), [Mockup](design/mockups/v2/admin.png) |
+| Admin | Grid in Zeilen `size.bar.md` / `1fr` / `size.bar.lg`. Mittlere Zeile: Grid in Spalten `200px 1fr 400px`, `gap` und Innenabstand `space.5`. Links Navigation, Mitte Notizen, rechts Karten. | [admin-mapping.md](design/admin-mapping.md), [Mockup](design/mockups/v2/admin.png) |
 | Wall | Vollbild-Hintergrund, darüber das Overlay-Panel (BATTLE: Kachelraster, WORLD: Weltkarte) und die schwebende Steuerleiste | [wall-mapping.md](design/wall-mapping.md), [Mockup](design/mockups/v2/wall.png) |
 | Ground | Vollbild-Medium (Bild oder Video), Raster-Ebene, schwebende Steuerleiste mit Raster-Optionen und Slider | [ground-mapping.md](design/ground-mapping.md), [Mockup](design/mockups/v2/ground.png) |
 
@@ -408,22 +415,22 @@ Wiederkehrende Elemente. In den Components werden sie gleich umgesetzt, am beste
 
 ### 2.3 Themes
 
-Werte aus `frontend/src/style/darkTheme.ts` und `lightTheme.ts`. Geändert bzw. neu durch Entscheidung O5:
-`onPrimary` in beiden Themes und `primary` in Tavern (heute `#AD3131`).
+Werte aus `frontend/src/style/darkTheme.ts` und `tavernTheme.ts`. Geändert bzw. neu durch Entscheidung O5:
+`onPrimary` in beiden Themes und `primary` in Tavern (früher `#AD3131`), umgesetzt in DND-4.
 
-| Rolle | Dark (`darkTheme`) | Tavern (`tavernTheme`, heute `lightTheme`) |
+| Rolle | Dark (`darkTheme`) | Tavern (`tavernTheme`, früher `lightTheme`) |
 |---|---|---|
-| `primary` | `#4493F8` | `#C05E5E` (heute `#AD3131`) |
+| `primary` | `#4493F8` | `#C05E5E` (früher `#AD3131`) |
 | `secondary` | `#161b23` | `#3D271C` |
 | `dark` | `#000000` | `#000000` |
 | `border` | `#3d444db3` | `#956F01` |
 | `background` | `#0e1117` | `#140701` |
 | `overlay` | `rgba(0, 0, 0, 0.850)` | `rgba(0, 0, 0, 0.850)` |
 | `text.color` | `#f0f6fc` | `#CBAB96` |
-| `onPrimary` | `#0e1117` (neu, = `background`) | `#140701` (neu, = `background`) |
+| `onPrimary` | `#0e1117` (= `background`) | `#140701` (= `background`) |
 
-`lightTheme` wird zu `tavernTheme` (Entscheidung O2): Es ist kein helles Theme, sondern ein dunkles in Braun und Rot.
-Die Umbenennung betrifft `lightTheme.ts` und den Import in `App.tsx`. Der `localStorage`-Schlüssel `isDarkTheme`
+`lightTheme` heißt seit DND-4 `tavernTheme` (Entscheidung O2): Es ist kein helles Theme, sondern ein dunkles in Braun
+und Rot. Die Umbenennung betraf `lightTheme.ts` und den Import in `App.tsx`. Der `localStorage`-Schlüssel `isDarkTheme`
 bleibt, damit gespeicherte Einstellungen gültig bleiben.
 
 ### 2.4 Zustände
@@ -443,7 +450,7 @@ Feste Farben im heutigen Code, die gegen [2.1](#21-prinzip) verstoßen:
 | Wo | Farbe | Vorschlag |
 |---|---|---|
 | `MapElement` → `NumberIcon` | `#5a5a5a`, `white` | neue Rollen `badge.background` und `badge.text` |
-| `SideBarLeftElement` → `NavigationElement` | `white` | entfällt, wird schon von `text.color` überschrieben |
+| `SideBarLeftElement` → `NavigationElement` | `white` | entfernt in DND-4 (wurde schon von `text.color` überschrieben) |
 | `GridOverlay` | `black`, `white`, `transparent` | bleibt. Die Gitterfarbe wählt der Spielleiter, sie ist eine Funktion, keine Gestaltung. |
 | `ResourceBarPlayer` | 12 Werte: je ein kräftiger und ein dunkler Ton für Aktion, Bonusaktion, Bewegung, Zauber und Spezial, dazu Grau für leer und Textgrau | Rollen-Palette `resource.{action,bonus,movement,spell,special}.{strong,muted}`, `resource.empty`, `resource.text`, in beiden Themes zunächst gleich. Player Screen ist nicht Teil des aktuellen Umbaus. |
 
@@ -456,8 +463,8 @@ Geprüft nach WCAG 2.1 (Entscheidung O3). Ziel AA:
 - **Bedienelemente und Grafik:** 3:1.
 
 `border` ist halbtransparent bzw. auf der jeweiligen Fläche gemessen. Berechnet am 2026-10-04.
-**Heute** sind die Werte im Code, **Neu** der Stand nach Entscheidung O5 (`onPrimary` neu, Tavern-`primary`
-`#AD3131` → `#C05E5E`). Fett = verfehlt das Ziel.
+**Heute** sind die Werte vor DND-4, **Neu** der Stand nach Entscheidung O5 (`onPrimary` neu, Tavern-`primary`
+`#AD3131` → `#C05E5E`), im Code seit DND-4. Fett = verfehlt das Ziel.
 
 | Paar | Verwendung | Ziel | Dark heute | Dark neu | Tavern heute | Tavern neu | Ergebnis neu | Maßnahme |
 |---|---|---|---|---|---|---|---|---|
@@ -478,7 +485,7 @@ Geprüft nach WCAG 2.1 (Entscheidung O3). Ziel AA:
   über der Grenze.
 - **`border` im Dark-Theme (O6):** Die Trennlinien sind Gestaltung, kein Bedienelement. WCAG verlangt 3:1 nur für die
   Grenzen von Bedienelementen. Kacheln sind trotzdem erkennbar, weil sie Bilder zeigen.
-- Mit O5 erfüllen alle Text- und Bedien-Paare WCAG AA. Die neuen Werte sind festgelegt, aber noch nicht im Code.
+- Mit O5 erfüllen alle Text- und Bedien-Paare WCAG AA. Die neuen Werte sind seit DND-4 im Code.
 
 ---
 
@@ -487,10 +494,10 @@ Geprüft nach WCAG 2.1 (Entscheidung O3). Ziel AA:
 | # | Punkt | Entscheidung (2026-10-04) |
 |---|---|---|
 | O1 | Laufweite .02em (App-Titel, Wall-Überschrift) | Gestrichen. Einziges Laufweiten-Token ist `letterSpacing.label`. Mappings und Mockups v2 sind angepasst. |
-| O2 | Name `lightTheme` | Umbenennung in `tavernTheme`, umgesetzt beim Umbau. `localStorage`-Schlüssel bleibt. |
+| O2 | Name `lightTheme` | Umbenennung in `tavernTheme`, umgesetzt in DND-4. `localStorage`-Schlüssel bleibt. |
 | O3 | Kontrast | Geprüft, Ergebnis in [2.6](#26-kontrast) |
 | O4 | Ebenen (`z-index`) | Skala `layer.*` festgelegt, siehe [1.2](#12-tokens) |
-| O5 | Text auf Akzentfarbe, Tavern-Akzent | Neue Rolle `onPrimary` (Dark `#0e1117`, Tavern `#140701`). Tavern-`primary` `#AD3131` → `#C05E5E` (4,7:1, statt `#BD5A5A` mit nur 4,50:1). Damit erfüllen alle Paare WCAG AA, siehe [2.6](#26-kontrast). Umsetzung im Code beim Umbau. |
+| O5 | Text auf Akzentfarbe, Tavern-Akzent | Neue Rolle `onPrimary` (Dark `#0e1117`, Tavern `#140701`). Tavern-`primary` `#AD3131` → `#C05E5E` (4,7:1, statt `#BD5A5A` mit nur 4,50:1). Damit erfüllen alle Paare WCAG AA, siehe [2.6](#26-kontrast). Umgesetzt in DND-4. |
 | O6 | Trennlinien in Dark (1,5:1) | Bleiben so. Sie sind Gestaltung, kein Bedienelement. |
 
 ---

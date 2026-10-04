@@ -1,7 +1,7 @@
 # DND-4: Restyle Admin Screen (Schritt 1 von 3: Admin, danach Wall, danach Ground)
 
 **Typ:** style
-**Status:** Freigegeben
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -116,102 +116,102 @@ grün. Pro Schritt ein Commit.
 ### Schritt 1: Grundlagen ohne sichtbare Änderung (`refactor(DND-4): …`)
 
 #### Frontend
-- [ ] `src/style/tokens.ts`: alle statischen Tokens aus DESIGN.md 1.2 (`space`, `text` nach E4, `fontWeight`,
+- [x] `src/style/tokens.ts`: alle statischen Tokens aus DESIGN.md 1.2 (`space`, `text` nach E4, `fontWeight`,
       `letterSpacing`, `font`, `radius`, `borderWidth`, `size` mit `size.bar.md`/`.lg` nach E2, `layer`) und der
       `css`-Helper für `text.*`
-- [ ] `src/style/lightTheme.ts` → `src/style/tavernTheme.ts`, Export `tavernTheme`, Import in `App.tsx` angepasst.
+- [x] `src/style/lightTheme.ts` → `src/style/tavernTheme.ts`, Export `tavernTheme`, Import in `App.tsx` angepasst.
       Farbwerte bleiben in diesem Schritt unverändert.
-- [ ] `src/style/styled.d.ts`: `DefaultTheme` = Typ von `tokens` + `colors` (aus `darkTheme` abgeleitet)
-- [ ] `App.tsx`: `<ThemeProvider theme={{ ...tokens, colors: (isDarkTheme ? darkTheme : tavernTheme).colors }}>`
-- [ ] Nachweis: `tsc -b` prüft jetzt Theme-Zugriffe. Admin, Wall, Ground und Player sehen unverändert aus.
+- [x] `src/style/styled.d.ts`: `DefaultTheme` = Typ von `tokens` + `colors` (aus `darkTheme` abgeleitet)
+- [x] `App.tsx`: `<ThemeProvider theme={{ ...tokens, colors: (isDarkTheme ? darkTheme : tavernTheme).colors }}>`
+- [x] Nachweis: `tsc -b` prüft jetzt Theme-Zugriffe. Admin, Wall, Ground und Player sehen unverändert aus.
 
 ### Schritt 2: Farben, Schrift, GlobalStyle
 
 #### Frontend
-- [ ] Rolle `onPrimary` in beiden Themes (Dark `#0e1117`, Tavern `#140701`). Tavern-`primary` → `#C05E5E`.
-- [ ] `@fontsource/inter` als Abhängigkeit (400, 500, 600, 700), Import in `main.tsx`
-- [ ] `src/style/GlobalStyle.ts` (`createGlobalStyle`): `*, *::before, *::after { box-sizing: border-box;
+- [x] Rolle `onPrimary` in beiden Themes (Dark `#0e1117`, Tavern `#140701`). Tavern-`primary` → `#C05E5E`.
+- [x] `@fontsource/inter` als Abhängigkeit (400, 500, 600, 700), Import in `main.tsx`
+- [x] `src/style/GlobalStyle.ts` (`createGlobalStyle`): `*, *::before, *::after { box-sizing: border-box;
       margin: 0 }`, Body mit `font.family.base` und `text.md`. Eingebunden nur in `AdminScreen` (E3).
-- [ ] `Screen` in `AdminScreen`: System-Stack entfernen, Schrift kommt aus dem GlobalStyle
-- [ ] Hinweis: Nach diesem Schritt kann das alte Admin-Layout durch `border-box`/`margin: 0` verrutschen. Das ist
+- [x] `Screen` in `AdminScreen`: System-Stack entfernen, Schrift kommt aus dem GlobalStyle
+- [x] Hinweis: Nach diesem Schritt kann das alte Admin-Layout durch `border-box`/`margin: 0` verrutschen. Das ist
       zulässig, solange alles bedienbar bleibt. Schritt 3 stellt das Layout um.
 
 ### Schritt 3: Layout-Gerüst (Grid)
 
 #### Frontend
-- [ ] `AdminScreen` → `Screen`: `display: grid`, Zeilen `size.bar.md 1fr size.bar.lg`
-- [ ] Neuer Wrapper `Main`: Spalten `200px 1fr 400px` (benannte Layout-Konstanten), `gap`/`padding` `space.5`,
+- [x] `AdminScreen` → `Screen`: `display: grid`, Zeilen `size.bar.md 1fr size.bar.lg`
+- [x] Neuer Wrapper `Main`: Spalten `200px 1fr 400px` (benannte Layout-Konstanten), `gap`/`padding` `space.5`,
       `min-height: 0`. `DocumentReader` (Spalte 1 + 2) und `SidebarRight` (Spalte 3) liegen darin.
-- [ ] `SidebarRight`, `BottomBar`, `TopBar`/`Bar`: `position: fixed` und Ausgleichsmaße entfernen, in die
+- [x] `SidebarRight`, `BottomBar`, `TopBar`/`Bar`: `position: fixed` und Ausgleichsmaße entfernen, in die
       Grid-Zeilen/-Spalten einordnen (Werte laut Mapping)
-- [ ] `DocumentReader`: `SidebarLeft` (Breite, Margin, Padding, wirkungslose Regeln), `StoryReaderContainer`
+- [x] `DocumentReader`: `SidebarLeft` (Breite, Margin, Padding, wirkungslose Regeln), `StoryReaderContainer`
       (`padding-right` weg, `position: relative`, `min-height: 0`), `Background` (Margins/Paddings weg,
       `gap: space.5`) laut Mapping
-- [ ] `z-index`-Werte entfernen, die das Grid überflüssig macht (`AudioControlButton`, `AtmoButton`,
+- [x] `z-index`-Werte entfernen, die das Grid überflüssig macht (`AudioControlButton`, `AtmoButton`,
       `ThemeToggleButton`, DESIGN.md 1.2 „Entfallen ersatzlos“)
 
 ### Schritt 4: Top-Bar und Bottom-Bar
 
 #### Frontend
-- [ ] `TopBar`: Grid `240px 1fr 240px` (Layout-Konstante), `padding 0 space.5`, `border-bottom` `borderWidth.thin`,
+- [x] `TopBar`: Grid `240px 1fr 240px` (Layout-Konstante), `padding 0 space.5`, `border-bottom` `borderWidth.thin`,
       Titel „DnD Portal“, Sound-Container (`gap space.4`) mit Gruppen-Wrappern (`gap space.1`),
       `Seperator` → `Separator` als senkrechte Linie in `colors.border` (Entscheidung 5), `AtmoButton` und
       `ThemeToggleButton` laut Mapping (40px, `radius.md`, Icons `size.icon`, Button-Reset)
-- [ ] `BottomBar`: Grid `1fr auto 1fr`, `padding 0 space.5`. Wrapper `Music` mit `AudioControlButton` (40 × 40,
+- [x] `BottomBar`: Grid `1fr auto 1fr`, `padding 0 space.5`. Wrapper `Music` mit `AudioControlButton` (40 × 40,
       `radius.md`, Icon `size.icon`, beim Abspielen Icon in `onPrimary`), Label „Musik“ und Titel nach E6
-- [ ] `utils.ts`: Funktion für den Musiktitel (E6) plus Unit-Test in `__tests__/unit/`
-- [ ] `SideMaps`: Container laut Mapping (`gap space.2`, `align-items: center`, Höhe/Breite `auto`), Label „Szenen“,
+- [x] `utils.ts`: Funktion für den Musiktitel (E6) plus Unit-Test in `__tests__/unit/`
+- [x] `SideMaps`: Container laut Mapping (`gap space.2`, `align-items: center`, Höhe/Breite `auto`), Label „Szenen“,
       Kachelbreite 96px (Layout-Konstante, per Wrapper oder Prop)
-- [ ] `MapElement` (geteilt): 16:9 für beide Kachelarten (`aspect-ratio` oder `56.25%`), `radius.sm`, `border`
+- [x] `MapElement` (geteilt): 16:9 für beide Kachelarten (`aspect-ratio` oder `56.25%`), `radius.sm`, `border`
       `borderWidth.thin`, aktiv per `outline` `borderWidth.thick` `primary` mit `outline-offset: borderWidth.thick`,
       kein `box-shadow`. `MapOverlay`/`NumberIcon` bleiben unverändert (inkl. `z-index`, gehört zum Wall-Task).
 
 ### Schritt 5: Sidebar links und Notizen
 
 #### Frontend
-- [ ] `SidebarLeft`: Label „Notizen“, `gap space.1`, `align-items: stretch`
-- [ ] `SideBarLeftElement` → `NavigationElement`: `size.control.md`, `padding 0 space.3`, `radius.md`, `text.sm`,
+- [x] `SidebarLeft`: Label „Notizen“, `gap space.1`, `align-items: stretch`
+- [x] `SideBarLeftElement` → `NavigationElement`: `size.control.md`, `padding 0 space.3`, `radius.md`, `text.sm`,
       `fontWeight.medium`, linksbündig, doppeltes `white` entfernen, aktiv mit Text in `onPrimary`
-- [ ] `DocumentReader` → `Page`: `max-width` 880px, `padding space.7 space.8`, `radius.lg`, Typografie für h1, h2,
+- [x] `DocumentReader` → `Page`: `max-width` 880px, `padding space.7 space.8`, `radius.lg`, Typografie für h1, h2,
       p, ol, ul, li, a laut Mapping (`text.2xl`/`xl`/`reading`/`md`, `p max-width` 68ch, Links ohne Unterstreichung)
-- [ ] `TopLink`: `display: grid` statt `'flex'`, 40 × 40, `radius.md`, `bottom`/`right` `space.4` relativ zum
+- [x] `TopLink`: `display: grid` statt `'flex'`, 40 × 40, `radius.md`, `bottom`/`right` `space.4` relativ zum
       `StoryReaderContainer`, Button-Reset, Icon `size.icon`
 
 ### Schritt 6: Sidebar rechts
 
 #### Frontend
-- [ ] `DetailsSideBar`: Karte „Aktive Szene“ laut Mapping (`Details` mit gültigem `display: flex`,
+- [x] `DetailsSideBar`: Karte „Aktive Szene“ laut Mapping (`Details` mit gültigem `display: flex`,
       `padding space.5`, `radius.lg`). Header mit Label, Name (`text.lg`, 600) und Beschreibung (`text.sm`). Zeilen
       `DetailContent` als Grid `96px 1fr` (Layout-Konstante), Labels „Enemies“/„Loot“ mit Wert `–` (E7).
       `DetailsContainer` darf entfallen.
-- [ ] `SidebarMapContainer`: Karte „Kampfszenen“ (`colors.secondary`, `padding space.5`, `radius.lg`). Überschrift
+- [x] `SidebarMapContainer`: Karte „Kampfszenen“ (`colors.secondary`, `padding space.5`, `radius.lg`). Überschrift
       mit Anzahl `mainmaps.length`, `margin-bottom space.3`.
-- [ ] `MapOverview` (geteilt): neue Prop `padding`. Admin übergibt `0`, Wall übergibt `'30px 10px'`. Das wirkungslose
+- [x] `MapOverview` (geteilt): neue Prop `padding`. Admin übergibt `0`, Wall übergibt `'30px 10px'`. Das wirkungslose
       CSS-`gap` entfernen, Admin übergibt `gap` = `space.2`. Die Wall-Werte (`gap='10px'`, Padding) bleiben
       optisch gleich.
 
 ### Schritt 7: Dialog
 
 #### Frontend
-- [ ] `Dialogue` laut Mapping und [admin-dialog.png](../../frontend/design/mockups/v2/admin-dialog.png):
+- [x] `Dialogue` laut Mapping und [admin-dialog.png](../../frontend/design/mockups/v2/admin-dialog.png):
       `DialogueContainer` (`radius.lg`, `overflow: hidden`, `gap space.4`, `padding-bottom space.5`,
       `align-items: stretch`). Textblock mit Label „Szene wechseln“, Name (`text.lg`, 600) und Beschreibung
       (`sceneOption.description`, `text.sm`). `DialogueImage` 16:9 `cover`.
-- [ ] `ButtonContainer`: rechtsbündig, `gap space.3`, Reihenfolge Decline → Confirm. `z-index` entfernen.
-- [ ] `ConfirmButton`/`DeclineButton` nach K2 (40px hoch, `min-width` `size.button.minWidth`,
+- [x] `ButtonContainer`: rechtsbündig, `gap space.3`, Reihenfolge Decline → Confirm. `z-index` entfernen.
+- [x] `ConfirmButton`/`DeclineButton` nach K2 (40px hoch, `min-width` `size.button.minWidth`,
       `padding 0 space.4`, `radius.md`, `text.sm`, `fontWeight.semibold`, ohne Laufweite). Confirm-Text in
       `onPrimary`. Button-Reset.
-- [ ] `LayoutContainer`: `z-index` → `layer.dialog`
+- [x] `LayoutContainer`: `z-index` → `layer.dialog`
 
 ### Schritt 8: Doku
 
 #### Doku
-- [ ] `frontend/DESIGN.md`: `size.bar` → `size.bar.md` (E2), Geltung des GlobalStyle (E3), Hinweis „Noch nicht im
+- [x] `frontend/DESIGN.md`: `size.bar` → `size.bar.md` (E2), Geltung des GlobalStyle (E3), Hinweis „Noch nicht im
       Code umgesetzt“ für Grundlagen und Admin aktualisieren
-- [ ] `frontend/design/admin-mapping.md`: `size.bar` → `size.bar.md`, Stand-Vermerk „umgesetzt in DND-4“
-- [ ] `docs/screens.md`: Ist-Stand des Admin Screens (Layout, neue Labels, Musiktitel)
-- [ ] `frontend/CLAUDE.md`: `src/style/` (tokens, tavernTheme, GlobalStyle, styled.d.ts), Inter-Abhängigkeit
-- [ ] `docs/known-issues.md`: behobene Punkte aus „Fehler im Bestand“ (admin-mapping.md) streichen, falls dort geführt
+- [x] `frontend/design/admin-mapping.md`: `size.bar` → `size.bar.md`, Stand-Vermerk „umgesetzt in DND-4“
+- [x] `docs/screens.md`: Ist-Stand des Admin Screens (Layout, neue Labels, Musiktitel)
+- [x] `frontend/CLAUDE.md`: `src/style/` (tokens, tavernTheme, GlobalStyle, styled.d.ts), Inter-Abhängigkeit
+- [x] `docs/known-issues.md`: behobene Punkte aus „Fehler im Bestand“ (admin-mapping.md) streichen, falls dort geführt
 
 ## Akzeptanzkriterien
 

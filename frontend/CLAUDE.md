@@ -11,7 +11,8 @@ welcher Komponente wie umgestellt wird), das Audit und die Mockups liegen in [de
 ## Stack
 
 React 18 · Vite 5 · TypeScript 5 (strict, `noUnusedLocals/Parameters`) · react-router-dom 6 (`BrowserRouter`) ·
-styled-components 6 (Haupt-Styling + Themes) · MUI nur für `Box`/`Slider` · axios · react-markdown · react-svg.
+styled-components 6 (Haupt-Styling + Themes) · MUI nur für `Box`/`Slider` · axios · react-markdown · react-svg ·
+`@fontsource/inter` (Schrift Inter 400/500/600/700, lokal ausgeliefert, Import in `src/main.tsx`).
 Tests: vitest (Unit), jest-cucumber + selenium-webdriver (BDD/E2E).
 
 ## Befehle
@@ -56,7 +57,8 @@ src/service/         Datenladen je Screen (getAdminData, getWallScreenData, getG
 src/api/             axios-Client (apiClient.ts) und getData/updateData (apiMethods.ts)
 src/models/models.ts Interfaces (SceneDetail, Screen, Music, Map) – spiegeln die Backend-Antworten
 src/utils/utils.ts   Audio (Playlist, Zufallstrack, Soundeffekte), filterSceneByKey
-src/style/           darkTheme, lightTheme ({ colors: { primary, secondary, … } })
+src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }),
+                     styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden)
 public/assets/       images (ground_screen, wall_screen, maps), music, sounds, icons
 public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mechanics), deutsch
 ```
@@ -73,6 +75,11 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
 - Komponenten als `const X: FunctionComponent<XProps> = (…): ReactElement => …` mit Props-Interface,
   **benannter Export am Dateiende** (`export { X }`). Nur `App` ist Default-Export.
 - Styles als styled-components in derselben Datei; Farben über `props.theme.colors.*`, nicht hart codiert.
+  Abstände, Schrift, Radien, Größen und `z-index` über die Tokens (`props.theme.space[5]`, `textStyle('sm')`,
+  `props.theme.layer.dialog` …), feste px-Werte nur als benannte Layout-Konstante (siehe [DESIGN.md](DESIGN.md)).
+  Das Theme ist typisiert (`src/style/styled.d.ts`), `tsc` prüft Zugriffe.
+- `GlobalStyle` (box-sizing, margin, Body-Schrift) wird nicht in `App.tsx`, sondern im Screen gerendert – derzeit nur
+  in `AdminScreen`; der Player bekommt ihn nicht.
 - Icons als SVG über `react-svg` (Füllfarbe aus dem Theme), Pfade ab `/assets/...`.
 - Neue Backend-Felder zuerst in `src/models/models.ts` ergänzen.
 

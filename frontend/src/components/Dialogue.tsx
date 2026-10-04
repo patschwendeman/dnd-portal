@@ -1,8 +1,10 @@
 import { FunctionComponent, ReactElement, useContext } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
+import { Label } from './Label'
 import { ActiveSceneContext } from '../context/context'
 import { SceneDetail } from '../models/models'
+import { textStyle } from '../style/tokens'
 
 
 interface DialogueProps {
@@ -11,6 +13,8 @@ interface DialogueProps {
   handleDialogueOption: (option: boolean, sceneOption: SceneDetail | undefined, setActiveSceneId: React.Dispatch<React.SetStateAction<number>>, setDialogueVisibility: React.Dispatch<React.SetStateAction<boolean>>) => void;
   setDialogueVisibility: React.Dispatch<React.SetStateAction<boolean>>;
 }
+
+const DIALOG_WIDTH = '600px'
 
 const LayoutContainer = styled.div<{$isVisible: boolean}>`
   display: ${({ $isVisible }) => ($isVisible ? 'flex' : 'none')};
@@ -24,53 +28,81 @@ const LayoutContainer = styled.div<{$isVisible: boolean}>`
   align-items: center;
   justify-content: center;
   background-color: ${(props) => props.theme.colors.overlay};
-  z-index: 99999;
+  z-index: ${(props) => props.theme.layer.dialog};
 `
 
 const DialogueContainer = styled.div`
-  width: 600px;
+  width: ${DIALOG_WIDTH};
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
+  gap: ${(props) => props.theme.space[4]};
+  padding-bottom: ${(props) => props.theme.space[5]};
+  border-radius: ${(props) => props.theme.radius.lg};
+  overflow: hidden;
   background-color: ${(props) => props.theme.colors.secondary};
   color: ${(props) => props.theme.colors.text.color};
 `
 
+const TextBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${(props) => props.theme.space[1]};
+  padding: 0 ${(props) => props.theme.space[5]};
+`
+
+const SceneName = styled.p`
+  ${textStyle('lg')}
+  font-weight: ${(props) => props.theme.fontWeight.semibold};
+  margin: 0;
+`
+
+const SceneDescription = styled.p`
+  ${textStyle('sm')}
+  margin: 0;
+`
+
 const ButtonContainer = styled.div`
-  width: 70%;
-  height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: ${(props) => props.theme.space[3]};
+  padding: 0 ${(props) => props.theme.space[5]};
   cursor: pointer;
-  z-index: 999;
-  margin-bottom: 30px;
+`
+
+const textButton = css`
+  min-width: ${(props) => props.theme.size.button.minWidth};
+  height: ${(props) => props.theme.size.control.md};
+  padding: 0 ${(props) => props.theme.space[4]};
+  border: none;
+  border-radius: ${(props) => props.theme.radius.md};
+  font-family: inherit;
+  ${textStyle('sm')}
+  font-weight: ${(props) => props.theme.fontWeight.semibold};
+  cursor: pointer;
 `
 
 const ConfirmButton = styled.button`
-  width: 200px;
-  height: 50px;
+  ${textButton}
   background-color: ${(props) => props.theme.colors.primary};
-  border: none;
-  border-radius: 5px;
-  color: ${(props) => props.theme.colors.text.color};
-  cursor: pointer;
-  z-index: 999;
+  color: ${(props) => props.theme.colors.onPrimary};
 `
 
 const DeclineButton = styled.button`
-  width: 200px;
-  height: 50px;
+  ${textButton}
   background-color: ${(props) => props.theme.colors.background};
-  border: none;
-  border-radius: 5px;
   color: ${(props) => props.theme.colors.text.color};
 `
 
 const DialogueImage = styled.img`
+    display: block;
     width: 100%;
-    height: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
 `
 
 const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogueOption, isVisible, setDialogueVisibility }): ReactElement => {
@@ -92,10 +124,14 @@ const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogu
     <LayoutContainer $isVisible={isVisible}>
       <DialogueContainer>
         <DialogueImage src={sceneOption?.graphics_wall?.source} alt={sceneOption?.name || 'Scene Image'} />
-        <p>{sceneOption?.name}</p>
+        <TextBlock>
+          <Label>Szene wechseln</Label>
+          <SceneName>{sceneOption?.name}</SceneName>
+          <SceneDescription>{sceneOption?.description}</SceneDescription>
+        </TextBlock>
         <ButtonContainer>
-          <ConfirmButton data-test-id='confirm-button' onClick={handleConfirm}>Confirm</ConfirmButton>
           <DeclineButton data-test-id='decline-button' onClick={handleDecline}>Decline</DeclineButton>
+          <ConfirmButton data-test-id='confirm-button' onClick={handleConfirm}>Confirm</ConfirmButton>
         </ButtonContainer>
       </DialogueContainer>
     </LayoutContainer>

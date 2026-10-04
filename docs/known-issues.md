@@ -32,7 +32,7 @@ Stand: Analyse vom 2026-09-27. Punkte mit „(ungeprüft)“ wurden aus dem Code
 - API-Base-URL fest verdrahtet, keine Env-Variablen; Fehler werden in Effects geworfen (unhandled rejections).
 - `ResourceBarPlayer`: `spellData[].max` weicht von `SpellMax` ab (Stufe II: 4 vs. 3); Spezial startet bei 1 statt 3.
 - E2E-Tests teilweise veraltet (`groundImg`-Selector existiert nicht mehr); `SceneDetailMock.json` nutzt noch `fight`.
-- Tippfehler/Benennung: `Seperator`, `Visiblity`, `ressouce`; „light“-Theme ist ebenfalls dunkel.
+- Tippfehler/Benennung: `Visiblity`, `ressouce`.
 - Ungenutzt: `index.css`, `App.css`, `src/assets/react.svg`, `updateData()`, `public/test.jpg` (~12 MB),
   `public/journey.mp3`, `public/voice_1.mp3`, `public/rotate.png`, `public/vite.svg`, `public/story/fight/test.py`.
 - `eslint-plugin-react-hooks` installiert, aber nicht aktiv; viele `useEffect`-Abhängigkeiten fehlen.

@@ -3,7 +3,9 @@ import ReactMarkdown from 'react-markdown'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
+import { Label } from './Label'
 import { SideBarLeftElement } from './SideBarLeftElement'
+import { textStyle } from '../style/tokens'
 
 const markdownFilesMain = import.meta.glob('../../public/story/main/*.md')
 const markdownFilesFight = import.meta.glob('../../public/story/fight/*.md')
@@ -13,24 +15,27 @@ const markdownFilesMechanics = import.meta.glob('../../public/story/mechanics/*.
 
 import arrowUpIcon from '/assets/icons/arrowUp.svg'
 
+const PAGE_MAX_WIDTH = '880px'
+const LINE_MAX_WIDTH = '68ch'
+
 const SidebarLeft = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  left: 0;
-  margin-top: 100px;
-  bottom: 50px;
-  width: 130px;
-  height: 100%;
-  padding: 20px 15px 0 15px;
+  align-items: stretch;
+  gap: ${(props) => props.theme.space[1]};
+`
+
+const NotesLabel = styled(Label)`
+  padding: 0 ${(props) => props.theme.space[3]} ${(props) => props.theme.space[2]};
 `
 
 const StoryReaderContainer = styled.div`
   display: flex;
   flex-direction: column;
-  padding-right: 400px;
+  position: relative;
   width: 100%;
   height: 100%;
+  min-height: 0;
   ::-webkit-scrollbar {
     width: 4px;
   }
@@ -42,35 +47,33 @@ const StoryReaderContainer = styled.div`
 `
 
 const TopLink = styled.button<{ isVisible: boolean }>`
-  display: 'flex';
+  display: grid;
+  place-items: center;
   position: absolute;
-  width: 45px;
-  height: 45px;
-  border-radius: 5px;
+  width: ${(props) => props.theme.size.control.md};
+  height: ${(props) => props.theme.size.control.md};
+  padding: 0;
+  border-radius: ${(props) => props.theme.radius.md};
   background-color: ${(props) => (props.theme.colors.secondary)};
-  bottom: 65px;
-  right: 420px;
+  bottom: ${(props) => props.theme.space[4]};
+  right: ${(props) => props.theme.space[4]};
   cursor: pointer;
   color: ${(props) => props.theme.colors.text.color} !important; 
   border: none;
-  justify-content: center;
-  align-items: center;
   opacity: ${(props) => (props.isVisible ? 1 : 0)}; /* Steuerung der Sichtbarkeit */
   transition: opacity 0.3s ease-in-out;
   
 
   svg {
-      width: 100%;
-      height: 100%; 
+      display: block;
+      width: ${(props) => props.theme.size.icon};
+      height: ${(props) => props.theme.size.icon};
     }
   `
 
 const Background = styled.div`
   display: flex;
-  padding-bottom: 5px;
-  padding-top: 5px;
-  margin-top: 50px;
-  margin-bottom: 50px;
+  gap: ${(props) => props.theme.space[5]};
   align-items: center;
   flex-direction: column;
   width: 100%;
@@ -80,31 +83,54 @@ const Background = styled.div`
 `
 
 const Page = styled.div`
-  width: 60%;
-  padding: 30px 100px;
-  margin: 10px 0;
-  border: 1px solid ${(props) => props.theme.colors.border};
+  width: 100%;
+  max-width: ${PAGE_MAX_WIDTH};
+  padding: ${(props) => props.theme.space[7]} ${(props) => props.theme.space[8]};
+  margin: 0;
+  border: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.border};
+  border-radius: ${(props) => props.theme.radius.lg};
   h1 {
-    padding-bottom: 0.3em;
-    border-bottom: 1px solid ${(props) => props.theme.colors.border};
+    ${textStyle('2xl')}
+    font-weight: ${(props) => props.theme.fontWeight.bold};
+    margin: 0 0 ${(props) => props.theme.space[5]};
+    padding-bottom: ${(props) => props.theme.space[3]};
+    border-bottom: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.border};
+  }
+  h2 {
+    ${textStyle('xl')}
+    font-weight: ${(props) => props.theme.fontWeight.semibold};
+    margin: ${(props) => props.theme.space[6]} 0 ${(props) => props.theme.space[3]};
   }
   p {
-    font-size: 16px;
-    line-height: 1.5;
+    ${textStyle('reading')}
+    margin: 0 0 ${(props) => props.theme.space[4]};
+    max-width: ${LINE_MAX_WIDTH};
     word-wrap: break-word;
   }
+  ol {
+    padding-left: ${(props) => props.theme.space[5]};
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: ${(props) => props.theme.space[2]};
+  }
+  ol ol {
+    margin-top: ${(props) => props.theme.space[2]};
+  }
   ul {
-    padding-left: 2em;
+    padding-left: ${(props) => props.theme.space[5]};
     display: block;
     list-style-type: disc;
-    margin-block-start: 1em;
-    margin-block-end: 1em;
-    padding-inline-start: 40px;
-    line-height: 1.5;
+    margin-block-start: 0;
+    margin-block-end: ${(props) => props.theme.space[4]};
+    ${textStyle('md')}
   }
   li {
-    line-height: 1.5;
-  } 
+    ${textStyle('md')}
+  }
+  a {
+    text-decoration: none;
+  }
   .markdown-image {
     width: 100%;
     height: auto;
@@ -193,6 +219,7 @@ const DocumentReader: FunctionComponent = (): ReactElement => {
   return (
     <>
       <SidebarLeft>
+        <NotesLabel>Notizen</NotesLabel>
         <SideBarLeftElement name='Main' selectedStoryIndex={ selectedStoryIndex } handleStorySelect={ handleStorySelect } index={0} />
         <SideBarLeftElement name='Fight' selectedStoryIndex={ selectedStoryIndex } handleStorySelect={ handleStorySelect } index={1} />
         <SideBarLeftElement name='Side' selectedStoryIndex={ selectedStoryIndex } handleStorySelect={ handleStorySelect } index={2} />

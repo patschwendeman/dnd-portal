@@ -1,21 +1,23 @@
 import { FunctionComponent, ReactElement } from 'react'
 import styled from 'styled-components'
 
+import { textStyle } from '../style/tokens'
 
 const NavigationElement = styled.div<{$isElementActive: boolean}>`
   display: flex;
   width: 100%;
-  height: 20px;
+  height: ${(props) => props.theme.size.control.md};
   background-color:${( props ) => (props.$isElementActive ? props.theme.colors.primary : props.theme.colors.secondary)};
-  border-radius: 5px;
-  margin: 5px;
+  border-radius: ${(props) => props.theme.radius.md};
+  margin: 0;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: white;
+  justify-content: flex-start;
+  text-align: left;
   cursor: pointer;
-  padding: 5px;
-  color: ${(props) => props.theme.colors.text.color};
+  padding: 0 ${(props) => props.theme.space[3]};
+  ${textStyle('sm')}
+  font-weight: ${(props) => props.theme.fontWeight.medium};
+  color: ${(props) => (props.$isElementActive ? props.theme.colors.onPrimary : props.theme.colors.text.color)};
 `
 
 interface SideBarLeftElementProps {

@@ -11,15 +11,16 @@ interface MapElementProps {
     isAdminScreen: boolean
 }
 
-const MapContainer = styled.div<{ $isActive: boolean, $isMainMap: boolean }>`
+const MapContainer = styled.div<{ $isActive: boolean }>`
     background-color:${(props) => props.theme.colors.secondary};
-    padding-top: ${props => props.$isMainMap ? '56.25%' : '0'};
+    padding-top: 56.25%;
     position: relative;
     flex-grow: 1;
-    border-radius: 5px;
-    border-style: solid;
-    border: 1px solid ${props => props.$isActive ? props.theme.colors.primary : props.theme.colors.border};
-    box-shadow: ${props => props.$isActive ? '0 0 10px' + props.theme.colors.primary : 'none'};
+    border-radius: ${(props) => props.theme.radius.sm};
+    border: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.border};
+    outline: ${(props) => props.$isActive ? `${props.theme.borderWidth.thick} solid ${props.theme.colors.primary}` : 'none'};
+    outline-offset: ${(props) => props.theme.borderWidth.thick};
+    box-shadow: none;
     cursor: pointer;
 `
 
@@ -30,7 +31,7 @@ const MapImage = styled.img`
     width: 100% !important;
     height: 100%;
     object-fit: cover;
-    border-radius: 5px;
+    border-radius: ${(props) => props.theme.radius.sm};
 `
 
 const MapOverlay = styled.div<{ $isAdminScreen: boolean }>`
@@ -72,7 +73,7 @@ const MapElement: FunctionComponent<MapElementProps> = ({ activeMapId, src, hand
     const isActive = keyProp === activeMapId && isMainMap === isActiveMainMap
 
     return (
-        <MapContainer data-test-id={src} $isActive={isActive} onClick={handleClick} $isMainMap={isMainMap}>
+        <MapContainer data-test-id={src} $isActive={isActive} onClick={handleClick}>
             <MapOverlay $isAdminScreen={isAdminScreen}>
                 <NumberIcon>
                     {keyProp}

@@ -5,13 +5,12 @@ import { MapElement } from './MapElement'
 import { ActiveMapContext } from '../context/context'
 import { Map } from '../models/models'
 
-const ContainerMainmaps = styled.div`
+const ContainerMainmaps = styled.div<{ $padding: string }>`
     display: flex;
     width: 100%;
-    gap: 2px;
     position: relative;
     flex-wrap: wrap; 
-    padding: 30px 10px 30px 10px;
+    padding: ${(props) => props.$padding};
 `
 
 const MainmapsColumn = styled.div`
@@ -19,18 +18,18 @@ const MainmapsColumn = styled.div`
     flex-direction: column;
     justify-content: space-between;
     flex: 1;
-    gap: 2px;
 `
 
 interface MapOverviewProps {
     gap: string,
+    padding: string,
     mainmaps: Map[] | undefined
     handleSceneSelection?(id: number, isMainMap: boolean): void
     isActiveMainMap: boolean
     isAdminScreen: boolean
 }
 
-const MapOverview: FunctionComponent<MapOverviewProps> = ({ mainmaps, gap, handleSceneSelection, isActiveMainMap, isAdminScreen }): ReactElement => {
+const MapOverview: FunctionComponent<MapOverviewProps> = ({ mainmaps, gap, padding, handleSceneSelection, isActiveMainMap, isAdminScreen }): ReactElement => {
 
     const { activeMapId } = useContext(ActiveMapContext)
     let maps: Map[]
@@ -47,7 +46,7 @@ const MapOverview: FunctionComponent<MapOverviewProps> = ({ mainmaps, gap, handl
     const count = Math.sqrt(maps.length)
       
       return (
-        <ContainerMainmaps data-test-id='container-mainmaps' style={{ gap: gap }}>
+        <ContainerMainmaps data-test-id='container-mainmaps' $padding={padding} style={{ gap: gap }}>
             {[...Array(count)].map((_, colIndex) => (
                 <MainmapsColumn style={{ gap: gap }} key={ colIndex }>
                     {[...Array(count)].map((_, mapIndex) => {

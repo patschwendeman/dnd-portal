@@ -1,6 +1,6 @@
-export const lightTheme = {
+export const tavernTheme = {
   colors: {
-    primary: '#AD3131',
+    primary: '#C05E5E',
     secondary: '#3D271C',
     dark: 'black',
     border: '#956F01',
@@ -9,5 +9,6 @@ export const lightTheme = {
     text: {
       color: '#CBAB96',
     },
+    onPrimary: '#140701',
   },
 }

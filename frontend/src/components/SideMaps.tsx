@@ -1,18 +1,31 @@
 import { FunctionComponent, ReactElement, useContext } from 'react'
 import styled from 'styled-components'
 
+import { Label } from './Label'
 import { MapElement } from './MapElement'
 import { ActiveMapContext } from '../context/context'
 import { Map } from '../models/models'
 
 
-const ContainerSideMaps = styled.div<{ $count: number }>`
-    height: 75%;
-    width: ${({ $count }) => ($count * 100)}px;
+const TILE_WIDTH = '96px'
+
+const ContainerSideMaps = styled.div`
+    height: auto;
+    width: auto;
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
-    gap: 10px; 
+    justify-content: flex-start;
+    align-items: center;
+    gap: ${(props) => props.theme.space[2]};
+`
+
+const SideMapsLabel = styled(Label)`
+    margin-right: ${(props) => props.theme.space[2]};
+`
+
+const SideMapTile = styled.div`
+    width: ${TILE_WIDTH};
+    flex-shrink: 0;
 `
 
 interface SideMapsProps {
@@ -40,21 +53,23 @@ const SideMaps: FunctionComponent<SideMapsProps> = ({ sidemaps , handleSceneSele
     const count = maps.length
       
       return (
-        <ContainerSideMaps $count={count}>
+        <ContainerSideMaps>
+            <SideMapsLabel>Szenen</SideMapsLabel>
             {[...Array(count)].map((_, mapIndex) => {
                 if (maps) {
                     return (
-                        <MapElement 
-                            activeMapId={ activeMapId }
-                            src={ maps[mapIndex].source } 
-                            handleSceneSelection={ handleSceneSelection } 
-                            key={ maps[mapIndex].id }
-                            keyProp={ maps[mapIndex].id }
-                            isMainMap={ false }
-                            isActiveMainMap={ isActiveMainMap }
-                            isAdminScreen={ true } 
-                            >  
-                        </MapElement>
+                        <SideMapTile key={ maps[mapIndex].id }>
+                            <MapElement 
+                                activeMapId={ activeMapId }
+                                src={ maps[mapIndex].source } 
+                                handleSceneSelection={ handleSceneSelection } 
+                                keyProp={ maps[mapIndex].id }
+                                isMainMap={ false }
+                                isActiveMainMap={ isActiveMainMap }
+                                isAdminScreen={ true } 
+                                >  
+                            </MapElement>
+                        </SideMapTile>
                     )
                 }
                 return null

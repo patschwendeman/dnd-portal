@@ -9,5 +9,6 @@ export const darkTheme = {
     text: {
       color: '#f0f6fc',
     },
+    onPrimary: '#0e1117',
   },
 }

@@ -5,21 +5,28 @@ import defaultMusic from '../../public//assets/music/side_maps/forest/From_Past_
 import { DetailsSideBar } from '../components/DetailsSideBar'
 import { Dialogue } from '../components/Dialogue'
 import { DocumentReader } from '../components/DocumentReader'
+import { Label } from '../components/Label'
 import { MapOverview } from '../components/MapOverview'
 import { SideMaps } from '../components/SideMaps'
 import { TopBar } from '../components/TopBar'
 import { ActiveMapContext, ActiveSceneContext } from '../context/context'
-import { Map, Music, SceneDetail } from '../models/models'
+import { Map, type Music, SceneDetail } from '../models/models'
 import { getAdminData, getSceneById, handleDialogue } from '../service/adminScreen'
-import { filterSceneByKey, handleAudio, handleAudioControl, getRandomTrack } from '../utils/utils'
+import { GlobalStyle } from '../style/GlobalStyle'
+import { textStyle } from '../style/tokens'
+import { filterSceneByKey, getMusicTitle, handleAudio, handleAudioControl, getRandomTrack } from '../utils/utils'
 
 import { ReactSVG } from 'react-svg'
 
 import playIcon from '/assets/icons/play.svg'
 import pauseIcon from '/assets/icons/pause.svg'
 
+const LEFT_COLUMN_WIDTH = '200px'
+const RIGHT_COLUMN_WIDTH = '400px'
+
 const Screen = styled.div`
-    display: flex;
+    display: grid;
+    grid-template-rows: ${(props) => props.theme.size.bar.md} 1fr ${(props) => props.theme.size.bar.lg};
     width: 100%;
     height: 100%;
     position: fixed;
@@ -27,9 +34,6 @@ const Screen = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    align-items: center;
-    justify-content: center;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
     background-color: ${(props) => props.theme.colors.background};
     color: ${(props) => props.theme.colors.text.color};
     a {
@@ -37,55 +41,78 @@ const Screen = styled.div`
     };
 `
 
+const Main = styled.div`
+    display: grid;
+    grid-template-columns: ${LEFT_COLUMN_WIDTH} 1fr ${RIGHT_COLUMN_WIDTH};
+    gap: ${(props) => props.theme.space[5]};
+    padding: ${(props) => props.theme.space[5]};
+    min-height: 0;
+`
+
 const SidebarRight = styled.div`
-    position: fixed;
     display: flex;
     flex-direction: column;
-    align-items: end;
-    top: 50px;
-    right: 0;
-    bottom: 50px;
-    width: 400px;
+    align-items: stretch;
+    gap: ${(props) => props.theme.space[5]};
+    min-height: 0;
 `
 
 const SidebarMapContainer = styled.div`
     width: 100%;
-    height: 200px;
+    height: auto;
+    display: block;
+    padding: ${(props) => props.theme.space[5]};
+    border-radius: ${(props) => props.theme.radius.lg};
+    background-color: ${(props) => props.theme.colors.secondary};
+`
+
+const SectionHead = styled.div`
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px 0;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: ${(props) => props.theme.space[3]};
 `
 
 const BottomBar = styled.div`
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 50px;
-    display: flex;
-    background-color: ${(props) => props.theme.colors.dark};
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: center;
+    padding: 0 ${(props) => props.theme.space[5]};
+    background-color: ${(props) => props.theme.colors.dark};
+`
+
+const Music = styled.div`
+    display: flex;
+    align-items: center;
+    gap: ${(props) => props.theme.space[3]};
 `
 
 const AudioControlButton = styled.div<{$isMusicPlaying: boolean}>`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    left: 20px;
-    padding: 7px 25px;
+    display: grid;
+    place-items: center;
+    width: ${(props) => props.theme.size.control.md};
+    height: ${(props) => props.theme.size.control.md};
+    padding: 0;
     background-color: ${(props) => (props.$isMusicPlaying ? props.theme.colors.primary : props.theme.colors.secondary)};
     color: ${(props) => props.theme.colors.text.color};
     border: none;
-    border-radius: 5px;
+    border-radius: ${(props) => props.theme.radius.md};
     cursor: pointer;
-    z-index: 99;
     svg {
-      width: 15px;
-      height: 15px; 
+      display: block;
+      width: ${(props) => props.theme.size.icon};
+      height: ${(props) => props.theme.size.icon};
     }
+`
+
+const Track = styled.div`
+    display: flex;
+    flex-direction: column;
+`
+
+const TrackName = styled.span`
+    ${textStyle('sm')}
+    font-weight: ${(props) => props.theme.fontWeight.medium};
 `
 
 interface AdminScreenProps {
@@ -185,7 +212,8 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
     }
 
     return(
-        <>               
+        <>
+            <GlobalStyle />
             <Dialogue
                 sceneOption={sceneOption}
                 handleDialogueOption={handleDialogueOption}
@@ -193,31 +221,45 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
                 setDialogueVisibility={setDialogueVisibility}
             />
             <Screen>
-            <TopBar toggleTheme={toggleTheme} />
-                <SidebarRight>
-                    <DetailsSideBar activeScene={ activeScene }/>
-                    <SidebarMapContainer>
-                        <MapOverview
-                            mainmaps={mainmaps}
-                            gap='3px'
-                            handleSceneSelection={handleSceneSelection}
-                            isActiveMainMap={ isMainMap }
-                            isAdminScreen={ true }
-                        />
-                    </SidebarMapContainer>
-                </SidebarRight>
+                <TopBar toggleTheme={toggleTheme} />
+                <Main>
+                    <DocumentReader />
+                    <SidebarRight>
+                        <DetailsSideBar activeScene={ activeScene }/>
+                        <SidebarMapContainer>
+                            <SectionHead>
+                                <Label>Kampfszenen</Label>
+                                <Label>{ mainmaps.length }</Label>
+                            </SectionHead>
+                            <MapOverview
+                                mainmaps={mainmaps}
+                                gap={theme.space[2]}
+                                padding='0'
+                                handleSceneSelection={handleSceneSelection}
+                                isActiveMainMap={ isMainMap }
+                                isAdminScreen={ true }
+                            />
+                        </SidebarMapContainer>
+                    </SidebarRight>
+                </Main>
                 <BottomBar>
-                    <AudioControlButton $isMusicPlaying={ isMusicPlaying } onClick={() => handleAudioControl(audio, isMusicPlaying, setIsMusicPlaying)}>
-                        <ReactSVG
-                            src={isMusicPlaying ? pauseIcon : playIcon}
-                            beforeInjection={(svg) => {
-                            svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
-                            }}
-                        />
-                    </AudioControlButton>
+                    <Music>
+                        <AudioControlButton $isMusicPlaying={ isMusicPlaying } onClick={() => handleAudioControl(audio, isMusicPlaying, setIsMusicPlaying)}>
+                            <ReactSVG
+                                src={isMusicPlaying ? pauseIcon : playIcon}
+                                beforeInjection={(svg) => {
+                                svg.setAttribute('style', `fill: ${isMusicPlaying ? theme.colors.onPrimary : theme.colors.text.color}`)
+                                }}
+                            />
+                        </AudioControlButton>
+                        <Track>
+                            <Label>Musik</Label>
+                            <TrackName>{ getMusicTitle(activeMusicSRC) }</TrackName>
+                        </Track>
+                    </Music>
                     <SideMaps sidemaps={sidemaps} handleSceneSelection={handleSceneSelection} isActiveMainMap={ isMainMap }/>
+                    <div />
                 </BottomBar>
-                <DocumentReader />
             </Screen>
         </>
     )

@@ -1,7 +1,8 @@
-import { FunctionComponent, ReactElement } from 'react'
+import { Fragment, FunctionComponent, ReactElement } from 'react'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
+import { textStyle } from '../style/tokens'
 import { playAtmoSounds } from '../utils/utils'
 
 import buffIcon from '/assets/icons/buff.svg'
@@ -26,67 +27,73 @@ import lockIcon from '/assets/icons/lock.svg'
 import lockSound from '/assets/sounds/lock.wav'
 import settingsIcon from '/assets/icons/settings.svg'
 
+const OUTER_COLUMN_WIDTH = '240px'
+
 const Bar = styled.div`
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 50px;
-    display: flex;
-    /* background-color: ${(props) => props.theme.colors.secondary}; */
+    display: grid;
+    grid-template-columns: ${OUTER_COLUMN_WIDTH} 1fr ${OUTER_COLUMN_WIDTH};
+    align-items: center;
+    padding: 0 ${(props) => props.theme.space[5]};
     background-color: ${(props) => props.theme.colors.background};
-    border-bottom: 1px solid ${(props) => props.theme.colors.secondary};
+    border-bottom: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.secondary};
+`
+
+const Title = styled.span`
+    ${textStyle('md')}
+    font-weight: ${(props) => props.theme.fontWeight.bold};
+`
+
+const Sounds = styled.div`
+    display: flex;
     align-items: center;
     justify-content: center;
-
+    gap: ${(props) => props.theme.space[4]};
 `
-const Seperator = styled.div`
-    width: 5px;
-    height: 5px;
-    margin: 0 20px 0 20px;
-    border-radius: 100px;
-    background-color: ${(props) => props.theme.colors.text.color};
 
+const SoundGroup = styled.div`
+    display: flex;
+    gap: ${(props) => props.theme.space[1]};
+`
+
+const Separator = styled.div`
+    width: ${(props) => props.theme.borderWidth.thin};
+    height: ${(props) => props.theme.size.icon};
+    background-color: ${(props) => props.theme.colors.border};
 `
 
 const AtmoButton = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    /* background-color: ${(props) => props.theme.colors.background}; */
+    display: grid;
+    place-items: center;
+    width: ${(props) => props.theme.size.control.md};
+    height: ${(props) => props.theme.size.control.md};
     color: ${(props) => props.theme.colors.text.color};
-    z-index: 999;
-    /* border: 1px solid ${(props) => props.theme.colors.text.color}; */
-    border-radius: 100px;
-    margin: 0 10px 0 10px;
+    border-radius: ${(props) => props.theme.radius.md};
     cursor: pointer;
 
     svg {
-      width: 100%;
-      height: 100%; 
+      display: block;
+      width: ${(props) => props.theme.size.icon};
+      height: ${(props) => props.theme.size.icon};
     }
-  
 `
 
 const ThemeToggleButton = styled.button`
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    right: 20px;
-    /* padding: 3px 22px; */
+    display: grid;
+    place-items: center;
+    justify-self: end;
+    width: ${(props) => props.theme.size.control.md};
+    height: ${(props) => props.theme.size.control.md};
+    padding: 0;
     background-color: ${(props) => props.theme.colors.background};
     color: ${(props) => props.theme.colors.text.color};
     border: none;
-    /* border-radius: 5px; */
+    border-radius: ${(props) => props.theme.radius.md};
     cursor: pointer;
-    z-index: 99;
+
     svg {
-        width: 30px;
-        height: 100%; 
+        display: block;
+        width: ${(props) => props.theme.size.icon};
+        height: ${(props) => props.theme.size.icon};
     }
 `
 
@@ -162,68 +169,30 @@ const TopBar: FunctionComponent<AdminScreenProps> = ({
     },
   ]
 
+  const atmoGroups = [healAtmos, buffAtmos, spellsAtmos, debuffAtmos, otherAtmos]
+
   return (
     <Bar>
-      {healAtmos.map((_, i) => (
-        <AtmoButton onClick={() => playAtmoSounds(healAtmos[i].sound)} key={i}>
-          <ReactSVG
-            src={healAtmos[i].icon}
-            beforeInjection={(svg) => {
-              svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
-            }}
-          />
-        </AtmoButton>
-      ))}
-      <Seperator></Seperator>
-      {buffAtmos.map((_, i) => (
-        <AtmoButton onClick={() => playAtmoSounds(buffAtmos[i].sound)} key={i}>
-          <ReactSVG
-            src={buffAtmos[i].icon}
-            beforeInjection={(svg) => {
-              svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
-            }}
-          />
-        </AtmoButton>
-      ))}
-      <Seperator></Seperator>
-      {spellsAtmos.map((_, i) => (
-        <AtmoButton
-          onClick={() => playAtmoSounds(spellsAtmos[i].sound)}
-          key={i}
-        >
-          <ReactSVG
-            src={spellsAtmos[i].icon}
-            beforeInjection={(svg) => {
-              svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
-            }}
-          />
-        </AtmoButton>
-      ))}
-      <Seperator></Seperator>
-      {debuffAtmos.map((_, i) => (
-        <AtmoButton
-          onClick={() => playAtmoSounds(debuffAtmos[i].sound)}
-          key={i}
-        >
-          <ReactSVG
-            src={debuffAtmos[i].icon}
-            beforeInjection={(svg) => {
-              svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
-            }}
-          />
-        </AtmoButton>
-      ))}
-      <Seperator></Seperator>
-      {otherAtmos.map((_, i) => (
-        <AtmoButton onClick={() => playAtmoSounds(otherAtmos[i].sound)} key={i}>
-          <ReactSVG
-            src={otherAtmos[i].icon}
-            beforeInjection={(svg) => {
-              svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
-            }}
-          />
-        </AtmoButton>
-      ))}
+      <Title>DnD Portal</Title>
+      <Sounds>
+        {atmoGroups.map((atmos, groupIndex) => (
+          <Fragment key={groupIndex}>
+            {groupIndex > 0 && <Separator />}
+            <SoundGroup>
+              {atmos.map((atmo, i) => (
+                <AtmoButton onClick={() => playAtmoSounds(atmo.sound)} key={i}>
+                  <ReactSVG
+                    src={atmo.icon}
+                    beforeInjection={(svg) => {
+                      svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
+                    }}
+                  />
+                </AtmoButton>
+              ))}
+            </SoundGroup>
+          </Fragment>
+        ))}
+      </Sounds>
       <ThemeToggleButton onClick={toggleTheme}>
         <ReactSVG
           src={settingsIcon}

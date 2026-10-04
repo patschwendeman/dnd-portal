@@ -1,6 +1,7 @@
 # Admin Screen: Mapping der Styled Components auf das neue Layout
 
-Stand: 2026-10-04 (Branch `development`). Vorschlag, noch keine Änderungen am Code.
+Stand: 2026-10-04 (Branch `development`). Umgesetzt in DND-4 ([Plan](../../docs/tasks/DND-4-admin-restyle.md)).
+Die Spalte „Alter Wert“ beschreibt den Code vor dem Umbau.
 Grundlage: Mockups [mockups/v2/admin.png](mockups/v2/admin.png) und [mockups/v2/admin-dialog.png](mockups/v2/admin-dialog.png)
 (Quelle [mockups/v2/build.py](mockups/v2/build.py)), die Entscheidungen vom 2026-10-04 (siehe unten) und der
 aktuelle Code der Komponenten, die der Admin Screen rendert.
@@ -22,7 +23,7 @@ Das Mockup verwendet ein 4px-Raster. Diese Skala ersetzt den früheren Vorschlag
 | Radien | `radius.sm` · `md` · `lg` · `xl` · `pill` | 4 · 8 · 12 · 16 · 999px |
 | Bedienelemente | `size.control.sm` · `size.control.md` | 32 · 40px |
 | Icons | `size.icon` | 20px |
-| Leisten | `size.bar` · `size.bar.lg` | 56 · 80px |
+| Leisten | `size.bar.md` · `size.bar.lg` | 56 · 80px |
 | Rahmen | `borderWidth.thin` · `thick` | 1 · 2px |
 | Schrift | `font.family.base` | `"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif` |
 
@@ -92,7 +93,7 @@ Entscheidungen aus dem Abgleich aller drei Mappings (Admin, Wall, Ground). Sie g
 | Regel | Alter Wert | Neuer Wert | Hinweis |
 |---|---|---|---|
 | `display` | `flex` | `grid` | **Struktur** |
-| `grid-template-rows` | – | `size.bar` (56px) `1fr` `size.bar.lg` (80px) | **neu** |
+| `grid-template-rows` | – | `size.bar.md` (56px) `1fr` `size.bar.lg` (80px) | **neu** |
 | `align-items` | `center` | entfällt | |
 | `justify-content` | `center` | entfällt | |
 | `font-family` | System-Stack | `font.family.base` | |
@@ -178,7 +179,7 @@ Abspielen bleibt.
 |---|---|---|---|
 | `position`, `left`, `top` | `fixed`, `0`, `0` | entfällt | **Struktur**, Grid-Zeile 1 |
 | `width` | `100%` | entfällt | |
-| `height` | `50px` | `size.bar` (56px) | +6px |
+| `height` | `50px` | `size.bar.md` (56px) | +6px |
 | `display` | `flex` | `grid` | |
 | `grid-template-columns` | – | `240px 1fr 240px` | **neu**, **kein Token** (Layout-Maß). Gleich breite Außenspalten halten die Sounds exakt mittig. |
 | `justify-content` | `center` | entfällt | |
