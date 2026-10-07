@@ -1,7 +1,7 @@
 # DND-6: Restyle Ground Screen (Schritt 3 von 3: nach Admin und Wall)
 
 **Typ:** style
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -186,3 +186,29 @@ Wiederverwendet, nicht neu gebaut: `tokens.ts` (inkl. `textStyle`), `styled.d.ts
 - keine
 
 ## Review
+
+### Runde 1 – 2026-10-07
+**Empfehlung:** Abnahme
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | Selenium headless, 1920 × 1080, DPR 1. Raster WHITE, Slider 140: Leiste x 571–1348, 56px hoch, 24px über der Unterkante, Buttons x 668/784/900 (je 112 × 40), Wert x 1301 – deckt sich mit `ground.png`. „RASTER“ 20px vom Rand der Leiste (8px Innenabstand + 12px `padding-left`), `text.xs` 12/16, 600, uppercase, .08em. Gruppenabstand 24px, Buttons 4px. Slider 200px, Schiene/Füllung 4px mit `radius.pill`, Griff 16 × 16, Wert 14px/600. Medium randlos (`fixed`, `inset: 0`, `object-fit: cover`), z 1; Raster z 10. Tavern: Schiene `secondary` (#3D271C), Füllung `primary` (#C05E5E), Griff `text.color` (#CBAB96). Video-Szene nur per Screenshot des Implementers (plausibel, gleiche `BackgroundMedia`); Testdatei entfernt, Szene 1 wieder `mapOverview.jpg`. |
+| AK2 | erfüllt | `GroundScreen.tsx:30-37` `inset: 0`, `layer.media`; `GridOverlay.tsx:10-24` `inset: 0`, `layer.grid`, `pointer-events: none`, Linienstärke `borderWidth.thick`; `ScreenControlBar.tsx:12-18` Konstanten `SLIDER_WIDTH`, `SLIDER_THUMB_SIZE`, `SLIDER_VALUE_MIN_WIDTH`, `CONTROL_BAR_CLEARANCE`. Sonst nur Tokens, Farbrollen, `0.5s`, Gitterfarben. Kein freier `z-index`. |
+| AK3 | erfüllt | 0 `.MuiSlider-mark`, 0 `.MuiSlider-valueLabel`. Pfeiltaste 100 → 200 in 10er-Schritten (`aria-valuenow` = Anzeige), PageDown 200 → 100 (`shiftStep`). Wertanzeige konstant 27.7px (`3ch`, `tabular-nums`), Leiste konstant x 571.3 / 777.4px. |
+| AK4 | erfüllt | `ControlBar`, `Overlay`, `ButtonGroup`, `Button`, `WallScreen.tsx` unverändert; Label und `SliderGroup` nur bei gesetzten Props. `/wall` gemessen: ein Kind (BATTLE/WORLD/OFF), Leiste 360 × 56, Radius 16, Innenabstand 8, Abstand 24, unten 24. |
+| AK5 | erfüllt | Medientyp per Endung, `gridColorMap`, Slider-Props und Linienberechnung unverändert; Linien gemessen gleich (100: 31 Linien, 200: 16). Hover blendet Leiste ein. Backend, Routen, Admin, Player nicht im Diff. |
+| AK6 | erfüllt | Lint 0 Fehler / 3 vorbestehende Warnungen, Unit 10/10, Build grün. E2E 1/4 grün, 3 rot am Admin-Schritt „I click on a fight scene“ – identisch zum Stand vor dem Task. |
+| AK7 | erfüllt | `git diff --stat 226ca8a^..580c079`: keine Testdateien geändert. |
+| AK8 | erfüllt | `DESIGN.md` Abschnitt 4 „Keine offenen Lücken (Stand nach DND-6)“, außerdem Kopfzeile, GlobalStyle, 1.3, Baustein Slider; `ground-mapping.md`, `docs/screens.md`, `frontend/CLAUDE.md` nachgezogen; `known-issues.md` ohne betroffenen Punkt. |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- Fokus-Schein am Slider-Griff bei Tastaturfokus (`.Mui-focusVisible`), von `&:focus, &:hover, &:active` (`ScreenControlBar.tsx:88-92`) nicht erfasst – vorbestehend, im Mockup kein Halo.
+- `frontend/design/admin-mapping.md:88`: „derzeit nur `AdminScreen`“ zum GlobalStyle veraltet (seit DND-5), außerhalb des Scopes.
+- Optionale Prop `label` der Steuerleiste nicht als Variante im DESIGN.md-Baustein „Steuerleiste“ beschrieben (nur in `ground-mapping.md`).
+- `defaultValue={100}` neben `value` (`ScreenControlBar.tsx:152`) wirkungslos, Entfernen wäre eigene Aufräumarbeit.
+- `ground-mapping.md:16-17`: fehlende Leerzeile vor „Grundlage: …“, Satz hängt im Rendering am letzten Listenpunkt.
+- `Overlay` (`ScreenControlBar.tsx:37-46`) und `Screen` (`GroundScreen.tsx:12-20`) noch mit `top/left/right/bottom: 0` statt `inset: 0` – berechnet identisch, laut Plan unverändert.
+- Konventionen: Commit-Typen passen (style ×4, refactor, docs ×2), keine KI-Signaturen, Branch `development`, Scope eingehalten.
