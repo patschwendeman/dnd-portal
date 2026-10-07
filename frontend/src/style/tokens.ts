@@ -56,6 +56,7 @@ const size = {
     md: '40px',
   },
   icon: '20px',
+  scrollbar: '4px',
   badge: '32px',
   button: {
     minWidth: '112px',
@@ -80,7 +81,6 @@ export const tokens = { space, text, fontWeight, letterSpacing, font, radius, bo
 
 export type TextStep = keyof typeof text
 
-// Setzt Schriftgröße und Zeilenhöhe immer gemeinsam (K4)
 export const textStyle = (step: TextStep) => css`
   font-size: ${(props) => props.theme.text[step].fontSize};
   line-height: ${(props) => props.theme.text[step].lineHeight};

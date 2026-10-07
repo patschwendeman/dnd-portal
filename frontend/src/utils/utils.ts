@@ -12,8 +12,6 @@ export const filterSceneByKey = <K extends keyof SceneDetail>(
   return scene
 }
 
-// Anzeigename eines Musiktitels aus seinem Pfad: letzter Pfadteil ohne Endung und ohne
-// angehängten Vite-Hash, Unterstriche als Leerzeichen (From_Past_To_Present.mp3 -> From Past To Present)
 export const getMusicTitle = (source: string): string => {
   const fileName = source.split('/').pop() ?? ''
   const withoutExtension = fileName.replace(/\.[^.]+$/, '')

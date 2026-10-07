@@ -1,6 +1,6 @@
 # Ground Screen: Mapping der Styled Components auf das neue Layout
 
-Stand: 2026-10-04 (Branch `development`). Vorschlag, noch keine Änderungen am Code.
+Stand: 2026-10-06 (Branch `development`). Vorschlag, noch keine Änderungen am Code.
 Grundlage: Mockup [mockups/v2/ground.png](mockups/v2/ground.png) (Quelle [mockups/v2/build.py](mockups/v2/build.py)) und der
 aktuelle Code der Komponenten, die der Ground Screen rendert.
 
@@ -13,6 +13,7 @@ umgesetzt sind.
 **Was der Wall-Umbau am Ground schon ändert:** `ScreenControlBar` ist geteilt. Schwebende Leiste, Button-Gruppe und
 Buttons (BLACK / WHITE / OFF) sind in [wall-mapping.md](wall-mapping.md) erfasst und gelten hier unverändert. Unten
 stehen nur die Teile, die es nur auf dem Ground gibt: Bildanzeige, Raster, Slider und die zusätzlichen Beschriftungen.
+Dazu gehört auch die Textfarbe `onPrimary` am aktiven Button (BLACK / WHITE / OFF), siehe `Button` in wall-mapping.md.
 
 ## Entscheidungen (2026-10-04)
 
@@ -42,8 +43,9 @@ Entscheidungen aus dem Abgleich aller drei Mappings (Admin, Wall, Ground). Sie g
 
 | Regel | Alter Wert | Neuer Wert | Hinweis |
 |---|---|---|---|
-| `font-family` | System-Stack | `font.family.base` | |
-| `font-size`, `line-height` | nicht gesetzt (Browser 16px, `normal`) | `text.md` (16/24px) | **neu**, K4 |
+| `<GlobalStyle />` | – (bisher nur in `AdminScreen`) | im Screen rendern | **neu**, **Struktur**, eigener Schritt: Erst damit gelten `box-sizing: border-box`, `margin: 0` und die Body-Schrift (`font.family.base`, `text.md`) auch hier ([DESIGN.md](../DESIGN.md) 1.1 und Architektur). Wie im Admin wird er nicht in `App.tsx` eingebunden. |
+| `font-family` | System-Stack | entfällt | kommt aus dem `GlobalStyle` (`font.family.base`) |
+| `font-size`, `line-height` | nicht gesetzt (Browser 16px, `normal`) | `text.md` (16/24px) | **neu**, K4, kommt aus dem `GlobalStyle` |
 | übrige Regeln | | unverändert | |
 
 Hinweis: Die Regel `background-color` endet heute mit zwei Semikolons (`;;`). Harmlos, beim Umbau mit entfernen.
@@ -55,7 +57,7 @@ Hinweis: Die Regel `background-color` endet heute mit zwei Semikolons (`;;`). Ha
 | `inset` (`top/left/right/bottom`) | nicht gesetzt | `0` | **neu**. Gleicher Fehler wie bei der Wall: `position: fixed` ohne Offsets landet nur zufällig richtig. |
 | `width`, `height` | `100%` | unverändert | |
 | `object-fit` | `cover` | unverändert | Anders als auf der Wall hier schon gesetzt |
-| `z-index` | `1` | unverändert | |
+| `z-index` | `1` | `layer.media` (1) | Wert gleich, aber über das Token ([DESIGN.md](../DESIGN.md) 1.2, O4) |
 
 ---
 
@@ -65,7 +67,9 @@ Hinweis: Die Regel `background-color` endet heute mit zwei Semikolons (`;;`). Ha
 
 | Regel | Alter Wert | Neuer Wert | Hinweis |
 |---|---|---|---|
-| alle Regeln | | unverändert | Vollbild-Ebene über dem Bild |
+| `top`, `left`, `width`, `height` | `0`, `0`, `100%`, `100%` | `inset: 0` | [DESIGN.md](../DESIGN.md) 1.1: `position: fixed` immer mit `inset` |
+| `z-index` | `99` | `layer.grid` (10) | O4. Über dem Bild (`layer.media`), unter der Steuerleiste (`layer.controls`). |
+| übrige Regeln | | unverändert | Vollbild-Ebene über dem Bild |
 | `pointer-events` | nicht gesetzt | `none` | **neu**, optional. Die Ebene fängt heute Mausereignisse ab. Das stört nicht, weil die Steuerleiste darüber liegt. |
 
 ### `GridLine`
@@ -95,9 +99,9 @@ Hinweis: Die Gitterfarben (`black`, `white`, `transparent`) sind nicht Teil dies
 
 | Regel | Alter Wert | Neuer Wert | Hinweis |
 |---|---|---|---|
-| Element | – | Text vor der Button-Gruppe | **neu**, **Struktur** (Entscheidung 3): neue Prop für `ScreenControlBar`, z. B. `label`. Die Wall übergibt keine. |
+| Element | – | Text vor der Button-Gruppe | **neu**, **Struktur** (Entscheidung 3): neue Prop für `ScreenControlBar`, z. B. `label`. Die Wall übergibt keine. Baustein `Label` aus `src/components/Label.tsx` wiederverwenden, er bringt die Schriftwerte unten mit. |
 | `font-size`, `line-height` | – | `text.xs` (12/16px) | gleicher Label-Stil wie im Admin, K4 |
-| `font-weight` | – | `600` | **kein Token** |
+| `font-weight` | – | `fontWeight.semibold` (600) | |
 | `letter-spacing` | – | `letterSpacing.label` (.08em) | |
 | `text-transform` | – | `uppercase` | |
 | `padding-left` | – | `space.3` (12px) | Zusammen mit dem Innenabstand der Leiste (8px) steht der Text 20px vom Rand |
@@ -115,8 +119,8 @@ Hinweis: Die Gitterfarben (`black`, `white`, `transparent`) sind nicht Teil dies
 |---|---|---|---|
 | Wrapper | – (`Box` direkt in `ControlBar`) | `display: flex`, `align-items: center`, `gap: space.3` (12px) | **neu**, **Struktur**: hält Beschriftung, Slider und Wert zusammen |
 | `padding-right` | – | `space.3` (12px) | **neu**, Gegenstück zum `padding-left` der Beschriftung „Raster“ |
-| Beschriftung „Zelle“ | – | Label-Stil wie „Raster“ (`text.xs`, `600`, `letterSpacing.label`, Großbuchstaben) | **neu**, **Struktur** (Entscheidung 3) |
-| Wertanzeige („140“) | – | `text.sm` (14/20px), `font-weight: 600`, `font-variant-numeric: tabular-nums`, `text-align: right`, `min-width: 3ch` | **neu**, **Struktur** (Entscheidungen 2 und 4): zeigt `sliderValue` ohne Einheit. `3ch` reserviert Platz für drei Ziffern, damit nichts springt. **kein Token**, die Einheit `ch` richtet sich nach der Schrift. |
+| Beschriftung „Zelle“ | – | Label-Stil wie „Raster“ (`text.xs`, `600`, `letterSpacing.label`, Großbuchstaben) | **neu**, **Struktur** (Entscheidung 3), Baustein `Label` |
+| Wertanzeige („140“) | – | `text.sm` (14/20px), `fontWeight.semibold` (600), `font-variant-numeric: tabular-nums`, `text-align: right`, `min-width: 3ch` | **neu**, **Struktur** (Entscheidungen 2 und 4): zeigt `sliderValue` ohne Einheit. `3ch` reserviert Platz für drei Ziffern, damit nichts springt. **kein Token**, die Einheit `ch` richtet sich nach der Schrift. |
 
 ### `StyledSlider`
 
@@ -149,7 +153,6 @@ MUI-Standardwerte (`@mui/material` 6) stehen in der Spalte „Alter Wert“, wo 
 | 16px als Größe | Griff des Sliders | Wert direkt setzen oder Token `size.handle` |
 | 4px als Größe | Höhe von Schiene und Füllung | MUI-Standard, Überschreibung entfernen |
 | 13px | Padding des Slider-Root | MUI-intern, nicht anfassen |
-| 600 | Schriftgewicht | `fontWeight.semibold` wie im Admin |
 
 **Fehler im Bestand, die beim Umbau mit behoben werden**
 

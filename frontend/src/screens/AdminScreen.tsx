@@ -27,13 +27,8 @@ const RIGHT_COLUMN_WIDTH = '400px'
 const Screen = styled.div`
     display: grid;
     grid-template-rows: ${(props) => props.theme.size.bar.md} 1fr ${(props) => props.theme.size.bar.lg};
-    width: 100%;
-    height: 100%;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background-color: ${(props) => props.theme.colors.background};
     color: ${(props) => props.theme.colors.text.color};
     a {

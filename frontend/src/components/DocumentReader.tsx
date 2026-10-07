@@ -37,7 +37,7 @@ const StoryReaderContainer = styled.div`
   height: 100%;
   min-height: 0;
   ::-webkit-scrollbar {
-    width: 4px;
+    width: ${(props) => props.theme.size.scrollbar};
   }
   &:hover {
     ::-webkit-scrollbar-thumb {
@@ -46,7 +46,7 @@ const StoryReaderContainer = styled.div`
   }
 `
 
-const TopLink = styled.button<{ isVisible: boolean }>`
+const TopLink = styled.button<{ $isVisible: boolean }>`
   display: grid;
   place-items: center;
   position: absolute;
@@ -60,7 +60,7 @@ const TopLink = styled.button<{ isVisible: boolean }>`
   cursor: pointer;
   color: ${(props) => props.theme.colors.text.color} !important; 
   border: none;
-  opacity: ${(props) => (props.isVisible ? 1 : 0)}; /* Steuerung der Sichtbarkeit */
+  opacity: ${(props) => (props.$isVisible ? 1 : 0)};
   transition: opacity 0.3s ease-in-out;
   
 
@@ -101,6 +101,16 @@ const Page = styled.div`
     font-weight: ${(props) => props.theme.fontWeight.semibold};
     margin: ${(props) => props.theme.space[6]} 0 ${(props) => props.theme.space[3]};
   }
+  h3, h4 {
+    ${textStyle('md')}
+    font-weight: ${(props) => props.theme.fontWeight.semibold};
+    margin: ${(props) => props.theme.space[5]} 0 ${(props) => props.theme.space[2]};
+  }
+  h5, h6 {
+    ${textStyle('sm')}
+    font-weight: ${(props) => props.theme.fontWeight.semibold};
+    margin: ${(props) => props.theme.space[5]} 0 ${(props) => props.theme.space[2]};
+  }
   p {
     ${textStyle('reading')}
     margin: 0 0 ${(props) => props.theme.space[4]};
@@ -115,6 +125,14 @@ const Page = styled.div`
     gap: ${(props) => props.theme.space[2]};
   }
   ol ol {
+    margin-top: ${(props) => props.theme.space[2]};
+  }
+  /* Loose list (table of contents): set paragraphs inside an entry like list lines */
+  ol > li > p {
+    ${textStyle('md')}
+    margin: 0;
+  }
+  ol > li > p + p {
     margin-top: ${(props) => props.theme.space[2]};
   }
   ul {
@@ -245,7 +263,7 @@ const DocumentReader: FunctionComponent = (): ReactElement => {
               </ReactMarkdown>
             </Page>
           ))}
-            <TopLink onClick={scrollToTop} isVisible={isVisible}>
+            <TopLink onClick={scrollToTop} $isVisible={isVisible}>
               <ReactSVG
                   src={arrowUpIcon}
                   beforeInjection={(svg) => {

@@ -23,19 +23,19 @@ const Details = styled.div`
 const DetailHeader = styled.div`
     width: 100%;
     height: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: ${(props) => props.theme.space[1]};
+    display: block;
     text-align: left;
+    ${textStyle('md')}
 `
 
 const SceneName = styled.strong`
+    display: block;
     ${textStyle('lg')}
     font-weight: ${(props) => props.theme.fontWeight.semibold};
 `
 
 const SceneDescription = styled.p`
+    margin-top: ${(props) => props.theme.space[1]};
     ${textStyle('sm')}
 `
 

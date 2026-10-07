@@ -84,7 +84,7 @@ const ThemeToggleButton = styled.button`
     width: ${(props) => props.theme.size.control.md};
     height: ${(props) => props.theme.size.control.md};
     padding: 0;
-    background-color: ${(props) => props.theme.colors.background};
+    background-color: transparent;
     color: ${(props) => props.theme.colors.text.color};
     border: none;
     border-radius: ${(props) => props.theme.radius.md};

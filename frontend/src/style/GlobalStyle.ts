@@ -2,8 +2,8 @@ import { createGlobalStyle } from 'styled-components'
 
 import { textStyle } from './tokens'
 
-// Grundregeln nach DESIGN.md 1.1. Gilt für Admin, Wall und Ground, nicht für den Player:
-// Jeder Screen bindet ihn selbst ein (läuft in einem eigenen Fenster).
+// Base rules per DESIGN.md 1.1. Applies to Admin, Wall and Ground, not to the Player:
+// each screen renders it itself (it runs in its own window).
 const GlobalStyle = createGlobalStyle`
   *,
   *::before,

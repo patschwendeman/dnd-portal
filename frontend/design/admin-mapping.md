@@ -1,6 +1,6 @@
 # Admin Screen: Mapping der Styled Components auf das neue Layout
 
-Stand: 2026-10-04 (Branch `development`). Umgesetzt in DND-4 ([Plan](../../docs/tasks/DND-4-admin-restyle.md)).
+Stand: 2026-10-06 (Branch `development`). Umgesetzt in DND-4 ([Plan](../../docs/tasks/DND-4-admin-restyle.md)).
 Die Spalte „Alter Wert“ beschreibt den Code vor dem Umbau.
 Grundlage: Mockups [mockups/v2/admin.png](mockups/v2/admin.png) und [mockups/v2/admin-dialog.png](mockups/v2/admin-dialog.png)
 (Quelle [mockups/v2/build.py](mockups/v2/build.py)), die Entscheidungen vom 2026-10-04 (siehe unten) und der
@@ -21,15 +21,21 @@ Das Mockup verwendet ein 4px-Raster. Diese Skala ersetzt den früheren Vorschlag
 | Abstände | `space.1` … `space.8` | 4 · 8 · 12 · 16 · 24 · 32 · 48 · 64px |
 | Schrift (Größe/Zeilenhöhe) | `text.xs` · `sm` · `md` · `lg` · `xl` · `2xl` · `reading` | 12/16 · 14/20 · 16/24 · 20/28 · 24/32 · 32/40 · 16/26px |
 | Radien | `radius.sm` · `md` · `lg` · `xl` · `pill` | 4 · 8 · 12 · 16 · 999px |
-| Bedienelemente | `size.control.sm` · `size.control.md` | 32 · 40px |
+| Bedienelemente | `size.control.md` | 40px |
 | Icons | `size.icon` | 20px |
+| Scrollleiste | `size.scrollbar` | 4px |
 | Leisten | `size.bar.md` · `size.bar.lg` | 56 · 80px |
+| Kachelnummer | `size.badge` | 32px |
+| Text-Buttons | `size.button.minWidth` | 112px |
 | Rahmen | `borderWidth.thin` · `thick` | 1 · 2px |
 | Schrift | `font.family.base` | `"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif` |
+| Schriftgewicht | `fontWeight.regular` · `medium` · `semibold` · `bold` | 400 · 500 · 600 · 700 |
+| Laufweite | `letterSpacing.label` | .08em |
+| Ebenen (`z-index`) | `layer.base` · `raised` · `media` · `grid` · `panel` · `controls` · `dialog` | 0 · 1 · 1 · 10 · 20 · 30 · 40 |
 
 `size.bar.lg` ist nach den Entscheidungen neu dazugekommen, `text.*` (K4) und `radius.xl` (K3) mit dem
 Konsistenz-Abgleich. `fontSize.*` heißt jetzt `text.*`, weil jede Stufe ihre Zeilenhöhe mitbringt. `size.icon.sm`/`.lg`
-entfallen (K1).
+entfallen (K1), ebenso `size.control.sm`. Vollständige Liste: [DESIGN.md](../DESIGN.md), 1.2.
 
 Legende für die Spalte **Hinweis**:
 
@@ -79,10 +85,10 @@ Entscheidungen aus dem Abgleich aller drei Mappings (Admin, Wall, Ground). Sie g
 
 | Regel | Alter Wert | Neuer Wert | Hinweis |
 |---|---|---|---|
-| `box-sizing` (global) | nicht gesetzt (`content-box`) | `border-box` | **neu**, **Struktur**: `index.css` wird nicht importiert, ein globales Stylesheet fehlt. Ohne `border-box` stimmen alle Maße unten nicht (Breite + Padding laufen über). Vorschlag: `createGlobalStyle` in `App.tsx`. |
+| `box-sizing` (global) | nicht gesetzt (`content-box`) | `border-box` | **neu**, **Struktur**: `index.css` wird nicht importiert, ein globales Stylesheet fehlt. Ohne `border-box` stimmen alle Maße unten nicht (Breite + Padding laufen über). Umgesetzt als `createGlobalStyle` in `style/GlobalStyle.ts`, gerendert je Screen statt in `App.tsx` (derzeit nur `AdminScreen`, nicht im Player). |
 | `margin` (global, `*`) | Browser-Standard | `0` | **neu**, **Struktur**: Die Abstände von `p`, `h1`, `ol` sind unten explizit gesetzt und sollen nicht vom Browser kommen. |
 | Schriftart | System-Stack, 4× kopiert | `font.family.base` | **Struktur**: Neue Abhängigkeit `@fontsource/inter` (Gewichte 400, 500, 600, 700), Import in `main.tsx`. Entscheidung 6. |
-| Theme-Objekt | nur `colors` | zusätzlich `space`, `fontSize`, `radius`, `size`, `borderWidth`, `font` | **Struktur**: `darkTheme.ts` und `lightTheme.ts` brauchen die Tokens, oder eine gemeinsame `tokens.ts` neben den Themes. |
+| Theme-Objekt | nur `colors` | zusätzlich `space`, `text`, `fontWeight`, `letterSpacing`, `font`, `radius`, `borderWidth`, `size`, `layer` | **Struktur**: gemeinsame `style/tokens.ts` neben den Themes (`darkTheme.ts`, `tavernTheme.ts`), der ThemeProvider in `App.tsx` setzt `tokens` und die `colors` des aktiven Themes zusammen. |
 
 ---
 
@@ -139,7 +145,7 @@ Wird zur Karte „Kampfszenen“.
 | `padding` | `20px 0` | `space.5` (24px) rundum | |
 | `border-radius` | – | `radius.lg` (12px) | **neu** |
 | `background-color` | – | `colors.secondary` | **neu**, **Farbe** (bestehende Theme-Farbe) |
-| Überschrift „Kampfszenen“ + Anzahl | – | `text.xs` (12/16px), `font-weight: 600`, `letterSpacing.label` (.08em), Großbuchstaben, `margin-bottom: space.3` (12px) | **neu**, **Struktur** (neues Element). `font-weight` hat **kein Token**. |
+| Überschrift „Kampfszenen“ + Anzahl | – | `text.xs` (12/16px), `font-weight: 600`, `letterSpacing.label` (.08em), Großbuchstaben, `margin-bottom: space.3` (12px) | **neu**, **Struktur** (neues Element). `font-weight` über `fontWeight.semibold`. |
 
 ### `BottomBar`
 
@@ -189,9 +195,9 @@ Abspielen bleibt.
 | Sound-Container | – | `display: flex`, `gap: space.4` (16px), zentriert | **neu**, **Struktur**: Die Buttons hängen heute direkt in `Bar`. Sie brauchen einen Container und je Gruppe einen Wrapper. |
 | Gruppen-Wrapper | – | `display: flex`, `gap: space.1` (4px) | **neu**, **Struktur** |
 
-### `Seperator`
+### `Seperator` (entfallen, jetzt `Separator`)
 
-Wird von einem Punkt zu einer senkrechten Linie.
+In DND-4 in `Separator` umbenannt. Wird von einem Punkt zu einer senkrechten Linie.
 
 | Regel | Alter Wert | Neuer Wert | Hinweis |
 |---|---|---|---|
@@ -201,7 +207,7 @@ Wird von einem Punkt zu einer senkrechten Linie.
 | `border-radius` | `100px` | `0` | |
 | `background-color` | `colors.text.color` | `colors.border` | **Farbe**: bestehende Theme-Farbe, Entscheidung 5 |
 
-Hinweis: Tippfehler im Namen (`Seperator` → `Separator`), beim Umbau mit korrigierbar.
+Hinweis: Tippfehler im Namen (`Seperator` → `Separator`), in DND-4 korrigiert.
 
 ### `AtmoButton`
 
@@ -233,7 +239,9 @@ Hinweis: Tippfehler im Namen (`Seperator` → `Separator`), beim Umbau mit korri
 
 Wird zur Karte „Aktive Szene“.
 
-### `DetailsContainer`
+### `DetailsContainer` (entfallen)
+
+Entfallen in DND-4, `Details` ist jetzt die äußere Komponente. Die Tabelle zeigt den Stand der Planung.
 
 | Regel | Alter Wert | Neuer Wert | Hinweis |
 |---|---|---|---|
@@ -260,12 +268,12 @@ Wird zur Karte „Aktive Szene“.
 | Regel | Alter Wert | Neuer Wert | Hinweis |
 |---|---|---|---|
 | `height` | `5px` | `auto` | Heute läuft der Text aus der 5px-Box heraus |
-| `display` | `flex` | `flex`, `flex-direction: column` | |
-| `align-items` | `center` | `flex-start` | Name linksbündig statt zentriert |
+| `display` | `flex` | `block`, `text.md` (16/24px) | Nacharbeit DND-4: Das Label steht wie im Mockup inline in einer 24px-Zeile (als 16px-Flex-Element lag die Karte 4px zu niedrig). |
+| `align-items` | `center` | entfällt | Name linksbündig statt zentriert (`text-align: left`) |
 | `justify-content` | `center` | entfällt | |
 | `text-align` | `center` | `left` | |
 | Label „Aktive Szene“ | – | `text.xs` (12/16px), `600`, `letterSpacing.label`, Großbuchstaben | **neu**, **Struktur** |
-| Name (`<strong>`) | erbt 16px, `bold` | `text.lg` (20/28px), `font-weight: 600` | K4 |
+| Name (`<strong>`) | erbt 16px, `bold` | `display: block`, `text.lg` (20/28px), `font-weight: 600` | K4 |
 | Beschreibung | steht heute in der Zeile „Enemies“ | unter dem Namen: `text.sm` (14/20px), `margin-top: space.1` (4px) | **Struktur**: `activeScene.description` zieht aus `DetailContent` in den Header um. |
 
 ### `DetailContent`
@@ -316,7 +324,7 @@ Wird zur Karte „Aktive Szene“.
 | `padding-right` | `400px` | `0` | Platz für die Sidebar kommt aus der eigenen Grid-Spalte. |
 | `position` | – | `relative` | **neu**, Bezugspunkt für `TopLink` |
 | `min-height` | – | `0` | **neu**, damit das Scrollen in der Grid-Zeile funktioniert |
-| `::-webkit-scrollbar width` | `4px` | `4px` | Wert passt zu `space.1`, ist aber eine Größe. Unverändert. |
+| `::-webkit-scrollbar width` | `4px` | `size.scrollbar` (4px) | Wert unverändert. Eine Größe, kein Abstand, daher eigener Token statt `space.1` (Nacharbeit DND-4). |
 
 Hinweis **Struktur**: `DocumentReader` gibt heute `SidebarLeft` und `StoryReaderContainer` als Fragment zurück. Beide
 müssen als Spalte 1 und 2 im neuen `Main` landen. Das klappt, wenn `DocumentReader` direkt in `Main` steht und
@@ -357,18 +365,19 @@ müssen als Spalte 1 und 2 im neuen `Main` landen. Das klappt, wenn `DocumentRea
 | `border` | `1px` | `borderWidth.thin` (1px) | |
 | `border-radius` | – | `radius.lg` (12px) | **neu** |
 | `h1 font-size`, `line-height` | Browser `2em` (32px), `normal` | `text.2xl` (32/40px) | K4 |
-| `h1 font-weight` | Browser `bold` (700) | `700` | unverändert, **kein Token** |
+| `h1 font-weight` | Browser `bold` (700) | `fontWeight.bold` (700) | unverändert |
 | `h1 margin` | Browser `0.67em` (≈ 21px) oben und unten | `0 0 space.5` (0 0 24px) | |
 | `h1 padding-bottom` | `0.3em` (≈ 10px) | `space.3` (12px) | |
 | `h1 border-bottom` | `1px` | `borderWidth.thin` (1px) | |
 | `h2 font-size`, `line-height` | Browser `1.5em` (24px), `normal`, nicht gestylt | `text.xl` (24/32px) | **neu**, K4 |
-| `h2 font-weight` | Browser `bold` (700) | `600` | **neu**, **kein Token** |
+| `h2 font-weight` | Browser `bold` (700) | `fontWeight.semibold` (600) | **neu** |
 | `h2 margin` | Browser `0.83em` (≈ 20px) | `space.6 0 space.3` (32px 0 12px) | **neu** |
 | `p font-size`, `line-height` | `16px`, `1.5` | `text.reading` (16/26px) | K4, Ausnahme für Fließtext |
 | `p margin` | Browser `1em` oben und unten | `0 0 space.4` (0 0 16px) | **neu** |
 | `p max-width` | – | `68ch` | **neu**, **kein Token** (Einheit `ch`, begrenzt die Zeilenlänge) |
 | `ol` (Inhaltsverzeichnis) | nicht gestylt: Browser `padding-left: 40px`, `margin: 1em 0` | `padding-left: space.5` (24px), `margin: 0`, `display: flex`, `flex-direction: column`, `gap: space.2` (8px) | **neu**. Das Inhaltsverzeichnis ist eine nummerierte Liste (`ol`), gestylt ist heute nur `ul`. |
 | `ol ol margin-top` | Browser `0` | `space.2` (8px) | **neu** |
+| `ol > li > p` | erbt `p` (`text.reading`, `margin-bottom: space.4`) | `text.md` (16/24px), `margin: 0`; folgender Absatz `margin-top: space.2` (8px) | **neu**, Nacharbeit DND-4: Das Inhaltsverzeichnis in `main` ist eine lockere Liste (Leerzeilen), die Einträge stehen in `<p>`. So entspricht der Zeilenabstand dem Mockup (32px). |
 | `ul padding-left` | `2em` | `space.5` (24px) | **wirkungslos**: wird von `padding-inline-start: 40px` darunter überschrieben |
 | `ul padding-inline-start` | `40px` | entfällt | Doppelte Regel, eine reicht |
 | `ul margin-block-start/-end` | `1em` | `0` / `space.4` (16px) | Wie bei `p` |
@@ -393,7 +402,7 @@ müssen als Spalte 1 und 2 im neuen `Main` landen. Das klappt, wenn `DocumentRea
 | `justify-content` | `center` | `flex-start` | Text linksbündig |
 | `text-align` | `center` | `left` | |
 | `font-size`, `line-height` | erbt 16px | `text.sm` (14/20px) | |
-| `font-weight` | erbt 400 | `500` | **neu**, **kein Token** |
+| `font-weight` | erbt 400 | `fontWeight.medium` (500) | **neu** |
 | `color` | `white` und danach `text.color` | `text.color` | **Farbe**: `white` ist doppelt und wird überschrieben, kann weg (Aufräumen, keine optische Änderung). |
 
 ---
@@ -515,7 +524,7 @@ Keine Werte zu ändern (Vollbild-Overlay).
 | `height` | `50px` | `size.control.md` (40px) | |
 | `border-radius` | `5px` | `radius.md` (8px) | |
 | `font-size`, `line-height` | Browser (≈ 13px) | `text.sm` (14/20px) | **neu**, K2 |
-| `font-weight` | Browser 400 | `600` | **neu**, **kein Token** |
+| `font-weight` | Browser 400 | `fontWeight.semibold` (600) | **neu** |
 | `letter-spacing` | – | keine | K2: „Confirm“/„Decline“ sind keine Großbuchstaben |
 
 ### `DialogueImage`
@@ -536,11 +545,10 @@ Keine Werte zu ändern (Vollbild-Overlay).
 |---|---|---|
 | 200px · 400px · 240px | Spalten `Main`, Spalten `Bar` | Layout-Maße, als Konstanten in der Komponente lassen |
 | 880px · 68ch | `Page` | Layout-Maße |
-| 96px | Label-Spalte in `DetailContent`, Kachelbreite `SideMaps` | Layout-Maß, oder Token `size.thumb` |
-| 400 · 500 · 600 · 700 | Schriftgewichte | Tokens `fontWeight.regular/medium/semibold/bold` |
+| 96px | Label-Spalte in `DetailContent`, Kachelbreite `SideMaps` | Layout-Maß |
 
 Mit dem Konsistenz-Abgleich erledigt: Zeilenhöhen (K4, `text.*`), Mindestbreite der Buttons (`size.button.minWidth`),
-Höhe der Trennlinie (`size.icon`).
+Höhe der Trennlinie (`size.icon`). Schriftgewichte sind Tokens (`fontWeight.*`).
 
 **Fehler im Bestand, die beim Umbau mit behoben werden**
 

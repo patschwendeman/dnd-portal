@@ -1,6 +1,6 @@
 # Wall Screen: Mapping der Styled Components auf das neue Layout
 
-Stand: 2026-10-04 (Branch `development`). Vorschlag, noch keine Änderungen am Code.
+Stand: 2026-10-06 (Branch `development`). Vorschlag, noch keine Änderungen am Code.
 Grundlage: Mockups [mockups/v2/wall.png](mockups/v2/wall.png) (BATTLE), [mockups/v2/wall-world.png](mockups/v2/wall-world.png)
 (WORLD) und [mockups/v2/wall-1366.png](mockups/v2/wall-1366.png) (BATTLE bei 1366 × 768), Quelle
 [mockups/v2/build.py](mockups/v2/build.py), dazu die Entscheidungen unten und der aktuelle Code der Komponenten, die der
@@ -50,8 +50,9 @@ Entscheidungen aus dem Abgleich aller drei Mappings (Admin, Wall, Ground). Sie g
 
 | Regel | Alter Wert | Neuer Wert | Hinweis |
 |---|---|---|---|
-| `font-family` | System-Stack | `font.family.base` | |
-| `font-size`, `line-height` | nicht gesetzt (Browser 16px, `normal`) | `text.md` (16/24px) | **neu**, K4 |
+| `<GlobalStyle />` | – (bisher nur in `AdminScreen`) | im Screen rendern | **neu**, **Struktur**, eigener Schritt: Erst damit gelten `box-sizing: border-box`, `margin: 0` und die Body-Schrift (`font.family.base`, `text.md`) auch hier ([DESIGN.md](../DESIGN.md) 1.1 und Architektur). Wie im Admin wird er nicht in `App.tsx` eingebunden. |
+| `font-family` | System-Stack | entfällt | kommt aus dem `GlobalStyle` (`font.family.base`) |
+| `font-size`, `line-height` | nicht gesetzt (Browser 16px, `normal`) | `text.md` (16/24px) | **neu**, K4, kommt aus dem `GlobalStyle` |
 | `align-items` | `center` | `flex-start` | Das Panel hängt oben statt mittig, siehe nächste Zeile |
 | `padding-top` | – | `space.7` (48px) | **neu**. Das Panel steht 48px unter der Oberkante. Die Breitenformel des Panels rechnet mit diesem Wert. Mittig würde das Panel bei 1080px Höhe die Steuerleiste berühren. |
 | `justify-content` | `center` | unverändert | Horizontal bleibt es mittig |
@@ -64,7 +65,7 @@ Entscheidungen aus dem Abgleich aller drei Mappings (Admin, Wall, Ground). Sie g
 | `inset` (`top/left/right/bottom`) | nicht gesetzt | `0` | **neu**. Heute landet das Bild nur zufällig richtig: `position: fixed` ohne Offsets nutzt die statische Position im Flex-Container, und `100%` füllt den Rest. |
 | `object-fit` | nicht gesetzt (`fill`) | `cover` | **neu**. Heute wird das Bild auf das Seitenverhältnis des Monitors **verzerrt**. Mit `cover` bleibt es unverzerrt und wird beschnitten. |
 | `width`, `height` | `100%` | unverändert | |
-| `z-index` | `1` | unverändert | |
+| `z-index` | `1` | `layer.media` (1) | Wert gleich, aber über das Token ([DESIGN.md](../DESIGN.md) 1.2, O4) |
 
 ### `MapContainer` (Overlay-Panel, BATTLE und WORLD)
 
@@ -80,10 +81,10 @@ umbenennen.
 | `align-items` | `center` | `stretch` | Inhalt füllt die Breite |
 | `justify-content` | `center` | entfällt | |
 | `border-radius` | `10px` | `radius.lg` (12px) | |
-| `z-index` | `99999` | unverändert | |
+| `z-index` | `99999` | `layer.panel` (20) | O4. Liegt weiter über dem Hintergrund (`layer.media`) und unter der Steuerleiste (`layer.controls`). |
 | Kopfzeile | – | `display: flex`, `align-items: baseline`, `justify-content: space-between`, `margin-bottom: space.5` (24px) | **neu**, **Struktur** (neues Element), Entscheidung 5 |
 | Überschrift („Kampfschauplätze“ / „Weltkarte“) | – | `text.xl` (24/32px), `fontWeight.semibold` (600) | **neu**, **Struktur**, K4. Gleiche Stufe wie `h2` im Admin. Ohne Laufweite ([DESIGN.md](../DESIGN.md), Entscheidung O1). |
-| Anzahl („25 Räume“, nur BATTLE) | – | `text.xs` (12/16px), `font-weight: 600`, `letterSpacing.label` (.08em), Großbuchstaben | **neu**, **Struktur**. Gleicher Label-Stil wie im Admin. Zahl aus `mainmaps.length`. |
+| Anzahl („25 Räume“, nur BATTLE) | – | `text.xs` (12/16px), `fontWeight.semibold` (600), `letterSpacing.label` (.08em), Großbuchstaben | **neu**, **Struktur**. Baustein `Label` aus `src/components/Label.tsx` wiederverwenden (wie im Admin). Zahl aus `mainmaps.length`. |
 
 Hinweis zur Breite: Die Formel nimmt den kleinsten von drei Werten.
 
@@ -152,7 +153,8 @@ Spaltenstruktur bleibt. Das ändert auch die Reihenfolge im Admin.
 
 | Regel | Alter Wert | Neuer Wert | Hinweis |
 |---|---|---|---|
-| alle Regeln | | unverändert | Füllt die Kachel und trägt die Nummer |
+| `z-index` | `99` | `layer.raised` (1) | O4, lokal innerhalb der Kachel (`position: relative`) |
+| übrige Regeln | | unverändert | Füllt die Kachel und trägt die Nummer |
 
 ### `NumberIcon`
 
@@ -161,17 +163,17 @@ Spaltenstruktur bleibt. Das ändert auch die Reihenfolge im Admin.
 | `bottom` | `0` | entfällt | Nummer wandert von unten links nach oben links |
 | `top` | – | `space.2` (8px) | **neu** |
 | `left` | `0` | `space.2` (8px) | Heute klebt die Nummer an der Kachelkante |
-| `width` | `30px` | `min-width: 32px` | Mit `min-width` passen auch zweistellige Zahlen. 32px nutzt den Wert von `size.control.sm`, die Nummer ist aber kein Bedienelement: **kein passendes Token**. |
-| `height` | `30px` | `32px` | wie oben |
+| `width` | `30px` | `min-width: size.badge` (32px) | Mit `min-width` passen auch zweistellige Zahlen. |
+| `height` | `30px` | `size.badge` (32px) | wie oben |
 | `padding` | – | `0 space.2` (0 8px) | **neu**, Innenabstand bei breiten Zahlen |
 | `display` | nicht gesetzt (`block`) | `grid`, `place-items: center` | **wirkungslos** heute: `align-items` und `justify-content` stehen ohne `display: flex`. Die Zahl ist horizontal über `text-align` zentriert, vertikal aber nicht. |
 | `align-items`, `justify-content`, `text-align` | `center` | entfallen | ersetzt durch `place-items` |
 | `border-radius` | `100px` | `radius.pill` (999px) | |
-| `font-size`, `line-height` | `20px`, `normal` | `text.md` (16/24px) | Die Höhe kommt aus `height: 32px`, die Zeilenhöhe beeinflusst sie nicht |
-| `font-weight` | erbt 400 | `700` | **neu**, **kein Token** |
+| `font-size`, `line-height` | `20px`, `normal` | `text.md` (16/24px) | Die Höhe kommt aus `height: size.badge`, die Zeilenhöhe beeinflusst sie nicht |
+| `font-weight` | erbt 400 | `fontWeight.bold` (700) | **neu** |
 | `font-variant-numeric` | – | `tabular-nums` | **neu**, gleich breite Ziffern |
-| `z-index` | `99` | unverändert | |
-| `background-color`, `color` | `#5a5a5a`, `white` | unverändert | **Farbe**, feste Werte außerhalb des Themes. Nicht Teil dieses Mappings. |
+| `z-index` | `99` | `layer.raised` (1) | O4, lokal innerhalb der Kachel |
+| `background-color`, `color` | `#5a5a5a`, `white` | `colors.badge.background`, `colors.badge.text` | **Farbe**, **Struktur**: feste Werte außerhalb des Themes verstoßen gegen [DESIGN.md](../DESIGN.md) 2.1. Neue Rollen `badge.background` und `badge.text` in **beiden** Themes anlegen (Vorschlag aus 2.5, Werte zunächst wie heute, Kontrast 6,9:1). |
 
 Hinweis **Struktur** (Entscheidung 3): Angezeigt wird heute `keyProp`, also die Datenbank-ID. Die Kampfszenen haben
 die IDs 5–29, die Notizen heißen aber `room_01.md` bis `room_25.md` und die Bilder `battle_1.jpg` bis `battle_25.jpg`.
@@ -190,14 +192,15 @@ Der Slider (`StyledSlider`, `Box`) erscheint nur auf dem Ground und gehört in d
 
 | Regel | Alter Wert | Neuer Wert | Hinweis |
 |---|---|---|---|
-| alle Regeln | | unverändert | Vollbild-Fläche, die beim Hover die Leiste einblendet |
+| `z-index` | `99999` | `layer.controls` (30) | O4 |
+| übrige Regeln | | unverändert | Vollbild-Fläche, die beim Hover die Leiste einblendet |
 
 ### `ControlBar`
 
 | Regel | Alter Wert | Neuer Wert | Hinweis |
 |---|---|---|---|
 | `width` | `100%` | `auto` | Wird zur schwebenden Leiste, so breit wie der Inhalt |
-| `height` | `50px` | `auto` (40px Button + 2 × 8px = 56px) | Ergibt den Wert von `size.bar`, kein eigenes Token nötig |
+| `height` | `50px` | `auto` (40px Button + 2 × 8px = 56px) | Ergibt den Wert von `size.bar.md`, kein eigenes Token nötig |
 | `left` | `0` | `50%` + `transform: translateX(-50%)` | horizontal mittig |
 | `right` | `0` | entfällt | |
 | `bottom` | `0` | `space.5` (24px) | Abstand zur Unterkante |
@@ -205,7 +208,8 @@ Der Slider (`StyledSlider`, `Box`) erscheint nur auf dem Ground und gehört in d
 | `gap` | – | `space.5` (24px) | **neu**. Wirkt nur auf dem Ground (Buttons, Slider). Auf der Wall gibt es nur die Button-Gruppe. |
 | `border-radius` | – | `radius.xl` (16px) | **neu**, K3: 8px Button-Radius + 8px Innenabstand |
 | `justify-content` | `center` | entfällt | |
-| `position`, `display`, `align-items`, `opacity`, `visibility`, `transition` | | unverändert | |
+| `transition` | `opacity 0.5s ease, visibility 0.5s ease` | unverändert | **kein Token**: Für Übergangsdauern gibt es noch keine Tokens (offener Punkt, [DESIGN.md](../DESIGN.md) 4). Im Admin nutzt `TopLink` 0.3s. |
+| `position`, `display`, `align-items`, `opacity`, `visibility` | | unverändert | |
 
 ### Button-Gruppe (neu)
 
@@ -215,6 +219,13 @@ Der Slider (`StyledSlider`, `Box`) erscheint nur auf dem Ground und gehört in d
 
 ### `Button`
 
+Hinweis **Struktur**: Den Text-Button-Stil (K2) gibt es seit DND-4 nur lokal als `css`-Block `textButton` in
+`Dialogue.tsx`. **Umsetzung im Wall-Task, Schritt 1: TextButton herauslösen**, als gemeinsamer Baustein
+`src/components/TextButton.tsx` (`styled.button` mit `$variant: 'default' | 'active' | 'cancel'`, Farben nach
+DESIGN.md 1.5). Danach den Dialog darauf umstellen (ohne sichtbare Änderung, `data-test-id` bleiben) und hier
+verwenden. `Button` ist heute ein `div` und wird damit ein `<button>` (Tastatur, Fokus) mit Button-Reset
+(`border: none`, `font-family: inherit`).
+
 | Regel | Alter Wert | Neuer Wert | Hinweis |
 |---|---|---|---|
 | `margin` | `0 10px` | `0` | Abstand aus dem Wrapper (4px). Heute 20px zwischen den Buttons. |
@@ -223,8 +234,9 @@ Der Slider (`StyledSlider`, `Box`) erscheint nur auf dem Ground und gehört in d
 | `height` | `40px` | `size.control.md` (40px) | |
 | `border-radius` | `6px` | `radius.md` (8px) | |
 | `font-size`, `line-height` | erbt 16px | `text.sm` (14/20px) | K2 |
-| `font-weight` | erbt 400 | `600` | **neu**, **kein Token** |
+| `font-weight` | erbt 400 | `fontWeight.semibold` (600) | **neu** |
 | `letter-spacing` | – | `letterSpacing.label` (.08em) | **neu**, Entscheidung 4 und K2: Die Labels (BATTLE, WORLD, OFF) sind in Großbuchstaben. |
+| `color` (aktiv) | `text.color` | `onPrimary` | **Farbe**, Entscheidung O5 ([DESIGN.md](../DESIGN.md) 2.4). Heute verfehlt der aktive Button den Kontrast AA: `text.color` auf `primary` 2,9:1 (Dark) bzw. 3,0:1 (Tavern), mit `onPrimary` 6,1:1 bzw. 4,7:1. |
 | `display`, `align-items`, `justify-content`, `text-align` | | unverändert | |
 
 ---
@@ -237,11 +249,12 @@ Der Slider (`StyledSlider`, `Box`) erscheint nur auf dem Ground und gehört in d
 |---|---|---|
 | 1440px | Obergrenze der Panelbreite | Layout-Maß, Konstante in `WallScreen.tsx` |
 | 104px | Platz für die Steuerleiste in der Breitenformel | Konstante neben `ScreenControlBar`, z. B. `CONTROL_BAR_CLEARANCE` |
-| 32px als Größe | `NumberIcon` | Wert von `size.control.sm`, aber kein Bedienelement. Vorschlag `size.badge` oder `size.control.sm` mitnutzen. |
-| 600 · 700 | Schriftgewichte | `fontWeight.*` wie im Admin |
+| 0.5s | Ein- und Ausblenden der Steuerleiste (`ControlBar`, auch Ground) | offen: Token für Dauern (z. B. `duration.*`) oder Wert lassen, siehe [DESIGN.md](../DESIGN.md) 4 |
 
-Neu gegenüber dem Admin: `letterSpacing.label` (.08em) ist jetzt ein festes Token (Entscheidung 4). Mit dem
-Konsistenz-Abgleich erledigt: Zeilenhöhen (K4, `text.*`), Mindestbreite der Buttons (`size.button.minWidth`, K2),
+Neu gegenüber dem Admin: `letterSpacing.label` (.08em) ist jetzt ein festes Token (Entscheidung 4). Seit DND-4 sind
+auch die Nummerngröße (`size.badge`, 32px) und die Schriftgewichte (`fontWeight.*`) Tokens, `size.control.sm`
+entfällt.
+Mit dem Konsistenz-Abgleich erledigt: Zeilenhöhen (K4, `text.*`), Mindestbreite der Buttons (`size.button.minWidth`, K2),
 Radius der Steuerleiste (`radius.xl`, K3).
 
 **Fehler im Bestand, die beim Umbau mit behoben werden**

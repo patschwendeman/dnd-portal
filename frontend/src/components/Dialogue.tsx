@@ -18,13 +18,8 @@ const DIALOG_WIDTH = '600px'
 
 const LayoutContainer = styled.div<{$isVisible: boolean}>`
   display: ${({ $isVisible }) => ($isVisible ? 'flex' : 'none')};
-  width: 100%;
-  height: 100%;
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   align-items: center;
   justify-content: center;
   background-color: ${(props) => props.theme.colors.overlay};
