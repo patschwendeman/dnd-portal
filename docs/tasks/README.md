@@ -9,4 +9,4 @@
 | DND-3 | setup | Lokale Entwicklung komplett in Docker, Start aus dem Root | Fertig | [DND-3-local-docker-dev.md](DND-3-local-docker-dev.md) |
 | DND-4 | style | Restyle Admin Screen (Schritt 1 von 3) | Fertig | [DND-4-admin-restyle.md](DND-4-admin-restyle.md) |
 | DND-5 | style | Restyle Wall Screen (Schritt 2 von 3) | Fertig | [DND-5-wall-restyle.md](DND-5-wall-restyle.md) |
-| DND-6 | style | Restyle Ground Screen (Schritt 3 von 3) | Entwurf | [DND-6-ground-restyle.md](DND-6-ground-restyle.md) |
+| DND-6 | style | Restyle Ground Screen (Schritt 3 von 3) | Freigegeben | [DND-6-ground-restyle.md](DND-6-ground-restyle.md) |

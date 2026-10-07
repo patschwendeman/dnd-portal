@@ -1,7 +1,7 @@
 # DND-6: Restyle Ground Screen (Schritt 3 von 3: nach Admin und Wall)
 
 **Typ:** style
-**Status:** Entwurf
+**Status:** Freigegeben
 
 ## Kontext & Ziel
 
