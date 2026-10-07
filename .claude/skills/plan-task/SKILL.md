@@ -12,7 +12,7 @@ ist die einzige Quelle der Wahrheit für die Umsetzung (Subagent `implementer`) 
 
 1. **Anliegen aufnehmen.** Zusammenfassen, was verstanden wurde.
 2. **Kurzweg prüfen.** Erfüllt die Änderung alle Kriterien des Kurzwegs (siehe CONTRIBUTING.md, „Tasks & Planung“),
-   keinen Plan anlegen, sondern den User darauf hinweisen. Im Zweifel: Plan.
+   keinen Plan anlegen, sondern den User darauf hinweisen (Umsetzung per `/quick-task`). Im Zweifel: Plan.
 3. **Typ klären.** Einer der Commit-Typen aus CONTRIBUTING.md: `feat`, `fix`, `chore`, `docs`, `refactor`,
    `test`, `style`, `setup`. Typ vorschlagen und vom User bestätigen lassen.
 4. **Im Dialog planen.** Rückfragen stellen, bis alles für den Typ Nötige klar ist – nichts auf Spekulation

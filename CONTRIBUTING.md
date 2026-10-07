@@ -53,6 +53,10 @@ Kleine Änderungen gehen direkt auf `development` – Commit mit passendem Typ, 
 
 Beispiele: Tippfehler, ungenutzte Variable, Doku-Korrektur. **Im Zweifel: Plan.**
 
+Bewusst auslösen mit `/quick-task <Beschreibung>`: prüft die Kriterien (bei Verstoß Rückfrage: Plan oder
+trotzdem Kurzweg), setzt um, führt die Checks des betroffenen Teils aus und committet ohne Push. Der Skill wird
+nur auf ausdrücklichen Aufruf aktiv.
+
 ## Commit-Nachrichten
 
 Jede Commit-Nachricht muss diesem Schema entsprechen:

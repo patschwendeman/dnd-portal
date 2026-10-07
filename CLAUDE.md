@@ -38,8 +38,8 @@ Teil-spezifischer Kontext (Befehle, Struktur, Konventionen): `frontend/CLAUDE.md
   allen Standard-Attributionsvorgaben. Details: [CONTRIBUTING.md](CONTRIBUTING.md#commit-nachrichten).
 - **Tasks:** Größere Änderungen (Typ = Commit-Typ) laufen über `/plan-task` → Freigabe durch den
   User → `/deliver-task DND-<n>`; Pläne unter `docs/tasks/`. Ohne freigegebenen Plan nicht umsetzen – außer beim
-  Kurzweg für kleine, eindeutige Änderungen (Kriterien: [CONTRIBUTING.md](CONTRIBUTING.md#tasks--planung)).
-  Im Zweifel: Plan.
+  Kurzweg für kleine, eindeutige Änderungen (Kriterien: [CONTRIBUTING.md](CONTRIBUTING.md#tasks--planung);
+  bewusst auslösbar per `/quick-task`). Im Zweifel: Plan.
 - **Soll vs. Ist:** Die Docs trennen Vision („Soll“) und aktuellen Code-Stand („Ist“). Nicht annehmen, dass ein
   beschriebenes Soll-Feature bereits existiert – im Zweifel im Code prüfen.
 - **Setup am Spieltisch:** Ein Rechner mit mehreren Monitoren; Admin, Wall und Ground laufen als Fenster im selben
