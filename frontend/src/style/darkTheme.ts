@@ -10,5 +10,9 @@ export const darkTheme = {
       color: '#f0f6fc',
     },
     onPrimary: '#0e1117',
+    badge: {
+      background: '#5a5a5a',
+      text: '#ffffff',
+    },
   },
 }

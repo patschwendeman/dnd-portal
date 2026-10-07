@@ -1,7 +1,8 @@
 import { FunctionComponent, ReactElement, useContext } from 'react'
-import styled, { css } from 'styled-components'
+import styled from 'styled-components'
 
 import { Label } from './Label'
+import { TextButton } from './TextButton'
 import { ActiveSceneContext } from '../context/context'
 import { SceneDetail } from '../models/models'
 import { textStyle } from '../style/tokens'
@@ -68,30 +69,6 @@ const ButtonContainer = styled.div`
   cursor: pointer;
 `
 
-const textButton = css`
-  min-width: ${(props) => props.theme.size.button.minWidth};
-  height: ${(props) => props.theme.size.control.md};
-  padding: 0 ${(props) => props.theme.space[4]};
-  border: none;
-  border-radius: ${(props) => props.theme.radius.md};
-  font-family: inherit;
-  ${textStyle('sm')}
-  font-weight: ${(props) => props.theme.fontWeight.semibold};
-  cursor: pointer;
-`
-
-const ConfirmButton = styled.button`
-  ${textButton}
-  background-color: ${(props) => props.theme.colors.primary};
-  color: ${(props) => props.theme.colors.onPrimary};
-`
-
-const DeclineButton = styled.button`
-  ${textButton}
-  background-color: ${(props) => props.theme.colors.background};
-  color: ${(props) => props.theme.colors.text.color};
-`
-
 const DialogueImage = styled.img`
     display: block;
     width: 100%;
@@ -125,8 +102,8 @@ const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogu
           <SceneDescription>{sceneOption?.description}</SceneDescription>
         </TextBlock>
         <ButtonContainer>
-          <DeclineButton data-test-id='decline-button' onClick={handleDecline}>Decline</DeclineButton>
-          <ConfirmButton data-test-id='confirm-button' onClick={handleConfirm}>Confirm</ConfirmButton>
+          <TextButton $variant='cancel' data-test-id='decline-button' onClick={handleDecline}>Decline</TextButton>
+          <TextButton $variant='active' data-test-id='confirm-button' onClick={handleConfirm}>Confirm</TextButton>
         </ButtonContainer>
       </DialogueContainer>
     </LayoutContainer>

@@ -50,7 +50,7 @@ const MapOverview: FunctionComponent<MapOverviewProps> = ({ mainmaps, gap, paddi
             {[...Array(count)].map((_, colIndex) => (
                 <MainmapsColumn style={{ gap: gap }} key={ colIndex }>
                     {[...Array(count)].map((_, mapIndex) => {
-                        const itemIndex = colIndex * count + mapIndex
+                        const itemIndex = mapIndex * count + colIndex
                         if (maps && itemIndex < maps.length) {
                             return (
                                 <MapElement 
@@ -59,6 +59,7 @@ const MapOverview: FunctionComponent<MapOverviewProps> = ({ mainmaps, gap, paddi
                                     handleSceneSelection={ handleSceneSelection } 
                                     key={ maps[itemIndex].id }
                                     keyProp={ maps[itemIndex].id }
+                                    number={ itemIndex + 1 }
                                     isMainMap={ true }
                                     isActiveMainMap={ isActiveMainMap }
                                     isAdminScreen={ isAdminScreen }

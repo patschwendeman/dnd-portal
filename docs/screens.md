@@ -25,8 +25,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Layout** (seit DND-4 nach [frontend/DESIGN.md](../frontend/DESIGN.md), Mockups v2): Grid aus drei Zeilen –
   Top-Bar, Hauptbereich, Bottom-Bar. Der Hauptbereich hat drei Spalten: links die Notizen-Navigation, in der Mitte die
   Notizen, rechts die Karten „Aktive Szene“ und „Kampfszenen“. Schrift Inter (lokal über `@fontsource/inter`).
-- **Szenenauswahl:** Karte „Kampfszenen“ rechts mit Anzahl und Kachelraster aller Kampfszenen (`MapOverview`),
-  Bottom-Bar mittig mit dem Label „Szenen“ und den Nicht-Kampfszenen (`SideMaps`). Alle Kacheln 16:9, die aktive mit
+- **Szenenauswahl:** Karte „Kampfszenen“ rechts mit Anzahl und Kachelraster aller Kampfszenen (`MapOverview`,
+  seit DND-5 zeilenweise sortiert; die Auswahl läuft weiter über die Datenbank-ID), Bottom-Bar mittig mit dem Label „Szenen“ und den Nicht-Kampfszenen (`SideMaps`). Alle Kacheln 16:9, die aktive mit
   Outline in `primary`. Klick öffnet einen Bestätigungsdialog (`Dialogue`) mit Wall-Bild, Label „Szene wechseln“,
   Name, Beschreibung und den Buttons Decline (links) und Confirm (rechts); „Confirm“ setzt `activeSceneId` → alle
   Screens wechseln.
@@ -81,10 +81,16 @@ Atmosphäre: Hintergrundbild abhängig von der aktiven Szene (z. B. Dungeon bei 
 Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets.
 
 ### Ist
-- Vollbild-Hintergrund = `graphics_wall.source` der aktiven Szene.
-- Overlays (1200×700, zentriert), per Hover-Button-Leiste (`ScreenControlBar`) umschaltbar:
-  - **BATTLE:** Kachel-Übersicht aller Kampfszenen mit Nummern; bei Kampfszenen automatisch sichtbar.
-  - **WORLD:** Weltkarte (statisches Bild `public/assets/images/ground_screen/mapOverview.jpg`, nicht aus dem Backend).
+- **Layout** (seit DND-5 nach [frontend/DESIGN.md](../frontend/DESIGN.md), Mockups v2): Vollbild-Hintergrund =
+  `graphics_wall.source` der aktiven Szene, unverzerrt und randlos (`object-fit: cover`). Schrift Inter.
+- Overlay-Panel (`OverlayPanel`) oben mittig, 48px unter der Oberkante, höchstens 1440px breit und mit dem Monitor
+  schrumpfend, mit Kopfzeile. Umschaltbar über die schwebende Steuerleiste (`ScreenControlBar`), die beim Hover
+  mittig über der Unterkante erscheint (Buttons BATTLE/WORLD/OFF, der aktive in `primary`):
+  - **BATTLE:** Kopfzeile „Kampfschauplätze“ mit Anzahl („25 Räume“), darunter die Kacheln aller Kampfszenen,
+    zeilenweise sortiert und mit Raumnummer 1–25 oben links (nicht die Datenbank-ID); bei Kampfszenen automatisch
+    sichtbar.
+  - **WORLD:** Kopfzeile „Weltkarte“, darunter die Weltkarte in 16:9 (statisches Bild
+    `public/assets/images/ground_screen/mapOverview.jpg`, nicht aus dem Backend).
   - **OFF:** beide ausblenden.
 - Eine szenen-/gebietsspezifische Übersichtskarte gibt es noch nicht; die „Übersicht“ ist das Raster der Kampfszenen.
 
@@ -100,4 +106,5 @@ optional mit **Grid** als Layout für taktische Kämpfe.
 - Vollbild-Medium = `graphics_ground.source` der aktiven Szene; Bild (`.jpg/.jpeg/.png`) oder Video
   (`.mp4/.webm/.mkv`, autoplay, loop, stumm) je nach Dateiendung.
 - `GridOverlay` mit Hover-Steuerung: Farbe BLACK / WHITE / OFF, Slider für Zellgröße (100–200).
-  Standard: kein Grid. Einstellungen lokal, nicht gespeichert, gelten für alle Szenen gleich.
+  Die Steuerleiste hat seit DND-5 dieselbe schwebende Form wie auf der Wall (geteilte `ScreenControlBar`); der Slider
+  ist noch im alten Stil (folgt mit dem Ground-Umbau). Standard: kein Grid. Einstellungen lokal, nicht gespeichert, gelten für alle Szenen gleich.

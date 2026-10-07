@@ -3,20 +3,27 @@ import Slider from '@mui/material/Slider'
 import { FunctionComponent, ReactElement, useState } from 'react'
 import styled from 'styled-components'
 
+import { TextButton } from './TextButton'
+
+// Space the floating control bar needs above the bottom edge:
+// space.5 (gap) + size.bar.md (bar) + space.5 (air) = 104px (DESIGN.md 1.3)
+const CONTROL_BAR_CLEARANCE = '104px'
 
 const ControlBar = styled.div`
     display: flex;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.5s ease, visibility 0.5s ease;
-    width: 100%;
-    height: 50px;
+    width: auto;
+    height: auto;
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: ${(props) => props.theme.space[5]};
+    padding: ${(props) => props.theme.space[2]};
+    gap: ${(props) => props.theme.space[5]};
     align-items: center;
-    justify-content: center;
+    border-radius: ${(props) => props.theme.radius.xl};
     background-color: ${(props) => props.theme.colors.dark};
 `
 
@@ -29,7 +36,7 @@ const Overlay = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 99999;
+    z-index: ${(props) => props.theme.layer.controls};
     &:hover ${ControlBar} {
     opacity: 1;
     visibility: visible;
@@ -37,19 +44,13 @@ const Overlay = styled.div`
 
 `
 
-const Button = styled.div<{$isActive: boolean}>`
-    margin: 0 10px 0 10px; 
-    width: 120px;
-    height: 40px;
-    cursor: pointer;
-    border-radius: 6px;
-    border: none;
-    background-color: ${(props) => (props.$isActive ? props.theme.colors.primary : props.theme.colors.secondary)};
-    color: ${(props) => props.theme.colors.text.color};
+const ButtonGroup = styled.div`
     display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+    gap: ${(props) => props.theme.space[1]};
+`
+
+const Button = styled(TextButton)`
+    letter-spacing: ${(props) => props.theme.letterSpacing.label};
 `
 
 const StyledSlider = styled(Slider)`
@@ -94,14 +95,17 @@ interface ScreenControlBarProps {
     onVisibilityChange: (option: number) => void
     onSliderChange?: (option: number) => void
     buttonLabels: string[]
+    // Controlled active button; if omitted, the bar tracks the last clicked button itself
+    activeIndex?: number | null
 }
 
-const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({ onVisibilityChange, onSliderChange, buttonLabels }): ReactElement => {
-    const [activeButton, setActiveButton] = useState<number | null>(null)
+const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({ onVisibilityChange, onSliderChange, buttonLabels, activeIndex }): ReactElement => {
+    const [clickedButton, setClickedButton] = useState<number | null>(null)
+    const activeButton = activeIndex !== undefined ? activeIndex : clickedButton
     const [sliderValue, setSliderValue] = useState<number>(100)
 
     function handleVisibility(option: number) {
-        setActiveButton(option)
+        setClickedButton(option)
         onVisibilityChange(option)
     }
 
@@ -115,15 +119,17 @@ const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({ onVisibili
     return(
         <Overlay>
             <ControlBar>
-                {buttonLabels.map( (label, index) => (
-                    <Button 
-                        key={index} 
-                        onClick={() => handleVisibility(index)} 
-                        $isActive={activeButton === index}
-                    >
-                        { label }
-                    </Button>
-                ))}
+                <ButtonGroup>
+                    {buttonLabels.map( (label, index) => (
+                        <Button 
+                            key={index} 
+                            onClick={() => handleVisibility(index)} 
+                            $variant={activeButton === index ? 'active' : 'default'}
+                        >
+                            { label }
+                        </Button>
+                    ))}
+                </ButtonGroup>
                {onSliderChange && (
                     <Box sx={{ width: 200, margin: 1 }}>
                         <StyledSlider
@@ -145,4 +151,4 @@ const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({ onVisibili
     )
 }
 
-export { ScreenControlBar }
+export { CONTROL_BAR_CLEARANCE, ScreenControlBar }

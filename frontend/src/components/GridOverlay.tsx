@@ -8,7 +8,7 @@ interface GridOverlayProps {
 }
 
 const Overlay = styled.div`
-    z-index: 99;
+    z-index: ${(props) => props.theme.layer.grid};
     position: fixed;
     top: 0;
     left: 0;

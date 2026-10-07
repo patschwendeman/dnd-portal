@@ -1,6 +1,21 @@
 # Wall Screen: Mapping der Styled Components auf das neue Layout
 
-Stand: 2026-10-06 (Branch `development`). Vorschlag, noch keine Änderungen am Code.
+Stand: 2026-10-07 (Branch `development`). **Umgesetzt in DND-5** ([Plan](../../docs/tasks/DND-5-wall-restyle.md)).
+Die Tabellen unten beschreiben den Vorschlag; Abweichungen in der Umsetzung:
+
+- Das Overlay-Panel heißt `OverlayPanel` (wie vorgeschlagen), die Kopfzeile besteht aus `PanelHeader` und
+  `PanelTitle` (`h2`), die Anzahl nutzt `Label`.
+- Konstanten: `OVERLAY_PANEL_MAX_WIDTH = '1440px'` und `GRID_GAP_COUNT = 4` (Zahl der Rasterabstände in der
+  Breitenformel) in `WallScreen.tsx`, `CONTROL_BAR_CLEARANCE = '104px'` exportiert aus `ScreenControlBar.tsx`.
+  Die 32px der Kopfzeile kommen aus `text.xl.lineHeight`.
+- Übergangsdauern bleiben Werte (`0.5s` in `ScreenControlBar`), kein Token `duration.*` (DND-5 E2, siehe
+  [DESIGN.md](../DESIGN.md) 1.4).
+- Der Text-Button-Baustein `TextButton` wurde im Wall-Task als Schritt 2 (nach dem `GlobalStyle`) herausgelöst, nicht
+  als Schritt 1. Die Farben stehen in [DESIGN.md](../DESIGN.md) 2.4.
+- Kachelnummer: neue Prop `number` an `MapElement` (aus `MapOverview`: Position + 1); `keyProp` bleibt für Auswahl und
+  Aktiv-Zustand. Farben über die neuen Rollen `badge.background`/`badge.text`.
+- Kachelrand (`MapElement` → `MapContainer`): `outline` `borderWidth.thin` statt `border` (Review Runde 1), wie im
+  Mockup (`build.py`). Sonst kämen 2px je Reihe zur Panelhöhe dazu (925 statt 915px). Gilt auch im Admin.
 Grundlage: Mockups [mockups/v2/wall.png](mockups/v2/wall.png) (BATTLE), [mockups/v2/wall-world.png](mockups/v2/wall-world.png)
 (WORLD) und [mockups/v2/wall-1366.png](mockups/v2/wall-1366.png) (BATTLE bei 1366 × 768), Quelle
 [mockups/v2/build.py](mockups/v2/build.py), dazu die Entscheidungen unten und der aktuelle Code der Komponenten, die der
@@ -208,7 +223,7 @@ Der Slider (`StyledSlider`, `Box`) erscheint nur auf dem Ground und gehört in d
 | `gap` | – | `space.5` (24px) | **neu**. Wirkt nur auf dem Ground (Buttons, Slider). Auf der Wall gibt es nur die Button-Gruppe. |
 | `border-radius` | – | `radius.xl` (16px) | **neu**, K3: 8px Button-Radius + 8px Innenabstand |
 | `justify-content` | `center` | entfällt | |
-| `transition` | `opacity 0.5s ease, visibility 0.5s ease` | unverändert | **kein Token**: Für Übergangsdauern gibt es noch keine Tokens (offener Punkt, [DESIGN.md](../DESIGN.md) 4). Im Admin nutzt `TopLink` 0.3s. |
+| `transition` | `opacity 0.5s ease, visibility 0.5s ease` | unverändert | **kein Token**: Übergangsdauern bleiben bewusst Werte (DND-5 E2, [DESIGN.md](../DESIGN.md) 1.4). Im Admin nutzt `TopLink` 0.3s. |
 | `position`, `display`, `align-items`, `opacity`, `visibility` | | unverändert | |
 
 ### Button-Gruppe (neu)
@@ -249,7 +264,7 @@ verwenden. `Button` ist heute ein `div` und wird damit ein `<button>` (Tastatur,
 |---|---|---|
 | 1440px | Obergrenze der Panelbreite | Layout-Maß, Konstante in `WallScreen.tsx` |
 | 104px | Platz für die Steuerleiste in der Breitenformel | Konstante neben `ScreenControlBar`, z. B. `CONTROL_BAR_CLEARANCE` |
-| 0.5s | Ein- und Ausblenden der Steuerleiste (`ControlBar`, auch Ground) | offen: Token für Dauern (z. B. `duration.*`) oder Wert lassen, siehe [DESIGN.md](../DESIGN.md) 4 |
+| 0.5s | Ein- und Ausblenden der Steuerleiste (`ControlBar`, auch Ground) | bleibt Wert, kein Token (DND-5 E2, [DESIGN.md](../DESIGN.md) 1.4) |
 
 Neu gegenüber dem Admin: `letterSpacing.label` (.08em) ist jetzt ein festes Token (Entscheidung 4). Seit DND-4 sind
 auch die Nummerngröße (`size.badge`, 32px) und die Schriftgewichte (`fontWeight.*`) Tokens, `size.control.sm`

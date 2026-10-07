@@ -10,5 +10,9 @@ export const tavernTheme = {
       color: '#CBAB96',
     },
     onPrimary: '#140701',
+    badge: {
+      background: '#5a5a5a',
+      text: '#ffffff',
+    },
   },
 }

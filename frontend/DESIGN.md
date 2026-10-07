@@ -1,8 +1,8 @@
 # Style Guide
 
-Stand: 2026-10-06 (Branch `development`). Verbindliche Gestaltungsregeln für das Frontend. Der Umbau folgt Screen
-für Screen nach den Mappings. Umgesetzt sind die Grundlagen ([Architektur](#architektur)) und der Admin Screen
-(DND-4). Wall und Ground folgen.
+Stand: 2026-10-07 (Branch `development`). Verbindliche Gestaltungsregeln für das Frontend. Der Umbau folgt Screen
+für Screen nach den Mappings. Umgesetzt sind die Grundlagen ([Architektur](#architektur)), der Admin Screen
+(DND-4) und der Wall Screen (DND-5). Ground folgt.
 
 **Geltung:** Admin, Wall und Ground. Der Player Screen folgt später. Seine festen Farben sind unter
 [2.5](#25-farben-außerhalb-der-themes) erfasst.
@@ -47,8 +47,8 @@ Dazu kommen:
   auf das Theme.
 - `style/GlobalStyle.ts` – `createGlobalStyle` für die Grundregeln aus [1.1](#11-grundsätze). Gilt für Admin, Wall
   und Ground, nicht für den Player. Er wird nicht in `App.tsx`, sondern als `<GlobalStyle />` im jeweiligen Screen
-  gerendert (jeder Screen läuft in einem eigenen Fenster). Bisher bindet ihn nur `AdminScreen` ein, Wall und Ground
-  folgen mit ihrem Umbau. `index.css` wird nicht importiert.
+  gerendert (jeder Screen läuft in einem eigenen Fenster). Bisher binden ihn `AdminScreen` und `WallScreen` ein, Ground
+  folgt mit seinem Umbau. `index.css` wird nicht importiert.
 - `style/tokens.ts` enthält außerdem den Helper `textStyle(stufe)`, der Schriftgröße und Zeilenhöhe einer
   `text.*`-Stufe gemeinsam setzt (K4). `text.<stufe>` ist ein Objekt `{ fontSize, lineHeight }`.
 
@@ -232,8 +232,8 @@ Kein Leuchten (`box-shadow`). Buttons und Navigation zeigen den Aktiv-Zustand ü
 ([2.4](#24-zustände)).
 
 **Bilder:** Szenenbilder immer im Format 16:9 (`aspect-ratio: 16 / 9`) mit `object-fit: cover`. Zulässige Alternative
-bei Kacheln: `padding-top: 56.25%` mit absolut positioniertem Bild (`MapElement`). Der Rahmen kommt dort zur Höhe
-dazu, eine 64px breite Kachel ist dann 64 × 38 statt 64 × 36. Karten (Weltkarte)
+bei Kacheln: `padding-top: 56.25%` mit absolut positioniertem Bild (`MapElement`). Der Kachelrand ist dort eine
+`outline` (seit DND-5), zählt also nicht zur Höhe: Kacheln bleiben exakt 16:9. Karten (Weltkarte)
 mit `object-fit: contain`. Vollbild-Hintergründe mit `position: fixed`, `inset: 0`, `object-fit: cover`.
 
 **Zahlen:** `font-variant-numeric: tabular-nums`, wo Zahlen sich ändern oder untereinander stehen (Kachelnummer,
@@ -243,6 +243,10 @@ Slider-Wert).
 `z-index`. `layer.raised` gilt nur innerhalb einer Komponente mit eigenem Stapelkontext.
 
 **Laufweite:** nur `letterSpacing.label` bei Großbuchstaben. Überschriften und Titel haben keine Laufweite (O1).
+
+**Übergangsdauern:** bewusst **keine** Tokens, sondern Werte in der jeweiligen Komponente (Entscheidung DND-5 E2):
+`0.5s` für das Ein- und Ausblenden der Steuerleiste (`ScreenControlBar`), `0.3s` für den Nach-oben-Button
+(`TopLink` in `DocumentReader`).
 
 ### 1.5 Bausteine
 
@@ -259,7 +263,9 @@ Wiederkehrende Elemente. In den Components werden sie gleich umgesetzt, am beste
 | Farbe | Icon `text.color`. Hintergrund transparent (Top-Bar) oder `secondary` (Play, Nach oben) |
 | Beispiele | Sound-Buttons, Settings, Play/Pause, Nach oben |
 
-**Text-Button** (K2)
+**Text-Button** (K2) – gemeinsame Styled Component `TextButton` (`src/components/TextButton.tsx`, `<button>` mit
+`$variant: 'default' | 'active' | 'cancel'`). Laufweite gehört nicht zum Baustein; bei Großbuchstaben ergänzt sie
+die verwendende Komponente (z. B. `ScreenControlBar`).
 
 | Eigenschaft | Wert |
 |---|---|
@@ -330,7 +336,7 @@ Wiederkehrende Elemente. In den Components werden sie gleich umgesetzt, am beste
 | Eigenschaft | Wert |
 |---|---|
 | Format | 16:9 (`aspect-ratio` oder `padding-top: 56.25%`, siehe [1.4](#14-regeln) Bilder) |
-| Rand | `borderWidth.thin` in `border` |
+| Rand | `outline` `borderWidth.thin` in `border`, Abstand 0 (zählt nicht zur Größe). Aktiv ersetzt ihn die Aktiv-Outline |
 | Radius | `radius.sm` (Admin), `radius.md` (Wall) |
 | Aktiv | Outline `borderWidth.thick` in `primary`, Abstand `borderWidth.thick` |
 | Raster | 5 Spalten, `gap` `space.2` (Admin) oder `space.3` (Wall), zeilenweise sortiert |
@@ -343,6 +349,7 @@ Wiederkehrende Elemente. In den Components werden sie gleich umgesetzt, am beste
 | Position | `top` und `left` `space.2` in der Kachel |
 | Schrift | `text.md`, `bold`, `tabular-nums`, zentriert |
 | Radius | `radius.pill` |
+| Farbe | Fläche `badge.background`, Text `badge.text` |
 | Inhalt | Raumnummer (Position 1–25), nicht die Datenbank-ID |
 
 **Dialog**
@@ -418,11 +425,14 @@ Wiederkehrende Elemente. In den Components werden sie gleich umgesetzt, am beste
 | `overlay` | Abdunklung | Hintergrund hinter dem Dialog |
 | `text.color` | Vordergrund | Text, Icon-Füllung, Slider-Griff |
 | `onPrimary` | Vordergrund auf Akzent | Text und Icons auf `primary`: aktive Buttons, aktive Navigation, Confirm, Play-Button während die Musik läuft (Entscheidung O5) |
+| `badge.background` | Fläche der Kachelnummer | Nummern-Badge auf den Kacheln der Wall |
+| `badge.text` | Text der Kachelnummer | Zahl im Nummern-Badge |
 
 ### 2.3 Themes
 
 Werte aus `frontend/src/style/darkTheme.ts` und `tavernTheme.ts`. Geändert bzw. neu durch Entscheidung O5:
-`onPrimary` in beiden Themes und `primary` in Tavern (früher `#AD3131`), umgesetzt in DND-4.
+`onPrimary` in beiden Themes und `primary` in Tavern (früher `#AD3131`), umgesetzt in DND-4. Neu in DND-5:
+`badge.background` und `badge.text` (die bisher festen Farben der Kachelnummer, in beiden Themes gleich).
 
 | Rolle | Dark (`darkTheme`) | Tavern (`tavernTheme`, früher `lightTheme`) |
 |---|---|---|
@@ -434,6 +444,8 @@ Werte aus `frontend/src/style/darkTheme.ts` und `tavernTheme.ts`. Geändert bzw.
 | `overlay` | `rgba(0, 0, 0, 0.850)` | `rgba(0, 0, 0, 0.850)` |
 | `text.color` | `#f0f6fc` | `#CBAB96` |
 | `onPrimary` | `#0e1117` (= `background`) | `#140701` (= `background`) |
+| `badge.background` | `#5a5a5a` | `#5a5a5a` |
+| `badge.text` | `#ffffff` | `#ffffff` |
 
 `lightTheme` heißt seit DND-4 `tavernTheme` (Entscheidung O2): Es ist kein helles Theme, sondern ein dunkles in Braun
 und Rot. Die Umbenennung betraf `lightTheme.ts` und den Import in `App.tsx`. Der `localStorage`-Schlüssel `isDarkTheme`
@@ -451,11 +463,11 @@ bleibt, damit gespeicherte Einstellungen gültig bleiben.
 
 ### 2.5 Farben außerhalb der Themes
 
-Feste Farben im heutigen Code, die gegen [2.1](#21-prinzip) verstoßen:
+Feste Farben im heutigen Code, die gegen [2.1](#21-prinzip) verstoßen. Die festen Farben der Kachelnummer
+(`MapElement` → `NumberIcon`, `#5a5a5a` und `white`) sind seit DND-5 die Rollen `badge.background` und `badge.text`.
 
 | Wo | Farbe | Vorschlag |
 |---|---|---|
-| `MapElement` → `NumberIcon` | `#5a5a5a`, `white` | neue Rollen `badge.background` und `badge.text` |
 | `GroundScreen` → `gridColorMap` (Prop `gridColor` an `GridOverlay`) | `black`, `white`, `transparent` | bleibt. Die Gitterfarbe wählt der Spielleiter, sie ist eine Funktion, keine Gestaltung. |
 | `ResourceBarPlayer` | 12 Werte: je ein kräftiger und ein dunkler Ton für Aktion, Bonusaktion, Bewegung, Zauber und Spezial, dazu Grau für leer und Textgrau | Rollen-Palette `resource.{action,bonus,movement,spell,special}.{strong,muted}`, `resource.empty`, `resource.text`, in beiden Themes zunächst gleich. Player Screen ist nicht Teil des aktuellen Umbaus. |
 
@@ -483,7 +495,7 @@ DND-4. Fett = verfehlt das Ziel.
 | `primary` auf `background` | aktive Kachel auf der Wall (Outline) | 3,0 | 6,1 | 6,1 | 3,1 | 4,7 | ✓ beide | – |
 | `border` auf `background` | Rand der Notizseiten | 3,0 | **1,5** | **1,5** | 4,3 | 4,3 | bewusst ✗ Dark | O6: bleibt so |
 | `border` auf `secondary` | Trennlinien in Karten | 3,0 | **1,5** | **1,5** | 3,0 | 3,0 | bewusst ✗ Dark | O6: bleibt so |
-| `white` auf `#5a5a5a` | Kachelnummer | 4,5 | 6,9 | 6,9 | 6,9 | 6,9 | ✓ | – |
+| `badge.text` auf `badge.background` (vor DND-5 `white` auf `#5a5a5a`) | Kachelnummer | 4,5 | 6,9 | 6,9 | 6,9 | 6,9 | ✓ | – |
 
 **Anmerkungen**
 
@@ -491,8 +503,8 @@ DND-4. Fett = verfehlt das Ziel.
   über der Grenze.
 - **`border` im Dark-Theme (O6):** Die Trennlinien sind Gestaltung, kein Bedienelement. WCAG verlangt 3:1 nur für die
   Grenzen von Bedienelementen. Kacheln sind trotzdem erkennbar, weil sie Bilder zeigen.
-- Mit O5 erfüllen alle Text- und Bedien-Paare WCAG AA. Die neuen Werte sind seit DND-4 im Code. Ausnahme bis zum
-  Umbau von Wall und Ground: Der aktive Button der Steuerleiste nutzt noch `text.color`, siehe [4](#4-offen).
+- Mit O5 erfüllen alle Text- und Bedien-Paare WCAG AA. Die neuen Werte sind seit DND-4 im Code. Seit DND-5 nutzt
+  auch der aktive Button der Steuerleiste (Wall und Ground) `onPrimary`.
 
 ---
 
@@ -511,16 +523,11 @@ DND-4. Fett = verfehlt das Ziel.
 
 ## 4. Offen
 
-Lücken zwischen diesem Guide und dem Code von Wall und Ground (Stand 2026-10-06). Sie werden mit deren Umbau
-geschlossen und sind in [wall-mapping.md](design/wall-mapping.md) und [ground-mapping.md](design/ground-mapping.md)
-erfasst.
+Lücken zwischen diesem Guide und dem Code des Ground Screens (Stand 2026-10-07, nach DND-5). Sie werden mit dessen
+Umbau geschlossen und sind in [ground-mapping.md](design/ground-mapping.md) erfasst.
 
 | Punkt | Heute im Code | Soll |
 |---|---|---|
-| Ebenen | freie `z-index`-Werte 99999 (`MapContainer` in `WallScreen`, `Overlay` in `ScreenControlBar`), 99 (`GridOverlay`, `MapOverlay`, `NumberIcon`), 1 (`BackgroundImage`, `BackgroundMedia`) | `layer.*` nach [1.2](#12-tokens) |
-| Text auf aktivem Button | `ScreenControlBar` → `Button` aktiv mit `text.color` auf `primary` (2,9:1 bzw. 3,0:1, verfehlt AA) | `onPrimary` ([2.4](#24-zustände), O5) |
-| Farben der Kachelnummer | `MapElement` → `NumberIcon` mit `#5a5a5a` und `white` | neue Rollen `badge.background`, `badge.text` in beiden Themes ([2.5](#25-farben-außerhalb-der-themes)) |
-| Grundregeln | `<GlobalStyle />` nur in `AdminScreen`. Wall und Ground ohne `border-box`, `margin: 0` und Inter | `<GlobalStyle />` in `WallScreen` und `GroundScreen` als eigener Schritt ([1.1](#11-grundsätze)) |
+| Ebenen | freier `z-index`-Wert 1 (`BackgroundMedia`). `GridOverlay` nutzt seit DND-5 `layer.grid` (vorgezogen, damit die Steuerleiste darüber liegt) | `layer.*` nach [1.2](#12-tokens) |
+| Grundregeln | `<GlobalStyle />` in `AdminScreen` und `WallScreen`. Ground ohne `border-box`, `margin: 0` und Inter | `<GlobalStyle />` in `GroundScreen` als eigener Schritt ([1.1](#11-grundsätze)) |
 | Vollbild-Ebene | `GridOverlay` mit `position: fixed`, `top`/`left` und `100%` | `inset: 0` ([1.1](#11-grundsätze)) |
-| Bausteine | Text-Button-Stil nur lokal in `Dialogue.tsx`. Button der Steuerleiste ist ein `div`. | gemeinsamer Text-Button, auch für die Steuerleiste, als `<button>`. Labels über `Label.tsx`. Umsetzung im Wall-Task, Schritt 1: TextButton herauslösen ([wall-mapping.md](design/wall-mapping.md#button)). |
-| Übergangsdauern | `ScreenControlBar` 0.5s, `TopLink` im Admin 0.3s, ohne Token | offen: Token für Dauern oder bewusst als Wert lassen. Noch nicht entschieden. |

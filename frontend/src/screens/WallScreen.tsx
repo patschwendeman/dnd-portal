@@ -1,18 +1,29 @@
 import { FunctionComponent, ReactElement, useContext, useEffect, useState } from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
 
+import { Label } from '../components/Label'
 import { MapOverview } from '../components/MapOverview'
-import { ScreenControlBar } from '../components/ScreenControlBar'
+import { CONTROL_BAR_CLEARANCE, ScreenControlBar } from '../components/ScreenControlBar'
 import { ActiveSceneContext } from '../context/context'
 import { Map, SceneDetail } from '../models/models'
 import { getWallScreenData } from '../service/WallScreen'
+import { GlobalStyle } from '../style/GlobalStyle'
+import { textStyle } from '../style/tokens'
 import MapEnvironmentSrc from './../../public/assets/images/ground_screen/mapOverview.jpg'
 
 
+// Upper limit of the overlay panel width (DESIGN.md 1.3)
+const OVERLAY_PANEL_MAX_WIDTH = '1440px'
+// Number of gaps per row/column in the 5 x 5 grid of battle maps (wall-mapping.md, width formula)
+const GRID_GAP_COUNT = 4
+
 const MapEnvironment = styled.img`
+    display: block;
     width: 100%;
-    height: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
     object-fit: contain;
+    border-radius: ${(props) => props.theme.radius.md};
 `
 
 const Screen = styled.div`
@@ -24,9 +35,9 @@ const Screen = styled.div`
     left: 0;
     right: 0;
     bottom: 0;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    padding-top: ${(props) => props.theme.space[7]};
     background-color: ${(props) => props.theme.colors.secondary};
     color: ${(props) => props.theme.colors.text.color};
     a {
@@ -34,33 +45,60 @@ const Screen = styled.div`
     }
 `
 
-const MapContainer = styled.div<{$isVisible: boolean}>`
+// Width: smallest of the upper limit, the viewport minus the side margins and the available height
+// converted into a width, so the 5 x 5 grid fits above the control bar (wall-mapping.md, decision 1)
+const OverlayPanel = styled.div<{$isVisible: boolean}>`
     display: ${({ $isVisible }) => ($isVisible ? 'flex' : 'none')};
-    width: 1200px;
-    height: 700px;
-    align-items: center;
-    justify-content: center;
-    z-index: 99999;
+    flex-direction: column;
+    align-items: stretch;
+    width: min(
+        ${OVERLAY_PANEL_MAX_WIDTH},
+        calc(100vw - 2 * ${(props) => props.theme.space[8]}),
+        calc(
+            (100vh - ${(props) => props.theme.space[7]} - ${CONTROL_BAR_CLEARANCE} - 2 * ${(props) => props.theme.space[6]}
+                - ${(props) => props.theme.text.xl.lineHeight} - ${(props) => props.theme.space[5]}
+                - ${GRID_GAP_COUNT} * ${(props) => props.theme.space[3]}) * 16 / 9
+            + ${GRID_GAP_COUNT} * ${(props) => props.theme.space[3]} + 2 * ${(props) => props.theme.space[6]}
+        )
+    );
+    height: auto;
+    padding: ${(props) => props.theme.space[6]};
+    z-index: ${(props) => props.theme.layer.panel};
     background-color: ${(props) => props.theme.colors.background};
-    border-radius: 10px;
+    border-radius: ${(props) => props.theme.radius.lg};
+`
+
+const PanelHeader = styled.div`
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: ${(props) => props.theme.space[5]};
+`
+
+const PanelTitle = styled.h2`
+    ${textStyle('xl')}
+    font-weight: ${(props) => props.theme.fontWeight.semibold};
 `
 
 const BackgroundImage = styled.img`
+    position: fixed;
+    inset: 0;
     width: 100%;
     height: 100%;
-    z-index: 1;
-    position: fixed;
+    object-fit: cover;
+    z-index: ${(props) => props.theme.layer.media};
 `
 const WallScreen: FunctionComponent = (): ReactElement => {
+    const theme = useTheme()
     const { activeSceneId } = useContext(ActiveSceneContext)
     const [activeScene, setActiveScene] = useState<SceneDetail>()
     const [mainmaps, setMainmaps] = useState<Map[]>([])
     const [isActiveMainMap, setIsActiveMainMap] = useState<boolean>(false) 
     const [worldMapVisiblity, setWorldMapVisiblity] = useState<boolean>(false)
     const [mainMapsVisiblity, setMainMapsVisiblity] = useState<boolean>(isActiveMainMap)
-    const [,setActiveButton] = useState<number | null>(null)
 
     const buttonLabels = ['BATTLE', 'WORLD', 'OFF']
+    const activeButton = mainMapsVisiblity ? 0 : worldMapVisiblity ? 1 : 2
 
     const handleWallScreenData = (activeScene: SceneDetail, mainmaps: Map[]) => {
         setActiveScene(activeScene)
@@ -77,7 +115,6 @@ const WallScreen: FunctionComponent = (): ReactElement => {
     }
 
     function handleMapsVisibility(option: number) {
-        setActiveButton(option)
         if (option === 0) {
             setMainMapsVisiblity(true)
             setWorldMapVisiblity(false)
@@ -105,14 +142,22 @@ const WallScreen: FunctionComponent = (): ReactElement => {
 
     return(
         <Screen>
+            <GlobalStyle />
             <BackgroundImage data-test-id='wallImg' src={activeScene?.graphics_wall.source} alt='' /> 
-            <MapContainer $isVisible={mainMapsVisiblity}> 
-                <MapOverview mainmaps={mainmaps} gap='10px' padding='30px 10px' isActiveMainMap={ isActiveMainMap } isAdminScreen={ false }/>
-            </MapContainer>
-            <MapContainer $isVisible={worldMapVisiblity}> 
-            <MapEnvironment src={MapEnvironmentSrc} ></MapEnvironment>
-            </MapContainer>
-            <ScreenControlBar onVisibilityChange={handleMapsVisibility} buttonLabels={buttonLabels}/>
+            <OverlayPanel $isVisible={mainMapsVisiblity}>
+                <PanelHeader>
+                    <PanelTitle>Kampfschauplätze</PanelTitle>
+                    <Label>{ mainmaps.length } Räume</Label>
+                </PanelHeader>
+                <MapOverview mainmaps={mainmaps} gap={theme.space[3]} padding='0' isActiveMainMap={ isActiveMainMap } isAdminScreen={ false }/>
+            </OverlayPanel>
+            <OverlayPanel $isVisible={worldMapVisiblity}>
+                <PanelHeader>
+                    <PanelTitle>Weltkarte</PanelTitle>
+                </PanelHeader>
+                <MapEnvironment src={MapEnvironmentSrc} ></MapEnvironment>
+            </OverlayPanel>
+            <ScreenControlBar onVisibilityChange={handleMapsVisibility} buttonLabels={buttonLabels} activeIndex={activeButton}/>
         </Screen>       
     )
 }
