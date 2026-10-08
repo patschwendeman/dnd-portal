@@ -1,7 +1,7 @@
 # DND-7: Restyle Player Screen
 
 **Typ:** style
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
