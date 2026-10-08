@@ -10,4 +10,4 @@
 | DND-4 | style | Restyle Admin Screen (Schritt 1 von 3) | Fertig | [DND-4-admin-restyle.md](DND-4-admin-restyle.md) |
 | DND-5 | style | Restyle Wall Screen (Schritt 2 von 3) | Fertig | [DND-5-wall-restyle.md](DND-5-wall-restyle.md) |
 | DND-6 | style | Restyle Ground Screen (Schritt 3 von 3) | Fertig | [DND-6-ground-restyle.md](DND-6-ground-restyle.md) |
-| DND-7 | style | Restyle Player Screen | Entwurf | [DND-7-player-restyle.md](DND-7-player-restyle.md) |
+| DND-7 | style | Restyle Player Screen | Freigegeben | [DND-7-player-restyle.md](DND-7-player-restyle.md) |
