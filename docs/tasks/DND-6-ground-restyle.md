@@ -1,7 +1,7 @@
 # DND-6: Restyle Ground Screen (Schritt 3 von 3: nach Admin und Wall)
 
 **Typ:** style
-**Status:** Freigegeben
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -87,62 +87,62 @@ Wiederverwendet, nicht neu gebaut: `tokens.ts` (inkl. `textStyle`), `styled.d.ts
 ### Schritt 1: GlobalStyle auf dem Ground (`style(DND-6): …`)
 
 #### Frontend
-- [ ] `GroundScreen`: `<GlobalStyle />` rendern (wie `AdminScreen`, `WallScreen`)
-- [ ] `Screen`: System-Stack (`font-family`) entfernen, Schrift kommt aus dem GlobalStyle
+- [x] `GroundScreen`: `<GlobalStyle />` rendern (wie `AdminScreen`, `WallScreen`)
+- [x] `Screen`: System-Stack (`font-family`) entfernen, Schrift kommt aus dem GlobalStyle
 
 ### Schritt 2: Bildanzeige und Raster-Ebene (`style(DND-6): …`)
 
 #### Frontend
-- [ ] `Screen`: doppeltes Semikolon nach `background-color` entfernen; übrige Regeln unverändert
-- [ ] `BackgroundMedia`: `inset: 0`, `z-index` → `layer.media`; `width`/`height` `100%`, `object-fit: cover`,
+- [x] `Screen`: doppeltes Semikolon nach `background-color` entfernen; übrige Regeln unverändert
+- [x] `BackgroundMedia`: `inset: 0`, `z-index` → `layer.media`; `width`/`height` `100%`, `object-fit: cover`,
       `position: fixed` bleiben
-- [ ] `GridOverlay` `Overlay`: `top`/`left`/`width`/`height` → `inset: 0`, `pointer-events: none`;
+- [x] `GridOverlay` `Overlay`: `top`/`left`/`width`/`height` → `inset: 0`, `pointer-events: none`;
       `layer.grid` bleibt
 
 ### Schritt 3: Linienstärke aus dem Token (`refactor(DND-6): …`)
 
 #### Frontend
-- [ ] `GridLine` nach E2 umbauen; Schleifen und Zellgröße (`gridOption × devicePixelRatio`) unverändert
-- [ ] Nachweis: Anzahl, Position und Größe der Linien vor und nach dem Umbau gleich (z. B. per
+- [x] `GridLine` nach E2 umbauen; Schleifen und Zellgröße (`gridOption × devicePixelRatio`) unverändert
+- [x] Nachweis: Anzahl, Position und Größe der Linien vor und nach dem Umbau gleich (z. B. per
       `getBoundingClientRect` bei Slider 100 und 200)
 
 ### Schritt 4: Beschriftung „Raster“ (`style(DND-6): …`)
 
 #### Frontend
-- [ ] `ScreenControlBar`: Prop `label` nach E3, `Label` aus `src/components/Label.tsx` mit `padding-left` `space.3`
-- [ ] `GroundScreen`: `label="Raster"` übergeben
-- [ ] `WallScreen`: unverändert (kein Label)
+- [x] `ScreenControlBar`: Prop `label` nach E3, `Label` aus `src/components/Label.tsx` mit `padding-left` `space.3`
+- [x] `GroundScreen`: `label="Raster"` übergeben
+- [x] `WallScreen`: unverändert (kein Label)
 
 ### Schritt 5: Slider-Gruppe und Slider (`style(DND-6): …`)
 
 #### Frontend
-- [ ] Konstanten nach E1
-- [ ] Neue `SliderGroup` (nur bei `onSliderChange`): `display: flex`, `align-items: center`, `gap` `space.3`,
+- [x] Konstanten nach E1
+- [x] Neue `SliderGroup` (nur bei `onSliderChange`): `display: flex`, `align-items: center`, `gap` `space.3`,
       `padding-right` `space.3`; darin `Label` „Zelle“, `Box`, Wertanzeige
-- [ ] `Box`: `sx={{ width: SLIDER_WIDTH, margin: 0 }}`
-- [ ] Wertanzeige (neu): zeigt `sliderValue` ohne Einheit; `textStyle('sm')`, `fontWeight.semibold`,
+- [x] `Box`: `sx={{ width: SLIDER_WIDTH, margin: 0 }}`
+- [x] Wertanzeige (neu): zeigt `sliderValue` ohne Einheit; `textStyle('sm')`, `fontWeight.semibold`,
       `font-variant-numeric: tabular-nums`, `text-align: right`, `min-width: SLIDER_VALUE_MIN_WIDTH`;
       Farbe erbt `text.color`
-- [ ] `StyledSlider`: `.MuiSlider-rail` ohne `height`, `border-radius` `radius.pill`; `.MuiSlider-track` ohne
+- [x] `StyledSlider`: `.MuiSlider-rail` ohne `height`, `border-radius` `radius.pill`; `.MuiSlider-track` ohne
       `height`, `border: none` bleibt; `.MuiSlider-thumb` `width`/`height` `SLIDER_THUMB_SIZE`, Fokus/Hover ohne
       Schatten bleibt; Regeln für `.MuiSlider-mark`, `.MuiSlider-markLabel`, `.MuiSlider-valueLabel` entfallen
-- [ ] Slider-Props: `marks` und `valueLabelDisplay` entfernen; `step={10}`, `shiftStep`, `min`/`max`, `value`,
+- [x] Slider-Props: `marks` und `valueLabelDisplay` entfernen; `step={10}`, `shiftStep`, `min`/`max`, `value`,
       `onChange`, `aria-label` bleiben
-- [ ] Prüfen: In `GroundScreen`, `GridOverlay`, `ScreenControlBar` keine freien `z-index`-Werte, keine festen Farben
+- [x] Prüfen: In `GroundScreen`, `GridOverlay`, `ScreenControlBar` keine freien `z-index`-Werte, keine festen Farben
       außer den Gitterfarben, keine px außer den benannten Konstanten (`CONTROL_BAR_CLEARANCE`, E1) und der
       Übergangsdauer `0.5s` (DND-5 E2)
 
 ### Schritt 6: Doku (`docs(DND-6): …`)
-- [ ] `frontend/DESIGN.md`: aus Abschnitt 4 die geschlossenen Ground-Lücken entfernen (Ebenen, Grundregeln,
+- [x] `frontend/DESIGN.md`: aus Abschnitt 4 die geschlossenen Ground-Lücken entfernen (Ebenen, Grundregeln,
       Vollbild-Ebene); bleibt nichts übrig, Abschnitt mit „Keine offenen Lücken (Stand nach DND-6)“ stehen lassen.
       1.2 Ebenen: Spalte „Vor dem Umbau“ und Hinweise auf den Ground-Stand prüfen. Baustein „Slider“ ggf. um
       Konstantennamen ergänzen.
-- [ ] `frontend/design/ground-mapping.md`: Stand „umgesetzt in DND-6“, Abweichungen vermerken (Konstantennamen,
+- [x] `frontend/design/ground-mapping.md`: Stand „umgesetzt in DND-6“, Abweichungen vermerken (Konstantennamen,
       `GridLine` mit Ausrichtung statt Größen-Props, Linie nicht mittig, 4px über MUI-Standard)
-- [ ] `docs/screens.md`: Ist-Stand Ground (Beschriftungen „Raster“/„Zelle“, schlanker Slider ohne Punkte und Tooltip,
+- [x] `docs/screens.md`: Ist-Stand Ground (Beschriftungen „Raster“/„Zelle“, schlanker Slider ohne Punkte und Tooltip,
       feste Wertanzeige); Satz „Slider noch im alten Stil“ entfernen
-- [ ] `frontend/CLAUDE.md`: `GlobalStyle` jetzt in allen drei Screens (Admin, Wall, Ground)
-- [ ] `docs/known-issues.md`: prüfen, ob ein behobener Punkt geführt ist
+- [x] `frontend/CLAUDE.md`: `GlobalStyle` jetzt in allen drei Screens (Admin, Wall, Ground)
+- [x] `docs/known-issues.md`: prüfen, ob ein behobener Punkt geführt ist
 
 ## Akzeptanzkriterien
 

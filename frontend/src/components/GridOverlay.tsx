@@ -10,17 +10,17 @@ interface GridOverlayProps {
 const Overlay = styled.div`
     z-index: ${(props) => props.theme.layer.grid};
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
+    pointer-events: none;
 `
-const GridLine = styled.div<{ $i: number, $width: number, $height: number, $left: number, $top: number, $gridColor: string }>`
+// Vertical lines span the full height, horizontal lines the full width of the overlay;
+// the line thickness comes from the theme
+const GridLine = styled.div<{ $orientation: 'vertical' | 'horizontal', $offset: number, $gridColor: string }>`
     position: absolute;
-    left: ${props => props.$left}px;
-    top: ${props => props.$top}px;
-    width: ${props => props.$width}px;
-    height: ${props => props.$height}px;
+    left: ${props => props.$orientation === 'vertical' ? `${props.$offset}px` : '0'};
+    top: ${props => props.$orientation === 'horizontal' ? `${props.$offset}px` : '0'};
+    width: ${props => props.$orientation === 'vertical' ? props.theme.borderWidth.thick : '100%'};
+    height: ${props => props.$orientation === 'horizontal' ? props.theme.borderWidth.thick : '100%'};
     background-color: ${props => props.$gridColor};
 `
 
@@ -50,11 +50,8 @@ const GridOverlay: FunctionComponent<GridOverlayProps> = ({ gridColor, gridOptio
         gridLines.push(
             <GridLine
                 key={`v-${i}`}
-                $i={i}
-                $width= {2}
-                $height={screenSize.height}
-                $left={i}
-                $top={0}
+                $orientation='vertical'
+                $offset={i}
                 $gridColor={gridColor}
             ></GridLine>
         )
@@ -64,11 +61,8 @@ const GridOverlay: FunctionComponent<GridOverlayProps> = ({ gridColor, gridOptio
         gridLines.push(
             <GridLine
                 key={`h-${i}`}
-                $i={i}
-                $width= {screenSize.width}
-                $height= {2}
-                $left={0}
-                $top={i}
+                $orientation='horizontal'
+                $offset={i}
                 $gridColor={gridColor}
             ></GridLine>
         )

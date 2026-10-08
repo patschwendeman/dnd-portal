@@ -6,6 +6,7 @@ import { ScreenControlBar } from '../components/ScreenControlBar'
 import { ActiveSceneContext } from '../context/context'
 import { SceneDetail } from '../models/models'
 import { getGroundScreenData } from '../service/groundScreen'
+import { GlobalStyle } from '../style/GlobalStyle'
 
 
 const Screen = styled.div`
@@ -19,8 +20,7 @@ const Screen = styled.div`
     bottom: 0;
     align-items: center;
     justify-content: center;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-    background-color: ${(props) => props.theme.colors.background};;
+    background-color: ${(props) => props.theme.colors.background};
     color: ${(props) => props.theme.colors.text.color};
     a {
         color: ${(props) => props.theme.colors.primary};
@@ -28,11 +28,12 @@ const Screen = styled.div`
 `
 
 const BackgroundMedia = styled.video`
+    position: fixed;
+    inset: 0;
     width: 100%;
     height: 100%;
-    z-index: 1;
     object-fit: cover;
-    position: fixed;
+    z-index: ${(props) => props.theme.layer.media};
 `
 
 const GroundScreen: FunctionComponent = (): ReactElement => {
@@ -93,10 +94,11 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
 
     return(
         <Screen>
+            <GlobalStyle />
             <GridOverlay gridColor={gridColor} gridOption={gridOption} />
             {mediaType === 'image' && <BackgroundMedia as="img" src={mediaSRC} alt="Background" />}
             {mediaType === 'video' && <BackgroundMedia src={mediaSRC} autoPlay loop muted />}
-            <ScreenControlBar onVisibilityChange={handleGridVisibility} onSliderChange={setGridOption} buttonLabels={buttonLabels} />
+            <ScreenControlBar onVisibilityChange={handleGridVisibility} onSliderChange={setGridOption} buttonLabels={buttonLabels} label='Raster' />
         </Screen> 
     )
 }

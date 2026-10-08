@@ -1,6 +1,19 @@
 # Ground Screen: Mapping der Styled Components auf das neue Layout
 
-Stand: 2026-10-06 (Branch `development`). Vorschlag, noch keine Änderungen am Code.
+Stand: 2026-10-07 (Branch `development`). **Umgesetzt in DND-6** ([Plan](../../docs/tasks/DND-6-ground-restyle.md)).
+Die Tabellen unten beschreiben den Vorschlag; Abweichungen in der Umsetzung:
+
+- Konstanten in `ScreenControlBar.tsx`: `SLIDER_WIDTH = '200px'`, `SLIDER_THUMB_SIZE = '16px'` (kein Token
+  `size.handle`), `SLIDER_VALUE_MIN_WIDTH = '3ch'`. Schiene und Füllung: die Überschreibung `height: 10px` ist entfernt,
+  es gilt MUI-Standard 4px (keine Konstante). Das Root-`padding` (13px) von MUI ist nicht angefasst.
+- `GridLine` bekommt statt `$width`/`$height` (Zahl im JSX) die Props `$orientation` (`'vertical'` / `'horizontal'`)
+  und `$offset`. Die Dicke kommt im CSS aus `borderWidth.thick`, die Länge ist `100%` der Raster-Ebene. Das ungenutzte
+  `$i` ist entfallen (eigener `refactor`-Commit, Linien vorher/nachher gleich).
+- Die Linie liegt weiter ab Position `i`, nicht mittig auf der Zellgrenze (`i − 1`, optional, nicht umgesetzt).
+- `pointer-events: none` an der Raster-Ebene ist umgesetzt.
+- Beschriftung „Raster“ über die neue Prop `label` an `ScreenControlBar` (Baustein `Label` mit `padding-left`
+  `space.3`); die Wall übergibt keine. „Zelle“ steht fest in der neuen `SliderGroup`, die Wertanzeige ist
+  `SliderValue`. `valueLabelDisplay` und `marks` sind als Props entfernt.
 Grundlage: Mockup [mockups/v2/ground.png](mockups/v2/ground.png) (Quelle [mockups/v2/build.py](mockups/v2/build.py)) und der
 aktuelle Code der Komponenten, die der Ground Screen rendert.
 

@@ -78,8 +78,8 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
   Abstände, Schrift, Radien, Größen und `z-index` über die Tokens (`props.theme.space[5]`, `textStyle('sm')`,
   `props.theme.layer.dialog` …), feste px-Werte nur als benannte Layout-Konstante (siehe [DESIGN.md](DESIGN.md)).
   Das Theme ist typisiert (`src/style/styled.d.ts`), `tsc` prüft Zugriffe.
-- `GlobalStyle` (box-sizing, margin, Body-Schrift) wird nicht in `App.tsx`, sondern im Screen gerendert – derzeit
-  in `AdminScreen` und `WallScreen`; der Player bekommt ihn nicht.
+- `GlobalStyle` (box-sizing, margin, Body-Schrift) wird nicht in `App.tsx`, sondern im Screen gerendert – in
+  `AdminScreen`, `WallScreen` und `GroundScreen`; der Player bekommt ihn nicht.
 - Icons als SVG über `react-svg` (Füllfarbe aus dem Theme), Pfade ab `/assets/...`.
 - Neue Backend-Felder zuerst in `src/models/models.ts` ergänzen.
 

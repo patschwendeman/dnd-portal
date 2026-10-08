@@ -106,5 +106,8 @@ optional mit **Grid** als Layout für taktische Kämpfe.
 - Vollbild-Medium = `graphics_ground.source` der aktiven Szene; Bild (`.jpg/.jpeg/.png`) oder Video
   (`.mp4/.webm/.mkv`, autoplay, loop, stumm) je nach Dateiendung.
 - `GridOverlay` mit Hover-Steuerung: Farbe BLACK / WHITE / OFF, Slider für Zellgröße (100–200).
-  Die Steuerleiste hat seit DND-5 dieselbe schwebende Form wie auf der Wall (geteilte `ScreenControlBar`); der Slider
-  ist noch im alten Stil (folgt mit dem Ground-Umbau). Standard: kein Grid. Einstellungen lokal, nicht gespeichert, gelten für alle Szenen gleich.
+  Die Steuerleiste hat dieselbe schwebende Form wie auf der Wall (geteilte `ScreenControlBar`), auf dem Ground mit den
+  Beschriftungen „Raster“ (vor den Buttons) und „Zelle“ (vor dem Slider). Der Slider ist schlank, ohne Punkte und
+  ohne Tooltip und rastet in 10er-Schritten ein; rechts daneben steht der Wert fest als Zahl ohne Einheit (seit
+  DND-6). Die Raster-Ebene lässt Mausereignisse durch. Standard: kein Grid. Einstellungen lokal, nicht gespeichert,
+  gelten für alle Szenen gleich.

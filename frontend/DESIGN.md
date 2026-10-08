@@ -2,7 +2,7 @@
 
 Stand: 2026-10-07 (Branch `development`). Verbindliche Gestaltungsregeln für das Frontend. Der Umbau folgt Screen
 für Screen nach den Mappings. Umgesetzt sind die Grundlagen ([Architektur](#architektur)), der Admin Screen
-(DND-4) und der Wall Screen (DND-5). Ground folgt.
+(DND-4), der Wall Screen (DND-5) und der Ground Screen (DND-6).
 
 **Geltung:** Admin, Wall und Ground. Der Player Screen folgt später. Seine festen Farben sind unter
 [2.5](#25-farben-außerhalb-der-themes) erfasst.
@@ -47,8 +47,8 @@ Dazu kommen:
   auf das Theme.
 - `style/GlobalStyle.ts` – `createGlobalStyle` für die Grundregeln aus [1.1](#11-grundsätze). Gilt für Admin, Wall
   und Ground, nicht für den Player. Er wird nicht in `App.tsx`, sondern als `<GlobalStyle />` im jeweiligen Screen
-  gerendert (jeder Screen läuft in einem eigenen Fenster). Bisher binden ihn `AdminScreen` und `WallScreen` ein, Ground
-  folgt mit seinem Umbau. `index.css` wird nicht importiert.
+  gerendert (jeder Screen läuft in einem eigenen Fenster). Eingebunden ist er in `AdminScreen`, `WallScreen` und
+  `GroundScreen`. `index.css` wird nicht importiert.
 - `style/tokens.ts` enthält außerdem den Helper `textStyle(stufe)`, der Schriftgröße und Zeilenhöhe einer
   `text.*`-Stufe gemeinsam setzt (K4). `text.<stufe>` ist ein Objekt `{ fontSize, lineHeight }`.
 
@@ -162,7 +162,7 @@ Feste Maße einzelner Layouts. Sie sind **keine** Tokens und stehen als benannte
 | 1440px | maximale Breite des Wall-Panels | `WallScreen` |
 | 104px | Platz für die Steuerleiste (24 + 56 + 24) | `ScreenControlBar` |
 | 600px | Breite des Dialogs | `Dialogue` |
-| 200px · 3ch | Breite des Sliders, der Wertanzeige | `ScreenControlBar` |
+| 200px · 16px · 3ch | Breite des Sliders, Größe des Griffs, Mindestbreite der Wertanzeige (`SLIDER_WIDTH`, `SLIDER_THUMB_SIZE`, `SLIDER_VALUE_MIN_WIDTH`) | `ScreenControlBar` |
 
 ### 1.4 Regeln
 
@@ -385,11 +385,11 @@ die verwendende Komponente (z. B. `ScreenControlBar`).
 
 | Eigenschaft | Wert |
 |---|---|
-| Breite | 200px |
-| Schiene und Füllung | 4px hoch, `radius.pill` |
-| Griff | 16px |
+| Breite | 200px (`SLIDER_WIDTH`) |
+| Schiene und Füllung | 4px hoch (MUI-Standard, nicht überschrieben), `radius.pill` |
+| Griff | 16px (`SLIDER_THUMB_SIZE`) |
 | Stufen | rastet in 10er-Schritten ein, ohne sichtbare Punkte |
-| Wert | feste Anzeige rechts, `text.sm`, `semibold`, `tabular-nums`, `min-width: 3ch`, ohne Einheit |
+| Wert | feste Anzeige rechts, `text.sm`, `semibold`, `tabular-nums`, `min-width: 3ch` (`SLIDER_VALUE_MIN_WIDTH`), ohne Einheit |
 | Farbe | Schiene `secondary`, Füllung `primary`, Griff `text.color` |
 
 ### 1.6 Screen-Layouts
@@ -523,11 +523,4 @@ DND-4. Fett = verfehlt das Ziel.
 
 ## 4. Offen
 
-Lücken zwischen diesem Guide und dem Code des Ground Screens (Stand 2026-10-07, nach DND-5). Sie werden mit dessen
-Umbau geschlossen und sind in [ground-mapping.md](design/ground-mapping.md) erfasst.
-
-| Punkt | Heute im Code | Soll |
-|---|---|---|
-| Ebenen | freier `z-index`-Wert 1 (`BackgroundMedia`). `GridOverlay` nutzt seit DND-5 `layer.grid` (vorgezogen, damit die Steuerleiste darüber liegt) | `layer.*` nach [1.2](#12-tokens) |
-| Grundregeln | `<GlobalStyle />` in `AdminScreen` und `WallScreen`. Ground ohne `border-box`, `margin: 0` und Inter | `<GlobalStyle />` in `GroundScreen` als eigener Schritt ([1.1](#11-grundsätze)) |
-| Vollbild-Ebene | `GridOverlay` mit `position: fixed`, `top`/`left` und `100%` | `inset: 0` ([1.1](#11-grundsätze)) |
+Keine offenen Lücken (Stand nach DND-6).

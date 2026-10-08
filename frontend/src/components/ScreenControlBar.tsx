@@ -3,11 +3,19 @@ import Slider from '@mui/material/Slider'
 import { FunctionComponent, ReactElement, useState } from 'react'
 import styled from 'styled-components'
 
+import { Label } from './Label'
 import { TextButton } from './TextButton'
+import { textStyle } from '../style/tokens'
 
 // Space the floating control bar needs above the bottom edge:
 // space.5 (gap) + size.bar.md (bar) + space.5 (air) = 104px (DESIGN.md 1.3)
 const CONTROL_BAR_CLEARANCE = '104px'
+// Width of the cell size slider (ground-mapping.md, layout size)
+const SLIDER_WIDTH = '200px'
+// Size of the slider thumb (ground-mapping.md)
+const SLIDER_THUMB_SIZE = '16px'
+// Room for three digits, so the bar does not shift while dragging (ground-mapping.md)
+const SLIDER_VALUE_MIN_WIDTH = '3ch'
 
 const ControlBar = styled.div`
     display: flex;
@@ -49,12 +57,33 @@ const ButtonGroup = styled.div`
     gap: ${(props) => props.theme.space[1]};
 `
 
+const BarLabel = styled(Label)`
+    padding-left: ${(props) => props.theme.space[3]};
+`
+
 const Button = styled(TextButton)`
     letter-spacing: ${(props) => props.theme.letterSpacing.label};
 `
 
+const SliderGroup = styled.div`
+    display: flex;
+    align-items: center;
+    gap: ${(props) => props.theme.space[3]};
+    padding-right: ${(props) => props.theme.space[3]};
+`
+
+const SliderValue = styled.span`
+    ${textStyle('sm')}
+    font-weight: ${(props) => props.theme.fontWeight.semibold};
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    min-width: ${SLIDER_VALUE_MIN_WIDTH};
+`
+
 const StyledSlider = styled(Slider)`
   & .MuiSlider-thumb {
+    width: ${SLIDER_THUMB_SIZE};
+    height: ${SLIDER_THUMB_SIZE};
     background-color: ${(props) => props.theme.colors.text.color};
     &:focus,
     &:hover,
@@ -64,30 +93,11 @@ const StyledSlider = styled(Slider)`
   }
   & .MuiSlider-rail {
     background-color: ${(props) => props.theme.colors.secondary};
-    height: 10px;
-    
+    border-radius: ${(props) => props.theme.radius.pill};
   }
   & .MuiSlider-track {
     background-color: ${(props) => props.theme.colors.primary};
-    height: 10px;
     border: none;
-  }
-  & .MuiSlider-mark {
-    background-color: ${(props) => props.theme.colors.text.color};
-    height: 5px;
-    width: 5px;
-    border-radius: 50%;
-  }
-  & .MuiSlider-markLabel {
-    color: ${(props) => props.theme.colors.text.color};
-    font-size: 0.75rem;
-  }
-  & .MuiSlider-valueLabel {
-    background-color: ${(props) => props.theme.colors.secondary};
-    color: ${(props) => props.theme.colors.text.color};
-    font-size: 0.8rem;
-    border-radius: 6px;
-    padding: 4px 8px;
   }
 `
 
@@ -95,11 +105,13 @@ interface ScreenControlBarProps {
     onVisibilityChange: (option: number) => void
     onSliderChange?: (option: number) => void
     buttonLabels: string[]
+    // Optional caption in front of the button group (e.g. "Raster" on the ground screen)
+    label?: string
     // Controlled active button; if omitted, the bar tracks the last clicked button itself
     activeIndex?: number | null
 }
 
-const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({ onVisibilityChange, onSliderChange, buttonLabels, activeIndex }): ReactElement => {
+const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({ onVisibilityChange, onSliderChange, buttonLabels, label, activeIndex }): ReactElement => {
     const [clickedButton, setClickedButton] = useState<number | null>(null)
     const activeButton = activeIndex !== undefined ? activeIndex : clickedButton
     const [sliderValue, setSliderValue] = useState<number>(100)
@@ -119,6 +131,7 @@ const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({ onVisibili
     return(
         <Overlay>
             <ControlBar>
+                {label && <BarLabel>{ label }</BarLabel>}
                 <ButtonGroup>
                     {buttonLabels.map( (label, index) => (
                         <Button 
@@ -130,21 +143,23 @@ const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({ onVisibili
                         </Button>
                     ))}
                 </ButtonGroup>
-               {onSliderChange && (
-                    <Box sx={{ width: 200, margin: 1 }}>
-                        <StyledSlider
-                            aria-label="DPI"
-                            defaultValue={100}
-                            value={sliderValue}
-                            onChange={handleSliderChange}
-                            valueLabelDisplay="auto"
-                            shiftStep={100}
-                            step={10}
-                            marks
-                            min={100}
-                            max={200}
-                        />
-                    </Box>
+                {onSliderChange && (
+                    <SliderGroup>
+                        <Label>Zelle</Label>
+                        <Box sx={{ width: SLIDER_WIDTH, margin: 0 }}>
+                            <StyledSlider
+                                aria-label="DPI"
+                                defaultValue={100}
+                                value={sliderValue}
+                                onChange={handleSliderChange}
+                                shiftStep={100}
+                                step={10}
+                                min={100}
+                                max={200}
+                            />
+                        </Box>
+                        <SliderValue>{ sliderValue }</SliderValue>
+                    </SliderGroup>
                 )}
             </ControlBar>
         </Overlay>
