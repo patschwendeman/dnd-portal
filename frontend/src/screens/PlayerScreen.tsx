@@ -6,6 +6,11 @@ import turnImg from '/assets/icons/phone.svg'
 import settingsIcon from '/assets/icons/settings.svg'
 
 import { ResourceBarPlayer } from '../components/ResourceBarPlayer'
+import { GlobalStyle } from '../style/GlobalStyle'
+
+// Layout constants (DESIGN.md 1.3)
+const ROTATE_ICON_SIZE = '96px'
+const PORTRAIT_QUERY = '(orientation: portrait)'
 
 const rotateAnimation = keyframes`
   0% { transform: rotate(0deg); }
@@ -16,68 +21,64 @@ const rotateAnimation = keyframes`
 `
 
 const Background = styled.div`
+  position: fixed;
+  inset: 0;
   display: flex;
-    width: 100%;
-    height: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    align-items: center;
-    justify-content: center;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
-    background-color: ${(props) => props.theme.colors.background};
-    color: ${(props) => props.theme.colors.text.color};
-    user-select: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: ${(props) => props.theme.space[4]};
+  padding: ${(props) => props.theme.space[4]} max(${(props) => props.theme.space[5]}, env(safe-area-inset-left), env(safe-area-inset-right));
+  background-color: ${(props) => props.theme.colors.background};
+  color: ${(props) => props.theme.colors.text.color};
+  user-select: none;
 `
 
 const Overlay = styled.div`
   position: fixed;
-  width: 100%;
-  height: 100%;
+  inset: 0;
+  display: none;
+  place-content: center;
+  justify-items: center;
+  gap: ${(props) => props.theme.space[4]};
+  padding: ${(props) => props.theme.space[5]};
+  text-align: center;
   background-color: ${(props) => props.theme.colors.background};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9;
   svg {
-      width: 400px;
-      height: 400px;
-      color: ${(props) => props.theme.colors.text.color} !important;
-      animation: ${rotateAnimation} 6s infinite ease-in-out;
-    }
-  @media (min-width: 650px) {
-    display: none;
+    display: block;
+    width: ${ROTATE_ICON_SIZE};
+    height: ${ROTATE_ICON_SIZE};
+    color: ${(props) => props.theme.colors.text.color};
+    animation: ${rotateAnimation} 6s infinite ease-in-out;
+  }
+  @media ${PORTRAIT_QUERY} {
+    display: grid;
   }
 `
 
+const OverlayText = styled.p`
+  font-weight: ${(props) => props.theme.fontWeight.medium};
+`
+
 const ThemeToggleButton = styled.button`
-    position: fixed;
-    left: 12px;
-    top: 12px;
-    display: flex;
-    padding: 6px;
-    width: 40px;
-    height: 40px;
-    align-items: center;
-    justify-content: center;
-    background-color: ${(props) => props.theme.colors.secondary};
-    border: none;
-    border-radius: 100px;
-    cursor: pointer;
-    div {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 100%;
-    height: 100%;
-    }
-    svg {
-      width: 100%;
-      height: 100%; 
-      color: ${(props) => props.theme.colors.text.color} !important;
-    }
+  align-self: flex-start;
+  width: ${(props) => props.theme.size.control.lg};
+  height: ${(props) => props.theme.size.control.lg};
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background-color: ${(props) => props.theme.colors.secondary};
+  border: none;
+  border-radius: ${(props) => props.theme.radius.md};
+  cursor: pointer;
+  div {
+    display: grid;
+    place-items: center;
+  }
+  svg {
+    width: ${(props) => props.theme.size.icon};
+    height: ${(props) => props.theme.size.icon};
+    color: ${(props) => props.theme.colors.text.color};
+  }
 `
 
 interface PlayerScreenProps {
@@ -87,26 +88,29 @@ interface PlayerScreenProps {
 const PlayerScreen: FunctionComponent<PlayerScreenProps> = ({ toggleTheme }): ReactElement => {
   const theme = useTheme()
   return (
-    <Background>
-    <Overlay>
-
-      <ReactSVG
-        src={turnImg}
-        beforeInjection={(svg) => {
-          svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
-        }}
-      />
-    </Overlay>
-    <ThemeToggleButton onClick={toggleTheme}>
-        <ReactSVG
-        src={settingsIcon}
-        beforeInjection={(svg) => {
-          svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
-        }}
-      />
-    </ThemeToggleButton>
-    <ResourceBarPlayer />
-  </Background>
+    <>
+      <GlobalStyle />
+      <Background>
+        <ThemeToggleButton onClick={toggleTheme}>
+          <ReactSVG
+            src={settingsIcon}
+            beforeInjection={(svg) => {
+              svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
+            }}
+          />
+        </ThemeToggleButton>
+        <ResourceBarPlayer />
+        <Overlay>
+          <ReactSVG
+            src={turnImg}
+            beforeInjection={(svg) => {
+              svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
+            }}
+          />
+          <OverlayText>Bitte das Handy quer halten</OverlayText>
+        </Overlay>
+      </Background>
+    </>
   )
 }
 

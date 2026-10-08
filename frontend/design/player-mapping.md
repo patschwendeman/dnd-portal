@@ -1,6 +1,20 @@
 # Player Screen: Mapping der Styled Components auf das neue Layout
 
-Stand: 2026-10-08 (Branch `development`). Entscheidungen getroffen, noch nicht umgesetzt. Die Spalte „Alter Wert“ beschreibt den heutigen Code.
+Stand: 2026-10-08 (Branch `development`). **Umgesetzt in DND-7** ([Plan](../../docs/tasks/DND-7-player-restyle.md)).
+Die Spalte „Alter Wert“ beschreibt den Code vor DND-7, die Tabellen unten den Vorschlag. Abweichungen und Details der
+Umsetzung:
+
+- `SpellResource` ist in `Resource` aufgegangen (`$variant: 'spell'`), `Slot` und `SpecialSlot` sind ein `Slot` mit
+  `$variant: 'spell' | 'special'` (E2, eigener `refactor`-Commit, berechnete Styles vorher und nachher gleich).
+- Die antippbaren Ressourcen sind `<button type="button">` mit Reset (`padding`, `font: inherit`, `color: text.color`)
+  und per Tastatur bedienbar (E3). Bewegung ist dieselbe Styled Component mit `as="div"` und `cursor: default`.
+- Weil die Ressourcen Buttons sind, sind die Kinder `<span>`: Zahl, `Numeral`, `IconSection`, `MovementIcon`,
+  `SlotGroup` und `Slot`.
+- Kreis und Dreieck: `ResourceIcon` (`<svg viewBox="0 0 20 20">` in `size.icon`) mit `ActionIcon` (`<circle>`) bzw.
+  `BonusIcon` (`<polygon points="10,1 20,19 0,19">`), die Farbe steht als `fill` an der Form. `IconSection` bleibt.
+- Das Label „Zauberplätze“ ist `RowLabel` (`Label` mit `grid-column: 1 / -1`), der Overlay-Text `OverlayText`.
+- `phone.svg` ist unverändert (feste schwarze Kontur bleibt).
+
 Grundlage: Mockups [mockups/v2/player.png](mockups/v2/player.png) (844 × 390),
 [player-667.png](mockups/v2/player-667.png) (667 × 375), [player-portrait.png](mockups/v2/player-portrait.png)
 (390 × 844, Overlay „Handy drehen“) und dieselben drei in Tavern
@@ -11,7 +25,7 @@ Allgemeine Regeln, Tokens und Farbrollen: [DESIGN.md](../DESIGN.md). Die Konsist
 [admin-mapping.md](admin-mapping.md#konsistenz-abgleich-2026-10-04) gelten hier genauso.
 
 Anders als bei Admin, Wall und Ground gehören hier **auch Farben** zum Mapping: Der Player ist der letzte Screen mit
-festen Farbwerten (DESIGN.md 2.5). Sie werden mit dem Umbau zur Rollen-Palette `resource.*`.
+festen Farbwerten (DESIGN.md 2.5). Mit dem Umbau sind sie in der Rollen-Palette `resource.*` aufgegangen.
 
 Betroffen sind nur `PlayerScreen.tsx` und `ResourceBarPlayer.tsx`. Kein anderer Screen nutzt sie.
 

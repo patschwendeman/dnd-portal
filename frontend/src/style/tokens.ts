@@ -54,6 +54,7 @@ const borderWidth = {
 const size = {
   control: {
     md: '40px',
+    lg: '48px',
   },
   icon: '20px',
   scrollbar: '4px',

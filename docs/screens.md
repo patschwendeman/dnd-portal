@@ -63,7 +63,11 @@ Zähler 0, Icon deaktiviert → nächste Runde: erneut tippen → wieder aktiv.
 - **Zauberplätze I–IV:** Maxima fest im Code (`SpellMax = {1:4, 2:3, 3:3, 4:2}`); Tippen verringert um 1, bei 0 Reset auf Max.
 - **Spezial:** 3 Plätze, Startwert 1; gleiches Verhalten wie Zauberplätze.
 - **Bewegung (WIP):** fest `9.5`, nicht interaktiv.
-- Unter 650 px Breite erscheint ein „Handy drehen“-Overlay (Querformat erwartet).
+- Layout (seit DND-7): oben links der Theme-Button, darunter eine Karte mit zwei Zeilen à vier Ressourcen-Buttons:
+  Aktion · Bonusaktion · Bewegung · Spezial, darunter „Zauberplätze“ mit I–IV. Die Ressourcen sind Buttons und per
+  Tastatur bedienbar (Bewegung nicht).
+- Im Hochformat deckt ein „Handy drehen“-Overlay alles ab (Querformat erwartet), mit dem Hinweis „Bitte das Handy quer
+  halten“. Bis DND-7 hing es an der Breite (unter 650px).
 - State nur lokal (`useState`): nicht gespeichert, nicht mit Backend/Admin verbunden; Reload setzt zurück.
   Werte sind nicht pro Charakter konfigurierbar.
 

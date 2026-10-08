@@ -2,7 +2,7 @@ import { createGlobalStyle } from 'styled-components'
 
 import { textStyle } from './tokens'
 
-// Base rules per DESIGN.md 1.1. Applies to Admin, Wall and Ground, not to the Player:
+// Base rules per DESIGN.md 1.1. Applies to all four screens:
 // each screen renders it itself (it runs in its own window).
 const GlobalStyle = createGlobalStyle`
   *,

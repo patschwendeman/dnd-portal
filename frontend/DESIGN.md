@@ -1,12 +1,11 @@
 # Style Guide
 
-Stand: 2026-10-08 (Branch `development`). Verbindliche Gestaltungsregeln für das Frontend. Der Umbau folgt Screen
+Stand: 2026-10-08 (Branch `development`). Verbindliche Gestaltungsregeln für das Frontend. Der Umbau folgte Screen
 für Screen nach den Mappings. Umgesetzt sind die Grundlagen ([Architektur](#architektur)), der Admin Screen
-(DND-4), der Wall Screen (DND-5) und der Ground Screen (DND-6).
+(DND-4), der Wall Screen (DND-5), der Ground Screen (DND-6) und der Player Screen (DND-7).
 
-**Geltung:** alle vier Screens. Für den Player Screen sind die Regeln festgelegt (Entscheidungen P1–P7,
-[player-mapping.md](design/player-mapping.md)), der Umbau steht noch aus. Bis dahin weicht sein Code von diesem Guide
-ab. Was nur für den Player gilt, ist mit „(Player)“ markiert.
+**Geltung:** alle vier Screens, auch im Code. Für den Player Screen gelten zusätzlich die Entscheidungen P1–P7
+([player-mapping.md](design/player-mapping.md)). Was nur für den Player gilt, ist mit „(Player)“ markiert.
 
 **Quellen**
 
@@ -51,8 +50,8 @@ Dazu kommen:
   auf das Theme.
 - `style/GlobalStyle.ts` – `createGlobalStyle` für die Grundregeln aus [1.1](#11-grundsätze). Gilt für alle Screens
   (seit Entscheidung P3 auch für den Player). Er wird nicht in `App.tsx`, sondern als `<GlobalStyle />` im jeweiligen
-  Screen gerendert (jeder Screen läuft in einem eigenen Fenster). Eingebunden ist er in `AdminScreen`, `WallScreen`
-  und `GroundScreen`, `PlayerScreen` folgt mit dessen Umbau. `index.css` wird nicht importiert.
+  Screen gerendert (jeder Screen läuft in einem eigenen Fenster). Eingebunden ist er in `AdminScreen`, `WallScreen`,
+  `GroundScreen` und `PlayerScreen` (seit DND-7). `index.css` wird nicht importiert.
 - `style/tokens.ts` enthält außerdem den Helper `textStyle(stufe)`, der Schriftgröße und Zeilenhöhe einer
   `text.*`-Stufe gemeinsam setzt (K4). `text.<stufe>` ist ein Objekt `{ fontSize, lineHeight }`.
 
@@ -156,9 +155,9 @@ Ressourcen-Buttons sind mit 64px (`RESOURCE_HEIGHT`) größer.
 | `layer.dialog` | 40 | Dialog mit Abdunklung | 99999 (`Dialogue`, seit DND-4 `layer.dialog`) |
 
 Entfallen ersatzlos (seit DND-4), weil das Grid-Layout sie überflüssig macht: 99 und 999 an `AudioControlButton`,
-`AtmoButton`, `ThemeToggleButton`, 999 an `ButtonContainer` und `ConfirmButton` im Dialog. Ebenso (P6, mit dem
-Player-Umbau) 9 an `Overlay` und 1 an `Resource`/`SpellResource` im Player: Das Overlay steht im JSX zuletzt und ist
-das einzige positionierte Element.
+`AtmoButton`, `ThemeToggleButton`, 999 an `ButtonContainer` und `ConfirmButton` im Dialog. Ebenso (P6, seit DND-7)
+9 an `Overlay` und 1 an `Resource`/`SpellResource` im Player: Das Overlay steht im JSX zuletzt und ist das einzige
+positionierte Element.
 
 ### 1.3 Layout-Konstanten
 
@@ -346,6 +345,7 @@ die verwendende Komponente (z. B. `ScreenControlBar`).
 | Farbe | Fläche `resource.<art>.muted`, Zahl `text.color` |
 | Plätze | `SLOT_WIDTH` × `SLOT_HEIGHT` (8 × 24px), `radius.sm`, `gap` `space.1`. Verfügbar `resource.<art>.strong`, verbraucht `resource.empty` |
 | Icons | verfügbar `resource.<art>.strong`, verbraucht `resource.empty` |
+| Element | `<button type="button">` mit Reset (`padding`, `font: inherit`, `color: text.color`), per Tastatur bedienbar. Bewegung ist nicht antippbar: `<div>` (`as="div"`), `cursor: default` |
 | Beispiele | Aktion, Bonusaktion, Bewegung (nicht antippbar), Spezial, Zauberplätze I–IV |
 
 **Overlay-Panel** (Wall)
@@ -496,9 +496,9 @@ Werte aus `frontend/src/style/darkTheme.ts` und `tavernTheme.ts`. Geändert bzw.
 | `resource.special.strong` · `.muted` | `#ff2424` · `#290000` | gleich |
 | `resource.empty` | `#707070` | gleich |
 
-`resource.*` ist festgelegt (P4), aber noch nicht im Code: Bis zum Player-Umbau stehen die alten Werte fest in
-`ResourceBarPlayer` (Aktion `#077600`, Bonusaktion `#b23700`, leer `#232321`, Zahl `#9e998a`). Die Ressourcenfarben
-sind Bedeutung, nicht Stimmung, und deshalb in beiden Themes gleich.
+`resource.*` (P4) ist seit DND-7 im Code und ersetzt die früher festen Werte in `ResourceBarPlayer` (Aktion `#077600`,
+Bonusaktion `#b23700`, leer `#232321`, Zahl `#9e998a`). Die Ressourcenfarben sind Bedeutung, nicht Stimmung, und
+deshalb in beiden Themes gleich.
 
 `lightTheme` heißt seit DND-4 `tavernTheme` (Entscheidung O2): Es ist kein helles Theme, sondern ein dunkles in Braun
 und Rot. Die Umbenennung betraf `lightTheme.ts` und den Import in `App.tsx`. Der `localStorage`-Schlüssel `isDarkTheme`
@@ -522,7 +522,7 @@ Feste Farben im heutigen Code, die gegen [2.1](#21-prinzip) verstoßen. Die fest
 | Wo | Farbe | Vorschlag |
 |---|---|---|
 | `GroundScreen` → `gridColorMap` (Prop `gridColor` an `GridOverlay`) | `black`, `white`, `transparent` | bleibt. Die Gitterfarbe wählt der Spielleiter, sie ist eine Funktion, keine Gestaltung. |
-| `ResourceBarPlayer` | 12 Werte: je ein kräftiger und ein dunkler Ton für Aktion, Bonusaktion, Bewegung, Zauber und Spezial, dazu Grau für leer und Textgrau | Entschieden (P4, P7): Rollen `resource.<art>.strong` / `.muted` und `resource.empty` ([2.2](#22-rollen), [2.3](#23-themes)). Das Textgrau entfällt zugunsten von `text.color`. Umsetzung mit dem Player-Umbau. |
+| `ResourceBarPlayer` | 12 Werte: je ein kräftiger und ein dunkler Ton für Aktion, Bonusaktion, Bewegung, Zauber und Spezial, dazu Grau für leer und Textgrau | Entschieden (P4, P7): Rollen `resource.<art>.strong` / `.muted` und `resource.empty` ([2.2](#22-rollen), [2.3](#23-themes)). Das Textgrau entfällt zugunsten von `text.color`. Erledigt in DND-7. |
 
 
 ### 2.6 Kontrast
@@ -560,9 +560,9 @@ DND-4. Fett = verfehlt das Ziel.
   über der Grenze.
 - **`border` im Dark-Theme (O6):** Die Trennlinien sind Gestaltung, kein Bedienelement. WCAG verlangt 3:1 nur für die
   Grenzen von Bedienelementen. Kacheln sind trotzdem erkennbar, weil sie Bilder zeigen.
-- **Ressourcen (Player):** In den vier `resource`-Zeilen bedeutet „vor DND-4“ den heutigen Code, „aktuell“ die
-  Werte nach P4/P7, die mit dem Player-Umbau in den Code kommen. Berechnet am 2026-10-08. Die Spannen reichen über
-  alle fünf Ressourcen, `muted` und `empty` sind in beiden Themes gleich.
+- **Ressourcen (Player):** In den vier `resource`-Zeilen bedeutet „vor DND-4“ den Code vor DND-7, „aktuell“ die
+  Werte nach P4/P7, im Code seit DND-7. Berechnet am 2026-10-08 und mit DND-7 an den Theme-Werten nachgerechnet. Die
+  Spannen reichen über alle fünf Ressourcen, `muted` und `empty` sind in beiden Themes gleich.
 - Mit O5 erfüllen alle Text- und Bedien-Paare WCAG AA. Die neuen Werte sind seit DND-4 im Code. Seit DND-5 nutzt
   auch der aktive Button der Steuerleiste (Wall und Ground) `onPrimary`.
 
@@ -595,4 +595,4 @@ Player Screen (2026-10-08), Details in [player-mapping.md](design/player-mapping
 
 ## 4. Offen
 
-Keine offenen Lücken (Stand nach dem Player-Mapping, 2026-10-08). Offen ist nur die Umsetzung des Player Screens.
+Keine offenen Lücken. Alle vier Screens sind umgesetzt (Player Screen in DND-7, 2026-10-08).

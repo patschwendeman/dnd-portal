@@ -1,200 +1,106 @@
 import { FunctionComponent, ReactElement, useState } from 'react'
 import styled from 'styled-components'
 
+import { Label } from './Label'
+import { textStyle } from '../style/tokens'
 
 const ResourceBar = styled.div`
-  width: 100%;
-  background-color: ${(props) => props.theme.colors.secondary};
-  border-bottom: 2px solid ${(props) => props.theme.colors.border};
-  border-top: 2px solid ${(props) => props.theme.colors.border};
   display: flex;
-  align-items: center;
-  justify-content: space-evenly;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  @media (max-width: 649px) {
-    margin-bottom: 20px;
-  }
+  flex-direction: column;
+  gap: ${(props) => props.theme.space[4]};
+  padding: ${(props) => props.theme.space[5]};
+  border-radius: ${(props) => props.theme.radius.lg};
+  background-color: ${(props) => props.theme.colors.secondary};
+`
 
+const ResourceRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: ${(props) => props.theme.space[3]};
 `
 
 const ResourceBarSection = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: ${(props) => props.theme.space[3]};
+  min-width: 0;
 `
 
-const Text = styled.div`
-  width: 100%;
-  height: 25px;
+const RowLabel = styled(Label)`
+  grid-column: 1 / -1;
+`
+
+// Layout constants (DESIGN.md 1.3)
+const RESOURCE_HEIGHT = '64px'
+const SLOT_WIDTH = '8px'
+const SLOT_HEIGHT = '24px'
+
+type ResourceVariant = 'action' | 'bonus' | 'movement' | 'spell' | 'special'
+
+const Resource = styled.button<{ $variant: ResourceVariant }>`
+  height: ${RESOURCE_HEIGHT};
+  display: flex;
+  align-items: center;
+  justify-content: ${(props) => props.$variant === 'spell' ? 'space-between' : 'center'};
+  gap: ${(props) => props.theme.space[3]};
+  padding: ${(props) => props.$variant === 'spell' ? `0 ${props.theme.space[4]}` : '0'};
+  font: inherit;
+  ${textStyle('xl')}
+  font-weight: ${(props) => props.theme.fontWeight.semibold};
+  font-variant-numeric: tabular-nums;
+  color: ${(props) => props.theme.colors.text.color};
+  border: ${(props) => props.theme.borderWidth.thick} solid ${(props) => props.theme.colors.resource[props.$variant].strong};
+  border-radius: ${(props) => props.theme.radius.md};
+  background-color: ${(props) => props.theme.colors.resource[props.$variant].muted};
+  cursor: ${(props) => props.$variant === 'movement' ? 'default' : 'pointer'};
+`
+
+const Numeral = styled.span`
+  ${textStyle('lg')}
+  font-weight: ${(props) => props.theme.fontWeight.semibold};
+`
+
+const IconSection = styled.span`
+  width: ${(props) => props.theme.size.icon};
+  height: ${(props) => props.theme.size.icon};
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
-  margin-bottom: 5px;
-
-  @media (max-width: 739px) {
-    font-size: 10px !important;
-  }
-  @media (max-width: 649px) {
-      display: none;
-  }
+  gap: ${(props) => props.theme.space[1]};
+  flex: none;
 `
 
-const SpellResource = styled.div`
-  width: 80px;
-  height:40px;
-  border-radius: 100px;
+const ResourceIcon = styled.svg`
+  display: block;
+  width: ${(props) => props.theme.size.icon};
+  height: ${(props) => props.theme.size.icon};
+`
+
+const ActionIcon = styled.circle<{ $action: number }>`
+  fill: ${(props) => props.$action > 0 ? props.theme.colors.resource.action.strong : props.theme.colors.resource.empty};
+`
+
+const BonusIcon = styled.polygon<{ $bonusAction: number }>`
+  fill: ${(props) => props.$bonusAction > 0 ? props.theme.colors.resource.bonus.strong : props.theme.colors.resource.empty};
+`
+
+const MovementIcon = styled.span`
+  width: ${(props) => props.theme.space[2]};
+  height: ${(props) => props.theme.space[2]};
+  border-radius: ${(props) => props.theme.radius.pill};
+  background-color: ${(props) => props.theme.colors.resource.movement.strong};
+`
+
+const SlotGroup = styled.span`
   display: flex;
-  align-items: center;
-  justify-content: space-evenly;
-  text-align: center;
-  font-size: 30px;
-  color: #9e998a;
-  margin: 0 10px 0 10px;
-  border: 2px #2487ff solid;
-  background-color: #001229;
-  cursor: pointer;
-  z-index: 1;
-
-  @media (max-width: 739px) {
-    width: 70px;
-    height: 40px;
-    font-size: 25px;
-  }
-  @media (max-width: 649px) {
-      width: 40px;
-      height: 25px;
-      font-size: 15px;
-      margin: 0 2px 0 2px;
-  }
-  `
-
-const Resource = styled.div<{ $variant: 'action' | 'bonus' | 'movement' | 'special' }>`
-  width: 80px;
-  height: 40px;
-  border-radius: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: space-evenly;
-  text-align: center;
-  font-size: 22px;
-  color: #9e998a;
-  cursor: pointer;
-  z-index: 1;
-
-  @media (max-width: 739px) {
-    width: 70px;
-    height: 40px;
-    font-size: 25px;
-  }
-  @media (max-width: 649px) {
-      width: 40px;
-      height: 25px;
-      font-size: 15px;
-  }
-
-  ${(props) =>
-    props.$variant === 'action' &&
-    `
-    border: 2px #077600 solid;
-    background-color: #072900;
-  `}
-
-  ${(props) =>
-    props.$variant === 'bonus' &&
-    `
-    border: 2px #b23700 solid;
-    background-color: #290e00;
-  `}
-
-  ${(props) =>
-    props.$variant === 'movement' &&
-    `
-    border: 2px #fae100 solid;
-    background-color: #292500;
-  `}
-
-
-
-  ${(props) =>
-    props.$variant === 'special' &&
-    `
-    border: 2px #ff2424 solid;
-    background-color: #290000;
-  `}
+  gap: ${(props) => props.theme.space[1]};
 `
 
-const IconSection = styled.div`
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  @media (max-width: 649px) {
-      width: 15px;
-      height: 15px;
-  }
-`
-
-const ActionIcon = styled.div<{$action: number}>`
-  width: 100%;
-  height: 100%;
-  background-color:  ${(props) => props.$action > 0 ? '#077600' : '#232321'};
-  border-radius: 100px;
-`
-
-const BonusIcon = styled.div<{$bonusAction: number}>`
-  width: 0;
-  height: 0;
-  -webkit-transform: rotate(360deg);
-  border-style: solid;
-  border-width: 0 11px 19px 11px;
-  border-color: transparent transparent ${(props) => props.$bonusAction > 0 ? '#b23700' : '#232321'} transparent;
-
-  @media (max-width: 649px) {
-      border-width: 0 6px 11px 6px;
-  }
-`
-
-const MovementIcon = styled.div`
-  width: 100%;
-  height: 50%;
-  background-color: #fae100;
-  border-radius: 100px;
-  margin-left: 2px;
-`
-
-const Slot = styled.div<{$currentSlots: number, $id: number}>`
-  background-color:  ${(props) => props.$currentSlots < props.$id ? '#232321' : '#2487ff'};
-  height: 23px;
-  width: 10px;
-  @media (max-width: 739px) {
-    width: 7px;
-  }
-    @media (max-width: 649px) {
-      width: 3px;
-      height: 11px;
-    }
-`
-
-const SpecialSlot = styled.div<{ $currentSlots: number; $id: number }>`
-  background-color: ${(props) => props.$currentSlots < props.$id ? '#232321' : '#ff2424'};
-  height: 23px;
-  width: 10px;
-  @media (max-width: 739px) {
-    width: 7px;
-  }
-  @media (max-width: 649px) {
-      width: 3px;
-      height: 11px;
-    }
-`
-
-const FlexRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
+const Slot = styled.span<{ $variant: 'spell' | 'special'; $currentSlots: number; $id: number }>`
+  width: ${SLOT_WIDTH};
+  height: ${SLOT_HEIGHT};
+  border-radius: ${(props) => props.theme.radius.sm};
+  background-color: ${(props) => props.$currentSlots < props.$id ? props.theme.colors.resource.empty : props.theme.colors.resource[props.$variant].strong};
 `
 
 const ResourceBarPlayer: FunctionComponent = (): ReactElement => {
@@ -244,60 +150,68 @@ const ResourceBarPlayer: FunctionComponent = (): ReactElement => {
 
     return(
         <ResourceBar>
-      <ResourceBarSection>
-        <Text>Aktion</Text>
-        <Resource $variant='action' onClick={() => ActionHandler(action, setAction)}>
-          <IconSection>
-            <ActionIcon $action={action} />
-          </IconSection>
-          <p>{action}</p>
-        </Resource>
-      </ResourceBarSection>
+            <ResourceRow>
+                <ResourceBarSection>
+                    <Label>Aktion</Label>
+                    <Resource type='button' $variant='action' onClick={() => ActionHandler(action, setAction)}>
+                        <IconSection>
+                            <ResourceIcon viewBox='0 0 20 20'>
+                                <ActionIcon cx='10' cy='10' r='10' $action={action} />
+                            </ResourceIcon>
+                        </IconSection>
+                        <span>{action}</span>
+                    </Resource>
+                </ResourceBarSection>
 
-      <ResourceBarSection>
-        <Text>Bonusaktion</Text>
-        <Resource $variant='bonus' onClick={() => ActionHandler(bonusAction, setBonusAction)}>
-          <IconSection>
-            <BonusIcon $bonusAction={bonusAction} />
-          </IconSection>
-          <p>{bonusAction}</p>
-        </Resource>
-      </ResourceBarSection>
+                <ResourceBarSection>
+                    <Label>Bonusaktion</Label>
+                    <Resource type='button' $variant='bonus' onClick={() => ActionHandler(bonusAction, setBonusAction)}>
+                        <IconSection>
+                            <ResourceIcon viewBox='0 0 20 20'>
+                                <BonusIcon points='10,1 20,19 0,19' $bonusAction={bonusAction} />
+                            </ResourceIcon>
+                        </IconSection>
+                        <span>{bonusAction}</span>
+                    </Resource>
+                </ResourceBarSection>
 
-      <ResourceBarSection>
-        <Text>Bewegung</Text>
-        <Resource $variant='movement'>
-          <IconSection>
-            <MovementIcon />
-            <MovementIcon />
-          </IconSection>
-          <p>9.5</p>
-        </Resource>
-      </ResourceBarSection>
+                <ResourceBarSection>
+                    <Label>Bewegung</Label>
+                    <Resource as='div' $variant='movement'>
+                        <IconSection>
+                            <MovementIcon />
+                            <MovementIcon />
+                        </IconSection>
+                        <span>9.5</span>
+                    </Resource>
+                </ResourceBarSection>
 
-      <ResourceBarSection>
-        <Text>Zauberplätze</Text>
-        <FlexRow>
-        {spellData.map(({ spell, setSpell, tier, name }) => (
-              <SpellResource key={tier} onClick={() => SpellHandler(spell, setSpell, SpellMax[tier])}>
-                <p>{name}</p>
-                {[...Array(SpellMax[tier])].map((_, i) => (
-                  <Slot key={i} $currentSlots={spell} $id={i+1} />
+                <ResourceBarSection>
+                    <Label>Spezial</Label>
+                    <Resource type='button' $variant='special' onClick={() => SpellHandler(special, setSpecial, specialMax)}>
+                        <SlotGroup>
+                            {[...Array(3)].map((_, i) => (
+                                <Slot key={i} $variant='special' $currentSlots={special} $id={i+1} />
+                            ))}
+                        </SlotGroup>
+                    </Resource>
+                </ResourceBarSection>
+            </ResourceRow>
+
+            <ResourceRow>
+                <RowLabel>Zauberplätze</RowLabel>
+                {spellData.map(({ spell, setSpell, tier, name }) => (
+                    <Resource type='button' $variant='spell' key={tier} onClick={() => SpellHandler(spell, setSpell, SpellMax[tier])}>
+                        <Numeral>{name}</Numeral>
+                        <SlotGroup>
+                            {[...Array(SpellMax[tier])].map((_, i) => (
+                                <Slot key={i} $variant='spell' $currentSlots={spell} $id={i+1} />
+                            ))}
+                        </SlotGroup>
+                    </Resource>
                 ))}
-              </SpellResource>
-            ))}
-          </FlexRow>
-      </ResourceBarSection>
-
-      <ResourceBarSection>
-        <Text>Spezial</Text>
-        <Resource $variant='special' onClick={() => SpellHandler(special, setSpecial, specialMax)}>
-          {[...Array(3)].map((_, i) => (
-            <SpecialSlot key={i} $currentSlots={special} $id={i+1}  />
-          ))}
-        </Resource>
-      </ResourceBarSection>
-    </ResourceBar>
+            </ResourceRow>
+        </ResourceBar>
     )
 }
 

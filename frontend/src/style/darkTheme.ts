@@ -14,5 +14,13 @@ export const darkTheme = {
       background: '#5a5a5a',
       text: '#ffffff',
     },
+    resource: {
+      action: { strong: '#099000', muted: '#072900' },
+      bonus: { strong: '#db4400', muted: '#290e00' },
+      movement: { strong: '#fae100', muted: '#292500' },
+      spell: { strong: '#2487ff', muted: '#001229' },
+      special: { strong: '#ff2424', muted: '#290000' },
+      empty: '#707070',
+    },
   },
 }
