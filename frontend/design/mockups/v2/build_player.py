@@ -46,9 +46,10 @@ body { font-family: var(--font); font-size: 16px; line-height: 24px; background:
   -webkit-font-smoothing: antialiased; user-select: none; }
 svg { width: 100%; height: 100%; fill: var(--text); }
 
-.screen { height: 100%; display: grid; grid-template-columns: var(--control-md) 1fr; gap: var(--space-4);
-  padding: var(--space-4) var(--edge); align-items: center; }
-.rail { align-self: start; }
+.screen { height: 100%; display: flex; flex-direction: column; justify-content: center; gap: var(--space-4);
+  padding: var(--space-4) var(--edge); }
+/* Kopfleiste: transparent, gleiche Breite wie die Karte, Settings-Button links bündig mit der Karte */
+.headbar { height: var(--control-md); display: flex; align-items: center; justify-content: flex-start; }
 .icon-btn { width: var(--control-md); height: var(--control-md); display: grid; place-items: center; border: none;
   border-radius: var(--radius-md); background: var(--secondary); color: var(--text); }
 .icon-btn svg { width: var(--icon); height: var(--icon); }
@@ -103,7 +104,7 @@ html = f"""<!doctype html><html lang="de"><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>{CSS}</style></head><body>
 <div class="screen">
-  <div class="rail"><button class="icon-btn">{icon('settings')}</button></div>
+  <header class="headbar"><button class="icon-btn">{icon('settings')}</button></header>
   <div class="card">
     <div class="row">
       <div class="cell"><span class="label">Aktion</span>
