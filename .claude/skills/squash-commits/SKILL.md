@@ -13,6 +13,9 @@ Auftrag: $ARGUMENTS
 - **Rest (optional):** Die Commit-Nachricht. Entweder nur die Kopfzeile oder komplett mit Stichpunkten.
   Fehlt sie, wird sie aus den Commits im Bereich vorgeschlagen.
 
+**Task-Status bleibt unverändert.** Dieser Skill fasst nur Historie zusammen: kein Ändern von `**Status:**` in
+`docs/tasks/DND-<n>-*.md` oder `docs/tasks/README.md`, auch nicht im Anschluss anbieten.
+
 ## Nachrichtenformat
 
 ```
@@ -58,3 +61,4 @@ Auftrag: $ARGUMENTS
    - Nicht pushen. Liegt der Bereich schon auf dem Remote, fragen, ob per `git push --force-with-lease` veröffentlicht
      werden soll. Erst nach ausdrücklichem Ja ausführen.
      Niemals auf `main`.
+   - Keine Frage nach Task-Status (z. B. `Fertig`) stellen.
