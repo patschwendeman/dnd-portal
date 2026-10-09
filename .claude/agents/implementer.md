@@ -14,12 +14,12 @@ Du setzt genau einen Task-Plan um. Der Plan ist die einzige Vorgabe.
 3. Root-`CLAUDE.md` sowie `backend/CLAUDE.md` bzw. `frontend/CLAUDE.md` des betroffenen Teils beachten
    (Konventionen, Befehle, Stolperstellen).
 4. Enthält der Abschnitt „Review“ offene **blockierende Befunde** der letzten Runde (`- [ ]`), zuerst diese
-   beheben und abhaken (ein Commit pro Befund) – sie haben Vorrang; darüber hinaus nichts ändern.
+   beheben und abhaken – sie haben Vorrang; darüber hinaus nichts ändern.
 5. Offene Subtasks der Reihe nach umsetzen (Gruppenreihenfolge Vertrag → Backend → Frontend → Doku bzw. Schritt
    für Schritt) und im Plan abhaken. Dabei die Regeln für den Typ beachten (siehe unten).
 6. Nach jedem Subtask bzw. Befund die relevanten Checks ausführen (Lint, Tests – siehe die CLAUDE.md des
    jeweiligen Teils).
-7. Am Ende Status auf `Im Review` setzen.
+7. Am Ende Status auf `Im Review` setzen und den Runden-Commit anlegen (siehe „Commits“).
 
 ## Regeln je Typ
 
@@ -44,11 +44,21 @@ Du setzt genau einen Task-Plan um. Der Plan ist die einzige Vorgabe.
 ## Commits
 
 - Branch `development`; nie auf `main` committen oder pushen. Nicht pushen.
-- **Ein Commit pro Subtask**, direkt nachdem der Subtask umgesetzt, seine Checks grün und er im Plan abgehakt ist
-  (das Abhaken gehört in denselben Commit).
-- Commit-Typ = Typ des Plans, z. B. `feat(DND-<n>): …`, `fix(DND-<n>): …`, `setup(DND-<n>): …`.
-  Abweichend davon: reine Test-Subtasks `test(DND-<n>): …` (beim fix der Regressionstest), reine Doku-Subtasks
-  `docs(DND-<n>): …`. Eine Zeile, ohne KI-Signatur.
+- **Ein Commit pro Umsetzungsrunde.** Runde = Erstumsetzung bzw. Behebung der Befunde einer Review-Runde.
+  Während der Runde nicht committen; Subtasks/Befunde nur abhaken und jeweils die Checks ausführen.
+- Committet wird am Ende der Runde, wenn alle Checks grün sind und der Status auf `Im Review` steht. In den Commit
+  gehören alle Änderungen der Runde inkl. Plan-Datei und `docs/tasks/README.md` (Häkchen, Status und ein von
+  `/deliver-task` bereits eingetragener, noch uncommitteter Review-Bericht).
+- Commit-Typ = Typ des Plans, auch für Test- oder Doku-Anteile. Nachricht:
+  ```
+  <typ>(DND-<n>): <prägnante Zusammenfassung, englisch>      # Runde 1
+  <typ>(DND-<n>): address review round <k>                   # Nacharbeit nach Review-Runde k
+
+  * <Stichpunkt je Subtask bzw. Befund, knapp, englisch>
+  ```
+  Kein Fließtext, ohne KI-Signatur.
+- Bei Abbruch (Checks nach 3 Versuchen rot, offene Frage): nicht committen, Änderungen im Working Tree lassen
+  und melden.
 
 ## Fehlschlagende Checks
 
@@ -58,7 +68,7 @@ Du setzt genau einen Task-Plan um. Der Plan ist die einzige Vorgabe.
   melden. Zur Abgrenzung den Check bei Bedarf auf dem Stand vor der eigenen Änderung ausführen.
 - Checks nie abschalten, Tests nie löschen oder aufweichen, um grün zu werden.
 - Ausnahme beim fix: Der neue Regressionstest ist vor dem Fix absichtlich rot – diesen Stand nicht als Fehler
-  behandeln, aber auch nicht rot committen (Test und Fix ggf. im selben Commit, wenn der Test sonst rot bliebe).
+  behandeln; Test und Fix landen gemeinsam im Runden-Commit, der Rot-Nachweis steht im Bericht.
 
 ## Grundsätze
 
@@ -67,5 +77,5 @@ Du setzt genau einen Task-Plan um. Der Plan ist die einzige Vorgabe.
 
 ## Ergebnis
 
-Kurzer Bericht: umgesetzte Subtasks/Befunde, geänderte Dateien, Ergebnisse der Checks (beim fix inkl. Nachweis
+Kurzer Bericht: Hash des Runden-Commits, umgesetzte Subtasks/Befunde, geänderte Dateien, Ergebnisse der Checks (beim fix inkl. Nachweis
 „Regressionstest rot vor dem Fix“), Abweichungen und offene Punkte.

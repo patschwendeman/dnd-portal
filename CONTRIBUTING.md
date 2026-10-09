@@ -28,7 +28,8 @@ Größere Änderungen laufen als **Task** mit versioniertem Plan:
    `docs/tasks/README.md`.
 2. Plan freigeben.
 3. `/deliver-task DND-<n>` – Umsetzung (Subagent `implementer`) und Review (Subagent `reviewer`) im Wechsel;
-   Review-Berichte landen im Plan. Abschluss („Fertig“) nach Freigabe.
+   Review-Berichte landen im Plan. Abschluss („Fertig“) nach Freigabe. Pro Umsetzungsrunde (Erstumsetzung bzw.
+   Nacharbeit nach einer Review-Runde) entsteht genau ein Commit, Subtasks stehen als Stichpunkte im Body.
 
 | Typ (= Commit-Typ) | Wann | Besonderheit im Plan |
 |---|---|---|
@@ -77,7 +78,7 @@ Jede Commit-Nachricht muss diesem Schema entsprechen:
 | `setup` | Projekt-, Build-, CI- oder Tooling-Konfiguration |
 
 - Der Scope in Klammern ist optional und enthält einen Ticket-Key, z. B. `(DND-12)`.
-- Eine prägnante Zeile; Fließtext im Body vermeiden.
+- Eine prägnante Kopfzeile; im Body höchstens Stichpunkte (`* …`), kein Fließtext.
 - Keine Signaturen von KI-Tools: keine `Co-Authored-By`-Zeile für Claude/Anthropic, kein „Generated with Claude Code“.
 
 Beispiele:

@@ -10,13 +10,16 @@ Du prüfst die Umsetzung eines Tasks. Du änderst keinen Code.
 
 1. Plan-Datei lesen (Typ, Ziel, Scope, Entscheidungen, Subtasks, Akzeptanzkriterien; beim fix Fehlerbild und
    Ursache, beim refactor Invarianten).
-2. Zugehörige Änderungen ermitteln, z. B. per `git log --oneline --grep "DND-<n>"` und `git diff`.
+2. Zugehörige Änderungen ermitteln: ein Commit je Umsetzungsrunde (`git log --oneline --grep "DND-<n>"`),
+   Gesamtdiff ab dem Commit `docs(DND-<n>): approve plan`. Der Arbeitsbaum kann einen uncommitteten
+   Review-Bericht im Plan enthalten – das ist erwartet.
 3. Jedes Akzeptanzkriterium einzeln prüfen: erfüllt / nicht erfüllt / nicht prüfbar – jeweils mit Beleg
    (Datei:Zeile, Testausgabe).
 4. Typspezifisch prüfen (siehe unten).
 5. Prüfen, ob alle Subtasks erledigt sind und nichts außerhalb des Scopes geändert wurde.
 6. Lint und Tests des betroffenen Teils ausführen (siehe `backend/CLAUDE.md` bzw. `frontend/CLAUDE.md`).
-7. Konventionen prüfen: Root-`CLAUDE.md`, Commit-Schema und Commit-Typ passend zum Plan, keine KI-Signaturen.
+7. Konventionen prüfen: Root-`CLAUDE.md`, ein Commit je Umsetzungsrunde, Commit-Schema und Commit-Typ passend
+   zum Plan, Body nur Stichpunkte, keine KI-Signaturen.
 
 ## Typspezifische Prüfung
 
@@ -24,9 +27,10 @@ Du prüfst die Umsetzung eines Tasks. Du änderst keinen Code.
 - **fix:**
   - Ein Regressionstest existiert und bildet die Reproduktion aus dem Plan ab.
   - Nachweis, dass er ohne den Fix fehlschlägt: Nachweis im Bericht des Implementers prüfen; bei Zweifel selbst
-    verifizieren, indem der Test auf dem Stand vor dem Fix in einem temporären Worktree außerhalb des Repos
-    ausgeführt wird (`git worktree add <tmp> <commit-vor-fix>`, danach `git worktree remove`). Das Arbeitsverzeichnis
-    des Repos nicht verändern.
+    verifizieren: Da Test und Fix im selben Runden-Commit liegen, einen temporären Worktree außerhalb des Repos
+    auf den Elternstand des ersten Runden-Commits anlegen (`git worktree add <tmp> <runden-commit>^`), nur die
+    Testdateien hineinholen (`git -C <tmp> checkout <runden-commit> -- <testdateien>`), Test ausführen, danach
+    `git worktree remove`. Das Arbeitsverzeichnis des Repos nicht verändern.
   - Die genannte Ursache ist behoben, nicht nur das Symptom überdeckt.
 - **refactor, style, chore:**
   - Diff gezielt auf Verhaltensänderungen prüfen (geänderte Logik, Bedingungen, Rückgabewerte, API-Responses, Routen).

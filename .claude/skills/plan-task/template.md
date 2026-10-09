@@ -59,7 +59,7 @@ Eine geklärte offene Frage wird hier (oder als Akzeptanzkriterium) festgehalten
 ## Subtasks
 <!--
 Gruppen in Umsetzungsreihenfolge. Nicht betroffene Gruppen weglassen.
-Subtasks bekommen keine eigenen Keys – Commits laufen auf DND-<n>.
+Subtasks bekommen keine eigenen Keys und keine eigenen Commits – ein Commit je Umsetzungsrunde auf DND-<n>.
 Große Tasks: in vertikale Schritte schneiden ("### Schritt 1: …"), jeder Schritt durchgehend
 lauffähig (Backend bis UI); darin dieselben Gruppen als "####".
 fix: erster Subtask ist die Ursachenermittlung (falls unbekannt), danach der Regressionstest.

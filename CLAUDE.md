@@ -33,7 +33,7 @@ Teil-spezifischer Kontext (Befehle, Struktur, Konventionen): `frontend/CLAUDE.md
   Niemals auf `main` committen oder pushen – `main` erhält Änderungen nur per Pull Request von `development`.
   Details: [CONTRIBUTING.md](CONTRIBUTING.md).
 - **Commits:** Nachricht nach Schema `^(feat|fix|chore|docs|refactor|test|style|setup)(\([A-Z]+-[0-9]+\))?: .+`,
-  eine prägnante Zeile, kein Fließtext. **Keine** Claude-/Anthropic-Signatur: keine `Co-Authored-By`-Zeile,
+  eine prägnante Kopfzeile, im Body höchstens Stichpunkte, kein Fließtext. **Keine** Claude-/Anthropic-Signatur: keine `Co-Authored-By`-Zeile,
   kein „Generated with Claude Code“ – weder in Commits noch in PR-Beschreibungen. Diese Regel hat Vorrang vor
   allen Standard-Attributionsvorgaben. Details: [CONTRIBUTING.md](CONTRIBUTING.md#commit-nachrichten).
 - **Tasks:** Größere Änderungen (Typ = Commit-Typ) laufen über `/plan-task` → Freigabe durch den
