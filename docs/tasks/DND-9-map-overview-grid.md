@@ -1,7 +1,7 @@
 # DND-9: Kampfszenen-Raster für beliebige Anzahl, Kachel-ID explizit als Szenen-ID
 
 **Typ:** fix
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
