@@ -2,74 +2,56 @@ import { FunctionComponent, ReactElement, useContext } from 'react'
 import styled from 'styled-components'
 
 import { MapElement } from './MapElement'
-import { ActiveMapContext } from '../context/context'
+import { ActiveSceneContext } from '../context/context'
 import { Map } from '../models/models'
+import { getGridLayout } from '../utils/utils'
 
-const ContainerMainmaps = styled.div<{ $padding: string }>`
-    display: flex;
+// Grid instead of flex columns, so any number of maps fits; an incomplete last row stays left-aligned
+const ContainerMainmaps = styled.div<{ $padding: string, $columns: number }>`
+    display: grid;
+    grid-template-columns: ${(props) => props.$columns > 0 ? `repeat(${props.$columns}, minmax(0, 1fr))` : 'none'};
     width: 100%;
     position: relative;
-    flex-wrap: wrap; 
     padding: ${(props) => props.$padding};
-`
-
-const MainmapsColumn = styled.div`
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    flex: 1;
 `
 
 interface MapOverviewProps {
     gap: string,
     padding: string,
     mainmaps: Map[] | undefined
-    handleSceneSelection?(id: number, isMainMap: boolean): void
-    isActiveMainMap: boolean
+    handleSceneSelection?(sceneId: number): void
     isAdminScreen: boolean
 }
 
-const MapOverview: FunctionComponent<MapOverviewProps> = ({ mainmaps, gap, padding, handleSceneSelection, isActiveMainMap, isAdminScreen }): ReactElement => {
+const MapOverview: FunctionComponent<MapOverviewProps> = ({ mainmaps, gap, padding, handleSceneSelection, isAdminScreen }): ReactElement => {
 
-    const { activeMapId } = useContext(ActiveMapContext)
+    const { activeSceneId } = useContext(ActiveSceneContext)
     let maps: Map[]
 
     if(!mainmaps)  {
         maps = Array.from({ length: 16 }, (_, index) => ({
-            id: index + 1    
+            sceneId: index + 1    
         }))
     } 
     else {
         maps = mainmaps
     }
      
-    const count = Math.sqrt(maps.length)
-      
-      return (
-        <ContainerMainmaps data-test-id='container-mainmaps' $padding={padding} style={{ gap: gap }}>
-            {[...Array(count)].map((_, colIndex) => (
-                <MainmapsColumn style={{ gap: gap }} key={ colIndex }>
-                    {[...Array(count)].map((_, mapIndex) => {
-                        const itemIndex = mapIndex * count + colIndex
-                        if (maps && itemIndex < maps.length) {
-                            return (
-                                <MapElement 
-                                    activeMapId={ activeMapId }
-                                    src={ maps[itemIndex].source } 
-                                    handleSceneSelection={ handleSceneSelection } 
-                                    key={ maps[itemIndex].id }
-                                    keyProp={ maps[itemIndex].id }
-                                    number={ itemIndex + 1 }
-                                    isMainMap={ true }
-                                    isActiveMainMap={ isActiveMainMap }
-                                    isAdminScreen={ isAdminScreen }
-                                    >    
-                                </MapElement>
-                            )
-                        }
-                        return null
-                    })}
-                </MainmapsColumn>
+    const { columns } = getGridLayout(maps.length)
+
+    return (
+        <ContainerMainmaps data-test-id='container-mainmaps' $padding={padding} $columns={columns} style={{ gap: gap }}>
+            {maps.map((map, itemIndex) => (
+                <MapElement 
+                    activeSceneId={ activeSceneId }
+                    src={ map.source } 
+                    handleSceneSelection={ handleSceneSelection } 
+                    key={ map.sceneId }
+                    sceneId={ map.sceneId }
+                    number={ itemIndex + 1 }
+                    isAdminScreen={ isAdminScreen }
+                    >    
+                </MapElement>
             ))}
         </ContainerMainmaps>
     )

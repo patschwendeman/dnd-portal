@@ -5,7 +5,7 @@
  ┌──────────┐  ┌──────────┐  ┌──────────┐                            ┌──────────┐
  │ /admin   │  │ /wall    │  │ /ground  │                            │ /        │ × n
  └────┬─────┘  └────┬─────┘  └────┬─────┘                            └──────────┘
-      │  localStorage + "storage"-Event (activeSceneId, activeMapId, isDarkTheme)   (keine Anbindung)
+      │  localStorage + "storage"-Event (activeSceneId, isDarkTheme)                (keine Anbindung)
       └─────────────┴─────────────┘
                     │ HTTP GET (axios, http://localhost:8000)
             ┌───────▼────────┐         ┌──────────────┐
@@ -62,7 +62,8 @@ IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement).
 
 - React 18, Vite 5, TypeScript 5 (strict), react-router-dom 6, styled-components 6 (Haupt-Styling, zwei Themes),
   MUI nur für `Box`/`Slider`, axios, react-markdown, react-svg.
-- State: React-State + zwei Contexts (`ActiveSceneContext`, `ActiveMapContext`) + `localStorage`. Kein Store-Framework.
+- State: React-State + ein Context (`ActiveSceneContext`) + `localStorage`. Kein Store-Framework. Die aktive Kachel in
+  den Kartenübersichten ergibt sich aus `activeSceneId` (Kachel-ID = Szenen-ID, im Frontend `Map.sceneId`).
 - Struktur: `src/app` (Routing, globaler State), `src/screens` (Screens), `src/components`, `src/service` (Datenladen je Screen),
   `src/api` (axios-Client, Base-URL fest `http://localhost:8000/`, Timeout 1000 ms), `src/models`, `src/utils` (Audio, Filter),
   `src/style` (Themes), `src/context`.

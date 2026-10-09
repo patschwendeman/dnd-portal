@@ -107,7 +107,7 @@ Szenenbild.
 |---|---|
 | Format | nach [1.4](../../DESIGN.md#14-regeln) Bilder |
 | Rand | nach [1.4](../../DESIGN.md#14-regeln) Rahmen und Bilder, `outline-offset` 0. Aktiv ersetzt ihn die Aktiv-Outline ([1.4](../../DESIGN.md#14-regeln) Aktiv-Zustand) |
-| Raster | 5 Spalten, zeilenweise sortiert. Abstand nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“ |
+| Raster | quadratnah, Spaltenzahl aus `getGridLayout` (`⌈√n⌉`, bei 25 Kacheln 5), zeilenweise sortiert. Abstand nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“ |
 
 ## Nummern-Badge
 

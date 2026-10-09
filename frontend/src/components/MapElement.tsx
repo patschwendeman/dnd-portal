@@ -4,13 +4,11 @@ import styled from 'styled-components'
 import { textStyle } from '../style/tokens'
 
 interface MapElementProps {
-    activeMapId: number,
+    activeSceneId: number,
     src?: string,
-    handleSceneSelection?(id: number, isMainMap: boolean): void, 
-    keyProp?: number,
+    handleSceneSelection?(sceneId: number): void, 
+    sceneId: number,
     number?: number,
-    isMainMap: boolean,
-    isActiveMainMap: boolean,
     isAdminScreen: boolean
 }
 
@@ -69,13 +67,14 @@ const NumberIcon = styled.div`
     font-variant-numeric: tabular-nums;
 `
 
-const MapElement: FunctionComponent<MapElementProps> = ({ activeMapId, src, handleSceneSelection, keyProp, number, isMainMap, isActiveMainMap, isAdminScreen }): ReactElement => {
+const MapElement: FunctionComponent<MapElementProps> = ({ activeSceneId, src, handleSceneSelection, sceneId, number, isAdminScreen }): ReactElement => {
     const handleClick = () => {
-        if (keyProp !== undefined && handleSceneSelection) {
-            handleSceneSelection(keyProp, isMainMap)
+        if (handleSceneSelection) {
+            handleSceneSelection(sceneId)
         }
     }
-    const isActive = keyProp === activeMapId && isMainMap === isActiveMainMap
+    // Scene ids are unique across battle and non-battle scenes, so the id alone identifies the active tile
+    const isActive = sceneId === activeSceneId
 
     return (
         <MapContainer data-test-id={src} $isActive={isActive} $isAdminScreen={isAdminScreen} onClick={handleClick}>

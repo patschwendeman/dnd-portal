@@ -1,7 +1,7 @@
 # DND-9: Kampfszenen-Raster für beliebige Anzahl, Kachel-ID explizit als Szenen-ID
 
 **Typ:** fix
-**Status:** Freigegeben
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -84,14 +84,14 @@ Ziel: Raster funktioniert für jede Anzahl, die Zuordnung Kachel → Szene ist i
 ### Schritt 1: Raster für beliebige Anzahl (`fix(DND-9): …`)
 
 #### Frontend
-- [ ] Reine Funktion für die Rasterberechnung (z. B. `getGridLayout(count): { columns, rows }` in
+- [x] Reine Funktion für die Rasterberechnung (z. B. `getGridLayout(count): { columns, rows }` in
       `src/utils/utils.ts`), Verhalten nach E1, `count = 0` → `{ columns: 0, rows: 0 }`.
-- [ ] Regressionstest in `frontend/__tests__/unit/` (vitest): 0, 1, 15, 16, 24, 25, 26 → erwartete Spalten/Zeilen.
+- [x] Regressionstest in `frontend/__tests__/unit/` (vitest): 0, 1, 15, 16, 24, 25, 26 → erwartete Spalten/Zeilen.
       Vor dem Fix rot (Funktion fehlt bzw. die alte Berechnung liefert für 15/24 keine ganze Zahl), danach grün.
-- [ ] `MapOverview` auf CSS-Grid mit `columns` aus der Funktion umstellen; Spalten-Container `MainmapsColumn`
+- [x] `MapOverview` auf CSS-Grid mit `columns` aus der Funktion umstellen; Spalten-Container `MainmapsColumn`
       entfällt. Reihenfolge zeilenweise, Raumnummer = Position + 1 (wie heute). Gap/Padding-Props bleiben wirksam.
       Bei 0 Karten: leerer Container, kein Fehler.
-- [ ] `WallScreen`: `GRID_GAP_COUNT` ersetzen; die Breite des Overlay-Panels aus `columns`/`rows` der aktuellen
+- [x] `WallScreen`: `GRID_GAP_COUNT` ersetzen; die Breite des Overlay-Panels aus `columns`/`rows` der aktuellen
       `mainmaps` berechnen. Allgemeine Formel (Tile 16:9, Gap `g = space.3`, verfügbare Rasterhöhe `H` wie heute
       ohne den Gap-Abzug):
       `Breite = (H − (rows − 1)·g) · 16/9 · columns/rows + (columns − 1)·g + 2·space.6`.
@@ -99,34 +99,34 @@ Ziel: Raster funktioniert für jede Anzahl, die Zuordnung Kachel → Szene ist i
       dass kein ungültiges `calc()` entsteht.
 
 #### Doku
-- [ ] `frontend/docs/design/screen-layouts.md`, Abschnitt „Breite des Overlay-Panels“: allgemeine Formel statt
+- [x] `frontend/docs/design/screen-layouts.md`, Abschnitt „Breite des Overlay-Panels“: allgemeine Formel statt
       5 × 5 / `GRID_GAP_COUNT`.
-- [ ] `docs/screens.md` (Admin „Szenenauswahl“, Wall „BATTLE“): Raster mit `ceil(√n)` Spalten.
-- [ ] `docs/known-issues.md`: Eintrag „`MapOverview` nutzt `Math.sqrt` …“ entfernen.
-- [ ] `frontend/CLAUDE.md:91`: Hinweis auf quadratische Anzahl entfernen bzw. anpassen.
+- [x] `docs/screens.md` (Admin „Szenenauswahl“, Wall „BATTLE“): Raster mit `ceil(√n)` Spalten.
+- [x] `docs/known-issues.md`: Eintrag „`MapOverview` nutzt `Math.sqrt` …“ entfernen.
+- [x] `frontend/CLAUDE.md:91`: Hinweis auf quadratische Anzahl entfernen bzw. anpassen.
 
 ### Schritt 2: Kachel-ID = Szenen-ID explizit, `ActiveMapContext` entfernen (`refactor`-Anteil, Commit `fix(DND-9): …`)
 
 #### Frontend
-- [ ] `src/models/models.ts`: Kachel-Typ so anpassen, dass die ID als Szenen-ID erkennbar ist (z. B. Feld `sceneId`
+- [x] `src/models/models.ts`: Kachel-Typ so anpassen, dass die ID als Szenen-ID erkennbar ist (z. B. Feld `sceneId`
       mit Mapping in den Services `adminScreen.ts`/`WallScreen.ts`, oder Kommentar + Umbenennung des Interfaces);
       API-Response unverändert.
-- [ ] `MapElement`: `keyProp` → `sceneId`; Aktiv-Prüfung `sceneId === activeSceneId`; `isMainMap`/`isActiveMainMap`
+- [x] `MapElement`: `keyProp` → `sceneId`; Aktiv-Prüfung `sceneId === activeSceneId`; `isMainMap`/`isActiveMainMap`
       entfernen, `activeMapId`-Prop durch `activeSceneId` (aus Context in `MapOverview`/`SideMaps` oder direkt)
       ersetzen. `handleSceneSelection(sceneId)` ohne zweiten Parameter.
-- [ ] `MapOverview`, `SideMaps`: auf `ActiveSceneContext` umstellen, Props `isActiveMainMap` entfernen; Aufrufer
+- [x] `MapOverview`, `SideMaps`: auf `ActiveSceneContext` umstellen, Props `isActiveMainMap` entfernen; Aufrufer
       in `AdminScreen`/`WallScreen` anpassen.
-- [ ] `AdminScreen`: `handleSceneSelection(sceneId)`, `setActiveMapId`-Aufruf und Context-Import entfernen.
-- [ ] `App.tsx`: State `activeMapId`, localStorage-Effect, `storage`-Zweig und Provider entfernen.
-- [ ] `src/context/context.ts`: `ActiveMapContext` und Typ entfernen.
-- [ ] Prüfen, ob `isActiveMainMap`/`isMainMap` in `AdminScreen`/`WallScreen` danach noch für anderes gebraucht
+- [x] `AdminScreen`: `handleSceneSelection(sceneId)`, `setActiveMapId`-Aufruf und Context-Import entfernen.
+- [x] `App.tsx`: State `activeMapId`, localStorage-Effect, `storage`-Zweig und Provider entfernen.
+- [x] `src/context/context.ts`: `ActiveMapContext` und Typ entfernen.
+- [x] Prüfen, ob `isActiveMainMap`/`isMainMap` in `AdminScreen`/`WallScreen` danach noch für anderes gebraucht
       werden (z. B. Wall-Overlay-Umschaltung) – dort unverändert lassen.
 
 #### Doku
-- [ ] `docs/architecture.md` (Diagramm Z. 8, State Z. 65): `activeMapId`/`ActiveMapContext` entfernen.
-- [ ] `frontend/CLAUDE.md` (Z. 52–53, 91): `activeMapId`/`ActiveMapContext` entfernen; Hinweis, dass Kacheln die
+- [x] `docs/architecture.md` (Diagramm Z. 8, State Z. 65): `activeMapId`/`ActiveMapContext` entfernen.
+- [x] `frontend/CLAUDE.md` (Z. 52–53, 91): `activeMapId`/`ActiveMapContext` entfernen; Hinweis, dass Kacheln die
       Szenen-ID tragen (Backend `/maps/*` liefert `id = scene.id`).
-- [ ] `docs/known-issues.md`: Eintrag „Map-Kachel-ID = Szenen-ID wird implizit vorausgesetzt“ entfernen.
+- [x] `docs/known-issues.md`: Eintrag „Map-Kachel-ID = Szenen-ID wird implizit vorausgesetzt“ entfernen.
 
 ## Akzeptanzkriterien
 
@@ -169,6 +169,34 @@ Ziel: Raster funktioniert für jede Anzahl, die Zuordnung Kachel → Szene ist i
    danach Seed zurücksetzen. Alternativ im Browser die Response von `maps/main/` kürzen (DevTools-Override).
 
 ## Offene Fragen
-- keine
+- Geklärt: Wall-Panel „WORLD“ bei `rows < columns` (26–30, 37–42 … Kampfszenen) kann über die Steuerleiste reichen,
+  weil es dieselbe Breite wie „BATTLE“ nutzt. Entscheidung User: eigener Task, nicht Teil von DND-9.
+- Geklärt: `frontend/docs/design/components.md` (Kachel-Raster „5 Spalten“) und `frontend/CLAUDE.md`
+  (models.ts-Aussage) werden in DND-9 nachgezogen (Entscheidung User) – erledigt.
 
 ## Review
+
+### Runde 1 – 2026-10-09
+**Empfehlung:** Abnahme
+
+Geprüft: Commits `29efd1e..6f95ec7` auf `development` (7 × `fix(DND-9)`, 11 × `docs(DND-9)`), zusätzlich
+headless-Browser-Lauf (Selenium/Chrome) gegen den Docker-Stack; für AK1 wurde die Antwort von `maps/main` per
+CDP-XHR-Patch auf 24 Einträge gekürzt, DB und Seed unverändert.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | Browser mit 24 Kampfszenen: Admin und Wall je 24 Kacheln in 5 × 5, zeilenweise, Nummern 1–24, letzte Zeile 4 Kacheln linksbündig, Konsole leer. Wall-Panel über der Steuerleiste: Unterkante 832,95 ≤ 833 px (1920×1080), 552,95 ≤ 553 (1280×800), 962,95 ≤ 1193 (2560×1440). Code: `MapOverview.tsx` (CSS-Grid `repeat(columns, minmax(0, 1fr))`), `WallScreen.tsx:47-63`. |
+| AK2 | erfüllt | Browser mit 25 Kampfszenen: 5 × 5, Nummern 1–25; Kacheln Wall 219,4 × 123,4 px, Admin 64 × 36 px; Panelbreite 1208,88 px (1920×1080). Für c = r = 5 ist die neue Formel algebraisch gleich der alten. Kein Pixelvergleich mit altem Stand im Browser. |
+| AK3 | erfüllt | Nicht-Kampfszene forest (`activeSceneId` 1) und Kampfszene Raum 7 (`activeSceneId` 11): jeweils genau die passende Kachel markiert, Wall im zweiten Tab synchron, Markierung nach Reload erhalten. `MapElement`: `isActive = sceneId === activeSceneId`. Szenen-IDs überschneiden sich nicht (Seite 1–4, Kampf 5–29). Wechsel von Wall/Ground nicht separat geprüft (Mechanismus unverändert). |
+| AK4 | erfüllt | `grep` nach `ActiveMapContext`, `activeMapId`, `keyProp`, `GRID_GAP_COUNT`, `Math.sqrt` in `frontend/src` und `__tests__`: nur `Math.sqrt` in `utils.ts:25` (`getGridLayout`). Known Issues entfernt; `architecture.md`, `screens.md`, `frontend/CLAUDE.md`, `screen-layouts.md`, `components.md` stimmen mit dem Code überein. |
+| AK5 | erfüllt | `gridLayout.spec.ts` (0, 1, 15, 16, 24, 25, 26 + Invariante 1–50) 8/8 grün; auf `29efd1e` mit kopiertem Test 8/8 rot. |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- `frontend/src/utils/utils.ts:30`: Leerzeichen nach `=` bei `getMusicTitle` versehentlich entfernt (cf15db6); ohne Verhaltens- und Lint-Auswirkung, sollte zurückgesetzt werden.
+- Regressionstest prüft die Rasterberechnung, nicht direkt den Render-Absturz; der ist durch den Browser-Lauf zu AK1 abgedeckt.
+- WORLD-Panel kann bei `rows < columns` (26–30 Kampfszenen) über die Steuerleiste reichen; in `screen-layouts.md` dokumentiert, eigener Task laut Entscheidung des Users.
+
+**Checks:** `npm run lint` 0 Fehler, 2 bekannte Warnungen (`no-console` in `apiMethods.ts`, `alt-text` in `WallScreen`, auf `29efd1e` gegengeprüft); `npm run typecheck` grün; `npm run test:unit` 18/18 grün (8 neu); `npm run build` grün; Commits nach Schema, ohne KI-Signatur, auf `development`; Arbeitsverzeichnis sauber.

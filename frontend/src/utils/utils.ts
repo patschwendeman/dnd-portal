@@ -12,6 +12,21 @@ export const filterSceneByKey = <K extends keyof SceneDetail>(
   return scene
 }
 
+export interface GridLayout {
+  columns: number
+  rows: number
+}
+
+// Nearly square grid for any number of maps, filled row by row; the last row may be incomplete
+export const getGridLayout = (count: number): GridLayout => {
+  if (count <= 0) {
+    return { columns: 0, rows: 0 }
+  }
+  const columns = Math.ceil(Math.sqrt(count))
+  const rows = Math.ceil(count / columns)
+  return { columns, rows }
+}
+
 export const getMusicTitle = (source: string): string => {
   const fileName = source.split('/').pop() ?? ''
   const withoutExtension = fileName.replace(/\.[^.]+$/, '')

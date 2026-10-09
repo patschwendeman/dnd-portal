@@ -28,12 +28,17 @@ Das Panel auf der Wall nimmt den kleinsten von drei Werten (`OverlayPanel` in `W
 
 - `OVERLAY_PANEL_MAX_WIDTH` als Obergrenze,
 - `100vw − 2 × space.8` (Rand links und rechts),
-- die verfügbare Höhe als Breite: `(100vh − space.7 − CONTROL_BAR_CLEARANCE − 2 × space.6 − text.xl-Zeilenhöhe − space.5 − 4 × space.3) × 16 / 9 + 4 × space.3 + 2 × space.6`.
-  Abgezogen werden Abstand oben, Steuerleiste, Innenabstand, Kopfzeile und die 4 Abstände des Rasters
-  (`GRID_GAP_COUNT`), damit 5 × 5 Kacheln in 16:9 über der Steuerleiste Platz haben.
+- die verfügbare Höhe als Breite, abgeleitet aus Spalten `c` und Zeilen `r` des Kampfszenen-Rasters
+  (`getGridLayout`, `c = ⌈√n⌉`, `r = ⌈n / c⌉`) und dem Abstand `g = space.3`:
+  `(H − (r − 1) × g) × 16 / 9 × c / r + (c − 1) × g + 2 × space.6` mit
+  `H = 100vh − space.7 − CONTROL_BAR_CLEARANCE − 2 × space.6 − text.xl-Zeilenhöhe − space.5`.
+  `H` ist die Höhe, die nach Abstand oben, Steuerleiste, Innenabstand und Kopfzeile für das Raster bleibt; so haben
+  alle Zeilen mit Kacheln in 16:9 über der Steuerleiste Platz. Ohne Kampfszenen (`r = 0`) entfällt dieser Wert.
 
-Die Formel gilt für 25 Kacheln; bei anderer Anzahl ändert sich die Zahl der Abstände. Die Weltkarte (16:9 ohne
-Abstände) ist bei gleicher Breite niedriger und passt immer.
+Bei 25 Kacheln (5 × 5) ergibt das `(H − 4 × space.3) × 16 / 9 + 4 × space.3 + 2 × space.6`. Die Weltkarte nutzt
+dieselbe Breite; bei quadratischem Raster (`c = r`, z. B. 16, 24, 25) ist sie (16:9 ohne Abstände) nicht höher als
+das Raster und passt. Bei `r < c` (z. B. 26–30 Kacheln) ist das Panel breiter als die Höhe erlaubt, die Weltkarte
+kann dann über die Steuerleiste reichen.
 
 ## Screen-Layouts
 

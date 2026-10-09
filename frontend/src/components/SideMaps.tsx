@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 import { Label } from './Label'
 import { MapElement } from './MapElement'
-import { ActiveMapContext } from '../context/context'
+import { ActiveSceneContext } from '../context/context'
 import { Map } from '../models/models'
 
 
@@ -30,20 +30,19 @@ const SideMapTile = styled.div`
 
 interface SideMapsProps {
     sidemaps: Map[] | undefined
-    handleSceneSelection?(id: number, isMainMap: boolean): void
-    isActiveMainMap: boolean
+    handleSceneSelection?(sceneId: number): void
 }
 
-const SideMaps: FunctionComponent<SideMapsProps> = ({ sidemaps , handleSceneSelection, isActiveMainMap }): ReactElement => {
+const SideMaps: FunctionComponent<SideMapsProps> = ({ sidemaps , handleSceneSelection }): ReactElement => {
 
-    const { activeMapId } = useContext(ActiveMapContext)
+    const { activeSceneId } = useContext(ActiveSceneContext)
 
 
     let maps: Map[]
 
     if(!sidemaps)  {
         maps = Array.from({ length: 4 }, (_, index) => ({
-            id: index + 1    
+            sceneId: index + 1    
         }))
     }
     else {
@@ -58,14 +57,12 @@ const SideMaps: FunctionComponent<SideMapsProps> = ({ sidemaps , handleSceneSele
             {[...Array(count)].map((_, mapIndex) => {
                 if (maps) {
                     return (
-                        <SideMapTile key={ maps[mapIndex].id }>
+                        <SideMapTile key={ maps[mapIndex].sceneId }>
                             <MapElement 
-                                activeMapId={ activeMapId }
+                                activeSceneId={ activeSceneId }
                                 src={ maps[mapIndex].source } 
                                 handleSceneSelection={ handleSceneSelection } 
-                                keyProp={ maps[mapIndex].id }
-                                isMainMap={ false }
-                                isActiveMainMap={ isActiveMainMap }
+                                sceneId={ maps[mapIndex].sceneId }
                                 isAdminScreen={ true } 
                                 >  
                             </MapElement>

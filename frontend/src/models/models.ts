@@ -1,5 +1,12 @@
-export interface Map {
+// Response of /maps/main and /maps/side: the backend sends the scene id as id
+export interface MapResponse {
   id: number
+  source?: string
+}
+
+// A tile in the map overviews, selecting it selects the scene with this id
+export interface Map {
+  sceneId: number
   source?: string
 }
 

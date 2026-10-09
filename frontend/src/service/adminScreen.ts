@@ -1,5 +1,5 @@
 import { getData } from '../api/apiMethods'
-import { SceneDetail } from '../models/models'
+import { Map, MapResponse, SceneDetail } from '../models/models'
 
 export const getAdminData = async () => {
   const sidemaps = await getData('maps/side/')
@@ -14,7 +14,8 @@ export const getAdminData = async () => {
   if (!scenesDetails) {
     throw new Error('Scenes details not found')
   }
-  return [sidemaps, mainmaps, scenesDetails]
+  const toMap = ({ id, source }: MapResponse): Map => ({ sceneId: id, source })
+  return [sidemaps.map(toMap), mainmaps.map(toMap), scenesDetails]
 }
 
 export const getSceneById = async (id: number) => {

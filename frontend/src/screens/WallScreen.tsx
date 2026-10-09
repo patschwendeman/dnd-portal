@@ -9,12 +9,11 @@ import { Map, SceneDetail } from '../models/models'
 import { getWallScreenData } from '../service/WallScreen'
 import { GlobalStyle } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
+import { getGridLayout } from '../utils/utils'
 import MapEnvironmentSrc from './../../public/assets/images/ground_screen/mapOverview.jpg'
 
 
 const OVERLAY_PANEL_MAX_WIDTH = '1440px'
-// Number of gaps per row/column in the 5 x 5 grid of battle maps
-const GRID_GAP_COUNT = 4
 
 const MapEnvironment = styled.img`
     display: block;
@@ -45,20 +44,22 @@ const Screen = styled.div`
 `
 
 // Width: smallest of the upper limit, the viewport minus the side margins and the available height
-// converted into a width, so the 5 x 5 grid fits above the control bar
-const OverlayPanel = styled.div<{$isVisible: boolean}>`
+// converted into a width, so the grid of battle maps (16:9 tiles, columns x rows) fits above the control bar.
+// Without maps there is no grid, so the height limit is left out.
+const OverlayPanel = styled.div<{ $isVisible: boolean, $columns: number, $rows: number }>`
     display: ${({ $isVisible }) => ($isVisible ? 'flex' : 'none')};
     flex-direction: column;
     align-items: stretch;
     width: min(
         ${OVERLAY_PANEL_MAX_WIDTH},
-        calc(100vw - 2 * ${(props) => props.theme.space[8]}),
+        calc(100vw - 2 * ${(props) => props.theme.space[8]})
+        ${(props) => props.$rows > 0 ? `,
         calc(
-            (100vh - ${(props) => props.theme.space[7]} - ${CONTROL_BAR_CLEARANCE} - 2 * ${(props) => props.theme.space[6]}
-                - ${(props) => props.theme.text.xl.lineHeight} - ${(props) => props.theme.space[5]}
-                - ${GRID_GAP_COUNT} * ${(props) => props.theme.space[3]}) * 16 / 9
-            + ${GRID_GAP_COUNT} * ${(props) => props.theme.space[3]} + 2 * ${(props) => props.theme.space[6]}
-        )
+            (100vh - ${props.theme.space[7]} - ${CONTROL_BAR_CLEARANCE} - 2 * ${props.theme.space[6]}
+                - ${props.theme.text.xl.lineHeight} - ${props.theme.space[5]}
+                - ${props.$rows - 1} * ${props.theme.space[3]}) * 16 / 9 * ${props.$columns} / ${props.$rows}
+            + ${props.$columns - 1} * ${props.theme.space[3]} + 2 * ${props.theme.space[6]}
+        )` : ''}
     );
     height: auto;
     padding: ${(props) => props.theme.space[6]};
@@ -95,6 +96,8 @@ const WallScreen: FunctionComponent = (): ReactElement => {
     const [isActiveMainMap, setIsActiveMainMap] = useState<boolean>(false) 
     const [worldMapVisibility, setWorldMapVisibility] = useState<boolean>(false)
     const [mainMapsVisibility, setMainMapsVisibility] = useState<boolean>(isActiveMainMap)
+
+    const { columns, rows } = getGridLayout(mainmaps.length)
 
     const buttonLabels = ['BATTLE', 'WORLD', 'OFF']
     const activeButton = mainMapsVisibility ? 0 : worldMapVisibility ? 1 : 2
@@ -143,14 +146,14 @@ const WallScreen: FunctionComponent = (): ReactElement => {
         <Screen>
             <GlobalStyle />
             <BackgroundImage data-test-id='wallImg' src={activeScene?.graphics_wall.source} alt='' /> 
-            <OverlayPanel $isVisible={mainMapsVisibility}>
+            <OverlayPanel $isVisible={mainMapsVisibility} $columns={columns} $rows={rows}>
                 <PanelHeader>
                     <PanelTitle>Kampfschauplätze</PanelTitle>
                     <Label>{ mainmaps.length } Räume</Label>
                 </PanelHeader>
-                <MapOverview mainmaps={mainmaps} gap={theme.space[3]} padding='0' isActiveMainMap={ isActiveMainMap } isAdminScreen={ false }/>
+                <MapOverview mainmaps={mainmaps} gap={theme.space[3]} padding='0' isAdminScreen={ false }/>
             </OverlayPanel>
-            <OverlayPanel $isVisible={worldMapVisibility}>
+            <OverlayPanel $isVisible={worldMapVisibility} $columns={columns} $rows={rows}>
                 <PanelHeader>
                     <PanelTitle>Weltkarte</PanelTitle>
                 </PanelHeader>

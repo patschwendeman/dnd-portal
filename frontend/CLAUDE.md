@@ -49,13 +49,14 @@ Im Container liegt `node_modules` in einem eigenen Volume; nach Änderungen an `
 ## Struktur & Datenfluss
 
 ```
-src/app/App.tsx      Routing, Theme, globaler State (activeSceneId, activeMapId, isDarkTheme) + localStorage-Sync
-src/context/         ActiveSceneContext, ActiveMapContext
+src/app/App.tsx      Routing, Theme, globaler State (activeSceneId, isDarkTheme) + localStorage-Sync
+src/context/         ActiveSceneContext
 src/screens/         Screens
 src/components/      UI-Bausteine (TopBar, DocumentReader, MapOverview, GridOverlay, ScreenControlBar, ResourceBarPlayer …)
 src/service/         Datenladen je Screen (getAdminData, getWallScreenData, getGroundScreenData …)
 src/api/             axios-Client (apiClient.ts) und getData (apiMethods.ts)
-src/models/models.ts Interfaces (SceneDetail, Screen, Music, Map) – spiegeln die Backend-Antworten
+src/models/models.ts Interfaces (SceneDetail, Screen, Music, MapResponse) – spiegeln die Backend-Antworten;
+                     Map ist Frontend-Modell (sceneId), Umwandlung aus MapResponse im Service
 src/utils/utils.ts   Audio (Playlist, Zufallstrack, Soundeffekte), filterSceneByKey
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }),
                      styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden)
@@ -88,8 +89,9 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
 ## Wichtig beim Ändern
 
 - Medienpfade (`source`) kommen aus dem Backend-Seed und müssen zu Dateien in `public/` passen.
-- `MapElement`/`MapOverview` setzen voraus, dass Map-ID = Szenen-ID ist; `MapOverview` rendert nur bei
-  quadratischer Anzahl korrekt (16, 25 …).
+- Kacheln (`Map`) tragen die Szenen-ID als `sceneId`: Das Backend liefert in `/maps/*` `id = scene.id`, die Services
+  mappen es auf `sceneId`. Aktiv ist die Kachel mit `sceneId === activeSceneId`. `MapOverview` rendert jede Anzahl als
+  Raster mit `⌈√n⌉` Spalten (`getGridLayout` in `src/utils/utils.ts`, auch Basis der Wall-Overlay-Breite).
 - `DocumentReader` sammelt Markdown per `import.meta.glob` aus `public/story/**` – neue Notizen dort ablegen.
 - Player-Ressourcen (`ResourceBarPlayer`) sind reiner lokaler State; Zauberplatz-Maxima sind hart codiert (`SpellMax`).
 - `eslint-plugin-react-hooks` ist installiert, aber nicht aktiv – `useEffect`-Abhängigkeiten nicht blind „reparieren“,

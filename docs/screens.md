@@ -26,7 +26,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Top-Bar, Hauptbereich, Bottom-Bar. Der Hauptbereich hat drei Spalten: links die Notizen-Navigation, in der Mitte die
   Notizen, rechts die Karten „Aktive Szene“ und „Kampfszenen“. Schrift Inter (lokal über `@fontsource/inter`).
 - **Szenenauswahl:** Karte „Kampfszenen“ rechts mit Anzahl und Kachelraster aller Kampfszenen (`MapOverview`,
-  seit DND-5 zeilenweise sortiert; die Auswahl läuft weiter über die Datenbank-ID), Bottom-Bar mittig mit dem Label „Szenen“ und den Nicht-Kampfszenen (`SideMaps`). Alle Kacheln 16:9, die aktive mit
+  seit DND-5 zeilenweise sortiert, seit DND-9 mit `⌈√n⌉` Spalten für jede Anzahl n; die Auswahl läuft weiter über die
+  Datenbank-ID), Bottom-Bar mittig mit dem Label „Szenen“ und den Nicht-Kampfszenen (`SideMaps`). Alle Kacheln 16:9, die aktive mit
   Outline in `primary`. Klick öffnet einen Bestätigungsdialog (`Dialogue`) mit Wall-Bild, Label „Szene wechseln“,
   Name, Beschreibung und den Buttons Decline (links) und Confirm (rechts); „Confirm“ setzt `activeSceneId` → alle
   Screens wechseln.
@@ -90,8 +91,9 @@ Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets.
 - Overlay-Panel (`OverlayPanel`) oben mittig, 48px unter der Oberkante, höchstens 1440px breit und mit dem Monitor
   schrumpfend, mit Kopfzeile. Umschaltbar über die schwebende Steuerleiste (`ScreenControlBar`), die beim Hover
   mittig über der Unterkante erscheint (Buttons BATTLE/WORLD/OFF, der aktive in `primary`):
-  - **BATTLE:** Kopfzeile „Kampfschauplätze“ mit Anzahl („25 Räume“), darunter die Kacheln aller Kampfszenen,
-    zeilenweise sortiert und mit Raumnummer 1–25 oben links (nicht die Datenbank-ID); bei Kampfszenen automatisch
+  - **BATTLE:** Kopfzeile „Kampfschauplätze“ mit Anzahl („25 Räume“), darunter die Kacheln aller Kampfszenen
+    im Raster mit `⌈√n⌉` Spalten (bei 25 Szenen 5 × 5, eine unvollständige letzte Zeile linksbündig), zeilenweise
+    sortiert und mit Raumnummer 1–n oben links (nicht die Datenbank-ID); bei Kampfszenen automatisch
     sichtbar.
   - **WORLD:** Kopfzeile „Weltkarte“, darunter die Weltkarte in 16:9 (statisches Bild
     `public/assets/images/ground_screen/mapOverview.jpg`, nicht aus dem Backend).

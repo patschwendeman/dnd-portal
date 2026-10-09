@@ -9,7 +9,7 @@ import { Label } from '../components/Label'
 import { MapOverview } from '../components/MapOverview'
 import { SideMaps } from '../components/SideMaps'
 import { TopBar } from '../components/TopBar'
-import { ActiveMapContext, ActiveSceneContext } from '../context/context'
+import { ActiveSceneContext } from '../context/context'
 import { Map, type Music, SceneDetail } from '../models/models'
 import { getAdminData, getSceneById, handleDialogue } from '../service/adminScreen'
 import { GlobalStyle } from '../style/GlobalStyle'
@@ -118,7 +118,6 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
     const theme = useTheme()
 
     const { activeSceneId, setActiveSceneId } = useContext(ActiveSceneContext)
-    const { setActiveMapId } = useContext(ActiveMapContext)
     const [scenesDetails, setScenesDetails] = useState<SceneDetail[]>([])
     const [activeScene, setActiveScene] = useState<SceneDetail>()
 
@@ -127,7 +126,6 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
 
     const [mainmaps, setMainmaps] = useState<Map[]>([])
     const [sidemaps, setSidemaps] = useState<Map[]>([])
-    const [isMainMap, setIsMainMap] = useState<boolean>(false)
 
     const [isMusicPlaying, setIsMusicPlaying] = useState<boolean>(false)
     const [activeMusicSRC, setActiveMusicSRC] = useState<string>(defaultMusic)
@@ -154,11 +152,9 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
     const handleActiveScene = (activeScene: SceneDetail) => {
         const currentPlayList = extractMusicSources(activeScene.music)
         setActiveScene(activeScene)
-        setIsMainMap(activeScene.main)
         const randomTrack = getRandomTrack(musicPlaylist, lastTrack)
         setActiveMusicSRC(randomTrack)
         setMusicPlaylist(currentPlayList)
-        setActiveMapId(activeScene.id)  
     }
 
     const fetchAdminData = async () => {
@@ -193,8 +189,8 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
         }
     }, [activeMusicSRC])
 
-    const handleSceneSelection = (mapId: number) => {
-        const scene = filterSceneByKey('id', mapId, scenesDetails)
+    const handleSceneSelection = (sceneId: number) => {
+        const scene = filterSceneByKey('id', sceneId, scenesDetails)
         if (!scene) {
             throw new Error('No Scene to select not found')
         }
@@ -231,7 +227,6 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
                                 gap={theme.space[2]}
                                 padding='0'
                                 handleSceneSelection={handleSceneSelection}
-                                isActiveMainMap={ isMainMap }
                                 isAdminScreen={ true }
                             />
                         </SidebarMapContainer>
@@ -252,7 +247,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
                             <TrackName>{ getMusicTitle(activeMusicSRC) }</TrackName>
                         </Track>
                     </Music>
-                    <SideMaps sidemaps={sidemaps} handleSceneSelection={handleSceneSelection} isActiveMainMap={ isMainMap }/>
+                    <SideMaps sidemaps={sidemaps} handleSceneSelection={handleSceneSelection} />
                     <div />
                 </BottomBar>
             </Screen>

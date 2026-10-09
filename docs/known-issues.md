@@ -26,8 +26,6 @@ Stand: Analyse vom 2026-09-27. Punkte mit „(ungeprüft)“ wurden aus dem Code
 ## Frontend
 
 - `DocumentReader` sucht in `public/story/noneFight/` (existiert nicht) → Tab „Side“ leer.
-- `MapOverview` nutzt `Math.sqrt(maps.length)` → funktioniert nur bei quadratischer Anzahl (16, 25 …).
-- Map-Kachel-ID = Szenen-ID wird implizit vorausgesetzt.
 - Musik: Zufalls-Track-Auswahl nutzt teils die alte Playlist; Wiedergabe kann nach Trackende stoppen (ungeprüft).
 - API-Base-URL fest verdrahtet, keine Env-Variablen; Fehler werden in Effects geworfen (unhandled rejections).
 - `ResourceBarPlayer`: `spellData[].max` weicht von `SpellMax` ab (Stufe II: 4 vs. 3); Spezial startet bei 1 statt 3.
