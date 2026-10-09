@@ -1,6 +1,5 @@
 import { getRandomTrack } from './utils'
 
-// Subset of HTMLAudioElement used by the player, so tests can inject a fake without a browser
 export interface MusicAudio {
   src: string
   currentTime: number
@@ -15,8 +14,6 @@ type Listener = () => void
 
 const MUSIC_VOLUME = 0.1
 
-// Holds the whole music state (playlist, current track, play state) in one place, so the displayed
-// track is always the one loaded into the single audio element and track end never depends on stale React state
 export class MusicPlayer {
   private readonly audio: MusicAudio
   private readonly random: () => number

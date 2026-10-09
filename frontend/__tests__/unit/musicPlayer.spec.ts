@@ -32,7 +32,6 @@ class FakeAudio implements MusicAudio {
   }
 }
 
-// Deterministic replacement for Math.random: cycles through the given values
 const sequence = (values: number[]): (() => number) => {
   let index = 0
   return () => values[index++ % values.length]

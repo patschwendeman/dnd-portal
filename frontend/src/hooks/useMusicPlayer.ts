@@ -15,7 +15,6 @@ const createPlayer = (initialPlaylist: string[]): MusicPlayer => {
   return player
 }
 
-// Mirrors the player state into React; the player itself stays the single source of truth
 export const useMusicPlayer = (initialPlaylist: string[]): MusicPlayerControls => {
   const [player] = useState(() => createPlayer(initialPlaylist))
   const [track, setTrack] = useState<string | null>(player.track)

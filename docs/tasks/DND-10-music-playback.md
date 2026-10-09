@@ -1,7 +1,7 @@
 # DND-10: Musik spielt die Playlist der aktiven Szene durchgehend
 
 **Typ:** fix
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -158,3 +158,51 @@ ist der gespielte.
 - keine
 
 ## Review
+
+### Runde 1
+
+**Empfehlung:** Abnahme. Keine blockierenden Befunde.
+
+Geprüft: Commit `03c5035` (einziger Umsetzungs-Commit nach `414fea7 docs(DND-10): approve plan`).
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1: Szenenwechsel | erfüllt | `AdminScreen.tsx` `handleActiveScene` ruft `music.setPlaylist(...)` mit der Playlist der neuen Szene auf. `musicPlayer.ts` `setPlaylist` übernimmt die Playlist, wählt per `loadNextTrack` einen anderen als den aktuellen Track und startet nur, wenn vorher gespielt wurde. Tests: `musicPlayer.spec.ts` › scene change (3 Tests). |
+| AK2: Angezeigt = gespielt | erfüllt | Zufall wird nur in `loadNextTrack` gezogen, `currentTrack` und `audio.src` werden dort gemeinsam gesetzt. `TrackName` zeigt `music.track`. Tests prüfen `audio.src === player.track`. |
+| AK3: Durchgehende Wiedergabe | erfüllt | `handleEnded` liest die aktuelle Playlist aus der Instanz, lädt den nächsten Track, setzt `currentTime = 0` und startet neu. Tests für mehrere Tracks, zwischendurch gewechselte Playlist und Einzel-Track. |
+| AK4: Play/Pause unverändert, höchstens ein Audio | erfüllt | Button, Icon und Farbe hängen an `music.isPlaying`. Lautstärke 0.1, `loop = false`, ein Audio-Element pro Player-Instanz. Hörprobe nicht durchgeführt, Bewertung auf Code-Basis. |
+| AK5: Regressionstest | erfüllt | 12 Tests decken a) Szenenwechsel, b) angezeigt = gespielt und c) Trackende ab. Gegenprobe auf `03c5035^` nur mit der Testdatei: rot („Modul fehlt“, laut Plan zulässig). Mit dem Fix grün. |
+
+**Typspezifisch (fix):**
+- Regressionstest bildet die Reproduktion a–c ab. Rot ohne Fix ist nachgeprüft.
+- Ursache statt Symptom:
+  - Auswahl aus der alten Playlist beseitigt.
+  - Doppeltes Würfeln beseitigt (`handleAudio` und `handleAudioControl` entfernt).
+  - Veraltete `onended`-Closure und Stillstand bei gleichem Track beseitigt.
+  - Unhandled rejection bei Fehler von `play()` abgefangen.
+
+**Subtasks / Scope:**
+- Alle 8 Subtasks erledigt.
+- `getRandomTrack` hat nur einen optionalen Parameter `random` dazubekommen, der bestehende Test ist unverändert.
+- Doku aktualisiert: `docs/screens.md`, `docs/known-issues.md`, `frontend/CLAUDE.md`.
+- Nichts außerhalb des Scopes geändert.
+
+**Konventionen:**
+- Ein Commit, Kopfzeile nach Schema, Typ `fix`.
+- Body nur Stichpunkte, keine KI-Signatur.
+- Branch `development`.
+
+#### Blockierende Befunde
+- keine
+
+#### Hinweise (nicht blockierend)
+- **Mögliche Race (Vermutung):** Kommt nach einem Play-Klick ein Szenenwechsel, bevor `audio.play()` aufgelöst ist, ist `playing` noch `false`. `setPlaylist` startet dann nicht neu, und die Musik bleibt pausiert. Sehr kleines Zeitfenster, ein erneuter Klick behebt es.
+- Die Tests prüfen nur die Player-Klasse, nicht die Anbindung im `AdminScreen`. Die Anbindung ist per Code-Review bestätigt; der Plan verlangt keinen Test dafür.
+- Unter `StrictMode` (nur Dev) entsteht ein zweites, nie abgespieltes Audio-Element. Das hat keinen Einfluss auf AK4.
+- Die manuelle Verifikation (Teststrategie Schritte 1–4) steht aus und wird dem User empfohlen.
+
+#### Checks (frontend/)
+- `npm run lint`: 0 Fehler, 2 vorbestehende Warnungen (`apiMethods.ts:11`, `WallScreen.tsx:160`).
+- `npm run typecheck`: grün.
+- `npm run test:unit`: 4 Dateien, 30 Tests grün.
+- `npm run build`: grün.
