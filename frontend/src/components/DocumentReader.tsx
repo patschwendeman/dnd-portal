@@ -6,6 +6,7 @@ import { ReactSVG } from 'react-svg'
 import { Label } from './Label'
 import { SideBarLeftElement } from './SideBarLeftElement'
 import { textStyle } from '../style/tokens'
+import { loadSafely } from '../utils/loadSafely'
 
 const markdownFilesMain = import.meta.glob('../../public/story/main/*.md')
 const markdownFilesFight = import.meta.glob('../../public/story/fight/*.md')
@@ -155,6 +156,11 @@ const Page = styled.div`
 }
 `
 
+const LoadFailedText = styled.p`
+  ${textStyle('reading')}
+  max-width: ${LINE_MAX_WIDTH};
+`
+
 const MarkdownImage: FunctionComponent<{ src?: string; alt?: string }> = ({ src, alt = '' }) => (
   <a href={src} target="_blank" rel="noopener noreferrer">
     <img className="markdown-image" src={src} alt={alt} />
@@ -182,6 +188,7 @@ function HeadingRenderer(props: { level: number; children: React.ReactNode }): R
 const DocumentReader: FunctionComponent = (): ReactElement => {
   const theme = useTheme()
   const [markdownContent, setMarkdownContent] = useState<string[]>([])
+  const [loadFailed, setLoadFailed] = useState<boolean>(false)
   const [selectedStoryIndex, setSelectedStoryIndex] = useState<number>(0)
   const [isVisible, setIsVisible] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -190,22 +197,25 @@ const DocumentReader: FunctionComponent = (): ReactElement => {
 
   useEffect(() => {
     const loadMarkdownFiles = async () => {
-      try {
-        const selectedMarkdownFiles = markdownLists[selectedStoryIndex]
-        const paths = Object.keys(selectedMarkdownFiles)
-        const markdownPromises = paths.map(async (path) => {
-          const currentPath = path.replace('../../public', '')
-          const response = await fetch(currentPath)
-          return response.text()
-        })
-        const markdownTextList = await Promise.all(markdownPromises)
-        setMarkdownContent(markdownTextList)
-      } catch (error) {
-          throw new Error(`Error loading markdown files: ${error}`)
-      }
+      const selectedMarkdownFiles = markdownLists[selectedStoryIndex]
+      const paths = Object.keys(selectedMarkdownFiles)
+      const markdownPromises = paths.map(async (path) => {
+        const currentPath = path.replace('../../public', '')
+        const response = await fetch(currentPath)
+        if (!response.ok) {
+          throw new Error(`Loading ${currentPath} failed: HTTP ${response.status}`)
+        }
+        return response.text()
+      })
+      const markdownTextList = await Promise.all(markdownPromises)
+      setMarkdownContent(markdownTextList)
+      setLoadFailed(false)
     }
 
-    loadMarkdownFiles()
+    loadSafely(loadMarkdownFiles, (error) => {
+      console.error('Error loading markdown files:', error)
+      setLoadFailed(true)
+    })
   }, [selectedStoryIndex])
 
   const handleScroll = () => {
@@ -246,7 +256,8 @@ const DocumentReader: FunctionComponent = (): ReactElement => {
       </SidebarLeft>
       <StoryReaderContainer>
         <Background ref={scrollContainerRef} onScroll={handleScroll}>
-          {markdownContent.map((content, index) => (
+          {loadFailed && <LoadFailedText>Notizen konnten nicht geladen werden</LoadFailedText>}
+          {!loadFailed && markdownContent.map((content, index) => (
             <Page key={index}>
               <ReactMarkdown
               components={{

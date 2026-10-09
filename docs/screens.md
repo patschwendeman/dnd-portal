@@ -46,6 +46,12 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Sounds:** `TopBar` mit Titel „DnD Portal“ links und mittig den Buttons für Soundeffekte in Gruppen
   (Heilung/Trank, Buff, Zauber, Debuff, Lock), getrennt durch senkrechte Linien.
 - Theme-Umschalter (Settings-Icon rechts in der Top-Bar).
+- **Ladefehler** (seit DND-11): Schlägt das Laden der Szenen/Kacheln oder der aktiven Szene fehl (Backend nicht
+  erreichbar, Timeout, HTTP-Fehler), erscheint direkt unter der Top-Bar eine Hinweisleiste „Backend nicht erreichbar –
+  Szenen konnten nicht geladen werden“ mit dem Button „Erneut versuchen“. Der Klick lädt beides erneut; bei Erfolg
+  verschwindet die Leiste. Keine automatischen Wiederholungen. Die Ursache steht als `console.error` in der Konsole.
+  Liefert eine Notizdatei einen Fehlerstatus, zeigt der Notizbereich „Notizen konnten nicht geladen werden“; ein
+  Tab-Wechsel lädt erneut.
 
 ---
 
@@ -104,6 +110,8 @@ Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets.
     `public/assets/images/ground_screen/mapOverview.jpg`, nicht aus dem Backend).
   - **OFF:** beide ausblenden.
 - Eine szenen-/gebietsspezifische Übersichtskarte gibt es noch nicht; die „Übersicht“ ist das Raster der Kampfszenen.
+- **Ladefehler** (seit DND-11): kein Hinweis für die Spieler; die Wall behält den zuletzt geladenen Stand (initial
+  leer), der Fehler steht als `console.error` in der Konsole. Der nächste Szenenwechsel lädt erneut.
 
 ---
 
@@ -122,3 +130,5 @@ optional mit **Grid** als Layout für taktische Kämpfe.
   ohne Tooltip und rastet in 10er-Schritten ein; rechts daneben steht der Wert fest als Zahl ohne Einheit (seit
   DND-6). Die Raster-Ebene lässt Mausereignisse durch. Standard: kein Grid. Einstellungen lokal, nicht gespeichert,
   gelten für alle Szenen gleich.
+- **Ladefehler** (seit DND-11): wie auf der Wall – kein Hinweis, letzter Stand bleibt, `console.error` in der Konsole,
+  der nächste Szenenwechsel lädt erneut.

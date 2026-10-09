@@ -7,6 +7,7 @@ import { ActiveSceneContext } from '../context/context'
 import { SceneDetail } from '../models/models'
 import { getGroundScreenData } from '../service/groundScreen'
 import { GlobalStyle } from '../style/GlobalStyle'
+import { loadSafely } from '../utils/loadSafely'
 
 
 const Screen = styled.div`
@@ -79,14 +80,14 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
         setGridColor(gridColorMap[option] || 'transparent')
     }
 
-    const fetchGroundScreenData = async () => {
-        try {
+    // Players see no error: the screen keeps the last loaded scene, the next scene change loads again.
+    const fetchGroundScreenData = () => loadSafely(
+        async () => {
             const activeScene = await getGroundScreenData(activeSceneId)
-            handleGroundScreen(activeScene) 
-        } catch (err) {
-            throw new Error(`Error fetching active scene data: ${err}`)
-        }
-    }
+            handleGroundScreen(activeScene)
+        },
+        (err) => console.error('Error fetching ground data:', err)
+    )
 
     useEffect(() => { 
         fetchGroundScreenData()

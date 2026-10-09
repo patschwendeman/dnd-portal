@@ -5,6 +5,7 @@ import defaultMusic from '../../public//assets/music/side_maps/forest/From_Past_
 import { DetailsSideBar } from '../components/DetailsSideBar'
 import { Dialogue } from '../components/Dialogue'
 import { DocumentReader } from '../components/DocumentReader'
+import { ErrorBar } from '../components/ErrorBar'
 import { Label } from '../components/Label'
 import { MapOverview } from '../components/MapOverview'
 import { SideMaps } from '../components/SideMaps'
@@ -15,6 +16,7 @@ import { Map, SceneDetail } from '../models/models'
 import { getAdminData, getSceneById, handleDialogue } from '../service/adminScreen'
 import { GlobalStyle } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
+import { loadSafely } from '../utils/loadSafely'
 import { filterSceneByKey, getMusicTitle } from '../utils/utils'
 
 import { ReactSVG } from 'react-svg'
@@ -25,9 +27,11 @@ import pauseIcon from '/assets/icons/pause.svg'
 const LEFT_COLUMN_WIDTH = '200px'
 const RIGHT_COLUMN_WIDTH = '400px'
 
-const Screen = styled.div`
+const LOAD_ERROR_MESSAGE = 'Backend nicht erreichbar – Szenen konnten nicht geladen werden'
+
+const Screen = styled.div<{ $hasLoadError: boolean }>`
     display: grid;
-    grid-template-rows: ${(props) => props.theme.size.bar.md} 1fr ${(props) => props.theme.size.bar.lg};
+    grid-template-rows: ${(props) => props.theme.size.bar.md} ${(props) => (props.$hasLoadError ? 'auto ' : '')}1fr ${(props) => props.theme.size.bar.lg};
     position: fixed;
     inset: 0;
     background-color: ${(props) => props.theme.colors.background};
@@ -128,6 +132,10 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
     const [mainmaps, setMainmaps] = useState<Map[]>([])
     const [sidemaps, setSidemaps] = useState<Map[]>([])
 
+    const [adminDataFailed, setAdminDataFailed] = useState<boolean>(false)
+    const [activeSceneFailed, setActiveSceneFailed] = useState<boolean>(false)
+    const hasLoadError = adminDataFailed || activeSceneFailed
+
     // Until the active scene is loaded, the default track is the playlist
     const music = useMusicPlayer([defaultMusic])
 
@@ -142,22 +150,33 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
         music.setPlaylist(activeScene.music.map((item) => item.source))
     }
 
-    const fetchAdminData = async () => {
-        try {
+    const fetchAdminData = () => loadSafely(
+        async () => {
             const [sidemaps, mainmaps, scenesDetails] = await getAdminData()
             handleAdminData(sidemaps, mainmaps, scenesDetails)
-        } catch (err) {
-            throw new Error(`Error fetching admin data: ${err}`)
-        }   
-    }
-
-    const fetchActiveScene = async () => {
-        try {
-            const activeScene = await getSceneById(activeSceneId)
-            handleActiveScene(activeScene) 
-        } catch (err) {
-            throw new Error(`Error fetching active scene data: ${err}`)
+            setAdminDataFailed(false)
+        },
+        (err) => {
+            console.error('Error fetching admin data:', err)
+            setAdminDataFailed(true)
         }
+    )
+
+    const fetchActiveScene = () => loadSafely(
+        async () => {
+            const activeScene = await getSceneById(activeSceneId)
+            handleActiveScene(activeScene)
+            setActiveSceneFailed(false)
+        },
+        (err) => {
+            console.error('Error fetching active scene data:', err)
+            setActiveSceneFailed(true)
+        }
+    )
+
+    const retryLoading = () => {
+        fetchAdminData()
+        fetchActiveScene()
     }
 
     useEffect(() => {  
@@ -190,8 +209,9 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
                 isVisible={dialogueVisibility}
                 setDialogueVisibility={setDialogueVisibility}
             />
-            <Screen>
+            <Screen $hasLoadError={hasLoadError}>
                 <TopBar toggleTheme={toggleTheme} />
+                {hasLoadError && <ErrorBar message={LOAD_ERROR_MESSAGE} onRetry={retryLoading} />}
                 <Main>
                     <DocumentReader />
                     <SidebarRight>

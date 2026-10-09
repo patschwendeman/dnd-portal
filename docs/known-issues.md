@@ -26,7 +26,7 @@ Stand: Analyse vom 2026-09-27. Punkte mit „(ungeprüft)“ wurden aus dem Code
 ## Frontend
 
 - `DocumentReader` sucht in `public/story/noneFight/` (existiert nicht) → Tab „Side“ leer.
-- API-Base-URL fest verdrahtet, keine Env-Variablen; Fehler werden in Effects geworfen (unhandled rejections).
+- API-Base-URL fest verdrahtet, keine Env-Variablen.
 - `ResourceBarPlayer`: `spellData[].max` weicht von `SpellMax` ab (Stufe II: 4 vs. 3); Spezial startet bei 1 statt 3.
 - E2E-Tests teilweise veraltet (`groundImg`-Selector existiert nicht mehr); `SceneDetailMock.json` nutzt noch `fight`.
 - `eslint-plugin-react-hooks` installiert, aber nicht aktiv; viele `useEffect`-Abhängigkeiten fehlen.

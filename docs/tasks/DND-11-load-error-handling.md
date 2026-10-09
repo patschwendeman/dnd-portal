@@ -1,7 +1,7 @@
 # DND-11: Ladefehler abfangen statt unhandled rejections, Hinweis im Admin Screen
 
 **Typ:** fix
-**Status:** Freigegeben
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -99,7 +99,7 @@ angezeigte Bild, der Fehler steht nur in der Konsole.
 ## Subtasks
 
 ### Frontend
-- [ ] Regressionstests zuerst (`frontend/__tests__/unit/apiErrors.spec.ts` o. ä., `vi.mock` für `apiClient`/axios):
+- [x] Regressionstests zuerst (`frontend/__tests__/unit/apiErrors.spec.ts` o. ä., `vi.mock` für `apiClient`/axios):
   - `getData` mit Netzwerkfehler/Timeout → Promise wird abgelehnt (nicht `undefined`).
   - `getData` mit HTTP 500 → abgelehnt, Status erkennbar.
   - Service (z. B. `getGroundScreenData`, `getAdminData`) bei Netzwerkfehler → abgelehnt mit Meldung, die nicht
@@ -107,24 +107,26 @@ angezeigte Bild, der Fehler steht nur in der Konsole.
   - Lade-Funktion der Screens, soweit ohne React testbar herausgelöst (z. B. Hilfsfunktion
     `loadSafely(load, onError)`): Fehler landet in `onError`, Promise wird erfüllt (keine Ablehnung nach außen).
   Vor dem Fix rot, danach grün.
-- [ ] `apiClient.ts`: Timeout 5000.
-- [ ] `apiMethods.ts`: `getData` ohne `try/catch`-Verschlucken.
-- [ ] Services: Fehlermeldungen nach E6.
-- [ ] `AdminScreen`: Fehler-State, Hinweisleiste (neue Komponente, z. B. `ErrorBar`) unter `TopBar`, „Erneut
+- [x] `apiClient.ts`: Timeout 5000.
+- [x] `apiMethods.ts`: `getData` ohne `try/catch`-Verschlucken.
+- [x] Services: Fehlermeldungen nach E6.
+- [x] `AdminScreen`: Fehler-State, Hinweisleiste (neue Komponente, z. B. `ErrorBar`) unter `TopBar`, „Erneut
       versuchen“ ruft beide Ladevorgänge erneut auf; kein `throw` in `fetchAdminData`/`fetchActiveScene`.
-- [ ] `WallScreen`, `GroundScreen`: `catch` → `console.error`, State unverändert lassen.
-- [ ] `DocumentReader`: `response.ok` prüfen; Fehlerzustand mit Text nach E5; kein `throw`.
-- [ ] Themes: Rollen `error`, `onError` in `darkTheme.ts`, `tavernTheme.ts`, Typ in `styled.d.ts`.
-- [ ] ESLint: Die Regel `no-console` warnt; `console.error` an den bewussten Stellen zulassen (z. B.
+- [x] `WallScreen`, `GroundScreen`: `catch` → `console.error`, State unverändert lassen.
+- [x] `DocumentReader`: `response.ok` prüfen; Fehlerzustand mit Text nach E5; kein `throw`.
+- [x] Themes: Rollen `error`, `onError` in `darkTheme.ts`, `tavernTheme.ts`, Typ in `styled.d.ts`.
+      (Umgesetzt: `styled.d.ts` leitet `Colors` aus `darkTheme.colors` ab, braucht daher keine Änderung.)
+- [x] ESLint: Die Regel `no-console` warnt; `console.error` an den bewussten Stellen zulassen (z. B.
       `no-console: ['warn', { allow: ['error'] }]` oder gezielte Ausnahme) – Entscheidung im Review sichtbar machen.
+      (Umgesetzt: global `no-console: ['warn', { allow: ['error'] }]`; `console.log`/`warn` warnen weiter.)
 
 ### Doku
-- [ ] `frontend/DESIGN.md`: Rollen `error`/`onError` in 2.2; Baustein „Hinweisleiste“ in 1.5 bzw.
+- [x] `frontend/DESIGN.md`: Rollen `error`/`onError` in 2.2; Baustein „Hinweisleiste“ in 1.5 bzw.
       `docs/design/components.md`; Admin-Layout in `docs/design/screen-layouts.md` (Leiste unter der TopBar).
-- [ ] `frontend/docs/design/contrast.md`: Theme-Werte und Kontrastmessung für `onError` auf `error`.
-- [ ] `docs/screens.md` (Admin, Wall, Ground – Ist): Verhalten bei Ladefehlern.
-- [ ] `docs/architecture.md`: Fehlerbehandlung beim Datenladen, Timeout.
-- [ ] `docs/known-issues.md`: Eintrag „API-Base-URL fest verdrahtet …; Fehler werden in Effects geworfen …“ auf
+- [x] `frontend/docs/design/contrast.md`: Theme-Werte und Kontrastmessung für `onError` auf `error`.
+- [x] `docs/screens.md` (Admin, Wall, Ground – Ist): Verhalten bei Ladefehlern.
+- [x] `docs/architecture.md`: Fehlerbehandlung beim Datenladen, Timeout.
+- [x] `docs/known-issues.md`: Eintrag „API-Base-URL fest verdrahtet …; Fehler werden in Effects geworfen …“ auf
       den API-URL-Teil kürzen.
 
 ## Akzeptanzkriterien

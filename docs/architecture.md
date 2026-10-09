@@ -65,8 +65,14 @@ IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement).
 - State: React-State + ein Context (`ActiveSceneContext`) + `localStorage`. Kein Store-Framework. Die aktive Kachel in
   den Kartenübersichten ergibt sich aus `activeSceneId` (Kachel-ID = Szenen-ID, im Frontend `Map.sceneId`).
 - Struktur: `src/app` (Routing, globaler State), `src/screens` (Screens), `src/components`, `src/service` (Datenladen je Screen),
-  `src/api` (axios-Client, Base-URL fest `http://localhost:8000/`, Timeout 1000 ms), `src/models`, `src/utils` (Audio, Filter),
+  `src/api` (axios-Client, Base-URL fest `http://localhost:8000/`, Timeout 5000 ms), `src/models`, `src/utils` (Audio, Filter),
   `src/style` (Themes), `src/context`.
+- Fehlerbehandlung beim Datenladen (seit DND-11): `getData` reicht Fehler weiter. Die Services laden über `loadData`
+  (`src/api/loadData.ts`) und werfen einen `LoadError`, dessen Meldung Netzwerkfehler/Timeout („backend not
+  reachable“), HTTP-Status („HTTP 500“) und leere Antwort („… not found“) unterscheidet. Die Screens fangen genau
+  einmal über `loadSafely` (`src/utils/loadSafely.ts`), sodass aus Effects keine unhandled rejections entstehen:
+  Admin zeigt eine Hinweisleiste mit „Erneut versuchen“, Wall und Ground loggen per `console.error` und behalten den
+  letzten Stand. Keine automatischen Wiederholungen. Der `DocumentReader` prüft `response.ok` der Notizdateien.
 - Assets in `public/`: `assets/images/{ground_screen,wall_screen,maps}`, `assets/music/{battle_maps,side_maps}/…`,
   `assets/sounds` (Soundeffekte), `assets/icons`, `story/**` (Markdown-Notizen, deutsch).
 

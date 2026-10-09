@@ -144,6 +144,19 @@ Nur im Admin.
 | Aufbau | Grid `1fr auto 1fr`: Musik links, Nicht-Kampfszenen mittig |
 | Szenen | Kacheln `TILE_WIDTH` breit, Label davor. Abstände nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“ |
 
+## Hinweisleiste
+
+Nur im Admin, Komponente `ErrorBar` ([src/components/ErrorBar.tsx](../../src/components/ErrorBar.tsx)). Erscheint nur bei
+einem Ladefehler, sonst ist sie nicht vorhanden (kein reservierter Platz).
+
+| Eigenschaft | Wert |
+|---|---|
+| Position | eigene Zeile direkt unter der Top-Bar, volle Breite ([screen-layouts.md](screen-layouts.md#screen-layouts)) |
+| Aufbau | `display: flex`, `justify-content: space-between`: Text links, Text-Button „Erneut versuchen“ (`default`) rechts, `gap` `space.4` |
+| Innenabstand | nach [1.4](../../DESIGN.md#14-regeln) „Innenabstand von Flächen“ |
+| Farbe | Fläche `error`, Text `onError` ([2.2](../../DESIGN.md#22-rollen)) |
+| Rolle | `role="alert"` |
+
 ## Slider
 
 Nur auf dem Ground.

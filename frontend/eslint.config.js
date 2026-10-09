@@ -52,7 +52,7 @@ export default [
           },
         },
       ],
-      'no-console': ['warn'],
+      'no-console': ['warn', { allow: ['error'] }],
       'no-var': 'error',
       camelcase: ['error', { properties: 'always' }],
       strict: ['error', 'global'],

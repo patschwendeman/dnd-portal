@@ -9,6 +9,7 @@ import { Map, SceneDetail } from '../models/models'
 import { getWallScreenData } from '../service/WallScreen'
 import { GlobalStyle } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
+import { loadSafely } from '../utils/loadSafely'
 import { getGridLayout } from '../utils/utils'
 import MapEnvironmentSrc from './../../public/assets/images/ground_screen/mapOverview.jpg'
 
@@ -129,14 +130,14 @@ const WallScreen: FunctionComponent = (): ReactElement => {
         }
     }
 
-    const fetchWallScreenData = async () => {
-        try {
+    // Players see no error: the screen keeps the last loaded scene, the next scene change loads again.
+    const fetchWallScreenData = () => loadSafely(
+        async () => {
             const [activeScene, mainmaps] = await getWallScreenData(activeSceneId)
             handleWallScreenData(activeScene, mainmaps)
-        } catch (err) {
-            throw new Error(`Error fetching wall data: ${err}`)
-        }
-    }
+        },
+        (err) => console.error('Error fetching wall data:', err)
+    )
 
     useEffect(() => {
         fetchWallScreenData()

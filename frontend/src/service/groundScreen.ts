@@ -1,10 +1,7 @@
-import { getData } from '../api/apiMethods'
+import { loadData } from '../api/loadData'
 import { SceneDetail } from '../models/models'
 
 export const getGroundScreenData = async (id: number) => {
-  const sceneDetails: SceneDetail = await getData(`scenes/details/${id}`)
-  if (!sceneDetails) {
-    throw new Error('Scene detail not found')
-  }
+  const sceneDetails: SceneDetail = await loadData('scene detail', `scenes/details/${id}`)
   return sceneDetails
 }

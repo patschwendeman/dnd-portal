@@ -1,29 +1,16 @@
-import { getData } from '../api/apiMethods'
+import { loadData } from '../api/loadData'
 import { Map, MapResponse, SceneDetail } from '../models/models'
 
 export const getAdminData = async () => {
-  const sidemaps = await getData('maps/side/')
-  const mainmaps = await getData('maps/main/', { players: false })
-  const scenesDetails = await getData('scenes/details/')
-  if (!sidemaps) {
-    throw new Error('Sidemaps not found')
-  }
-  if (!mainmaps) {
-    throw new Error('Mainmaps not found')
-  }
-  if (!scenesDetails) {
-    throw new Error('Scenes details not found')
-  }
+  const sidemaps = await loadData('sidemaps', 'maps/side/')
+  const mainmaps = await loadData('mainmaps', 'maps/main/', { players: false })
+  const scenesDetails = await loadData('scenes details', 'scenes/details/')
   const toMap = ({ id, source }: MapResponse): Map => ({ sceneId: id, source })
   return [sidemaps.map(toMap), mainmaps.map(toMap), scenesDetails]
 }
 
 export const getSceneById = async (id: number) => {
-  const sceneDetail = await getData(`scenes/details/${id}`)
-  if (!sceneDetail) {
-    throw new Error(`Scene detail by id ${id} not found`)
-  }
-  return sceneDetail
+  return loadData(`scene detail by id ${id}`, `scenes/details/${id}`)
 }
 
 export const handleDialogue = (

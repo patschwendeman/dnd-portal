@@ -113,6 +113,7 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 | Karte | `space.5` |
 | Dialog | `space.5` seitlich und unten |
 | Leisten (seitlich) | `space.5` |
+| Hinweisleiste | `space.2` oben/unten, `space.5` seitlich |
 | Wall-Panel | `space.6` |
 | Notizseite | `space.7` oben/unten, `space.8` seitlich |
 | Bildschirmrand am Smartphone (Player) | `space.4` oben/unten, seitlich `max(space.5, env(safe-area-inset-left), env(safe-area-inset-right))` (braucht `viewport-fit=cover` in `index.html`) |
@@ -126,7 +127,7 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 | `text.xl` | `semibold` | h2 in den Notizen, Überschrift des Wall-Panels, Zahl im Ressourcen-Button (Player) |
 | `text.lg` | `semibold` | Titel von Karte und Dialog, Ziffer der Zauberstufe I–IV (Player) |
 | `text.md` | `regular` / `medium` / `semibold` / `bold` | Standard und Listen in den Notizen (`ul`, `ol`, `li`, auch Absätze in Listeneinträgen des Inhaltsverzeichnisses) (`regular`), Hinweis im Overlay „Handy drehen“ (`medium`, Player), h3 und h4 in den Notizen (`semibold`), App-Titel und Kachelnummer (`bold`) |
-| `text.sm` | `regular` / `medium` / `semibold` | Werte, Beschreibungen (`regular`), Navigation und Musiktitel (`medium`), Buttons, Slider-Wert, h5 und h6 in den Notizen (`semibold`) |
+| `text.sm` | `regular` / `medium` / `semibold` | Werte, Beschreibungen (`regular`), Navigation, Musiktitel und Text der Hinweisleiste (`medium`), Buttons, Slider-Wert, h5 und h6 in den Notizen (`semibold`) |
 | `text.xs` | `semibold` | Labels |
 | `text.reading` | `regular` | nur Fließtext (Absätze) in den Notizen |
 
@@ -190,7 +191,8 @@ Aufbau je Baustein in [components.md](docs/design/components.md): [Icon-Button](
 [Overlay-Panel](docs/design/components.md#overlay-panel) (Wall), [Schwebende Steuerleiste](docs/design/components.md#schwebende-steuerleiste)
 (Wall, Ground), [Kachel](docs/design/components.md#kachel), [Nummern-Badge](docs/design/components.md#nummern-badge),
 [Dialog](docs/design/components.md#dialog), [Top-Bar](docs/design/components.md#top-bar),
-[Bottom-Bar](docs/design/components.md#bottom-bar) (Admin), [Slider](docs/design/components.md#slider) (Ground).
+[Bottom-Bar](docs/design/components.md#bottom-bar) (Admin), [Hinweisleiste](docs/design/components.md#hinweisleiste) (Admin),
+[Slider](docs/design/components.md#slider) (Ground).
 
 ### 1.6 Screen-Layouts
 
@@ -226,6 +228,8 @@ Wechselt mit dem Theme.
 | `overlay` | Abdunklung | Hintergrund hinter dem Dialog |
 | `text.color` | Vordergrund | Text, Icon-Füllung, Slider-Griff |
 | `onPrimary` | Vordergrund auf Akzent | aktiver Zustand ([2.4](#24-zustände)) |
+| `error` | Fläche für Fehler | Hinweisleiste im Admin |
+| `onError` | Vordergrund auf `error` | Text der Hinweisleiste |
 | `badge.background` | Fläche der Kachelnummer | Nummern-Badge auf den Kacheln der Wall |
 | `badge.text` | Text der Kachelnummer | Zahl im Nummern-Badge |
 | `resource.<art>.strong` | kräftiger Ton einer Ressource (`action`, `bonus`, `movement`, `spell`, `special`) | Rahmen des Ressourcen-Buttons, verfügbare Icons und Plätze (Player) |
@@ -235,8 +239,8 @@ Wechselt mit dem Theme.
 ### 2.3 Themes
 
 Zwei Themes: Dark (`darkTheme`, [darkTheme.ts](src/style/darkTheme.ts)) und Tavern (`tavernTheme`,
-[tavernTheme.ts](src/style/tavernTheme.ts)). `resource.*` und `badge.*` sind in beiden Themes gleich, weil sie
-Bedeutung tragen, nicht Stimmung. Die `resource.*`-Töne sind so gewählt, dass alle Grafik-Paare 3:1 erreichen. Werte: [contrast.md](docs/design/contrast.md#theme-werte).
+[tavernTheme.ts](src/style/tavernTheme.ts)). `resource.*`, `badge.*`, `error` und `onError` sind in beiden Themes
+gleich, weil sie Bedeutung tragen, nicht Stimmung. Die `resource.*`-Töne sind so gewählt, dass alle Grafik-Paare 3:1 erreichen. Werte: [contrast.md](docs/design/contrast.md#theme-werte).
 
 ### 2.4 Zustände
 

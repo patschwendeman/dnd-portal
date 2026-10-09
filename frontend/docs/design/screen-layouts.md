@@ -44,7 +44,7 @@ kann dann über die Steuerleiste reichen.
 
 | Screen | Aufbau |
 |---|---|
-| Admin | Grid in Zeilen Top-Bar / `1fr` / Bottom-Bar (Höhen nach [1.2](../../DESIGN.md#12-tokens)). Mittlere Zeile: Grid in Spalten `LEFT_COLUMN_WIDTH 1fr RIGHT_COLUMN_WIDTH`, Innenabstand `space.5`, `gap` nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“. Links Navigation, Mitte Notizen, rechts Karten. |
+| Admin | Grid in Zeilen Top-Bar / `1fr` / Bottom-Bar (Höhen nach [1.2](../../DESIGN.md#12-tokens)). Bei einem Ladefehler kommt unter der Top-Bar eine Zeile `auto` für die [Hinweisleiste](components.md#hinweisleiste) hinzu, ohne Fehler gibt es diese Zeile nicht. Mittlere Zeile: Grid in Spalten `LEFT_COLUMN_WIDTH 1fr RIGHT_COLUMN_WIDTH`, Innenabstand `space.5`, `gap` nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“. Links Navigation, Mitte Notizen, rechts Karten. |
 | Wall | Vollbild-Hintergrund, darüber das Overlay-Panel (BATTLE: Kachelraster, WORLD: Weltkarte) und die schwebende Steuerleiste |
 | Ground | Vollbild-Medium (Bild oder Video), Raster-Ebene, schwebende Steuerleiste mit Raster-Optionen und Slider |
 | Player | Smartphone im Querformat. Spalte, vertikal mittig, `gap` `space.4`: Theme-Button, darunter Karte mit zwei Zeilen à vier Ressourcen-Buttons (Aktion, Bonusaktion, Bewegung, Spezial / Zauberplätze I–IV), `gap` `space.4`. Im Hochformat deckt ein Overlay mit Hinweis alles ab. Ab 344px Höhe und etwa 568px Breite. |
