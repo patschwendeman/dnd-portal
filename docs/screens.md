@@ -22,7 +22,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - Verschiedene Sounds abspielen.
 
 ### Ist
-- **Layout** (seit DND-4 nach [frontend/DESIGN.md](../frontend/DESIGN.md), Mockups v2): Grid aus drei Zeilen –
+- **Layout** (seit DND-4 nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Grid aus drei Zeilen –
   Top-Bar, Hauptbereich, Bottom-Bar. Der Hauptbereich hat drei Spalten: links die Notizen-Navigation, in der Mitte die
   Notizen, rechts die Karten „Aktive Szene“ und „Kampfszenen“. Schrift Inter (lokal über `@fontsource/inter`).
 - **Szenenauswahl:** Karte „Kampfszenen“ rechts mit Anzahl und Kachelraster aller Kampfszenen (`MapOverview`,
@@ -85,7 +85,7 @@ Atmosphäre: Hintergrundbild abhängig von der aktiven Szene (z. B. Dungeon bei 
 Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets.
 
 ### Ist
-- **Layout** (seit DND-5 nach [frontend/DESIGN.md](../frontend/DESIGN.md), Mockups v2): Vollbild-Hintergrund =
+- **Layout** (seit DND-5 nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Vollbild-Hintergrund =
   `graphics_wall.source` der aktiven Szene, unverzerrt und randlos (`object-fit: cover`). Schrift Inter.
 - Overlay-Panel (`OverlayPanel`) oben mittig, 48px unter der Oberkante, höchstens 1440px breit und mit dem Monitor
   schrumpfend, mit Kopfzeile. Umschaltbar über die schwebende Steuerleiste (`ScreenControlBar`), die beim Hover

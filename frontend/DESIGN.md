@@ -1,182 +1,96 @@
 # Style Guide
 
-Stand: 2026-10-08 (Branch `development`). Verbindliche Gestaltungsregeln für das Frontend. Der Umbau folgte Screen
-für Screen nach den Mappings. Umgesetzt sind die Grundlagen ([Architektur](#architektur)), der Admin Screen
-(DND-4), der Wall Screen (DND-5), der Ground Screen (DND-6) und der Player Screen (DND-7).
+Verbindliche Gestaltungsregeln für das Frontend.
 
-**Geltung:** alle vier Screens, auch im Code. Für den Player Screen gelten zusätzlich die Entscheidungen P1–P7
-([player-mapping.md](design/player-mapping.md)). Was nur für den Player gilt, ist mit „(Player)“ markiert.
+**Geltung:** alle vier Screens, auch im Code. Was nur für den Player gilt, ist mit „(Player)“ markiert.
 
-**Quellen**
+**Weitere Dateien**
 
-- Mappings: [admin-mapping.md](design/admin-mapping.md), [wall-mapping.md](design/wall-mapping.md),
-  [ground-mapping.md](design/ground-mapping.md), [player-mapping.md](design/player-mapping.md). Dort steht, welcher
-  Wert in welcher Komponente wie umgestellt wird.
-- Mockups v2: [admin](design/mockups/v2/admin.png), [admin-dialog](design/mockups/v2/admin-dialog.png), [wall](design/mockups/v2/wall.png),
-  [wall-world](design/mockups/v2/wall-world.png), [wall-1366](design/mockups/v2/wall-1366.png), [ground](design/mockups/v2/ground.png),
-  [player](design/mockups/v2/player.png), [player-667](design/mockups/v2/player-667.png),
-  [player-portrait](design/mockups/v2/player-portrait.png), jeweils auch als `-tavern`.
-- Themes: `frontend/src/style/darkTheme.ts`, `frontend/src/style/tavernTheme.ts` (früher `lightTheme.ts`, siehe
-  [Entscheidungen](#3-entscheidungen)).
-
-Der Guide hat zwei Teile:
-
-| Teil | Inhalt | Wechselt mit dem Theme? |
-|---|---|---|
-| [1. Statisch](#1-statischer-teil-ohne-farbe) | Abstände, Schrift, Radien, Größen, Bausteine, Layouts | nein |
-| [2. Dynamisch](#2-dynamischer-teil-farben) | Farbrollen und ihre Werte je Theme | ja |
+- Details: [Bausteine](docs/design/components.md), [Layout-Konstanten und Screen-Layouts](docs/design/screen-layouts.md),
+  [Kontrast und Theme-Werte](docs/design/contrast.md)
+- Code: [tokens.ts](src/style/tokens.ts), [darkTheme.ts](src/style/darkTheme.ts),
+  [tavernTheme.ts](src/style/tavernTheme.ts)
 
 ## Architektur
 
-Das Theme-Objekt für `styled-components` setzt sich aus zwei Quellen zusammen:
-
-```ts
-// style/tokens.ts – statisch, für alle Themes gleich
-export const tokens = { space, text, fontWeight, letterSpacing, font, radius, borderWidth, size, layer }
-
-// style/darkTheme.ts, style/tavernTheme.ts – dynamisch, nur Farben
-export const darkTheme = { colors: { … } }
-
-// App.tsx
-<ThemeProvider theme={{ ...tokens, colors: (isDarkTheme ? darkTheme : tavernTheme).colors }}>
-```
-
-Components lesen beides auf dieselbe Weise: `props.theme.space[5]`, `props.theme.text.sm`,
-`props.theme.colors.primary`.
-
-Dazu kommen:
-
-- `style/styled.d.ts` – typisiert `DefaultTheme` (Typ von `tokens` plus `colors`). TypeScript prüft damit Zugriffe
-  auf das Theme.
-- `style/GlobalStyle.ts` – `createGlobalStyle` für die Grundregeln aus [1.1](#11-grundsätze). Gilt für alle Screens
-  (seit Entscheidung P3 auch für den Player). Er wird nicht in `App.tsx`, sondern als `<GlobalStyle />` im jeweiligen
-  Screen gerendert (jeder Screen läuft in einem eigenen Fenster). Eingebunden ist er in `AdminScreen`, `WallScreen`,
-  `GroundScreen` und `PlayerScreen` (seit DND-7). `index.css` wird nicht importiert.
-- `style/tokens.ts` enthält außerdem den Helper `textStyle(stufe)`, der Schriftgröße und Zeilenhöhe einer
-  `text.*`-Stufe gemeinsam setzt (K4). `text.<stufe>` ist ein Objekt `{ fontSize, lineHeight }`.
-
-Namensraum: `theme.text.*` sind Schrift-Tokens, `theme.colors.text.color` ist eine Farbrolle. Beide bleiben getrennt.
+- Das Theme-Objekt für `styled-components` besteht aus `tokens` (`style/tokens.ts`, statisch, für alle Themes gleich)
+  und `colors` des aktiven Themes (`style/darkTheme.ts`, `style/tavernTheme.ts`). `App.tsx` setzt beides im
+  `ThemeProvider` zusammen.
+- Components lesen beides über `props.theme.*` (z. B. `props.theme.space[5]`, `props.theme.colors.primary`). Schrift
+  setzen sie mit `textStyle(stufe)` aus `style/tokens.ts` ([1.2](#12-tokens) Schrift).
+- `style/styled.d.ts` typisiert `DefaultTheme` (Typ von `tokens` plus `colors`). TypeScript prüft damit Zugriffe auf
+  das Theme.
+- `style/GlobalStyle.ts` enthält die Grundregeln aus [1.1](#11-grundsätze). Er wird nicht in `App.tsx`, sondern als
+  `<GlobalStyle />` in jedem Screen gerendert (jeder Screen läuft in einem eigenen Fenster): `AdminScreen`,
+  `WallScreen`, `GroundScreen`, `PlayerScreen`. `index.css` wird nicht importiert.
+- Namensraum: `theme.text.*` sind Schrift-Tokens, `theme.colors.text.color` ist eine Farbrolle. Beide bleiben getrennt.
 
 ---
 
 ## 1. Statischer Teil (ohne Farbe)
 
+Gilt für alle Themes gleich.
+
 ### 1.1 Grundsätze
 
-- **4px-Raster:** Jeder Abstand und jede Größe kommt aus einem Token. Feste px-Werte gibt es nur als benannte
-  Layout-Konstante ([1.3](#13-layout-konstanten)).
+- **4px-Raster:** Jeder Abstand und jede Größe kommt aus einem Token. Ausnahme: [1.3](#13-layout-konstanten).
 - **Globale Grundregeln:** `box-sizing: border-box` und `margin: 0` für alle Elemente. Schrift, Größe und Zeilenhöhe
-  des Body: `font.family.base`, `text.md`. Gilt für alle Screens (`GlobalStyle`, siehe [Architektur](#architektur)).
+  des Body: `font.family.base`, `text.md`. Umgesetzt in `GlobalStyle` ([Architektur](#architektur)).
 - **Nichts vom Browser übernehmen:** Überschriften, Absätze, Listen und Buttons werden explizit gestylt
   (Größe, Abstand, Padding-Reset).
 - **Layout per Grid und Flex:** Bereiche werden über `display: grid` und `gap` angeordnet, nicht über
   `position: fixed` mit Ausgleichs-Margins. `position: fixed` nur für Vollbild-Ebenen und schwebende Elemente,
   dann immer mit `inset`.
-- **Fließend statt Breakpoints** (P1): Layouts passen sich über Grid (`minmax(0, 1fr)`) an die Breite an. Es gibt
-  keine `breakpoint.*`-Tokens. Wo eine Bedingung nötig ist, ist sie eine benannte Konstante in der Komponente
-  (Player: `PORTRAIT_QUERY` = `(orientation: portrait)` für das Overlay „Handy drehen“).
+- **Fließend statt Breakpoints:** Layouts passen sich über Grid (`minmax(0, 1fr)`) an die Breite an. Es gibt
+  keine `breakpoint.*`-Tokens. Wo eine Bedingung nötig ist, ist sie eine Layout-Konstante ([1.3](#13-layout-konstanten)).
 
 ### 1.2 Tokens
 
-**Abstände**
+Die Werte stehen nur in [tokens.ts](src/style/tokens.ts).
 
-| Token | Wert |
-|---|---|
-| `space.1` | 4px |
-| `space.2` | 8px |
-| `space.3` | 12px |
-| `space.4` | 16px |
-| `space.5` | 24px |
-| `space.6` | 32px |
-| `space.7` | 48px |
-| `space.8` | 64px |
-
-**Schrift:** Jede Stufe ist ein Paar aus Schriftgröße und Zeilenhöhe. Beide werden immer zusammen gesetzt (K4).
-
-| Token | Größe / Zeilenhöhe |
-|---|---|
-| `text.xs` | 12 / 16px |
-| `text.sm` | 14 / 20px |
-| `text.md` | 16 / 24px |
-| `text.lg` | 20 / 28px |
-| `text.xl` | 24 / 32px |
-| `text.2xl` | 32 / 40px |
-| `text.reading` | 16 / 26px – nur Fließtext in den Notizen |
-
-| Token | Wert |
-|---|---|
-| `fontWeight.regular` | 400 |
-| `fontWeight.medium` | 500 |
-| `fontWeight.semibold` | 600 |
-| `fontWeight.bold` | 700 |
-| `letterSpacing.label` | .08em |
-| `font.family.base` | `"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif` – Inter über `@fontsource/inter` (400, 500, 600, 700), lokal ausgeliefert |
-
-**Radien und Rahmen**
-
-| Token | Wert |
-|---|---|
-| `radius.sm` | 4px |
-| `radius.md` | 8px |
-| `radius.lg` | 12px |
-| `radius.xl` | 16px |
-| `radius.pill` | 999px |
-| `borderWidth.thin` | 1px |
-| `borderWidth.thick` | 2px |
+- **Abstände:** `space.1` … `space.8`, aufsteigend auf dem 4px-Raster.
+- **Schrift:** `text.xs`, `text.sm`, `text.md`, `text.lg`, `text.xl`, `text.2xl`, `text.reading`. Jede Stufe ist ein
+  Objekt aus Schriftgröße und Zeilenhöhe; `textStyle()` setzt beide immer zusammen.
+- **Gewichte:** `fontWeight.regular`, `fontWeight.medium`, `fontWeight.semibold`, `fontWeight.bold`.
+- **Laufweite:** `letterSpacing.label`.
+- **Schriftart:** `font.family.base` – Inter, lokal ausgeliefert über `@fontsource/inter` in den vier Gewichten von
+  `fontWeight.*`.
+- **Radien:** `radius.sm`, `radius.md`, `radius.lg`, `radius.xl`, `radius.pill`.
+- **Rahmen:** `borderWidth.thin`, `borderWidth.thick`.
 
 **Größen**
 
-| Token | Wert | Wofür |
-|---|---|---|
-| `size.control.md` | 40px | Höhe aller Bedienelemente (Buttons, Navigation, Icon-Buttons) |
-| `size.control.lg` | 48px | Icon-Button am Smartphone (Player), Touch-Ziel (P2) |
-| `size.icon` | 20px | alle Icons |
-| `size.scrollbar` | 4px | Breite der Scrollleiste (Notizen im Admin) |
-| `size.badge` | 32px | Kachelnummer |
-| `size.button.minWidth` | 112px | Mindestbreite von Text-Buttons |
-| `size.bar.md` | 56px | Top-Bar, Höhe der schwebenden Steuerleiste |
-| `size.bar.lg` | 80px | Bottom-Bar im Admin |
+| Token | Wofür |
+|---|---|
+| `size.control.md` | Höhe aller Bedienelemente (Buttons, Navigation), Höhe und Breite von Icon-Buttons |
+| `size.control.lg` | Bedienelemente am Smartphone (Player): Höhe und Breite des Icon-Buttons, Mindestmaß für Höhe und Breite jedes Touch-Ziels. 48px nach Material (48dp), über Apples Mindestmaß (44pt) |
+| `size.icon` | alle Icons |
+| `size.scrollbar` | Breite der Scrollleiste (Notizen im Admin) |
+| `size.badge` | Kachelnummer |
+| `size.button.minWidth` | Mindestbreite von Text-Buttons |
+| `size.bar.md` | Top-Bar, Höhe der schwebenden Steuerleiste |
+| `size.bar.lg` | Bottom-Bar im Admin |
 
-Entfallen: `size.icon.sm`, `size.icon.lg` (K1), `size.control.sm`, `fontSize.*` (ersetzt durch `text.*`).
+**Ebenen (`z-index`):** `z-index` nur über `layer.*`, nie als freie Zahl. Was im Grid-Layout ohnehin richtig
+liegt, bekommt keinen `z-index`. `layer.raised` gilt nur innerhalb einer Komponente mit eigenem Stapelkontext.
+Im Player gibt es keinen `z-index`: Das Overlay „Handy drehen“ steht im JSX zuletzt und ist das einzige positionierte
+Element.
 
-**Touch-Ziele (Player):** Bedienelemente am Smartphone sind mindestens `size.control.lg` (48px) hoch und breit.
-Ressourcen-Buttons sind mit 64px (`RESOURCE_HEIGHT`) größer.
-
-**Ebenen (`z-index`)** (Entscheidung O4)
-
-| Token | Wert | Wofür | Vor dem Umbau |
-|---|---|---|---|
-| `layer.base` | 0 | normaler Inhalt | – |
-| `layer.raised` | 1 | lokal innerhalb einer Komponente, z. B. Nummer über dem Kachelbild | 99 (`MapOverlay`, `NumberIcon`) |
-| `layer.media` | 1 | Vollbild-Hintergrund (Bild, Video) | 1 (`BackgroundImage`, `BackgroundMedia`) |
-| `layer.grid` | 10 | Raster-Ebene auf dem Ground | 99 (`GridOverlay`) |
-| `layer.panel` | 20 | Overlay-Panel auf der Wall | 99999 (`MapContainer` in `WallScreen`) |
-| `layer.controls` | 30 | Hover-Fläche mit Steuerleiste | 99999 (`ScreenControlBar`) |
-| `layer.dialog` | 40 | Dialog mit Abdunklung | 99999 (`Dialogue`, seit DND-4 `layer.dialog`) |
-
-Entfallen ersatzlos (seit DND-4), weil das Grid-Layout sie überflüssig macht: 99 und 999 an `AudioControlButton`,
-`AtmoButton`, `ThemeToggleButton`, 999 an `ButtonContainer` und `ConfirmButton` im Dialog. Ebenso (P6, seit DND-7)
-9 an `Overlay` und 1 an `Resource`/`SpellResource` im Player: Das Overlay steht im JSX zuletzt und ist das einzige
-positionierte Element.
+| Token | Wofür |
+|---|---|
+| `layer.base` | normaler Inhalt |
+| `layer.raised` | lokal innerhalb einer Komponente, z. B. Nummer über dem Kachelbild |
+| `layer.media` | Vollbild-Hintergrund (Bild, Video) |
+| `layer.grid` | Raster-Ebene auf dem Ground |
+| `layer.panel` | Overlay-Panel auf der Wall |
+| `layer.controls` | Hover-Fläche mit Steuerleiste |
+| `layer.dialog` | Dialog mit Abdunklung |
 
 ### 1.3 Layout-Konstanten
 
-Feste Maße einzelner Layouts. Sie sind **keine** Tokens und stehen als benannte Konstante in der jeweiligen Komponente.
-
-| Wert | Wofür | Ort |
-|---|---|---|
-| 200px · 400px | linke und rechte Spalte im Admin | `AdminScreen` |
-| 240px | Außenspalten der Top-Bar | `TopBar` |
-| 880px · 68ch | maximale Breite einer Notizseite, maximale Zeilenlänge | `DocumentReader` |
-| 96px | Label-Spalte der Szenen-Details, Kachelbreite der Nicht-Kampfszenen | `DetailsSideBar`, `SideMaps` |
-| 1440px | maximale Breite des Wall-Panels | `WallScreen` |
-| 104px | Platz für die Steuerleiste (24 + 56 + 24) | `ScreenControlBar` |
-| 600px | Breite des Dialogs | `Dialogue` |
-| 200px · 16px · 3ch | Breite des Sliders, Größe des Griffs, Mindestbreite der Wertanzeige (`SLIDER_WIDTH`, `SLIDER_THUMB_SIZE`, `SLIDER_VALUE_MIN_WIDTH`) | `ScreenControlBar` |
-| 64px | Höhe der Ressourcen-Buttons (`RESOURCE_HEIGHT`) | `ResourceBarPlayer` |
-| 8px · 24px | Breite und Höhe eines Zauber- oder Spezialplatzes (`SLOT_WIDTH`, `SLOT_HEIGHT`) | `ResourceBarPlayer` |
-| 96px | Icon im Overlay „Handy drehen“ (`ROTATE_ICON_SIZE`) | `PlayerScreen` |
-| `(orientation: portrait)` | Bedingung für das Overlay „Handy drehen“ (`PORTRAIT_QUERY`), keine Breite | `PlayerScreen` |
+Feste px-Werte gibt es nur als Maße einzelner Layouts. Sie sind **keine** Tokens, sondern stehen als benannte Konstante
+in der jeweiligen Komponente.
+Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#layout-konstanten).
 
 ### 1.4 Regeln
 
@@ -184,19 +98,20 @@ Feste Maße einzelner Layouts. Sie sind **keine** Tokens und stehen als benannte
 
 | Abstand | Beziehung | Beispiele |
 |---|---|---|
-| `space.1` (4) | innerhalb einer Gruppe | Icon-Gruppe, Navigationseinträge, Button-Gruppe, Label über Überschrift |
-| `space.2` (8) | kleine Kacheln, Label vor Inhalt in derselben Zeile | Kacheln im Admin, „Szenen“ → Kacheln (`margin-right` am Label plus `gap`) |
-| `space.3` (12) | zusammengehörige Elemente, Label → Inhalt darunter | Musik-Button → Titel, Zeilen der Details, Kacheln auf der Wall, Dialog-Buttons, „Kampfszenen“ → Kachelraster, „Notizen“ → Navigation |
-| `space.4` (16) | Gruppen in einer Leiste, Elemente im Dialog | Sound-Gruppen in der Top-Bar, Bild → Text → Buttons |
-| `space.5` (24) | Bereiche | Spalten im Admin, Karten, Notizseiten, Gruppen in der Steuerleiste |
-| `space.6`–`space.8` | große Flächen | Innenabstand von Panel und Notizseite, Abstand zum Bildschirmrand |
+| `space.1` | innerhalb einer Gruppe | Icon-Gruppe, Navigationseinträge, Button-Gruppe, Label über Überschrift |
+| `space.2` | kleine Kacheln, Label vor Inhalt in derselben Zeile | Kacheln im Admin, „Szenen“ → Kacheln (`margin-right` am Label plus `gap`) |
+| `space.3` | zusammengehörige Elemente, Label → Inhalt darunter | Musik-Button → Titel, Zeilen der Details, Kacheln auf der Wall, Dialog-Buttons, „Kampfszenen“ → Kachelraster, „Notizen“ → Navigation (`padding-bottom: space.2` am Label plus `gap` `space.1` der Spalte) |
+| `space.4` | Gruppen in einer Leiste, Elemente im Dialog | Sound-Gruppen in der Top-Bar, Bild → Text → Buttons |
+| `space.5` | Bereiche | Spalten im Admin, Karten, Notizseiten, Gruppen in der Steuerleiste |
+| `space.6`–`space.8` | große Flächen | Abstand zum Bildschirmrand, Innenabstände nach der nächsten Tabelle |
 
 **Innenabstand von Flächen**
 
 | Fläche | Innenabstand |
 |---|---|
 | schwebende Steuerleiste | `space.2` |
-| Karte, Dialog (Textbereich) | `space.5` |
+| Karte | `space.5` |
+| Dialog | `space.5` seitlich und unten |
 | Leisten (seitlich) | `space.5` |
 | Wall-Panel | `space.6` |
 | Notizseite | `space.7` oben/unten, `space.8` seitlich |
@@ -210,18 +125,18 @@ Feste Maße einzelner Layouts. Sie sind **keine** Tokens und stehen als benannte
 | `text.2xl` | `bold` | h1 in den Notizen |
 | `text.xl` | `semibold` | h2 in den Notizen, Überschrift des Wall-Panels, Zahl im Ressourcen-Button (Player) |
 | `text.lg` | `semibold` | Titel von Karte und Dialog, Ziffer der Zauberstufe I–IV (Player) |
-| `text.md` | `regular` / `medium` / `semibold` / `bold` | Hinweis im Overlay „Handy drehen“ (`medium`, Player), Standard, Listen in den Notizen (`ul`, `ol`, `li`, auch Absätze in Listeneinträgen des Inhaltsverzeichnisses), h3 und h4 in den Notizen (`semibold`), App-Titel (`bold`), Kachelnummer (`bold`) |
+| `text.md` | `regular` / `medium` / `semibold` / `bold` | Standard und Listen in den Notizen (`ul`, `ol`, `li`, auch Absätze in Listeneinträgen des Inhaltsverzeichnisses) (`regular`), Hinweis im Overlay „Handy drehen“ (`medium`, Player), h3 und h4 in den Notizen (`semibold`), App-Titel und Kachelnummer (`bold`) |
 | `text.sm` | `regular` / `medium` / `semibold` | Werte, Beschreibungen (`regular`), Navigation und Musiktitel (`medium`), Buttons, Slider-Wert, h5 und h6 in den Notizen (`semibold`) |
 | `text.xs` | `semibold` | Labels |
-| `text.reading` | `regular` | Fließtext (Absätze) in den Notizen |
+| `text.reading` | `regular` | nur Fließtext (Absätze) in den Notizen |
 
 Überschriften h3–h6 in den Notizen: Abstand `space.5` oben, `space.2` unten (h2: `space.6` / `space.3`).
 
-**Gewichte:** `regular` für Text, `medium` für Listen- und Anzeigetext, `semibold` für Aktionen, Labels und
-Überschriften ab h2, `bold` für h1, App-Titel und Kachelnummer. Andere Gewichte gibt es nicht.
+**Gewichte:** nur die aus der Schrift-Hierarchie. Andere Gewichte gibt es nicht.
 
-**Großbuchstaben:** nur bei Labels und bei Button-Texten, die schon groß geschrieben sind (BATTLE, BLACK). Dann immer
-mit `letterSpacing.label`. Normale Texte wie „Confirm“ bekommen keine Laufweite (K2).
+**Großbuchstaben und Laufweite:** Großbuchstaben nur bei Labels und bei Button-Texten, die schon groß geschrieben
+sind (BATTLE, BLACK). Dann immer mit `letterSpacing.label`. Alles andere hat keine Laufweite, auch Überschriften,
+Titel und normale Texte wie „Confirm“.
 
 **Radien**
 
@@ -235,13 +150,12 @@ mit `letterSpacing.label`. Normale Texte wie „Confirm“ bekommen keine Laufwe
 | schwebende Leiste | `radius.xl` |
 | Badge, Slider-Schiene | `radius.pill` |
 
-Regel für verschachtelte Flächen (K3): **äußerer Radius = innerer Radius + Innenabstand.** Beispiel: Button
-`radius.md` (8) + Innenabstand `space.2` (8) = Leiste `radius.xl` (16). Bei großem Innenabstand (ab `space.5`) gilt
-die Regel nicht, dort reicht `radius.lg`.
+Verschachtelte Flächen: **äußerer Radius = innerer Radius + Innenabstand.** Bei großem Innenabstand (ab
+`space.5`) gilt die Regel nicht, dort reicht `radius.lg`.
 
-**Icons:** immer `size.icon` (20px), in Buttons immer in `size.control.md` (40px) zentriert (K1), im Player in
-`size.control.lg` (48px). Einfache Formen (Kreis, Dreieck der Ressourcen) sind SVG (`<circle>`, `<polygon>`,
-`viewBox 0 0 20 20`) mit `fill` aus einer Farbrolle, keine CSS-Dreiecke über `border-width` (P5).
+**Icons:** Größen nach [1.2](#12-tokens). In Buttons ist das Icon immer zentriert. Einfache Formen (Kreis,
+Dreieck der Ressourcen) sind SVG (`<circle>`, `<polygon>`, `viewBox 0 0 20 20`) mit `fill` aus einer Farbrolle, keine
+CSS-Dreiecke über `border-width`.
 
 **Rahmen und Linien:** `borderWidth.thin` für Trennlinien, Ränder von Seiten und Kacheln. `borderWidth.thick` nur
 für Aktiv-Markierungen. Senkrechte Trennlinien sind so hoch wie die Icons daneben (`size.icon`).
@@ -252,219 +166,66 @@ Kein Leuchten (`box-shadow`). Buttons und Navigation zeigen den Aktiv-Zustand ü
 
 **Bilder:** Szenenbilder immer im Format 16:9 (`aspect-ratio: 16 / 9`) mit `object-fit: cover`. Zulässige Alternative
 bei Kacheln: `padding-top: 56.25%` mit absolut positioniertem Bild (`MapElement`). Der Kachelrand ist dort eine
-`outline` (seit DND-5), zählt also nicht zur Höhe: Kacheln bleiben exakt 16:9. Karten (Weltkarte)
-mit `object-fit: contain`. Vollbild-Hintergründe mit `position: fixed`, `inset: 0`, `object-fit: cover`.
+`outline`, zählt also nicht zur Höhe: Kacheln bleiben exakt 16:9. Karten (Weltkarte) mit `object-fit: contain`.
+Vollbild-Hintergründe mit `position: fixed`, `inset: 0`, `object-fit: cover`.
 
 **Zahlen:** `font-variant-numeric: tabular-nums`, wo Zahlen sich ändern oder untereinander stehen (Kachelnummer,
 Slider-Wert, Zahl im Ressourcen-Button).
 
-**Ebenen:** `z-index` nur über `layer.*`, nie als freie Zahl. Was im Grid-Layout ohnehin richtig liegt, bekommt keinen
-`z-index`. `layer.raised` gilt nur innerhalb einer Komponente mit eigenem Stapelkontext.
-
-**Laufweite:** nur `letterSpacing.label` bei Großbuchstaben. Überschriften und Titel haben keine Laufweite (O1).
-
-**Übergangsdauern:** bewusst **keine** Tokens, sondern Werte in der jeweiligen Komponente (Entscheidung DND-5 E2):
-`0.5s` für das Ein- und Ausblenden der Steuerleiste (`ScreenControlBar`), `0.3s` für den Nach-oben-Button
-(`TopLink` in `DocumentReader`), `6s` für die Dreh-Animation im Overlay „Handy drehen“ (`PlayerScreen`).
+**Übergangsdauern:** bewusst **keine** Tokens, sondern Werte in der jeweiligen Komponente.
 
 **UI-Texte:** Admin, Wall und Ground verwenden die vorhandenen Bezeichnungen (teils englisch, z. B. BATTLE, Confirm).
-Im Player sind alle Texte deutsch (P7), auch der Hinweis „Bitte das Handy quer halten“.
+Im Player sind alle Texte deutsch, auch der Hinweis „Bitte das Handy quer halten“.
 
 ### 1.5 Bausteine
 
-Wiederkehrende Elemente. In den Components werden sie gleich umgesetzt, am besten als gemeinsame Styled Components.
+Wiederkehrende Elemente werden in den Components gleich umgesetzt, am besten als gemeinsame Styled Components. Als
+gemeinsame Komponenten gibt es `TextButton` ([TextButton.tsx](src/components/TextButton.tsx)) und `Label`
+([Label.tsx](src/components/Label.tsx)).
 
-**Icon-Button**
-
-| Eigenschaft | Wert |
-|---|---|
-| Größe | `size.control.md` × `size.control.md` |
-| Icon | `size.icon`, zentriert (`display: grid; place-items: center`) |
-| Radius | `radius.md` |
-| Padding | `0` (Reset bei `<button>`) |
-| Farbe | Icon `text.color`. Hintergrund transparent (Top-Bar) oder `secondary` (Play, Nach oben) |
-| Beispiele | Sound-Buttons, Settings, Play/Pause, Nach oben |
-| Player | Größe `size.control.lg` statt `size.control.md`, Hintergrund `secondary` (Theme-Button) |
-
-**Text-Button** (K2) – gemeinsame Styled Component `TextButton` (`src/components/TextButton.tsx`, `<button>` mit
-`$variant: 'default' | 'active' | 'cancel'`). Laufweite gehört nicht zum Baustein; bei Großbuchstaben ergänzt sie
-die verwendende Komponente (z. B. `ScreenControlBar`).
-
-| Eigenschaft | Wert |
-|---|---|
-| Höhe | `size.control.md` |
-| Breite | `min-width: size.button.minWidth` |
-| Innenabstand | `0 space.4` |
-| Schrift | `text.sm`, `semibold`. Bei Großbuchstaben zusätzlich `letterSpacing.label` |
-| Radius | `radius.md` |
-| Farbe | inaktiv `secondary` mit `text.color`, aktiv `primary` mit `onPrimary`, Abbrechen `background` mit `text.color` |
-| Beispiele | BATTLE/WORLD/OFF, BLACK/WHITE/OFF, Confirm/Decline |
-
-**Button-Gruppe:** `display: flex`, `gap: space.1`. Mehrere Text-Buttons, von denen einer aktiv ist.
-
-**Navigationseintrag**
-
-| Eigenschaft | Wert |
-|---|---|
-| Höhe | `size.control.md` |
-| Innenabstand | `0 space.3`, linksbündig |
-| Schrift | `text.sm`, `medium` |
-| Radius | `radius.md` |
-| Abstand | `space.1` zwischen den Einträgen |
-| Farbe | inaktiv `secondary` mit `text.color`, aktiv `primary` mit `onPrimary` |
-
-**Label**
-
-| Eigenschaft | Wert |
-|---|---|
-| Schrift | `text.xs`, `semibold`, `letterSpacing.label`, Großbuchstaben |
-| Abstand | zum Inhalt darunter 12px: „Kampfszenen“ → Kachelraster `margin-bottom: space.3`, „Notizen“ → Navigation `padding-bottom: space.2` plus `gap` `space.1` der Spalte. Zu einer Überschrift darunter `space.1` (Aktive Szene, Szene wechseln). Zum zugehörigen Wert in einem zweizeiligen Block `0` („Musik“ → Titel). Vor Inhalt in derselben Zeile `space.2` plus `gap` („Szenen“). |
-| Ausrichtung neben Werten | `align-items: baseline` |
-| Beispiele | Notizen, Aktive Szene, Kampfszenen, Enemies, Loot, Musik, Szenen, Szene wechseln, Raster, Zelle, Aktion, Bonusaktion, Bewegung, Spezial, Zauberplätze |
-
-**Karte**
-
-| Eigenschaft | Wert |
-|---|---|
-| Innenabstand | `space.5` |
-| Radius | `radius.lg` |
-| Farbe | `secondary` |
-| Aufbau | optional Label, optional Titel `text.lg`, Inhalt. Zeilen getrennt durch `borderWidth.thin` in `border`. „Kampfszenen“ hat keinen Titel, nur Label mit Anzahl. |
-| Beispiele | Aktive Szene, Kampfszenen, Ressourcen (Player) |
-
-**Ressourcen-Button** (Player)
-
-| Eigenschaft | Wert |
-|---|---|
-| Größe | Höhe `RESOURCE_HEIGHT` (64px), Breite der Spalte |
-| Raster | 4 gleich breite Spalten (`repeat(4, minmax(0, 1fr))`), `gap` `space.3`, Label darüber mit `space.3` |
-| Inhalt | Icon (`size.icon`) und Zahl, zentriert, `gap` `space.3`. Zauberplätze: Ziffer links, Plätze rechts (`space-between`, Innenabstand `0 space.4`) |
-| Schrift | Zahl `text.xl`, `semibold`, `tabular-nums`. Ziffer `text.lg`, `semibold` |
-| Rahmen | `borderWidth.thick` in `resource.<art>.strong` |
-| Radius | `radius.md` |
-| Farbe | Fläche `resource.<art>.muted`, Zahl `text.color` |
-| Plätze | `SLOT_WIDTH` × `SLOT_HEIGHT` (8 × 24px), `radius.sm`, `gap` `space.1`. Verfügbar `resource.<art>.strong`, verbraucht `resource.empty` |
-| Icons | verfügbar `resource.<art>.strong`, verbraucht `resource.empty` |
-| Element | `<button type="button">` mit Reset (`padding`, `font: inherit`, `color: text.color`), per Tastatur bedienbar. Bewegung ist nicht antippbar: `<div>` (`as="div"`), `cursor: default` |
-| Beispiele | Aktion, Bonusaktion, Bewegung (nicht antippbar), Spezial, Zauberplätze I–IV |
-
-**Overlay-Panel** (Wall)
-
-| Eigenschaft | Wert |
-|---|---|
-| Innenabstand | `space.6` |
-| Radius | `radius.lg` |
-| Breite | `min(1440px, 100vw − 2 × space.8, …)`, siehe [wall-mapping.md](design/wall-mapping.md) |
-| Position | `space.7` unter der Oberkante, horizontal mittig |
-| Kopfzeile | Überschrift `text.xl`, optional Label rechts, `space.5` zum Inhalt |
-| Farbe | `background` |
-
-**Schwebende Steuerleiste** (Wall, Ground)
-
-| Eigenschaft | Wert |
-|---|---|
-| Position | `bottom: space.5`, horizontal mittig |
-| Innenabstand | `space.2` |
-| Radius | `radius.xl` |
-| Abstand zwischen Gruppen | `space.5` |
-| Sichtbarkeit | nur bei Hover über dem Screen |
-| Farbe | `dark` |
-
-**Kachel** (Szenenbild)
-
-| Eigenschaft | Wert |
-|---|---|
-| Format | 16:9 (`aspect-ratio` oder `padding-top: 56.25%`, siehe [1.4](#14-regeln) Bilder) |
-| Rand | `outline` `borderWidth.thin` in `border`, Abstand 0 (zählt nicht zur Größe). Aktiv ersetzt ihn die Aktiv-Outline |
-| Radius | `radius.sm` (Admin), `radius.md` (Wall) |
-| Aktiv | Outline `borderWidth.thick` in `primary`, Abstand `borderWidth.thick` |
-| Raster | 5 Spalten, `gap` `space.2` (Admin) oder `space.3` (Wall), zeilenweise sortiert |
-
-**Nummern-Badge**
-
-| Eigenschaft | Wert |
-|---|---|
-| Größe | Höhe `size.badge`, `min-width: size.badge`, Innenabstand `0 space.2` |
-| Position | `top` und `left` `space.2` in der Kachel |
-| Schrift | `text.md`, `bold`, `tabular-nums`, zentriert |
-| Radius | `radius.pill` |
-| Farbe | Fläche `badge.background`, Text `badge.text` |
-| Inhalt | Raumnummer (Position 1–25), nicht die Datenbank-ID |
-
-**Dialog**
-
-| Eigenschaft | Wert |
-|---|---|
-| Breite | 600px |
-| Radius | `radius.lg`, `overflow: hidden` |
-| Aufbau | Bild 16:9 bündig oben, Textbereich mit Label, Titel `text.lg` und Beschreibung `text.sm`, Buttons rechts |
-| Abstände | `space.4` zwischen Bild, Text und Buttons. `space.5` seitlich und unten. `space.3` zwischen den Buttons. |
-| Button-Reihenfolge | Abbrechen links, Hauptaktion rechts außen |
-| Farbe | Fläche `secondary`, Hintergrund `overlay` |
-
-**Top-Bar**
-
-| Eigenschaft | Wert |
-|---|---|
-| Höhe | `size.bar.md` |
-| Aufbau | Grid `240px 1fr 240px`: Titel links, Sound-Gruppen mittig, Settings rechts |
-| Innenabstand | `0 space.5` |
-| Gruppen | `space.4` mit Trennlinie (`borderWidth.thin` × `size.icon`, `border`), Buttons in der Gruppe `space.1` |
-
-**Bottom-Bar** (Admin)
-
-| Eigenschaft | Wert |
-|---|---|
-| Höhe | `size.bar.lg` |
-| Aufbau | Grid `1fr auto 1fr`: Musik links, Nicht-Kampfszenen mittig |
-| Innenabstand | `0 space.5` |
-| Szenen | Kacheln 96px breit (16:9), `gap` `space.2`, Label davor |
-
-**Slider** (Ground)
-
-| Eigenschaft | Wert |
-|---|---|
-| Breite | 200px (`SLIDER_WIDTH`) |
-| Schiene und Füllung | 4px hoch (MUI-Standard, nicht überschrieben), `radius.pill` |
-| Griff | 16px (`SLIDER_THUMB_SIZE`) |
-| Stufen | rastet in 10er-Schritten ein, ohne sichtbare Punkte |
-| Wert | feste Anzeige rechts, `text.sm`, `semibold`, `tabular-nums`, `min-width: 3ch` (`SLIDER_VALUE_MIN_WIDTH`), ohne Einheit |
-| Farbe | Schiene `secondary`, Füllung `primary`, Griff `text.color` |
+Aufbau je Baustein in [components.md](docs/design/components.md): [Icon-Button](docs/design/components.md#icon-button),
+[Text-Button](docs/design/components.md#text-button), [Button-Gruppe](docs/design/components.md#button-gruppe),
+[Navigationseintrag](docs/design/components.md#navigationseintrag), [Label](docs/design/components.md#label),
+[Karte](docs/design/components.md#karte), [Ressourcen-Button](docs/design/components.md#ressourcen-button) (Player),
+[Overlay-Panel](docs/design/components.md#overlay-panel) (Wall), [Schwebende Steuerleiste](docs/design/components.md#schwebende-steuerleiste)
+(Wall, Ground), [Kachel](docs/design/components.md#kachel), [Nummern-Badge](docs/design/components.md#nummern-badge),
+[Dialog](docs/design/components.md#dialog), [Top-Bar](docs/design/components.md#top-bar),
+[Bottom-Bar](docs/design/components.md#bottom-bar) (Admin), [Slider](docs/design/components.md#slider) (Ground).
 
 ### 1.6 Screen-Layouts
 
-| Screen | Aufbau | Details |
-|---|---|---|
-| Admin | Grid in Zeilen `size.bar.md` / `1fr` / `size.bar.lg`. Mittlere Zeile: Grid in Spalten `200px 1fr 400px`, `gap` und Innenabstand `space.5`. Links Navigation, Mitte Notizen, rechts Karten. | [admin-mapping.md](design/admin-mapping.md), [Mockup](design/mockups/v2/admin.png) |
-| Wall | Vollbild-Hintergrund, darüber das Overlay-Panel (BATTLE: Kachelraster, WORLD: Weltkarte) und die schwebende Steuerleiste | [wall-mapping.md](design/wall-mapping.md), [Mockup](design/mockups/v2/wall.png) |
-| Ground | Vollbild-Medium (Bild oder Video), Raster-Ebene, schwebende Steuerleiste mit Raster-Optionen und Slider | [ground-mapping.md](design/ground-mapping.md), [Mockup](design/mockups/v2/ground.png) |
-| Player | Smartphone im Querformat. Spalte, vertikal mittig, `gap` `space.4`: Theme-Button, darunter Karte mit zwei Zeilen à vier Ressourcen-Buttons (Aktion, Bonusaktion, Bewegung, Spezial / Zauberplätze I–IV), `gap` `space.4`. Im Hochformat deckt ein Overlay mit Hinweis alles ab. Ab 344px Höhe und etwa 568px Breite. | [player-mapping.md](design/player-mapping.md), [Mockup](design/mockups/v2/player.png) |
+Aufbau von Admin (Grid aus Top-Bar, drei Spalten und Bottom-Bar), Wall (Vollbild mit Overlay-Panel und Steuerleiste),
+Ground (Vollbild-Medium mit Raster und Steuerleiste) und Player (Smartphone im Querformat, Karte mit
+Ressourcen-Buttons): [screen-layouts.md](docs/design/screen-layouts.md#screen-layouts).
 
 ---
 
 ## 2. Dynamischer Teil (Farben)
+
+Wechselt mit dem Theme.
 
 ### 2.1 Prinzip
 
 - Components verwenden nur **Farbrollen** aus `theme.colors`, nie Farbwerte direkt (kein `#…`, `white`, `black`).
 - Jede Rolle gibt es in **jedem** Theme. Ein Theme ist nur ein anderer Satz Werte für dieselben Rollen.
 - Eine neue Farbe ist immer eine neue Rolle und wird in **allen** Themes angelegt.
-- Der Theme-Wechsel läuft über den Settings-Button im Admin, wird in `localStorage` (`isDarkTheme`) gespeichert und
-  über das `storage`-Event an Wall und Ground übertragen. Der Player Screen hat einen eigenen Theme-Button. Dort gilt
-  die Einstellung nur auf dem jeweiligen Gerät (eigenes `localStorage`, keine Synchronisation).
+- Der Theme-Wechsel läuft über den Settings-Button im Admin und wird über `localStorage` (`isDarkTheme`) an Wall und
+  Ground übertragen. Der Schlüssel heißt trotz des dunklen Tavern-Themes weiter so, damit gespeicherte Einstellungen
+  gültig bleiben ([Synchronisation](../docs/architecture.md#synchronisation)). Ausnahme: Der Player Screen hat einen
+  eigenen Theme-Button, die Einstellung gilt nur auf dem jeweiligen Gerät.
 
 ### 2.2 Rollen
 
 | Rolle | Bedeutung | Verwendung |
 |---|---|---|
-| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Wall-Panel, Decline-Button |
-| `secondary` | erhöhte Fläche | Karten, Dialog, inaktive Buttons und Navigation, Nach-oben- und Play-Button, Kachel-Platzhalter, Slider-Schiene, Hintergrund der Wall, Linie unter der Top-Bar |
+| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Wall-Panel, Nebenaktion ([2.4](#24-zustände)) |
+| `secondary` | erhöhte Fläche | Karten, Dialog, Nach-oben-Button, Kachel-Platzhalter, Slider-Schiene, Hintergrund der Wall, Linie unter der Top-Bar, inaktiver Zustand ([2.4](#24-zustände)) |
 | `dark` | tiefste Fläche | Bottom-Bar, schwebende Steuerleiste |
-| `primary` | Akzent, aktiv | aktive Navigation, aktive Buttons, aktive Kachel, Links, Confirm, Slider-Füllung, Musik läuft |
+| `primary` | Akzent, aktiv | Links, Slider-Füllung, aktiver Zustand ([2.4](#24-zustände)) |
 | `border` | Linien | Trennlinien in Karten und Top-Bar, Ränder von Notizseiten und Kacheln, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |
 | `overlay` | Abdunklung | Hintergrund hinter dem Dialog |
 | `text.color` | Vordergrund | Text, Icon-Füllung, Slider-Griff |
-| `onPrimary` | Vordergrund auf Akzent | Text und Icons auf `primary`: aktive Buttons, aktive Navigation, Confirm, Play-Button während die Musik läuft (Entscheidung O5) |
+| `onPrimary` | Vordergrund auf Akzent | aktiver Zustand ([2.4](#24-zustände)) |
 | `badge.background` | Fläche der Kachelnummer | Nummern-Badge auf den Kacheln der Wall |
 | `badge.text` | Text der Kachelnummer | Zahl im Nummern-Badge |
 | `resource.<art>.strong` | kräftiger Ton einer Ressource (`action`, `bonus`, `movement`, `spell`, `special`) | Rahmen des Ressourcen-Buttons, verfügbare Icons und Plätze (Player) |
@@ -473,126 +234,33 @@ die verwendende Komponente (z. B. `ScreenControlBar`).
 
 ### 2.3 Themes
 
-Werte aus `frontend/src/style/darkTheme.ts` und `tavernTheme.ts`. Geändert bzw. neu durch Entscheidung O5:
-`onPrimary` in beiden Themes und `primary` in Tavern (früher `#AD3131`), umgesetzt in DND-4. Neu in DND-5:
-`badge.background` und `badge.text` (die bisher festen Farben der Kachelnummer, in beiden Themes gleich).
-
-| Rolle | Dark (`darkTheme`) | Tavern (`tavernTheme`, früher `lightTheme`) |
-|---|---|---|
-| `primary` | `#4493F8` | `#C05E5E` (früher `#AD3131`) |
-| `secondary` | `#161b23` | `#3D271C` |
-| `dark` | `#020409` | `#000000` |
-| `border` | `#3d444db3` | `#956F01` |
-| `background` | `#0e1117` | `#140701` |
-| `overlay` | `rgba(0, 0, 0, 0.850)` | `rgba(0, 0, 0, 0.850)` |
-| `text.color` | `#f0f6fc` | `#CBAB96` |
-| `onPrimary` | `#0e1117` (= `background`) | `#140701` (= `background`) |
-| `badge.background` | `#5a5a5a` | `#5a5a5a` |
-| `badge.text` | `#ffffff` | `#ffffff` |
-| `resource.action.strong` · `.muted` | `#099000` · `#072900` | gleich |
-| `resource.bonus.strong` · `.muted` | `#db4400` · `#290e00` | gleich |
-| `resource.movement.strong` · `.muted` | `#fae100` · `#292500` | gleich |
-| `resource.spell.strong` · `.muted` | `#2487ff` · `#001229` | gleich |
-| `resource.special.strong` · `.muted` | `#ff2424` · `#290000` | gleich |
-| `resource.empty` | `#707070` | gleich |
-
-`resource.*` (P4) ist seit DND-7 im Code und ersetzt die früher festen Werte in `ResourceBarPlayer` (Aktion `#077600`,
-Bonusaktion `#b23700`, leer `#232321`, Zahl `#9e998a`). Die Ressourcenfarben sind Bedeutung, nicht Stimmung, und
-deshalb in beiden Themes gleich.
-
-`lightTheme` heißt seit DND-4 `tavernTheme` (Entscheidung O2): Es ist kein helles Theme, sondern ein dunkles in Braun
-und Rot. Die Umbenennung betraf `lightTheme.ts` und den Import in `App.tsx`. Der `localStorage`-Schlüssel `isDarkTheme`
-bleibt, damit gespeicherte Einstellungen gültig bleiben.
+Zwei Themes: Dark (`darkTheme`, [darkTheme.ts](src/style/darkTheme.ts)) und Tavern (`tavernTheme`,
+[tavernTheme.ts](src/style/tavernTheme.ts)). `resource.*` und `badge.*` sind in beiden Themes gleich, weil sie
+Bedeutung tragen, nicht Stimmung. Die `resource.*`-Töne sind so gewählt, dass alle Grafik-Paare 3:1 erreichen. Werte: [contrast.md](docs/design/contrast.md#theme-werte).
 
 ### 2.4 Zustände
 
-| Zustand | Rolle |
-|---|---|
-| aktiv / ausgewählt | Fläche `primary`, Text und Icons `onPrimary` |
-| inaktiv / normal | `secondary` |
-| Abbrechen, Nebenaktion | `background` |
-| Fläche auf Fläche | `background` → `secondary` (Karte darauf) → `dark` (Leiste) |
-| Linie | `border`, nie `text.color`. Ausnahme: Linie unter der Top-Bar in `secondary` ([2.2](#22-rollen)) |
+| Zustand | Rolle | Beispiele |
+|---|---|---|
+| aktiv / ausgewählt | Fläche `primary`, Text und Icons `onPrimary`. Kachel: Outline in `primary` ([1.4](#14-regeln)) | aktive Buttons und Navigation, aktive Kachel, Confirm, Play-Button während die Musik läuft |
+| inaktiv / normal | `secondary` | inaktive Buttons und Navigation, Play-Button ohne Musik |
+| Abbrechen, Nebenaktion | `background` | Decline-Button |
+| Fläche auf Fläche | `background` → `secondary` → `dark` | welche Fläche welche Rolle hat: [2.2](#22-rollen) |
+| Linie | `border`, nie `text.color` | Ausnahme: Linie unter der Top-Bar ([2.2](#22-rollen)) |
 
 ### 2.5 Farben außerhalb der Themes
 
-Feste Farben im heutigen Code, die gegen [2.1](#21-prinzip) verstoßen. Die festen Farben der Kachelnummer
-(`MapElement` → `NumberIcon`, `#5a5a5a` und `white`) sind seit DND-5 die Rollen `badge.background` und `badge.text`.
-
-| Wo | Farbe | Vorschlag |
-|---|---|---|
-| `GroundScreen` → `gridColorMap` (Prop `gridColor` an `GridOverlay`) | `black`, `white`, `transparent` | bleibt. Die Gitterfarbe wählt der Spielleiter, sie ist eine Funktion, keine Gestaltung. |
-| `ResourceBarPlayer` | 12 Werte: je ein kräftiger und ein dunkler Ton für Aktion, Bonusaktion, Bewegung, Zauber und Spezial, dazu Grau für leer und Textgrau | Entschieden (P4, P7): Rollen `resource.<art>.strong` / `.muted` und `resource.empty` ([2.2](#22-rollen), [2.3](#23-themes)). Das Textgrau entfällt zugunsten von `text.color`. Erledigt in DND-7. |
-
+Einzige Ausnahme von [2.1](#21-prinzip) ist `gridColorMap` in `GroundScreen` (`black`, `white`, `transparent` für die
+Prop `gridColor` an `GridOverlay`): Die Gitterfarbe wählt der Spielleiter, sie ist eine Funktion, keine Gestaltung.
+Die Farben von Kachelnummer und Ressourcen sind Rollen ([2.2](#22-rollen)).
 
 ### 2.6 Kontrast
 
-Geprüft nach WCAG 2.1 (Entscheidung O3). Ziel AA:
+Geprüft nach WCAG 2.1. Ziel AA:
 
 - **Text:** 4,5:1, große Schrift (ab 24px oder ab 18,66px fett) 3:1.
 - **Bedienelemente und Grafik:** 3:1.
+- **Ausnahme:** `border` im Dark-Theme verfehlt 3:1 bewusst: Trennlinien sind Gestaltung, kein
+  Bedienelement, und WCAG verlangt 3:1 nur für die Grenzen von Bedienelementen. Kacheln sind über ihre Bilder erkennbar.
 
-`border` ist halbtransparent bzw. auf der jeweiligen Fläche gemessen. Berechnet am 2026-10-04, `text.color` auf
-`dark` (Dark) am 2026-10-06 mit dem Code-Wert `#020409` nachgerechnet. **Vor DND-4** sind die Werte vor dem Umbau,
-**Aktuell** der Stand nach Entscheidung O5 (`onPrimary` neu, Tavern-`primary` `#AD3131` → `#C05E5E`), im Code seit
-DND-4. Fett = verfehlt das Ziel.
-
-| Paar | Verwendung | Ziel | Dark vor DND-4 | Dark aktuell | Tavern vor DND-4 | Tavern aktuell | Ergebnis aktuell | Maßnahme |
-|---|---|---|---|---|---|---|---|---|
-| `text.color` auf `background` | Notizen, Wall-Panel | 4,5 | 17,4 | 17,4 | 9,2 | 9,2 | ✓ beide | – |
-| `text.color` auf `secondary` | Karten, Dialog, inaktive Buttons | 4,5 | 15,9 | 15,9 | 6,5 | 6,5 | ✓ beide | – |
-| `text.color` auf `dark` | Bottom-Bar, Steuerleiste | 4,5 | 18,8 | 18,8 | 9,8 | 9,8 | ✓ beide | – |
-| Text auf `primary` (vor DND-4 `text.color`, aktuell `onPrimary`) | aktive Buttons und Navigation, Confirm (14px) | 4,5 | **2,9** | 6,1 | **3,0** | 4,7 | ✓ beide | O5: neue Rolle `onPrimary` |
-| `primary` auf `background` | Links in den Notizen (16px) | 4,5 | 6,1 | 6,1 | **3,1** | 4,7 | ✓ beide | O5: Tavern-`primary` heller |
-| `primary` auf `secondary` | aktive Kachel im Admin (Outline) | 3,0 | 5,6 | 5,6 | **2,2** | 3,3 | ✓ beide | O5: Tavern-`primary` heller |
-| `primary` auf `background` | aktive Kachel auf der Wall (Outline) | 3,0 | 6,1 | 6,1 | 3,1 | 4,7 | ✓ beide | – |
-| `border` auf `background` | Rand der Notizseiten | 3,0 | **1,5** | **1,5** | 4,3 | 4,3 | bewusst ✗ Dark | O6: bleibt so |
-| `border` auf `secondary` | Trennlinien in Karten | 3,0 | **1,5** | **1,5** | 3,0 | 3,0 | bewusst ✗ Dark | O6: bleibt so |
-| `badge.text` auf `badge.background` (vor DND-5 `white` auf `#5a5a5a`) | Kachelnummer | 4,5 | 6,9 | 6,9 | 6,9 | 6,9 | ✓ | – |
-| Zahl auf `resource.*.muted` (vorher `#9e998a`, neu `text.color`) | Ressourcen-Button (24px, groß) | 3,0 | 5,4–6,7 | 14,2–17,6 | 5,4–6,7 | 7,2–9,0 | ✓ beide | P7: `text.color` |
-| `resource.*.strong` auf `resource.*.muted` | Rahmen, verfügbare Icons und Plätze | 3,0 | **2,7** (Aktion) | 3,8–11,7 | **2,7** | 3,8–11,7 | ✓ beide | P4: Aktion `#099000`, Bonus `#db4400` |
-| `resource.*.strong` auf `secondary` | Rahmen gegen die Karte | 3,0 | **2,8** (Bonus) | 4,0–13,0 | **2,3** (Bonus), **2,4** (Aktion) | 3,2–10,5 | ✓ beide | P4 |
-| `resource.empty` auf `resource.*.muted` (vorher `#232321`) | verbrauchte Icons und Plätze | 3,0 | **1,0–1,2** | 3,1–3,9 | **1,0–1,2** | 3,1–3,9 | ✓ beide | P4: `#707070` |
-
-**Anmerkungen**
-
-- **Tavern-Rot:** `#C05E5E` statt `#BD5A5A`, weil `#BD5A5A` nur genau 4,50:1 erreicht. `#C05E5E` liegt mit 4,7:1 sicher
-  über der Grenze.
-- **`border` im Dark-Theme (O6):** Die Trennlinien sind Gestaltung, kein Bedienelement. WCAG verlangt 3:1 nur für die
-  Grenzen von Bedienelementen. Kacheln sind trotzdem erkennbar, weil sie Bilder zeigen.
-- **Ressourcen (Player):** In den vier `resource`-Zeilen bedeutet „vor DND-4“ den Code vor DND-7, „aktuell“ die
-  Werte nach P4/P7, im Code seit DND-7. Berechnet am 2026-10-08 und mit DND-7 an den Theme-Werten nachgerechnet. Die
-  Spannen reichen über alle fünf Ressourcen, `muted` und `empty` sind in beiden Themes gleich.
-- Mit O5 erfüllen alle Text- und Bedien-Paare WCAG AA. Die neuen Werte sind seit DND-4 im Code. Seit DND-5 nutzt
-  auch der aktive Button der Steuerleiste (Wall und Ground) `onPrimary`.
-
----
-
-## 3. Entscheidungen
-
-| # | Punkt | Entscheidung (2026-10-04) |
-|---|---|---|
-| O1 | Laufweite .02em (App-Titel, Wall-Überschrift) | Gestrichen. Einziges Laufweiten-Token ist `letterSpacing.label`. Mappings und Mockups v2 sind angepasst. |
-| O2 | Name `lightTheme` | Umbenennung in `tavernTheme`, umgesetzt in DND-4. `localStorage`-Schlüssel bleibt. |
-| O3 | Kontrast | Geprüft, Ergebnis in [2.6](#26-kontrast) |
-| O4 | Ebenen (`z-index`) | Skala `layer.*` festgelegt, siehe [1.2](#12-tokens) |
-| O5 | Text auf Akzentfarbe, Tavern-Akzent | Neue Rolle `onPrimary` (Dark `#0e1117`, Tavern `#140701`). Tavern-`primary` `#AD3131` → `#C05E5E` (4,7:1, statt `#BD5A5A` mit nur 4,50:1). Damit erfüllen alle Paare WCAG AA, siehe [2.6](#26-kontrast). Umgesetzt in DND-4. |
-| O6 | Trennlinien in Dark (1,5:1) | Bleiben so. Sie sind Gestaltung, kein Bedienelement. |
-
-Player Screen (2026-10-08), Details in [player-mapping.md](design/player-mapping.md#entscheidungen-2026-10-08):
-
-| # | Punkt | Entscheidung |
-|---|---|---|
-| P1 | Breakpoints (649/650/739px) | Keine `breakpoint.*`-Tokens. Fließendes Grid, nur das Overlay hat eine Bedingung: `PORTRAIT_QUERY` = `(orientation: portrait)` als Konstante. |
-| P2 | Touch-Ziele | Neues Token `size.control.lg` = 48px. Ressourcen-Buttons 64px (`RESOURCE_HEIGHT`). |
-| P3 | `GlobalStyle` im Player | Wird eingebunden. Hebt die Ausnahme aus DND-4 auf. |
-| P4 | Ressourcenfarben | Rollen `resource.<art>.strong` / `.muted`, `resource.empty`, in beiden Themes gleich. Aktion `#099000`, Bonusaktion `#db4400`, leer `#707070`, damit alle Grafik-Paare 3:1 erreichen. |
-| P5 | Feste Geometrie | Kreis und Dreieck als SVG in `size.icon`. Plätze 8 × 24px und Overlay-Icon 96px als Layout-Konstanten. |
-| P6 | `z-index` 9 und 1 | Entfallen, kein neues `layer.*`. |
-| P7 | UI-Texte | Deutsch. Zahl in `text.color` (keine Rolle `resource.text`). Overlay-Hinweis „Bitte das Handy quer halten“. |
-
----
-
-## 4. Offen
-
-Keine offenen Lücken. Alle vier Screens sind umgesetzt (Player Screen in DND-7, 2026-10-08).
+Messwerte je Farbpaar und Anmerkungen: [contrast.md](docs/design/contrast.md#kontrastmessung).

@@ -12,9 +12,8 @@ import { textStyle } from '../style/tokens'
 import MapEnvironmentSrc from './../../public/assets/images/ground_screen/mapOverview.jpg'
 
 
-// Upper limit of the overlay panel width (DESIGN.md 1.3)
 const OVERLAY_PANEL_MAX_WIDTH = '1440px'
-// Number of gaps per row/column in the 5 x 5 grid of battle maps (wall-mapping.md, width formula)
+// Number of gaps per row/column in the 5 x 5 grid of battle maps
 const GRID_GAP_COUNT = 4
 
 const MapEnvironment = styled.img`
@@ -46,7 +45,7 @@ const Screen = styled.div`
 `
 
 // Width: smallest of the upper limit, the viewport minus the side margins and the available height
-// converted into a width, so the 5 x 5 grid fits above the control bar (wall-mapping.md, decision 1)
+// converted into a width, so the 5 x 5 grid fits above the control bar
 const OverlayPanel = styled.div<{$isVisible: boolean}>`
     display: ${({ $isVisible }) => ($isVisible ? 'flex' : 'none')};
     flex-direction: column;

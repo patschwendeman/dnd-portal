@@ -5,8 +5,8 @@ Ground Screen (digitales Spielbrett). Holt Szenen vom Backend (`../backend`) und
 (Bilder, Musik, Sounds, Markdown-Notizen) selbst aus `public/` aus. Projektübergreifender Kontext (Vision, Screens
 Soll/Ist, Begriffe, bekannte Probleme) liegt eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 
-Gestaltungsregeln, Tokens und Farbrollen stehen in [DESIGN.md](DESIGN.md). Die Mappings je Screen (welcher Wert in
-welcher Komponente wie umgestellt wird), das Audit und die Mockups liegen in [design/](design/).
+Gestaltungsregeln, Tokens und Farbrollen stehen in [DESIGN.md](DESIGN.md). Details dazu (Bausteine, Layout-Konstanten
+und Screen-Layouts, Kontrast und Theme-Werte) liegen in [docs/design/](docs/design/).
 
 ## Stack
 
@@ -82,6 +82,8 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
   vier Screens (`AdminScreen`, `WallScreen`, `GroundScreen`, `PlayerScreen`).
 - Icons als SVG über `react-svg` (Füllfarbe aus dem Theme), Pfade ab `/assets/...`.
 - Neue Backend-Felder zuerst in `src/models/models.ts` ergänzen.
+- Code-Kommentare erklären das Warum. Keine Verweise auf DESIGN.md-/docs-Abschnitte im Code – die Zuordnung
+  steht in der Doku (z. B. Layout-Konstanten in `docs/design/screen-layouts.md`).
 
 ## Wichtig beim Ändern
 

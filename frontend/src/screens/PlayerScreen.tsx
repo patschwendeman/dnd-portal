@@ -8,7 +8,6 @@ import settingsIcon from '/assets/icons/settings.svg'
 import { ResourceBarPlayer } from '../components/ResourceBarPlayer'
 import { GlobalStyle } from '../style/GlobalStyle'
 
-// Layout constants (DESIGN.md 1.3)
 const ROTATE_ICON_SIZE = '96px'
 const PORTRAIT_QUERY = '(orientation: portrait)'
 

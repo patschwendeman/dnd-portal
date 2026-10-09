@@ -30,7 +30,6 @@ const RowLabel = styled(Label)`
   grid-column: 1 / -1;
 `
 
-// Layout constants (DESIGN.md 1.3)
 const RESOURCE_HEIGHT = '64px'
 const SLOT_WIDTH = '8px'
 const SLOT_HEIGHT = '24px'

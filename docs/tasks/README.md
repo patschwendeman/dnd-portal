@@ -11,3 +11,4 @@
 | DND-5 | style | Restyle Wall Screen (Schritt 2 von 3) | Fertig | [DND-5-wall-restyle.md](DND-5-wall-restyle.md) |
 | DND-6 | style | Restyle Ground Screen (Schritt 3 von 3) | Fertig | [DND-6-ground-restyle.md](DND-6-ground-restyle.md) |
 | DND-7 | style | Restyle Player Screen | Fertig | [DND-7-player-restyle.md](DND-7-player-restyle.md) |
+| DND-8 | docs | Style Guide kürzen und Details auslagern | Fertig | [DND-8-design-guide-slim.md](DND-8-design-guide-slim.md) |

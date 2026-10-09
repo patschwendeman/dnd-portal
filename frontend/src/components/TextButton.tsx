@@ -4,9 +4,7 @@ import { textStyle } from '../style/tokens'
 
 type TextButtonVariant = 'default' | 'active' | 'cancel'
 
-// Building block "Text-Button" (DESIGN.md 1.5, K2). Colors per DESIGN.md 2.4:
-// default = secondary, active = primary with onPrimary, cancel = background.
-// Letter spacing is not part of the block: only for labels in capitals (K2).
+// No letter spacing: it is only used for labels in capitals.
 const TextButton = styled.button<{ $variant: TextButtonVariant }>`
   min-width: ${(props) => props.theme.size.button.minWidth};
   height: ${(props) => props.theme.size.control.md};

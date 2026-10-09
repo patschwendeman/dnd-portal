@@ -8,13 +8,11 @@ import { TextButton } from './TextButton'
 import { textStyle } from '../style/tokens'
 
 // Space the floating control bar needs above the bottom edge:
-// space.5 (gap) + size.bar.md (bar) + space.5 (air) = 104px (DESIGN.md 1.3)
+// space.5 (gap) + size.bar.md (bar) + space.5 (air) = 104px
 const CONTROL_BAR_CLEARANCE = '104px'
-// Width of the cell size slider (ground-mapping.md, layout size)
 const SLIDER_WIDTH = '200px'
-// Size of the slider thumb (ground-mapping.md)
 const SLIDER_THUMB_SIZE = '16px'
-// Room for three digits, so the bar does not shift while dragging (ground-mapping.md)
+// Room for three digits, so the bar does not shift while dragging
 const SLIDER_VALUE_MIN_WIDTH = '3ch'
 
 const ControlBar = styled.div`
