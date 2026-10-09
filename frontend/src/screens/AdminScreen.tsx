@@ -27,7 +27,7 @@ import pauseIcon from '/assets/icons/pause.svg'
 const LEFT_COLUMN_WIDTH = '200px'
 const RIGHT_COLUMN_WIDTH = '400px'
 
-const LOAD_ERROR_MESSAGE = 'Backend nicht erreichbar – Szenen konnten nicht geladen werden'
+const LOAD_ERROR_MESSAGE = 'Backend nicht erreichbar'
 
 const Screen = styled.div<{ $hasLoadError: boolean }>`
     display: grid;

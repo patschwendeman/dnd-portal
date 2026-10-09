@@ -73,6 +73,8 @@ angezeigte Bild, der Fehler steht nur in der Konsole.
 - **Änderung nach Review Runde 1 (User):** Leiste etwas schmaler (weniger vertikaler Innenabstand). Statt des
   Text-Buttons „Erneut versuchen“ ein Icon-Button (Neu-laden-Symbol) in der Textfarbe `onError`, ohne eigene
   Fläche; zugänglicher Name „Erneut versuchen“ (`aria-label`/`title`), per Tastatur bedienbar.
+- **Änderung nach Review Runde 2 (User, ohne Review):** Text nur „Backend nicht erreichbar“; Text und Icon-Button
+  zentriert in der Leiste.
 - **Farben:** neue Rollen `error` (Fläche) und `onError` (Text) in `darkTheme` und `tavernTheme`, Kontrast
   `onError` auf `error` ≥ 4,5 (Text 14–16px) und Button lesbar; Werte vom Implementer gewählt und in
   `contrast.md` (Theme-Werte + Messung) dokumentiert. Wie `badge.*`/`resource.*` dürfen beide Themes denselben Wert
@@ -234,3 +236,43 @@ gefangen (E6). Scope eingehalten, Konventionen eingehalten.
 - `npm run test:unit`: 52/52 grün (22 neu)
 - `npm run build`: ok
 - Manuelle Prüfung AK1–AK5: offen, durch den User
+
+### Runde 2 – Review dc26664
+
+**Empfehlung:** Abnahme. Keine blockierenden Befunde. Nacharbeit aus E1 („Änderung nach Review Runde 1 (User)“)
+vollständig umgesetzt. Offen: manuelle Browserprüfung durch den User (AK1–AK5, Icon, Fokus und Leistenhöhe in
+beiden Themes).
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Admin bei Backend-Ausfall | erfüllt (laut Code, manuell offen) | Logik unverändert; `ErrorBar` mit Icon-Button „Erneut versuchen“ (`ErrorBar.tsx:58`) |
+| AK2 Erneut versuchen | erfüllt (laut Code, manuell offen) | echtes `<button type='button'>`, `onClick={onRetry}`, per Tastatur bedienbar |
+| AK3 Wall und Ground ruhig | erfüllt (laut Code, manuell offen) | in Runde 2 nicht berührt |
+| AK4 Notizen | erfüllt (laut Code, manuell offen) | in Runde 2 nicht berührt |
+| AK5 Normalbetrieb | erfüllt (laut Code, manuell offen) | Leiste ohne Fehler nicht gerendert |
+| AK6 Styleguide und Kontrast | erfüllt | `DESIGN.md:232` `onError` für Text, Icon, Fokus-Outline; `contrast.md:51` 9,0 (Ziel 3,0) |
+| AK7 Regressionstest | erfüllt | Tests unverändert, 52/52 grün; Gegenprobe aus Runde 1 gilt weiter |
+
+**Nacharbeit E1:** Innenabstand `space.1 space.5` (Leiste ca. 28px statt 56px), `reload.svg` per `ReactSVG` in
+`onError`, `aria-hidden`, transparent ohne Rahmen, Größe `size.icon`, `aria-label`/`title`, Fokus per
+`:focus-visible`. Doku konsistent, keine Reste des alten Text-Buttons oder der alten Kontrast-Anmerkung.
+
+#### Blockierende Befunde
+- keine
+
+#### Hinweise (nicht blockierend)
+- Klickfläche 20 × 20px statt `size.control.md` (40px): Ausnahme nur in `components.md:156` dokumentiert;
+  `DESIGN.md:65` und `components.md:17` verweisen nicht darauf. Alternative bei zu kleiner Fläche:
+  `size.control.md` mit negativem vertikalem `margin`.
+- `:focus-visible` ist die einzige Fokusregel im Frontend; DESIGN.md 2.4 kennt keinen Fokus-Zustand (Kandidat für
+  allgemeine Regel).
+- `outline-offset` nutzt `borderWidth.thick` als Abstand (Token-Semantik).
+- E1-Entscheidungszeile nennt noch „Baustein Text-Button“; durch die Ergänzungszeile inhaltlich ersetzt.
+- Weiter offen aus Runde 1: fester Text bei HTTP 500, `frontend/CLAUDE.md` veraltet, `utils.ts:60` `play()`.
+
+#### Checks
+- `npm run lint`: 0 Fehler, 1 Warnung (vorbestehend)
+- `npm run typecheck`: ok
+- `npm run test:unit`: 52/52 grün
+- `npm run build`: ok
+- Manuelle Prüfung: offen, durch den User

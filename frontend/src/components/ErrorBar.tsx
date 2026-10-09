@@ -9,7 +9,7 @@ import reloadIcon from '/assets/icons/reload.svg'
 const Bar = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: ${(props) => props.theme.space[4]};
   padding: ${(props) => props.theme.space[1]} ${(props) => props.theme.space[5]};
   background-color: ${(props) => props.theme.colors.error};
