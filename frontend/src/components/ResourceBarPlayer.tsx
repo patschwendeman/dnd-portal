@@ -122,21 +122,21 @@ const ResourceBarPlayer: FunctionComponent = (): ReactElement => {
     
       const [special, setSpecial] = useState<number>(1)
     
-      const ActionHandler = (ressouce: number, setRessouce: React.Dispatch<React.SetStateAction<number>>) => {
-        if(ressouce === 0) {
-          setRessouce(1)
+      const ActionHandler = (resource: number, setResource: React.Dispatch<React.SetStateAction<number>>) => {
+        if(resource === 0) {
+          setResource(1)
         }
         else {
-          setRessouce(0)
+          setResource(0)
         }
       }
     
-      const SpellHandler = (ressouce: number, setRessouce: React.Dispatch<React.SetStateAction<number>>, maxRessource: number) => {
-        if(ressouce === 0) {
-          setRessouce(maxRessource)
+      const SpellHandler = (resource: number, setResource: React.Dispatch<React.SetStateAction<number>>, maxResource: number) => {
+        if(resource === 0) {
+          setResource(maxResource)
         }
         else {
-          setRessouce(ressouce - 1)
+          setResource(resource - 1)
         }
       }
     

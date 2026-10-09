@@ -93,36 +93,36 @@ const WallScreen: FunctionComponent = (): ReactElement => {
     const [activeScene, setActiveScene] = useState<SceneDetail>()
     const [mainmaps, setMainmaps] = useState<Map[]>([])
     const [isActiveMainMap, setIsActiveMainMap] = useState<boolean>(false) 
-    const [worldMapVisiblity, setWorldMapVisiblity] = useState<boolean>(false)
-    const [mainMapsVisiblity, setMainMapsVisiblity] = useState<boolean>(isActiveMainMap)
+    const [worldMapVisibility, setWorldMapVisibility] = useState<boolean>(false)
+    const [mainMapsVisibility, setMainMapsVisibility] = useState<boolean>(isActiveMainMap)
 
     const buttonLabels = ['BATTLE', 'WORLD', 'OFF']
-    const activeButton = mainMapsVisiblity ? 0 : worldMapVisiblity ? 1 : 2
+    const activeButton = mainMapsVisibility ? 0 : worldMapVisibility ? 1 : 2
 
     const handleWallScreenData = (activeScene: SceneDetail, mainmaps: Map[]) => {
         setActiveScene(activeScene)
         setMainmaps(mainmaps)
-        setWorldMapVisiblity(false)
+        setWorldMapVisibility(false)
         if(activeScene.main === true) {
             setIsActiveMainMap(true)
-            setMainMapsVisiblity(true)
+            setMainMapsVisibility(true)
         }
         else {
             setIsActiveMainMap(false)
-            setMainMapsVisiblity(false)
+            setMainMapsVisibility(false)
         }
     }
 
     function handleMapsVisibility(option: number) {
         if (option === 0) {
-            setMainMapsVisiblity(true)
-            setWorldMapVisiblity(false)
+            setMainMapsVisibility(true)
+            setWorldMapVisibility(false)
         } else if (option === 1) {
-            setMainMapsVisiblity(false)
-            setWorldMapVisiblity(true)
+            setMainMapsVisibility(false)
+            setWorldMapVisibility(true)
         } else {
-            setMainMapsVisiblity(false)
-            setWorldMapVisiblity(false)
+            setMainMapsVisibility(false)
+            setWorldMapVisibility(false)
         }
     }
 
@@ -143,14 +143,14 @@ const WallScreen: FunctionComponent = (): ReactElement => {
         <Screen>
             <GlobalStyle />
             <BackgroundImage data-test-id='wallImg' src={activeScene?.graphics_wall.source} alt='' /> 
-            <OverlayPanel $isVisible={mainMapsVisiblity}>
+            <OverlayPanel $isVisible={mainMapsVisibility}>
                 <PanelHeader>
                     <PanelTitle>Kampfschauplätze</PanelTitle>
                     <Label>{ mainmaps.length } Räume</Label>
                 </PanelHeader>
                 <MapOverview mainmaps={mainmaps} gap={theme.space[3]} padding='0' isActiveMainMap={ isActiveMainMap } isAdminScreen={ false }/>
             </OverlayPanel>
-            <OverlayPanel $isVisible={worldMapVisiblity}>
+            <OverlayPanel $isVisible={worldMapVisibility}>
                 <PanelHeader>
                     <PanelTitle>Weltkarte</PanelTitle>
                 </PanelHeader>
