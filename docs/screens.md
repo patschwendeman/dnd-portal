@@ -48,7 +48,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - Theme-Umschalter (Settings-Icon rechts in der Top-Bar).
 - **Ladefehler** (seit DND-11): Schlägt das Laden der Szenen/Kacheln oder der aktiven Szene fehl (Backend nicht
   erreichbar, Timeout, HTTP-Fehler), erscheint direkt unter der Top-Bar eine Hinweisleiste „Backend nicht erreichbar –
-  Szenen konnten nicht geladen werden“ mit dem Button „Erneut versuchen“. Der Klick lädt beides erneut; bei Erfolg
+  Szenen konnten nicht geladen werden“ mit einem Neu-laden-Icon-Button rechts („Erneut versuchen“). Der Klick lädt beides erneut; bei Erfolg
   verschwindet die Leiste. Keine automatischen Wiederholungen. Die Ursache steht als `console.error` in der Konsole.
   Liefert eine Notizdatei einen Fehlerstatus, zeigt der Notizbereich „Notizen konnten nicht geladen werden“; ein
   Tab-Wechsel lädt erneut.

@@ -70,6 +70,9 @@ angezeigte Bild, der Fehler steht nur in der Konsole.
   Button „Erneut versuchen“ rechts (Baustein Text-Button). Ein Klick lädt Admin-Daten und aktive Szene neu; bei Erfolg
   verschwindet die Leiste. Ohne Fehler ist die Leiste nicht vorhanden (kein reservierter Platz).
 - **Verworfene Alternativen:** Toast unten rechts; nur Hinweis ohne Button; nur Konsole; Leiste in vorhandenen Rollen.
+- **Änderung nach Review Runde 1 (User):** Leiste etwas schmaler (weniger vertikaler Innenabstand). Statt des
+  Text-Buttons „Erneut versuchen“ ein Icon-Button (Neu-laden-Symbol) in der Textfarbe `onError`, ohne eigene
+  Fläche; zugänglicher Name „Erneut versuchen“ (`aria-label`/`title`), per Tastatur bedienbar.
 - **Farben:** neue Rollen `error` (Fläche) und `onError` (Text) in `darkTheme` und `tavernTheme`, Kontrast
   `onError` auf `error` ≥ 4,5 (Text 14–16px) und Button lesbar; Werte vom Implementer gewählt und in
   `contrast.md` (Theme-Werte + Messung) dokumentiert. Wie `badge.*`/`resource.*` dürfen beide Themes denselben Wert
@@ -129,6 +132,13 @@ angezeigte Bild, der Fehler steht nur in der Konsole.
 - [x] `docs/known-issues.md`: Eintrag „API-Base-URL fest verdrahtet …; Fehler werden in Effects geworfen …“ auf
       den API-URL-Teil kürzen.
 
+### Nacharbeit Runde 1 (User, E1)
+- [x] `ErrorBar`: vertikaler Innenabstand `space.1` statt `space.2`, Schrift unverändert.
+- [x] `ErrorBar`: Icon-Button statt Text-Button – neues Icon `public/assets/icons/reload.svg`, per `ReactSVG` mit
+      Füllfarbe `onError`, ohne Fläche/Rahmen, Größe `size.icon`; `aria-label`/`title` „Erneut versuchen“, echtes
+      `<button>`, sichtbarer Fokus (`:focus-visible`-Outline in `onError`).
+- [x] Doku: `components.md`, `contrast.md`, `DESIGN.md` (Innenabstand), `docs/screens.md`, `docs/architecture.md`.
+
 ## Akzeptanzkriterien
 
 ### AK1: Admin bei Backend-Ausfall
@@ -182,3 +192,45 @@ angezeigte Bild, der Fehler steht nur in der Konsole.
 - keine
 
 ## Review
+
+### Runde 1 – Review c9f210e
+
+**Empfehlung:** Abnahme. Keine blockierenden Befunde. Offen ist nur die manuelle Browserprüfung AK1–AK5 durch den
+User (laut Teststrategie).
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Admin bei Backend-Ausfall | erfüllt (laut Code, manuell offen) | `getData` wirft (`apiMethods.ts:4-10`), Services werfen `LoadError` (`loadData.ts:30-45`), Admin fängt über `loadSafely` und setzt `adminDataFailed`/`activeSceneFailed` (`AdminScreen.tsx:154-176`), `ErrorBar` unter `TopBar` (`AdminScreen.tsx:215`) |
+| AK2 Erneut versuchen | erfüllt (laut Code, manuell offen) | `retryLoading` lädt beides neu (`AdminScreen.tsx:178-181`), Flags werden bei Erfolg zurückgesetzt, keine automatischen Wiederholungen (E3) |
+| AK3 Wall und Ground ruhig | erfüllt (laut Code, manuell offen) | Im Fehlerfall nur `console.error`, State bleibt (`WallScreen.tsx:134-140`, `GroundScreen.tsx:84-90`) |
+| AK4 Notizen | erfüllt (laut Code, manuell offen) | `response.ok` geprüft, Hinweistext statt Seiten, Tab-Wechsel lädt neu (`DocumentReader.tsx:198-220, 260-261`) |
+| AK5 Normalbetrieb | erfüllt (laut Code, manuell offen) | Ohne Fehler `grid-template-rows` wie vorher (`AdminScreen.tsx:35`), Leiste nicht gerendert |
+| AK6 Styleguide und Kontrast | erfüllt | `error`/`onError` in beiden Themes, in DESIGN.md 2.2/2.3 und `contrast.md` dokumentiert; `#ffffff` auf `#8e1b1b` = 9,04:1 |
+| AK7 Regressionstest | erfüllt | `apiErrors.spec.ts`, `loadSafely.spec.ts`; Gegenprobe auf `c9f210e^`: 15/20 rot, `loadSafely` rot (Modul fehlt); danach 52/52 grün |
+
+**Fix-spezifisch:** Ursache behoben (Verschlucken in `getData` entfernt, „not found“ bei Netzwerkfehlern durch
+`describeFailure` ersetzt, erneutes `throw` in Screens entfernt, Timeout 5000 ms). Fehler werden genau einmal
+gefangen (E6). Scope eingehalten, Konventionen eingehalten.
+
+#### Blockierende Befunde
+- keine
+
+#### Hinweise (nicht blockierend)
+- `styled.d.ts` unverändert ist korrekt: `Colors = typeof darkTheme.colors` übernimmt die Rollen automatisch.
+- Button-Fläche (`secondary`) gegen die Leiste nur 1,91:1 (Dark) / 1,54:1 (Tavern); Beschriftung gut lesbar. Plan
+  setzt kein Ziel für die Fläche; optischen Eindruck bei der manuellen Prüfung bewerten.
+- Fester Text „Backend nicht erreichbar“ auch bei HTTP 500 / leerer Antwort: plangemäß („o. ä.“), aber sachlich
+  ungenau. Mögliche Folgeverbesserung: neutraler Text oder Ableitung aus `LoadError`.
+- `frontend/CLAUDE.md` veraltet (`no-console`-Ausnahme für `console.error`, `loadData.ts`, `loadSafely.ts` fehlen);
+  Nachzug per `/quick-task` empfohlen.
+- `console.error`-Ausnahme gilt global (`eslint.config.js:55`), im Plan als Entscheidung vermerkt.
+- Lint-Warnung `alt-text` in `WallScreen.tsx:161` bestand schon vorher.
+- Außerhalb des Scopes: `utils.ts:60` `newAudio.play()` fängt Ablehnung nicht ab (Autoplay-Sperre) – kann ebenfalls
+  „Uncaught (in promise)“ erzeugen.
+
+#### Checks
+- `npm run lint`: 0 Fehler, 1 Warnung (vorbestehend)
+- `npm run typecheck`: ok
+- `npm run test:unit`: 52/52 grün (22 neu)
+- `npm run build`: ok
+- Manuelle Prüfung AK1–AK5: offen, durch den User

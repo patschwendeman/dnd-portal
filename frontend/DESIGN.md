@@ -113,7 +113,7 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 | Karte | `space.5` |
 | Dialog | `space.5` seitlich und unten |
 | Leisten (seitlich) | `space.5` |
-| Hinweisleiste | `space.2` oben/unten, `space.5` seitlich |
+| Hinweisleiste | `space.1` oben/unten, `space.5` seitlich |
 | Wall-Panel | `space.6` |
 | Notizseite | `space.7` oben/unten, `space.8` seitlich |
 | Bildschirmrand am Smartphone (Player) | `space.4` oben/unten, seitlich `max(space.5, env(safe-area-inset-left), env(safe-area-inset-right))` (braucht `viewport-fit=cover` in `index.html`) |
@@ -229,7 +229,7 @@ Wechselt mit dem Theme.
 | `text.color` | Vordergrund | Text, Icon-Füllung, Slider-Griff |
 | `onPrimary` | Vordergrund auf Akzent | aktiver Zustand ([2.4](#24-zustände)) |
 | `error` | Fläche für Fehler | Hinweisleiste im Admin |
-| `onError` | Vordergrund auf `error` | Text der Hinweisleiste |
+| `onError` | Vordergrund auf `error` | Text, Icon und Fokus-Outline der Hinweisleiste |
 | `badge.background` | Fläche der Kachelnummer | Nummern-Badge auf den Kacheln der Wall |
 | `badge.text` | Text der Kachelnummer | Zahl im Nummern-Badge |
 | `resource.<art>.strong` | kräftiger Ton einer Ressource (`action`, `bonus`, `movement`, `spell`, `special`) | Rahmen des Ressourcen-Buttons, verfügbare Icons und Plätze (Player) |

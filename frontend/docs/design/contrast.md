@@ -48,7 +48,7 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `border` auf `secondary` | Trennlinien in Karten | 3,0 | **1,5** | 3,0 | bewusst ✗ Dark |
 | `badge.text` auf `badge.background` | Kachelnummer | 4,5 | 6,9 | 6,9 | ✓ |
 | `onError` auf `error` | Text der Hinweisleiste (14px) | 4,5 | 9,0 | 9,0 | ✓ |
-| `secondary` auf `error` | Text-Button in der Hinweisleiste (Fläche gegen Leiste) | – | 1,9 | 1,5 | siehe Anmerkung |
+| `onError` auf `error` | Icon-Button und Fokus-Outline der Hinweisleiste | 3,0 | 9,0 | 9,0 | ✓ |
 | `text.color` auf `resource.*.muted` | Zahl im Ressourcen-Button (24px, groß) | 3,0 | 14,2–17,6 | 7,2–9,0 | ✓ beide |
 | `resource.*.strong` auf `resource.*.muted` | Rahmen, verfügbare Icons und Plätze | 3,0 | 3,8–11,7 | 3,8–11,7 | ✓ beide |
 | `resource.*.strong` auf `secondary` | Rahmen gegen die Karte | 3,0 | 4,0–13,0 | 3,2–10,5 | ✓ beide |
@@ -59,6 +59,3 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 - **Tavern-Rot** (`primary` in Tavern): liegt mit 4,7:1 sicher über der Grenze; `#BD5A5A` erreichte nur genau 4,50:1.
 - **`border` im Dark-Theme:** Ausnahme und Begründung in [2.6](../../DESIGN.md#26-kontrast).
 - **Ressourcen (Player):** Die Spannen reichen über alle fünf Ressourcen.
-- **Button in der Hinweisleiste:** Der Text-Button (`default`) ist über seine Beschriftung erkennbar; sein Text steht wie
-  überall auf `secondary` (`text.color` auf `secondary`, oben). Die Fläche des Buttons gegen die Leiste ist nur
-  Gestaltung, kein Messziel.

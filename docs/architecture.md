@@ -71,7 +71,7 @@ IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement).
   (`src/api/loadData.ts`) und werfen einen `LoadError`, dessen Meldung Netzwerkfehler/Timeout („backend not
   reachable“), HTTP-Status („HTTP 500“) und leere Antwort („… not found“) unterscheidet. Die Screens fangen genau
   einmal über `loadSafely` (`src/utils/loadSafely.ts`), sodass aus Effects keine unhandled rejections entstehen:
-  Admin zeigt eine Hinweisleiste mit „Erneut versuchen“, Wall und Ground loggen per `console.error` und behalten den
+  Admin zeigt eine Hinweisleiste mit Icon-Button „Erneut versuchen“, Wall und Ground loggen per `console.error` und behalten den
   letzten Stand. Keine automatischen Wiederholungen. Der `DocumentReader` prüft `response.ok` der Notizdateien.
 - Assets in `public/`: `assets/images/{ground_screen,wall_screen,maps}`, `assets/music/{battle_maps,side_maps}/…`,
   `assets/sounds` (Soundeffekte), `assets/icons`, `story/**` (Markdown-Notizen, deutsch).
