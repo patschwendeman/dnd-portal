@@ -1,7 +1,7 @@
 # DND-11: Ladefehler abfangen statt unhandled rejections, Hinweis im Admin Screen
 
 **Typ:** fix
-**Status:** Entwurf
+**Status:** Freigegeben
 
 ## Kontext & Ziel
 
