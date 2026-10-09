@@ -54,7 +54,7 @@ src/context/         ActiveSceneContext, ActiveMapContext
 src/screens/         Screens
 src/components/      UI-Bausteine (TopBar, DocumentReader, MapOverview, GridOverlay, ScreenControlBar, ResourceBarPlayer …)
 src/service/         Datenladen je Screen (getAdminData, getWallScreenData, getGroundScreenData …)
-src/api/             axios-Client (apiClient.ts) und getData/updateData (apiMethods.ts)
+src/api/             axios-Client (apiClient.ts) und getData (apiMethods.ts)
 src/models/models.ts Interfaces (SceneDetail, Screen, Music, Map) – spiegeln die Backend-Antworten
 src/utils/utils.ts   Audio (Playlist, Zufallstrack, Soundeffekte), filterSceneByKey
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }),
@@ -95,7 +95,7 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
 - `eslint-plugin-react-hooks` ist installiert, aber nicht aktiv – `useEffect`-Abhängigkeiten nicht blind „reparieren“,
   ohne das Verhalten zu prüfen.
 - Die Ressource „Bewegung“ ist Work in Progress; `/spells` ist auf dem Branch `feature/spells-screen` geparkt; `v1-roguelike` (Tags `archive/*`) ist verworfen
-  (Reste: `updateData`, `map_locked.png`).
+  (Rest: `map_locked.png`).
 - Weitere bekannte Bugs/Altlasten: `../docs/known-issues.md`.
 
 ## CI

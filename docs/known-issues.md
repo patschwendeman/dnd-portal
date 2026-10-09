@@ -32,13 +32,11 @@ Stand: Analyse vom 2026-09-27. Punkte mit „(ungeprüft)“ wurden aus dem Code
 - API-Base-URL fest verdrahtet, keine Env-Variablen; Fehler werden in Effects geworfen (unhandled rejections).
 - `ResourceBarPlayer`: `spellData[].max` weicht von `SpellMax` ab (Stufe II: 4 vs. 3); Spezial startet bei 1 statt 3.
 - E2E-Tests teilweise veraltet (`groundImg`-Selector existiert nicht mehr); `SceneDetailMock.json` nutzt noch `fight`.
-- Ungenutzt: `index.css`, `App.css`, `src/assets/react.svg`, `updateData()`, `public/test.jpg` (~12 MB),
-  `public/journey.mp3`, `public/voice_1.mp3`, `public/rotate.png`, `public/vite.svg`, `public/story/fight/test.py`.
 - `eslint-plugin-react-hooks` installiert, aber nicht aktiv; viele `useEffect`-Abhängigkeiten fehlen.
 - Docker-Image startet den Vite-Dev-Server (gedacht für die lokale Entwicklung mit Hot-Reload); ein Production-Image fehlt.
 - README ist das unveränderte Vite-Template.
 
 ## Altlasten aus `v1-roguelike` (verworfen)
 
-`updateData()` (PUT zum Entsperren), `map_locked.png`, `players`-Query-Parameter auf `/maps/main`,
+`map_locked.png`, `players`-Query-Parameter auf `/maps/main`,
 Fehlermeldung „…on BattleMap“ in `crud.update`, Asset-Ordner `battle_maps`/`side_maps`.

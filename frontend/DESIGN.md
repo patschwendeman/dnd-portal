@@ -22,7 +22,7 @@ Verbindliche Gestaltungsregeln für das Frontend.
   das Theme.
 - `style/GlobalStyle.ts` enthält die Grundregeln aus [1.1](#11-grundsätze). Er wird nicht in `App.tsx`, sondern als
   `<GlobalStyle />` in jedem Screen gerendert (jeder Screen läuft in einem eigenen Fenster): `AdminScreen`,
-  `WallScreen`, `GroundScreen`, `PlayerScreen`. `index.css` wird nicht importiert.
+  `WallScreen`, `GroundScreen`, `PlayerScreen`.
 - Namensraum: `theme.text.*` sind Schrift-Tokens, `theme.colors.text.color` ist eine Farbrolle. Beide bleiben getrennt.
 
 ---
