@@ -1,7 +1,7 @@
 # DND-10: Musik spielt die Playlist der aktiven Szene durchgehend
 
 **Typ:** fix
-**Status:** Entwurf
+**Status:** Freigegeben
 
 ## Kontext & Ziel
 
