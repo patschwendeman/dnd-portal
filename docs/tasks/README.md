@@ -14,4 +14,4 @@
 | DND-8 | docs | Style Guide kürzen und Details auslagern | Fertig | [DND-8-design-guide-slim.md](DND-8-design-guide-slim.md) |
 | DND-9 | fix | Kampfszenen-Raster für beliebige Anzahl, Kachel-ID explizit als Szenen-ID | Fertig | [DND-9-map-overview-grid.md](DND-9-map-overview-grid.md) |
 | DND-10 | fix | Musik spielt die Playlist der aktiven Szene durchgehend | Fertig | [DND-10-music-playback.md](DND-10-music-playback.md) |
-| DND-11 | fix | Ladefehler abfangen statt unhandled rejections, Hinweis im Admin Screen | Im Review | [DND-11-load-error-handling.md](DND-11-load-error-handling.md) |
+| DND-11 | fix | Ladefehler abfangen statt unhandled rejections, Hinweis im Admin Screen | Fertig | [DND-11-load-error-handling.md](DND-11-load-error-handling.md) |
