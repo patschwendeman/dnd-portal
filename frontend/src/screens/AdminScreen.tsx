@@ -10,11 +10,12 @@ import { MapOverview } from '../components/MapOverview'
 import { SideMaps } from '../components/SideMaps'
 import { TopBar } from '../components/TopBar'
 import { ActiveSceneContext } from '../context/context'
-import { Map, type Music, SceneDetail } from '../models/models'
+import { useMusicPlayer } from '../hooks/useMusicPlayer'
+import { Map, SceneDetail } from '../models/models'
 import { getAdminData, getSceneById, handleDialogue } from '../service/adminScreen'
 import { GlobalStyle } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
-import { filterSceneByKey, getMusicTitle, handleAudio, handleAudioControl, getRandomTrack } from '../utils/utils'
+import { filterSceneByKey, getMusicTitle } from '../utils/utils'
 
 import { ReactSVG } from 'react-svg'
 
@@ -127,34 +128,18 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
     const [mainmaps, setMainmaps] = useState<Map[]>([])
     const [sidemaps, setSidemaps] = useState<Map[]>([])
 
-    const [isMusicPlaying, setIsMusicPlaying] = useState<boolean>(false)
-    const [activeMusicSRC, setActiveMusicSRC] = useState<string>(defaultMusic)
-    const [musicPlaylist, setMusicPlaylist] = useState<string[]>([defaultMusic])
-    const [lastTrack, setLastTrack] = useState<string>('')
-
-    const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
+    // Until the active scene is loaded, the default track is the playlist
+    const music = useMusicPlayer([defaultMusic])
 
     const handleAdminData = (sidemaps: Map[], mainmaps: Map[], scenesDetails: SceneDetail[]) => {
         setMainmaps(mainmaps)
         setSidemaps(sidemaps)
         setScenesDetails(scenesDetails)
-        const initialTrack = getRandomTrack(musicPlaylist, lastTrack)
-        setActiveMusicSRC(initialTrack)
-    }
-
-    const extractMusicSources = (musicObject: Music[]) => {
-        if (!Array.isArray(musicObject)) {
-            throw new Error('Input must be an array')
-        }
-        return musicObject.map(item => item.source)
     }
 
     const handleActiveScene = (activeScene: SceneDetail) => {
-        const currentPlayList = extractMusicSources(activeScene.music)
         setActiveScene(activeScene)
-        const randomTrack = getRandomTrack(musicPlaylist, lastTrack)
-        setActiveMusicSRC(randomTrack)
-        setMusicPlaylist(currentPlayList)
+        music.setPlaylist(activeScene.music.map((item) => item.source))
     }
 
     const fetchAdminData = async () => {
@@ -182,12 +167,6 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
     useEffect(() => { 
         fetchActiveScene()
     }, [activeSceneId])
-
-    useEffect(() => {
-        if (activeMusicSRC) {
-            handleAudio(isMusicPlaying, setLastTrack,  setActiveMusicSRC, musicPlaylist, lastTrack, setAudio, audio)
-        }
-    }, [activeMusicSRC])
 
     const handleSceneSelection = (sceneId: number) => {
         const scene = filterSceneByKey('id', sceneId, scenesDetails)
@@ -234,17 +213,17 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
                 </Main>
                 <BottomBar>
                     <Music>
-                        <AudioControlButton $isMusicPlaying={ isMusicPlaying } onClick={() => handleAudioControl(audio, isMusicPlaying, setIsMusicPlaying)}>
+                        <AudioControlButton $isMusicPlaying={ music.isPlaying } onClick={ music.toggle }>
                             <ReactSVG
-                                src={isMusicPlaying ? pauseIcon : playIcon}
+                                src={music.isPlaying ? pauseIcon : playIcon}
                                 beforeInjection={(svg) => {
-                                svg.setAttribute('style', `fill: ${isMusicPlaying ? theme.colors.onPrimary : theme.colors.text.color}`)
+                                svg.setAttribute('style', `fill: ${music.isPlaying ? theme.colors.onPrimary : theme.colors.text.color}`)
                                 }}
                             />
                         </AudioControlButton>
                         <Track>
                             <Label>Musik</Label>
-                            <TrackName>{ getMusicTitle(activeMusicSRC) }</TrackName>
+                            <TrackName>{ getMusicTitle(music.track ?? '') }</TrackName>
                         </Track>
                     </Music>
                     <SideMaps sidemaps={sidemaps} handleSceneSelection={handleSceneSelection} />

@@ -36,7 +36,8 @@ export const getMusicTitle = (source: string): string => {
 
 export const getRandomTrack = (
   musicPlaylist: string[],
-  lastTrack: string
+  lastTrack: string,
+  random: () => number = Math.random
 ): string => {
   if (musicPlaylist.length <= 1) {
     return musicPlaylist[0]
@@ -45,48 +46,11 @@ export const getRandomTrack = (
   let randomIndex = 0
 
   do {
-    randomIndex = Math.floor(Math.random() * musicPlaylist.length)
+    randomIndex = Math.floor(random() * musicPlaylist.length)
   } while (musicPlaylist[randomIndex] === lastTrack)
 
   const selectedTrack = musicPlaylist[randomIndex]
   return selectedTrack
-}
-
-export const handleAudio = (
-  isMusicPlaying: boolean,
-  setLastTrack: React.Dispatch<React.SetStateAction<string>>,
-  setActiveMusicSRC: React.Dispatch<React.SetStateAction<string>>,
-  musicPlaylist: string[],
-  lastTrack: string,
-  setAudio: React.Dispatch<React.SetStateAction<HTMLAudioElement | null>>,
-  audio: HTMLAudioElement | null
-): void => {
-  const getNewTrack = () => getRandomTrack(musicPlaylist, lastTrack)
-
-  const randomTrack = getNewTrack()
-
-  if (audio) {
-    audio.pause()
-    audio.currentTime = 0
-  }
-
-  const newAudio = new Audio(randomTrack)
-  newAudio.loop = false
-  newAudio.volume = 0.1
-
-  newAudio.onended = () => {
-    const nextTrack = getNewTrack()
-    setActiveMusicSRC(nextTrack)
-    setLastTrack(nextTrack)
-  }
-
-  setAudio(newAudio)
-
-  if (isMusicPlaying) {
-    newAudio.play().catch((err) => {
-      throw new Error(`Failed to play new music: ${err}`)
-    })
-  }
 }
 
 export const playAtmoSounds = (track: string) => {
@@ -94,25 +58,4 @@ export const playAtmoSounds = (track: string) => {
   newAudio.loop = false
   newAudio.volume = 1
   newAudio.play()
-}
-
-export const handleAudioControl = (
-  audio: HTMLAudioElement | null,
-  isMusicPlaying: boolean,
-  setIsMusicPlaying: React.Dispatch<React.SetStateAction<boolean>>
-): void => {
-  if (!audio) {
-    return
-  }
-  if (!isMusicPlaying) {
-    audio
-      .play()
-      .then(() => setIsMusicPlaying(true))
-      .catch((err) => {
-        throw new Error(`Failed to play new music: ${err}`)
-      })
-  } else {
-    audio.pause()
-    setIsMusicPlaying(false)
-  }
 }

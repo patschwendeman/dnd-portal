@@ -1,7 +1,7 @@
 # DND-10: Musik spielt die Playlist der aktiven Szene durchgehend
 
 **Typ:** fix
-**Status:** Freigegeben
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -92,7 +92,7 @@ ist der gespielte.
 ## Subtasks
 
 ### Frontend
-- [ ] Regressionstests zuerst (vitest, `frontend/__tests__/unit/musicPlayer.spec.ts`) mit Fake-Audio
+- [x] Regressionstests zuerst (vitest, `frontend/__tests__/unit/musicPlayer.spec.ts`) mit Fake-Audio
       (Objekt mit `play`/`pause`/`src`/`currentTime`/`loop`/`volume`/`onended`) und deterministischer Zufallsfunktion:
   - Szenenwechsel: nach `setPlaylist(neu)` ist der aktuelle Track aus `neu`, ≠ vorheriger; Audio-Quelle = aktueller
     Track; spielte vorher → spielt weiter, pausiert → bleibt pausiert.
@@ -102,18 +102,18 @@ ist der gespielte.
   - `play()` schlägt fehl → Zustand pausiert, kein Fehler nach außen.
   - Leere Playlist → pausiert, kein Track.
   Vor dem Fix rot (Modul fehlt bzw. altes Verhalten), danach grün.
-- [ ] Player-Klasse nach E1–E4 umsetzen (Lautstärke 0.1, `loop = false`, ein Audio-Element).
-- [ ] Hook für React (State-Spiegel: aktueller Track, spielt ja/nein; Cleanup beim Unmount).
-- [ ] `AdminScreen`: Hook verwenden; beim Laden der aktiven Szene `setPlaylist(scene.music.map(m => m.source))`;
+- [x] Player-Klasse nach E1–E4 umsetzen (Lautstärke 0.1, `loop = false`, ein Audio-Element).
+- [x] Hook für React (State-Spiegel: aktueller Track, spielt ja/nein; Cleanup beim Unmount).
+- [x] `AdminScreen`: Hook verwenden; beim Laden der aktiven Szene `setPlaylist(scene.music.map(m => m.source))`;
       Play/Pause-Button → `toggle()`; `TrackName` aus dem Hook. Bis die erste Szene geladen ist, ist `defaultMusic`
       die Playlist (wie heute). Alte States, Effect und Aufrufe entfernen.
-- [ ] `utils.ts`: `handleAudio` und `handleAudioControl` entfernen; `getRandomTrack` nur behalten, wenn noch genutzt
+- [x] `utils.ts`: `handleAudio` und `handleAudioControl` entfernen; `getRandomTrack` nur behalten, wenn noch genutzt
       (sonst samt Test in die Player-Tests überführen).
 
 ### Doku
-- [ ] `docs/screens.md` (Admin „Musik“, Ist): Verhalten nach E1–E3.
-- [ ] `docs/known-issues.md`: Eintrag „Musik: Zufalls-Track-Auswahl nutzt teils die alte Playlist …“ entfernen.
-- [ ] `frontend/CLAUDE.md`: Struktur (`src/utils/utils.ts` Audio-Beschreibung, neues Player-Modul/Hook).
+- [x] `docs/screens.md` (Admin „Musik“, Ist): Verhalten nach E1–E3.
+- [x] `docs/known-issues.md`: Eintrag „Musik: Zufalls-Track-Auswahl nutzt teils die alte Playlist …“ entfernen.
+- [x] `frontend/CLAUDE.md`: Struktur (`src/utils/utils.ts` Audio-Beschreibung, neues Player-Modul/Hook).
 
 ## Akzeptanzkriterien
 

@@ -57,7 +57,11 @@ src/service/         Datenladen je Screen (getAdminData, getWallScreenData, getG
 src/api/             axios-Client (apiClient.ts) und getData (apiMethods.ts)
 src/models/models.ts Interfaces (SceneDetail, Screen, Music, MapResponse) – spiegeln die Backend-Antworten;
                      Map ist Frontend-Modell (sceneId), Umwandlung aus MapResponse im Service
-src/utils/utils.ts   Audio (Playlist, Zufallstrack, Soundeffekte), filterSceneByKey
+src/hooks/           useMusicPlayer (bindet MusicPlayer an den Admin Screen: Track/Play-Zustand, Cleanup)
+src/utils/utils.ts   Zufallstrack (getRandomTrack), Musiktitel, Soundeffekte (playAtmoSounds), filterSceneByKey,
+                     getGridLayout
+src/utils/musicPlayer.ts  MusicPlayer: Hintergrundmusik ohne React (ein Audio-Element, Playlist, aktueller Track,
+                     Trackende → nächster Track); Audio-Fabrik und Zufall injizierbar für vitest
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }),
                      styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden)
 public/assets/       images (ground_screen, wall_screen, maps), music, sounds, icons

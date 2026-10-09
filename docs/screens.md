@@ -38,6 +38,11 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Der Ordner `noneFight` existiert nicht → Tab „Side“ ist leer.
 - **Musik:** Bottom-Bar links: Play/Pause-Button, daneben Label „Musik“ und der Titel des aktuellen Tracks (aus dem
   Dateinamen abgeleitet, `getMusicTitle`); spielt zufällige Tracks aus der Playlist der aktiven Szene (Lautstärke 0.1).
+  Seit DND-10 hält `MusicPlayer` (`useMusicPlayer`) ein einziges Audio-Element; der angezeigte Titel ist immer der
+  geladene Track. Szenenwechsel übernimmt die neue Playlist und wählt sofort einen anderen Track daraus – lief die
+  Musik, spielt er direkt, sonst bleibt sie pausiert. Nach einem Trackende startet ein anderer Track derselben
+  Playlist, bei nur einem Track derselbe von vorne; die Musik stoppt nur durch Pause. Bis die erste Szene geladen ist,
+  ist ein Standard-Track die Playlist. Schlägt das Abspielen fehl (z. B. Autoplay-Sperre), bleibt der Button auf Play.
 - **Sounds:** `TopBar` mit Titel „DnD Portal“ links und mittig den Buttons für Soundeffekte in Gruppen
   (Heilung/Trank, Buff, Zauber, Debuff, Lock), getrennt durch senkrechte Linien.
 - Theme-Umschalter (Settings-Icon rechts in der Top-Bar).
