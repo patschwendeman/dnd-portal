@@ -67,7 +67,7 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**. 
 - **API-Vertrag:** Das Frontend spiegelt die Antwort von `/scenes/details` im Interface `SceneDetail`
   (`../frontend/src/models/models.ts`). Feld- oder Pfadänderungen dort mitziehen.
 - **`source`-Pfade** in `seed_data.json` verweisen auf Dateien in `../frontend/public/` (z. B.
-  `/assets/images/ground_screen/battle_1.jpg`). Das Backend liefert keine Dateien aus.
+  `/assets/images/ground_screen/main_1.jpg`). Das Backend liefert keine Dateien aus.
 - **Seed:** Referenzen (`graphics_wall_id`, `graphics_ground_id`, `music_id`-Liste) sind Autoincrement-IDs in
   Dateireihenfolge – Einträge nicht umsortieren. Der Seeder befüllt nur leere Tabellen; Änderungen an der JSON
   erfordern einen DB-Reset (z. B. `docker compose down -v`).

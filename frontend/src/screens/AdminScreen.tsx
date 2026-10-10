@@ -1,7 +1,7 @@
 import { useContext, FunctionComponent, ReactElement, useEffect, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
-import defaultMusic from '../../public//assets/music/side_maps/forest/From_Past_To_Present.mp3'
+import defaultMusic from '../../public/assets/music/side/forest/From_Past_To_Present.mp3'
 import { DetailsSideBar } from '../components/DetailsSideBar'
 import { Dialogue } from '../components/Dialogue'
 import { DocumentReader } from '../components/DocumentReader'

@@ -29,7 +29,7 @@ defineFeature(feature, (test) => {
     and,
   }) => {
     const randomFightSceneNumber = getRandomNumber(1, 25)
-    const fightScene = `/assets/images/maps/battle_${randomFightSceneNumber}.jpg`
+    const fightScene = `/assets/images/ground_screen/main_${randomFightSceneNumber}.jpg`
 
     given('I am on the admin screen', async () => {
       await driver.get('http://localhost:5173/admin')
@@ -72,7 +72,7 @@ defineFeature(feature, (test) => {
     and,
   }) => {
     const randomFightSceneNumber = getRandomNumber(1, 25)
-    const fightScene = `/assets/images/maps/battle_${randomFightSceneNumber}.jpg`
+    const fightScene = `/assets/images/ground_screen/main_${randomFightSceneNumber}.jpg`
 
     given('I am on the admin screen', async () => {
       await driver.get('http://localhost:5173/admin')
@@ -115,7 +115,7 @@ defineFeature(feature, (test) => {
     and,
   }) => {
     const randomFightSceneNumber = getRandomNumber(1, 16)
-    const fightScene = `/assets/images/maps/battle_${randomFightSceneNumber}.jpg`
+    const fightScene = `/assets/images/ground_screen/main_${randomFightSceneNumber}.jpg`
     const fightWallImage =
       'http://localhost:5173/assets/images/wall_screen/fight.jpg'
 

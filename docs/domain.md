@@ -19,9 +19,9 @@
 
 ## Historische Bezeichnungen
 
-- `battlemap(s)` → heute `mainmap(s)` bzw. `main` (Commit „Change battlemaps to mainmaps“). Asset-Ordner heißen noch
-  `battle_maps`, Bilder `battle_N.jpg`, die WallScreen-Buttons „BATTLE“.
-- `sidemap(s)` → heute über `/maps/side`; Musik-Ordner heißen noch `side_maps`.
+- `battlemap(s)` → heute `mainmap(s)` bzw. `main` (Commit „Change battlemaps to mainmaps“). Assets folgen dem Schema
+  (`music/main/`, `ground_screen/main_N.jpg`); der WallScreen-Button „BATTLE“ ist eine bewusste UI-Bezeichnung.
+- `sidemap(s)` → heute über `/maps/side`; Musik-Ordner `music/side/`.
 - `fight` (Bool auf Scene) → heute `main`. Veraltet u. a. noch in `__tests__/unit/SceneDetailMock.json`.
 - `v1-roguelike` (Tags `archive/*-v1-roguelike`): altes, **verworfenes** Konzept mit Tabelle `battlemaps` (loot, xp, enemies, locked,
   source_locked) und PUT-Endpoint zum Entsperren. Im Code sind keine Reste mehr vorhanden.

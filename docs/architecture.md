@@ -52,7 +52,7 @@ GraphicsGround(id, name, source, main)    Scene 1:1; Feld main ungenutzt
 Music(id, name, source)                   Scene N:M über scene_music_association(scene_id, music_id)
 ```
 
-`source` ist jeweils ein Pfad-String relativ zum Frontend-Public-Ordner, z. B. `/assets/images/ground_screen/battle_1.jpg`.
+`source` ist jeweils ein Pfad-String relativ zum Frontend-Public-Ordner, z. B. `/assets/images/ground_screen/main_1.jpg`.
 Das Backend speichert/liefert **keine Dateien**.
 
 **Seed-Daten:** 4 Nicht-Kampfszenen (Default/Dorf, Shop, Taverne, Level Up) und 25 Kampfszenen („Fight 1..25“, teils
@@ -79,7 +79,7 @@ IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement).
   danach eintreffende Ergebnisse und Fehler werden verworfen. Beim schnellen Szenen- bzw. Tab-Wechsel zählt so nur die
   Antwort zum aktuellen Stand. Die HTTP-Requests selbst werden nicht abgebrochen. Der Retry im Admin Screen erhöht nur
   einen Zähler (`reloadCount`), von dem beide Lade-Effects abhängen.
-- Assets in `public/`: `assets/images/{ground_screen,wall_screen,maps}`, `assets/music/{battle_maps,side_maps}/…`,
+- Assets in `public/`: `assets/images/{ground_screen,wall_screen}`, `assets/music/{main,side}/…`,
   `assets/sounds` (Soundeffekte), `assets/icons`, `story/**` (Markdown-Notizen, deutsch).
 
 ## Lokal starten

@@ -76,7 +76,7 @@ src/utils/musicPlayer.ts  MusicPlayer: Hintergrundmusik ohne React (ein Audio-El
                      Trackende → nächster Track); Audio-Fabrik und Zufall injizierbar für vitest
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }),
                      styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden)
-public/assets/       images (ground_screen, wall_screen, maps), music, sounds, icons
+public/assets/       images (ground_screen, wall_screen), music, sounds, icons
 public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mechanics), deutsch
 ```
 

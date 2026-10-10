@@ -22,6 +22,8 @@ Stand: Analyse vom 2026-09-27. Punkte mit „(ungeprüft)“ wurden aus dem Code
 - `python-dotenv` wird importiert, steht aber nicht in `requirements.txt`.
 - Keine Tests; CI läuft trotzdem grün.
 - Seed: Ground „Level_up“ zeigt auf den `wall_screen`-Ordner; doppelte/unpassende Musiknamen; Beschreibungen großteils Copy-Paste.
+- Seed: `name`-Werte der Ground-Bilder (`graphics_ground`) heißen noch `battle_N` – sollten analog zu den Dateien
+  `main_N` heißen.
 
 ## Frontend
 
@@ -29,9 +31,3 @@ Stand: Analyse vom 2026-09-27. Punkte mit „(ungeprüft)“ wurden aus dem Code
 - `ResourceBarPlayer`: `spellData[].max` weicht von `SpellMax` ab (Stufe II: 4 vs. 3); Spezial startet bei 1 statt 3.
 - E2E-Tests teilweise veraltet (`groundImg`-Selector existiert nicht mehr); `SceneDetailMock.json` nutzt noch `fight`.
 - README ist das unveränderte Vite-Template.
-
-## Altlasten
-
-- Alte Benennungen aus der Zeit vor „mainmap“: Musik-Ordner `battle_maps`/`side_maps`, Bilder `battle_N.jpg`,
-  WallScreen-Button „BATTLE“ (siehe [domain.md](domain.md#historische-bezeichnungen)). Umbenennen betrifft Assets,
-  `seed_data.json`, Tests und erfordert einen DB-Reset.
