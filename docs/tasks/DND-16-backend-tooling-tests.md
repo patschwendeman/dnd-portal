@@ -1,7 +1,7 @@
-# DND-16: Backend-Tooling: uv, ruff, mypy, pytest mit Charakterisierungstests
+# DND-16: Backend-Tooling: uv, ruff, mypy, pytest mit Charakterisierungstests, Paket `app`
 
 **Typ:** setup
-**Status:** Entwurf
+**Status:** Freigegeben
 
 ## Kontext & Ziel
 
@@ -10,14 +10,17 @@ Das Backend hat keine Tests (CI läuft trotzdem grün). Abhängigkeiten stehen u
 Backend-Refactorings (Struktur, SQLAlchemy 2.0, Schemas, Migrationen; siehe `docs/known-issues.md`) braucht es
 zuerst ein Sicherheitsnetz und schnelles Feedback. Ziel: moderne Tooling-Basis (uv, ruff, mypy, pytest) und
 Charakterisierungstests, die das **aktuelle** Verhalten aller Endpoints festhalten, inklusive bekannter Bugs.
-Das gibt auch Agents eine verlässliche Selbstprüfung. Abschluss: Upgrade der Abhängigkeiten, abgesichert durch
+Das gibt auch Agents eine verlässliche Selbstprüfung. Abgesichert durch diese Tests wird das Paket `src` in `app`
+umbenannt (`src/` ist üblicherweise ein Layout-Ordner, kein Paket). Abschluss: Upgrade der Abhängigkeiten, abgesichert durch
 die neuen Tests.
 
 ## Invarianten
 
 - API-Verhalten unverändert: Pfade, Statuscodes, Response-Form und -Inhalt aller 6 Endpoints (die bekannten Bugs
   bleiben bestehen und werden nur durch Tests dokumentiert).
-- Python 3.11, PostgreSQL 17, Paketname/Modulpfad `src` und `src.main:app` (Umbenennung erst im Struktur-Task).
+- Python 3.11, PostgreSQL 17.
+- Paketinhalt nach der Umbenennung `src` → `app` 1:1 gleich (gleiche Unterordner `db/`, `routes/`, `services/`, gleiche
+  Dateinamen); nur Importe und Modulpfad (`app.main:app`) ändern sich.
 - Start der Stacks unverändert: `./script.sh dev`, `./script.sh prod`, `docker compose up --build` in `backend/`.
   Ports, Containernamen, Healthcheck in `compose.prod.yaml` und Seeder-Verhalten bleiben gleich.
 - Dev-Stack behält Hot Reload über den Mount von `./src`.
@@ -31,6 +34,7 @@ die neuen Tests.
 - ruff (check + format) ersetzt pylint; `.pylintrc` entfällt.
 - mypy (Basis-Modus) für `src/`.
 - `__tests__/` → `tests/` mit pytest, `conftest.py` und Charakterisierungstests aller Endpoints.
+- Umbenennung des Pakets `src` → `app` (`git mv`), alle Importe, Modulpfad `app.main:app`, `PYTHONPATH`, Mounts.
 - Dockerfile: uv, Multi-Stage (`dev` mit Dev-Abhängigkeiten, `prod` ohne), nur benötigte Dateien kopieren, Non-Root-User.
 - CI (`backend.yml`): uv, Jobs `lint` (ruff check + ruff format --check + mypy), `test` (pytest gegen Postgres-Service),
   `docker-prod`.
@@ -38,7 +42,7 @@ die neuen Tests.
 - Doku und Skill-Befehle nachziehen.
 
 **Nicht im Scope**
-- Umbenennung `src` → `app`, Umstrukturierung, `lifespan`, `pydantic-settings`, CORS (Struktur-Task).
+- Umstrukturierung innerhalb von `app/` (`core/`, `schemas/`, `api/routes/` …), Router-/Service-Benennung, `lifespan`, `pydantic-settings`, CORS (Struktur-Task).
 - SQLAlchemy-2.0-Stil, Pydantic-Schemas, Bugfixes (404, `/scenes/details/{id}`), Alembic.
 - Strenger mypy-Modus (`strict`) – erst sinnvoll nach SQLAlchemy 2.0 / Schemas.
 - Pre-commit-Hooks, Coverage-Schwellen.
@@ -85,6 +89,13 @@ die neuen Tests.
   per `ignore_missing_imports` nur gezielt.
 - **Begründung:** Python-native, in CI einfach; Verschärfung nach SQLAlchemy 2.0.
 
+### E7: Umbenennung `src` → `app` nach den Tests
+- **Entscheidung:** Nach Schritt 2 (Tests grün gegen `src`) wird das Paket per `git mv backend/src backend/app` umbenannt;
+  Struktur darunter bleibt gleich. Tests müssen danach inhaltlich unverändert grün sein (nur Importe).
+- **Verworfene Alternativen:** Erst im Struktur-Task; `src/dnd_portal/`-Layout.
+- **Begründung:** Wunsch des Users; die Charakterisierungstests belegen, dass sich nichts ändert. `app/` ist die
+  FastAPI-Konvention für reine API-Projekte.
+
 ## Subtasks
 
 ### Schritt 1: Abhängigkeiten & Lint
@@ -109,38 +120,48 @@ die neuen Tests.
     – Redirect-Verhalten festhalten.
 - [ ] Gegenprobe: je Testdatei einmal Erwartung bewusst verfälschen → Test schlägt fehl (nicht trivial grün).
 
-### Schritt 3: Docker & Compose
+### Schritt 3: Umbenennung `src` → `app` (E7)
+- [ ] `git mv backend/src backend/app`; alle Importe `from src.…` → `from app.…` (inkl. `tests/`).
+- [ ] Modulpfad `src.main:app` → `app.main:app` in `Dockerfile`, `backend/docker-compose.yml` (`command`).
+- [ ] `PYTHONPATH=/app/src` in `backend/docker-compose.yml` und `compose.prod.yaml` entfernen bzw. auf das Paket-Root
+      anpassen; Mount `./src:/app/src` → `./app:/app/app`.
+- [ ] Konfiguration in `pyproject.toml` (ruff, mypy, pytest) und Pfade in CI auf `app` umstellen.
+- [ ] Suche nach Restvorkommen (`rg "src\.main|/app/src|backend/src|src/db|src/routes|src/services"`) außerhalb von
+      `frontend/` und `docs/tasks/` – keine Treffer mehr.
+
+### Schritt 4: Docker & Compose
 - [ ] `Dockerfile` Multi-Stage mit uv: Basis-Stage, `dev` (inkl. Dev-Gruppe), `prod` als **letzte** Stage
-      (`uv sync --frozen --no-dev`); nur `pyproject.toml`, `uv.lock`, `src/` kopieren; Non-Root-User; `.venv/bin` im `PATH`;
-      `CMD` unverändert `uvicorn src.main:app --host 0.0.0.0 --port 8000`.
+      (`uv sync --frozen --no-dev`); nur `pyproject.toml`, `uv.lock`, `app/` kopieren; Non-Root-User; `.venv/bin` im `PATH`;
+      `CMD` `uvicorn app.main:app --host 0.0.0.0 --port 8000` (ohne `--reload`).
 - [ ] `backend/docker-compose.yml`: `app` baut `target: dev`, mountet zusätzlich `./tests` (für `docker compose run --rm app pytest`);
       Hot Reload bleibt.
 - [ ] `.dockerignore` ergänzen (`.venv`, `tests/`, Caches von ruff/mypy/pytest).
 - [ ] `compose.prod.yaml` prüfen: baut ohne `target` → `prod`-Stage; Healthcheck funktioniert weiter.
 
-### Schritt 4: CI
+### Schritt 5: CI
 - [ ] `.github/workflows/backend.yml`: `setup-uv` (mit Cache auf `uv.lock`), `uv sync --frozen`;
-      `lint`: `uv run ruff check`, `uv run ruff format --check`, `uv run mypy src`;
+      `lint`: `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app`;
       `test`: Postgres-17-Service mit Healthcheck, Env-Variablen wie `.env.example` (HOST=localhost), `uv run pytest`;
       `docker-prod`: `docker build --target prod`.
 - [ ] Wirksamkeit: CI-Lauf auf `development` grün; zusätzlich einmal nachweisen, dass ein absichtlich kaputter Test
       den Job rot macht (lokal ausreichend, nicht pushen).
 
-### Schritt 5: Upgrade (E4)
+### Schritt 6: Upgrade (E4)
 - [ ] Laufzeit-Abhängigkeiten auf aktuelle stabile Versionen heben (`uv lock --upgrade` bzw. Pins anpassen),
       Deprecation-Warnungen im Testlauf prüfen und, falls trivial und ohne Verhaltensänderung, beheben – sonst in
       `docs/known-issues.md` notieren.
 - [ ] Alle Tests, Lint, mypy und Docker-Build grün; Dev- und Prod-Stack starten, Frontend lädt Szenen.
 
 ### Doku
-- [ ] `backend/CLAUDE.md`: Stack, Befehle (uv, ruff, mypy, pytest, Testlauf im Container), Konventionen (pylint-Abschnitt ersetzen), CI.
-- [ ] `CONTRIBUTING.md` (Zeile ~139), `docs/architecture.md`, `.claude/skills/quick-task/SKILL.md` (Backend-Checks).
+- [ ] `backend/CLAUDE.md`: Stack, Befehle (uv, ruff, mypy, pytest, Testlauf im Container), Struktur (`app/…`),
+      Konventionen (Importe ab `app.`, pylint-Abschnitt ersetzen), CI.
+- [ ] `CONTRIBUTING.md` (Zeile ~139), `docs/architecture.md` (Schichten, Seeder-Pfade, CI-Zeile), `.claude/skills/quick-task/SKILL.md` (Backend-Checks).
 - [ ] `docs/known-issues.md`: Punkte zu Tests/`__tests__`, `requirements.txt`/Dev-Abhängigkeiten, Lint/Typprüfung,
-      Dockerfile und Versionen entfernen bzw. anpassen.
+      Dockerfile, Versionen und Paketname `src` entfernen bzw. anpassen; verbleibende Pfade `src/…` auf `app/…`.
 
 ## Akzeptanzkriterien
 
-- [ ] AK1: `uv sync`, `uv run ruff check`, `uv run ruff format --check`, `uv run mypy src` und `uv run pytest` laufen
+- [ ] AK1: `uv sync`, `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app` und `uv run pytest` laufen
       grün; pylint, `.pylintrc` und `requirements.txt` sind entfernt.
 - [ ] AK2: Alle 6 Endpoints sind durch Charakterisierungstests abgedeckt (inkl. 500 bei unbekannter Szene,
       Liste bei unbekannter Detail-ID, Verhalten ohne/mit Trailing Slash); die Tests schlagen fehl, wenn das
@@ -150,6 +171,8 @@ die neuen Tests.
 - [ ] AK5: CI-Lauf auf `development` grün mit allen drei Jobs; der Test-Job läuft gegen Postgres.
 - [ ] AK6: Abhängigkeiten auf aktuellen stabilen Versionen; Tests unverändert grün.
 - [ ] AK7: Alle Invarianten eingehalten – API-Verhalten unverändert.
+- [ ] AK8: Paket heißt `app`, Modulpfad `app.main:app`; keine Verweise auf das alte Paket `src` mehr außerhalb von
+      `docs/tasks/`; Tests nach der Umbenennung inhaltlich unverändert grün.
 
 ## Teststrategie / Verifikation
 
@@ -158,7 +181,7 @@ die neuen Tests.
 - Frontend: unverändert; `npm test` im Frontend als Gegenprobe, dass der Vertrag nicht berührt ist (optional).
 
 **Manuell**
-1. `./script.sh dev` → Admin Screen lädt Szenen, Wall/Ground zeigen Bilder; Änderung in `src/` löst Reload aus.
+1. `./script.sh dev` → Admin Screen lädt Szenen, Wall/Ground zeigen Bilder; Änderung in `app/` löst Reload aus.
 2. `docker compose run --rm app pytest` in `backend/` → grün.
 3. `./script.sh prod` → Stack healthy, `docker exec dnd-prod-api whoami` ≠ root, `docker exec dnd-prod-api pip list`
    bzw. `uv pip list` ohne ruff/mypy/pytest.
