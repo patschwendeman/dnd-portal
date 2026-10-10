@@ -141,7 +141,6 @@ const WallScreen: FunctionComponent = (): ReactElement => {
             () => stale
         )
 
-        // A scene switched before its data arrived must not overwrite the newly selected scene.
         return () => {
             stale = true
         }

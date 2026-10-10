@@ -8,6 +8,8 @@ import { SideBarLeftElement } from './SideBarLeftElement'
 import { textStyle } from '../style/tokens'
 import { loadLatest } from '../utils/loadSafely'
 
+import arrowUpIcon from '/assets/icons/arrowUp.svg'
+
 const markdownFilesMain = import.meta.glob('../../public/story/main/*.md')
 const markdownFilesFight = import.meta.glob('../../public/story/fight/*.md')
 const markdownFilesNoneFight = import.meta.glob('../../public/story/noneFight/*.md')
@@ -15,8 +17,6 @@ const markdownFilesLeveling = import.meta.glob('../../public/story/leveling/*.md
 const markdownFilesMechanics = import.meta.glob('../../public/story/mechanics/*.md')
 
 const markdownLists = [markdownFilesMain, markdownFilesFight, markdownFilesNoneFight, markdownFilesLeveling, markdownFilesMechanics]
-
-import arrowUpIcon from '/assets/icons/arrowUp.svg'
 
 const PAGE_MAX_WIDTH = '880px'
 const LINE_MAX_WIDTH = '68ch'
@@ -225,7 +225,6 @@ const DocumentReader: FunctionComponent = (): ReactElement => {
       () => stale
     )
 
-    // A tab switched before its notes arrived must not overwrite the notes of the newly selected tab.
     return () => {
       stale = true
     }

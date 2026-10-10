@@ -142,7 +142,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
     // Stable across renders (useCallback in useMusicPlayer), so it does not retrigger the scene effect
     const { setPlaylist: setMusicPlaylist } = music
 
-    // Every load runs in an effect; a retry only bumps this counter so both effects load again
+    // Retry bumps this counter; both load effects depend on it
     const [reloadCount, setReloadCount] = useState<number>(0)
 
     const retryLoading = () => {
@@ -167,7 +167,6 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
             () => stale
         )
 
-        // A load overtaken by a retry must not overwrite the result or error of the newer load.
         return () => {
             stale = true
         }
@@ -190,7 +189,6 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
             () => stale
         )
 
-        // A scene switched before its data arrived must not overwrite the newly selected scene.
         return () => {
             stale = true
         }

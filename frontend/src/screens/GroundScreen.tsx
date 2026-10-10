@@ -77,7 +77,7 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
         let stale = false
 
         const handleGroundScreen = (activeScene: SceneDetail) => {
-            const src = activeScene.graphics_ground.source 
+            const src = activeScene.graphics_ground.source
             setMediaSRC(src)
             setMediaType(determineMediaType(src))
         }
@@ -90,7 +90,6 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
             () => stale
         )
 
-        // A scene switched before its data arrived must not overwrite the newly selected scene.
         return () => {
             stale = true
         }
