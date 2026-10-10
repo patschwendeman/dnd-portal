@@ -44,7 +44,7 @@ Usage: $PROG <command>
   dev [--tools]    Dev-Stack starten (Vite :5173, API :8000 mit Reload, DB :5432; --tools: pgAdmin :5050)
   prod             Prod-Stack starten (UI :8080, API :8000, DB :5432), auf healthy warten, Admin/Wall/Ground öffnen
   stop             Dev- und Prod-Stack stoppen (ohne Volumes zu löschen)
-  logs [service]   Logs des Prod-Stacks verfolgen (db, app, web)
+  logs [service]   Logs des Prod-Stacks verfolgen (db, api, ui)
   install          globalen Befehl '$INSTALL_NAME' anlegen (Symlink in /opt/homebrew/bin bzw. /usr/local/bin)
   uninstall        globalen Befehl '$INSTALL_NAME' entfernen
 EOF

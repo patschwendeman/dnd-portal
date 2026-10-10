@@ -21,9 +21,9 @@ Tests: vitest (Unit), jest-cucumber + selenium-webdriver (BDD/E2E).
 # im Monorepo-Root: ganze Anwendung in Docker (Frontend mit Hot-Reload, ./ gemountet)
 ./script.sh dev              # Frontend :5173, API :8000, DB :5432 (bzw. docker compose -f compose.dev.yaml up --build)
                              # einmalig ./script.sh install → danach dnd dev|prod|stop|logs aus jedem Ordner
-docker compose -f compose.dev.yaml up --build react-app   # im Root: nur Frontend in Docker (Stage dev)
+docker compose -f compose.dev.yaml up --build ui          # im Root: nur Frontend in Docker (Stage dev)
 # Production-Image (nginx, statischer Build) – am Spieltisch per ./script.sh prod bzw. dnd prod (compose.prod.yaml);
-# web startet erst, wenn die API healthy ist (Healthcheck), Tabs öffnen sich erst danach
+# ui startet erst, wenn die API healthy ist (Healthcheck), Tabs öffnen sich erst danach
 docker build --target prod [--build-arg VITE_API_URL=http://<host>:8000/] .
 
 npm run dev          # Vite-Dev-Server auf 0.0.0.0:5173 (nativ, ohne Docker)

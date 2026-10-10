@@ -88,8 +88,8 @@ IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement).
 ## Lokal starten
 
 Die ganze Anwendung läuft lokal in Docker und wird aus dem Root gestartet, am einfachsten per Start-Skript `script.sh`
-(macOS). `compose.dev.yaml` (Projektname `dnd-portal-dev`) definiert alle Dev-Services (`db`, `app`, `pgadmin`,
-`react-app`) selbst, aufgebaut wie `compose.prod.yaml`; `db`, `app` und `pgadmin` lesen ihre Variablen per
+(macOS). `compose.dev.yaml` (Projektname `dnd-portal-dev`) definiert alle Dev-Services (`db`, `api`, `pgadmin`,
+`ui`) selbst, aufgebaut wie `compose.prod.yaml`; `db`, `api` und `pgadmin` lesen ihre Variablen per
 `env_file: backend/.env`. Eigene Compose-Dateien in `backend/` bzw. `frontend/` gibt es nicht.
 
 | `./script.sh …` | Wirkung |
@@ -118,11 +118,11 @@ einem Validierungsfehler ab (Feldname im Log). Ältere `.env` mit `DRIVERNAME`/`
 
 | Befehl (im Root, ohne Skript) | Wirkung |
 |---|---|
-| `docker compose -f compose.dev.yaml up --build` | `db` (Postgres :5432), `app` (API :8000, uvicorn `--reload`, `backend/app` und `backend/tests` gemountet), `react-app` (Vite :5173, `frontend/` gemountet) |
+| `docker compose -f compose.dev.yaml up --build` | `db` (Postgres :5432), `api` (API :8000, uvicorn `--reload`, `backend/app` und `backend/tests` gemountet), `ui` (Vite :5173, `frontend/` gemountet) |
 | `docker compose -f compose.dev.yaml --profile tools up` | zusätzlich `pgadmin` (:5050) |
-| `docker compose -f compose.dev.yaml up --build db app` | nur Backend (DB und API) |
-| `docker compose -f compose.dev.yaml up --build react-app` | nur Frontend (alternativ nativ `npm run dev` in `frontend/`) |
-| `docker compose -f compose.dev.yaml run --rm app pytest` | Backend-Tests im Dev-Container |
+| `docker compose -f compose.dev.yaml up --build db api` | nur Backend (DB und API) |
+| `docker compose -f compose.dev.yaml up --build ui` | nur Frontend (alternativ nativ `npm run dev` in `frontend/`) |
+| `docker compose -f compose.dev.yaml run --rm api pytest` | Backend-Tests im Dev-Container |
 | `docker compose -f compose.dev.yaml logs -f <service>` | Logs verfolgen |
 | `docker compose -f compose.dev.yaml down` | stoppen; mit `-v` auch DB-Volume löschen (DB-Reset, Seeder läuft neu) |
 
@@ -161,7 +161,7 @@ oben: `backend/.env`.
 
 | Befehl (im Root, ohne Skript; mit Skript: `./script.sh prod` bzw. `dnd prod`) | Wirkung |
 |---|---|
-| `docker compose -f compose.prod.yaml up -d --build --wait` | `db` (Postgres :5432), `app` (API :8000, uvicorn ohne `--reload`, Code im Image), `web` (nginx :8080 mit dem statischen Build) – alle mit `restart: unless-stopped` |
+| `docker compose -f compose.prod.yaml up -d --build --wait` | `db` (Postgres :5432), `api` (API :8000, uvicorn ohne `--reload`, Code im Image), `ui` (nginx :8080 mit dem statischen Build) – alle mit `restart: unless-stopped` |
 | `VITE_API_URL=http://<host>:8000/ docker compose -f compose.prod.yaml up -d --build --wait` | Frontend mit anderer API-URL bauen (Default `http://localhost:8000/`) |
 | `docker compose -f compose.prod.yaml logs -f <service>` | Logs verfolgen |
 | `docker compose -f compose.prod.yaml down` | stoppen; mit `-v` auch DB-Volume löschen |
@@ -171,8 +171,8 @@ Smartphones öffnen den Player Screen über `http://<IP des Rechners>:8080/`. ng
 direkt aufgerufene Unterrouten aus (SPA-Fallback); die Medien aus `public/` stecken im Image, Änderungen daran
 brauchen einen neuen Build (`--build`). pgAdmin ist nicht enthalten.
 Dev- und Prod-Stack nicht gleichzeitig betreiben: API (:8000) und DB (:5432) nutzen dieselben Ports.
-Healthchecks: `db` per `pg_isready`, `app` per Python-Einzeiler gegen `http://localhost:8000/scenes` (das Image hat
-kein curl); `app` startet erst bei gesunder DB, `web` erst bei gesunder API. `docker ps` zeigt `dnd-prod-api (healthy)`.
+Healthchecks: `db` per `pg_isready`, `api` per Python-Einzeiler gegen `http://localhost:8000/scenes` (das Image hat
+kein curl); `api` startet erst bei gesunder DB, `ui` erst bei gesunder API. `docker ps` zeigt `dnd-prod-api (healthy)`.
 
 Frontend-Image: `frontend/Dockerfile` mit Stages `dev` (Vite-Dev-Server, von `compose.dev.yaml` per
 `target: dev` genutzt), `build` (`npm ci`, `npm run build`) und `prod` (nginx, Konfiguration `frontend/nginx.conf`).

@@ -1,10 +1,10 @@
 # Local development: DB, API and frontend with hot reload, started from the repo root.
 #   dnd dev [--tools]                                             # recommended (or ./script.sh dev); stops the prod stack first
-#   docker compose -f compose.dev.yaml up --build                 # db :5432, app :8000, react-app :5173
+#   docker compose -f compose.dev.yaml up --build                 # db :5432, api :8000, ui :5173
 #   docker compose -f compose.dev.yaml --profile tools up         # additionally pgAdmin :5050
-#   docker compose -f compose.dev.yaml up --build db app          # backend only
-#   docker compose -f compose.dev.yaml up --build react-app       # frontend only
-#   docker compose -f compose.dev.yaml run --rm app pytest        # backend tests
+#   docker compose -f compose.dev.yaml up --build db api          # backend only
+#   docker compose -f compose.dev.yaml up --build ui              # frontend only
+#   docker compose -f compose.dev.yaml run --rm api pytest        # backend tests
 # Own project name → own DB volume (dnd-portal-dev_postgres_data); the seeder fills it on first start.
 name: dnd-portal-dev
 
@@ -33,7 +33,7 @@ services:
     ports:
       - "5050:80"
 
-  app:
+  api:
     build:
       context: backend
       target: dev
@@ -50,7 +50,7 @@ services:
       - ./backend/app:/app/app
       - ./backend/tests:/app/tests
 
-  react-app:
+  ui:
     container_name: dnd-dev-ui
     build:
       context: frontend

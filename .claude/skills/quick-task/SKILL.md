@@ -33,7 +33,7 @@ sind die Checks in Schritt 4 Pflicht.
    - Frontend (in `frontend/`): `npm run lint`, `npm run typecheck`, `npm run test:unit`, `npm run build`
    - Backend (in `backend/`): `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app`,
      `DB_HOST=localhost uv run pytest` (braucht die DB des laufenden Dev-Stacks; alternativ im Root
-     `docker compose -f compose.dev.yaml run --rm --build app pytest`)
+     `docker compose -f compose.dev.yaml run --rm --build api pytest`)
    - Compose-Dateien geändert: `docker compose -f compose.dev.yaml config -q` bzw. `-f compose.prod.yaml config -q` im Root
    - Workflows geändert: Syntax prüfen; Wirksamkeit zeigt erst ein CI-Lauf nach dem Push – im Bericht erwähnen
    - Bei Bedarf Gegenprobe (z. B. Fehler absichtlich einbauen, Check muss rot werden; danach verwerfen)

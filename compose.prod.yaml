@@ -1,6 +1,6 @@
 # Production stack for the game table: DB, API and frontend (static build served by nginx).
 #   dnd prod                                                    # recommended (or ./script.sh prod), see script.sh
-#   docker compose -f compose.prod.yaml up -d --build --wait    # web :8080, app :8000, db :5432
+#   docker compose -f compose.prod.yaml up -d --build --wait    # ui :8080, api :8000, db :5432
 #   docker compose -f compose.prod.yaml down                    # stop (-v: reset DB)
 # Do not run together with the dev stack (compose.dev.yaml): API and DB use the same ports.
 # Own project name → own DB volume; the seeder fills the DB on first start.
@@ -23,7 +23,7 @@ services:
       interval: 5s
       retries: 5
 
-  app:
+  api:
     build:
       context: backend
     container_name: dnd-prod-api
@@ -35,7 +35,7 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
-    # Checked with Python because python:3.11-slim has no curl. web and `up --wait` wait for it so that
+    # Checked with Python because python:3.11-slim has no curl. ui and `up --wait` wait for it so that
     # Admin/Wall/Ground do not load before the API is ready.
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/scenes', timeout=3)"]
@@ -44,7 +44,7 @@ services:
       retries: 20
       start_period: 10s
 
-  web:
+  ui:
     build:
       context: frontend
       target: prod
@@ -53,7 +53,7 @@ services:
     container_name: dnd-prod-ui
     restart: unless-stopped
     depends_on:
-      app:
+      api:
         condition: service_healthy
     ports:
       - "8080:80"

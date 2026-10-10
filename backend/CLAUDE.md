@@ -17,10 +17,10 @@ psycopg2 · PostgreSQL 17. Tooling: uv · ruff (Lint + Format) · mypy · pytest
 # im Monorepo-Root: ganze Anwendung (DB, API, Frontend) – siehe ../docs/architecture.md#lokal-starten
 ./script.sh dev                    # Postgres :5432, API :8000 (uvicorn --reload, ./app und ./tests gemountet), Frontend :5173
 ./script.sh dev --tools            # zusätzlich pgAdmin :5050
-docker compose -f compose.dev.yaml logs -f app   # API-Logs (Container dnd-dev-api)
+docker compose -f compose.dev.yaml logs -f api   # API-Logs (Container dnd-dev-api)
 docker compose -f compose.dev.yaml down          # stoppen (-v: DB-Reset); ./script.sh stop stoppt Dev und Prod
 
-docker compose -f compose.dev.yaml up --build db app   # nur Backend (DB + API; pgAdmin: --profile tools up --build db app pgadmin)
+docker compose -f compose.dev.yaml up --build db api   # nur Backend (DB + API; pgAdmin: --profile tools up --build db api pgadmin)
 
 # Production-Stack am Spieltisch (im Root): API ohne Reload und ohne Code-Mount (Container dnd-prod-api)
 ./script.sh prod                   # bzw. dnd prod (nach einmaligem ./script.sh install) oder docker compose -f compose.prod.yaml up -d --build --wait
@@ -34,8 +34,8 @@ uv run mypy app                    # Typprüfung (strict, Pydantic-Plugin)
 DB_HOST=localhost uv run pytest    # Tests gegen die DB des laufenden Dev-Stacks (Port 5432); DB_HOST aus .env (db) überschreiben
 
 # Tests im Dev-Container (DB `db` aus dem Compose-Netz, Image mit Dev-Gruppe)
-docker compose -f compose.dev.yaml run --rm app pytest      # im Root (startet bei Bedarf die DB mit)
-docker compose -f compose.dev.yaml run --rm --no-deps app sh -c 'ruff check && ruff format --check && mypy app'
+docker compose -f compose.dev.yaml run --rm api pytest      # im Root (startet bei Bedarf die DB mit)
+docker compose -f compose.dev.yaml run --rm --no-deps api sh -c 'ruff check && ruff format --check && mypy app'
 # Nach Änderungen an pyproject.toml/uv.lock das Image neu bauen (--build bzw. ./script.sh dev).
 ```
 
@@ -55,7 +55,7 @@ Schlüssel: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` (Postgres-Contai
 (`db` – nur im Compose-Netz erreichbar), `DB_PORT`, optional `CORS_ORIGINS` (JSON-Liste, Default Dev- und
 Prod-Frontend auf localhost), `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`. Gelesen werden sie von `Settings`
 in `app/core/config.py` (Umgebung vor `.env`); fehlende Pflichtwerte brechen den Start mit Validierungsfehler ab.
-Ältere `.env` mit `DRIVERNAME`/`HOST`/`PORT` einmalig umbenennen. Der Service `app` erhält sie per `env_file`, nicht
+Ältere `.env` mit `DRIVERNAME`/`HOST`/`PORT` einmalig umbenennen. Der Service `api` erhält sie per `env_file`, nicht
 über das Image (`.dockerignore` schließt `.env` aus). `import app.main` braucht keine DB; `create_all` und der Seeder
 laufen erst beim App-Start (`lifespan`).
 
