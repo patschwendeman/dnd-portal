@@ -38,6 +38,8 @@ known-first-party = ["app"]
 [tool.mypy]
 python_version = "3.11"
 files = ["app"]
+strict = true
+plugins = ["pydantic.mypy"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

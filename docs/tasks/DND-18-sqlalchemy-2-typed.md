@@ -1,7 +1,7 @@
 # DND-18: SQLAlchemy 2.0 typisiert (Mapped, select) und mypy strict
 
 **Typ:** refactor
-**Status:** Entwurf
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -89,33 +89,33 @@ laden alle Szenen und filtern in Python. mypy läuft nur im Basis-Modus, mit ein
 ## Subtasks
 
 ### Schritt 1: Models
-- [ ] `app/db/base.py`: `class Base(DeclarativeBase)`.
-- [ ] `app/models/scene.py`, `app/models/media.py` auf `Mapped`/`mapped_column` (E1, E2); `scene_music_association`
+- [x] `app/db/base.py`: `class Base(DeclarativeBase)`.
+- [x] `app/models/scene.py`, `app/models/media.py` auf `Mapped`/`mapped_column` (E1, E2); `scene_music_association`
       unverändert als `Table` (Spalten, Namen, FKs gleich).
-- [ ] Schema-Vergleich: `CreateTable` für alle Tabellen vor und nach der Umstellung als DDL ausgeben
+- [x] Schema-Vergleich: `CreateTable` für alle Tabellen vor und nach der Umstellung als DDL ausgeben
       (`str(CreateTable(t).compile(dialect=postgresql.dialect()))`) und vergleichen – identisch (Beleg im Review).
 
 ### Schritt 2: Abfragen & Seeder
-- [ ] `app/crud/scene.py` auf `select()`/`db.scalars()`/`db.get()`; neue Funktionen (E3). `.unique()` bei
+- [x] `app/crud/scene.py` auf `select()`/`db.scalars()`/`db.get()`; neue Funktionen (E3). `.unique()` bei
       `joinedload` von Collections.
-- [ ] `app/services/scene.py`, `app/services/map.py` (E3, E4).
-- [ ] `app/db/seed.py`: `select(...).limit(1)`/`db.scalar` statt `db.query(...).first()`, `add_all` statt
+- [x] `app/services/scene.py`, `app/services/map.py` (E3, E4).
+- [x] `app/db/seed.py`: `select(...).limit(1)`/`db.scalar` statt `db.query(...).first()`, `add_all` statt
       `bulk_save_objects`, Musik per `select(Music).where(Music.id.in_(...))`; Typen für alle Funktionen.
-- [ ] `app/db/session.py`: `sessionmaker[Session]` bzw. `sessionmaker(..., class_=Session)` typisiert.
+- [x] `app/db/session.py`: `sessionmaker[Session]` bzw. `sessionmaker(..., class_=Session)` typisiert.
 
 ### Schritt 3: mypy strict
-- [ ] `pyproject.toml` (E5); Routen mit `response_model=None` und Rückgabetypen; `MapEntry`.
-- [ ] `uv run mypy app` grün ohne neue `# type: ignore`.
+- [x] `pyproject.toml` (E5); Routen mit `response_model=None` und Rückgabetypen; `MapEntry`.
+- [x] `uv run mypy app` grün ohne neue `# type: ignore`.
 
 ### Schritt 4: Tests & Verifikation
-- [ ] Alle Tests unverändert grün (DB vorher zurücksetzen, damit das Seed-Ergebnis frisch geprüft wird).
-- [ ] Gegenprobe Seed: IDs und Musik-Zuordnung wie vorher (durch `expected_scene_details` abgedeckt).
+- [x] Alle Tests unverändert grün (DB vorher zurücksetzen, damit das Seed-Ergebnis frisch geprüft wird).
+- [x] Gegenprobe Seed: IDs und Musik-Zuordnung wie vorher (durch `expected_scene_details` abgedeckt).
 
 ### Doku
-- [ ] `backend/CLAUDE.md`: Stack-Zeile (SQLAlchemy 2.0 typisiert statt „klassischer Stil“), Konventionen
+- [x] `backend/CLAUDE.md`: Stack-Zeile (SQLAlchemy 2.0 typisiert statt „klassischer Stil“), Konventionen
       (`Mapped`, `select()`, mypy strict, `response_model=None` bis Schemas), Befehle (`mypy app` strict).
-- [ ] `docs/architecture.md`: Datenmodell-Abschnitt, falls dort Stil/Relationen beschrieben (`GraphicsWall.scenes`).
-- [ ] `docs/known-issues.md`: Punkt „SQLAlchemy im 1.x-Stil“ und mypy-Punkt entfernen; `uselist`-Teil aus dem
+- [x] `docs/architecture.md`: Datenmodell-Abschnitt, falls dort Stil/Relationen beschrieben (`GraphicsWall.scenes`).
+- [x] `docs/known-issues.md`: Punkt „SQLAlchemy im 1.x-Stil“ und mypy-Punkt entfernen; `uselist`-Teil aus dem
       Punkt zu ungenutzten Spalten streichen; „filtert in Python statt per SQL“ aus dem Detail-Punkt streichen.
 
 ## Akzeptanzkriterien

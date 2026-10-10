@@ -26,5 +26,4 @@ class Settings(BaseSettings):
         )
 
 
-# Values come from the environment, which mypy cannot see (without the pydantic plugin).
-settings = Settings()  # type: ignore[call-arg]
+settings = Settings()

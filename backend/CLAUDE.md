@@ -6,7 +6,7 @@ eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 
 ## Stack
 
-Python 3.11 · FastAPI 0.143 · Pydantic 2.14 · pydantic-settings 2.15 · SQLAlchemy 2.1 (klassischer Stil: `declarative_base`, `Column`, `db.query`) ·
+Python 3.11 · FastAPI 0.143 · Pydantic 2.14 · pydantic-settings 2.15 · SQLAlchemy 2.1 (typisierter 2.0-Stil: `DeclarativeBase`, `Mapped`, `select()`) ·
 psycopg2 · PostgreSQL 17. Tooling: uv · ruff (Lint + Format) · mypy · pytest. Laufzeit-Abhängigkeiten exakt gepinnt in
 `pyproject.toml`, Dev-Abhängigkeiten in `[dependency-groups] dev`; `uv.lock` ist versioniert. Tool-Konfiguration
 (ruff, mypy, pytest) ebenfalls in `pyproject.toml`.
@@ -31,7 +31,7 @@ docker compose up --build
 uv sync                            # .venv mit Laufzeit- und Dev-Abhängigkeiten (Dev-Stack muss nicht laufen)
 uv run ruff check                  # Lint (--fix behebt Import-Sortierung u. a.)
 uv run ruff format                 # Formatierung (CI: --check)
-uv run mypy app                    # Typprüfung (Basis-Modus)
+uv run mypy app                    # Typprüfung (strict, Pydantic-Plugin)
 DB_HOST=localhost uv run pytest    # Tests gegen die DB des laufenden Dev-Stacks (Port 5432); DB_HOST aus .env (db) überschreiben
 
 # Tests im Dev-Container (DB `db` aus dem Compose-Netz, Image mit Dev-Gruppe)
@@ -73,14 +73,15 @@ unter `/app/.venv` (im `PATH`), der Prozess läuft als Non-Root-User `dnd`. `CMD
 ```
 app/main.py               App `app`, lifespan (create_all + Seeder), CORS, include_router mit Prefix/Tags
 app/core/config.py        Settings (pydantic-settings) und Instanz `settings`
-app/db/base.py            Base = declarative_base()
+app/db/base.py            class Base(DeclarativeBase)
 app/db/session.py         engine, SessionLocal, get_db()
 app/db/seed.py            Seeder; Daten in app/db/data/seed_data.json
 app/models/               SQLAlchemy-Models: scene.py (Scene, scene_music_association), media.py (GraphicsWall,
                           GraphicsGround, Music); __init__.py re-exportiert alle (vollständige Base.metadata)
-app/crud/scene.py         Lesezugriffe auf Scene (read_scenes, read_scene, read_scenes_with_relations)
+app/crud/scene.py         Lesezugriffe auf Scene (read_scenes, read_scene, read_scenes_with_relations,
+                          read_scene_with_relations, read_scenes_by_main)
 app/services/scene.py     Fachlogik Szenen (get_scenes, get_scene, get_scene_details, get_scene_detail)
-app/services/map.py       Fachlogik Karten (get_maps, MapType)
+app/services/map.py       Fachlogik Karten (get_maps, MapType, MapEntry)
 app/api/deps.py           SessionDep
 app/api/routes/*.py       je Ressource ein `router` (scenes, maps) – nur HTTP-Mapping
 tests/conftest.py         Fixtures: TestClient, Seed-Daten und daraus berechnete Erwartungen
@@ -99,11 +100,17 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
 - DB-Session in Routen per `db: SessionDep` (`app/api/deps.py`, `Annotated[Session, Depends(get_db)]`).
 - Konfiguration nur über `from app.core.config import settings` – kein `os.environ`. Neue Werte als Feld in
   `Settings` und in `.env.example` ergänzen.
-- Routen geben ORM-Objekte direkt zurück (keine Pydantic-Schemas, kein `response_model`). Relationen sind nur
-  enthalten, wenn sie per `joinedload` geladen wurden (siehe `read_scenes_with_relations`).
+- Routen geben ORM-Objekte direkt zurück (keine Pydantic-Schemas); bis zum Schema-Task mit `response_model=None` im
+  Decorator, damit FastAPI die Rückgabe-Annotation nicht als Response-Modell nutzt. Relationen sind nur enthalten,
+  wenn sie per `joinedload` geladen wurden (siehe `read_scenes_with_relations`). Karten liefern `MapEntry`
+  (`TypedDict` aus `typing_extensions`, Pydantic verlangt das unter Python < 3.12).
+- Models im typisierten 2.0-Stil: `Mapped[...]`/`mapped_column`, Nullbarkeit im Typ (`Mapped[str | None]`) spiegelt das
+  Schema; Relationen zwischen Modulen per `TYPE_CHECKING`-Import und String-Annotation. Abfragen nur mit `select()`,
+  `db.scalars()`, `db.get()` (kein `db.query`); bei `joinedload` von Collections `.unique()`; gefiltert wird in SQL.
 - ruff: Zeilenlänge 120, Regelsets `E`, `F`, `W`, `I`, `B`, `UP`, `SIM`; ignoriert nur `B008` (`Depends(...)` als
   Default ist FastAPI-Idiom). Code ist mit `ruff format` formatiert (doppelte Quotes).
-- mypy im Basis-Modus (kein `strict`); gezielte `# type: ignore[...]` mit Fehlercode statt pauschaler Ignores.
+- mypy `strict` mit Pydantic-Plugin für `app/` (nicht für `tests/`); alle Funktionen mit Typannotationen. Kein
+  `# type: ignore` ohne Fehlercode und Begründungskommentar.
 - Tabellen-/Spaltennamen snake_case, Model-Klassen PascalCase.
 
 ## Wichtig beim Ändern

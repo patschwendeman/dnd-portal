@@ -26,10 +26,10 @@ def get_scene_details(db: Session) -> list[Scene]:
 
 
 def get_scene_detail(db: Session, scene_id: int) -> Scene | list[Scene]:
+    scene = scene_crud.read_scene_with_relations(db, scene_id)
+    if scene:
+        return scene
     scenes = scene_crud.read_scenes_with_relations(db)
-    for scene in scenes:
-        if scene.id == scene_id:
-            return scene
     if not scenes:
         raise ValueError("No scene found")
     return scenes

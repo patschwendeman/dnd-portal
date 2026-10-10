@@ -26,7 +26,7 @@
 
 ## Backend (`backend`)
 
-- Python 3.11, FastAPI 0.143, SQLAlchemy 2.1 (klassischer `declarative_base`/`db.query`-Stil), psycopg2, PostgreSQL 17;
+- Python 3.11, FastAPI 0.143, SQLAlchemy 2.1 (typisierter 2.0-Stil: `DeclarativeBase`, `Mapped[...]`, `select()`), psycopg2, PostgreSQL 17;
   Abhängigkeiten per uv (`pyproject.toml`, `uv.lock`).
 - Schichten (Paket `app`): `app/api/routes/*` (je Modul ein `router`, Prefix/Tags zentral in `app/main.py`) →
   `app/services/*` (Modul-Funktionen) → `app/crud/*` → `app/models/*`. Konfiguration in `app/core/config.py`
@@ -50,7 +50,7 @@
 
 ```
 Scene(id, name, description, main: bool, graphics_wall_id → GraphicsWall, graphics_ground_id → GraphicsGround (unique), music_id [ungenutzt])
-GraphicsWall(id, name, source)            Scene N:1 (z. B. teilen sich alle Kampfszenen ein Wall-Bild)
+GraphicsWall(id, name, source)            Scene N:1 (z. B. teilen sich alle Kampfszenen ein Wall-Bild; Relation GraphicsWall.scenes ist eine Liste)
 GraphicsGround(id, name, source, main)    Scene 1:1; Feld main ungenutzt
 Music(id, name, source)                   Scene N:M über scene_music_association(scene_id, music_id)
 ```
@@ -179,7 +179,7 @@ startet `uvicorn app.main:app` ohne `--reload`; den Reload setzt nur der Dev-Sta
 
 | | Backend | Frontend |
 |---|---|---|
-| Lint | `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app` (Konfig in `pyproject.toml`) | `npm run lint` (ESLint flat config, einfache Quotes, keine Semikolons) |
+| Lint | `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app` (strict, Pydantic-Plugin; Konfig in `pyproject.toml`) | `npm run lint` (ESLint flat config, einfache Quotes, keine Semikolons) |
 | Unit-Tests | `uv run pytest` – Charakterisierungstests aller Endpoints in `tests/`, gegen PostgreSQL (lokal Dev-DB bzw. Dev-Container) | `npm run test:unit` (vitest, nur `utils.spec.ts`) |
 | E2E | – | `npm run test:e2e` (jest-cucumber + Selenium/Chrome, braucht laufendes Backend mit Seed-Daten) |
 | CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: parallele Jobs `lint` (ruff check, ruff format --check, mypy) und `test` (pytest gegen Service-Container `postgres:17`) direkt auf dem Runner, uv mit Cache auf `uv.lock`; Job `docker-prod` baut das Image (`--target prod`, ohne Push) | `.github/workflows/frontend.yml` – analog für `frontend/`: zuerst Job `build` (`vite build`), danach parallel `typecheck` (`tsc -b`), `lint` und `test` (`npm run test:unit`) mit `needs: build`, Node aus `frontend/.nvmrc` (18) mit npm-Cache, `npm ci`; Job `docker-prod` baut das Production-Image (`--target prod`, ohne Push); kein E2E in CI |

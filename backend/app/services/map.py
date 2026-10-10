@@ -1,26 +1,29 @@
 from typing import Literal
 
 from sqlalchemy.orm import Session
+from typing_extensions import TypedDict
 
 from app.crud import scene as scene_crud
 
 MapType = Literal["main", "side"]
 
 
-def get_maps(db: Session, map_type: MapType) -> list[dict[str, object]]:
+class MapEntry(TypedDict):
+    id: int
+    source: str | None
+
+
+def get_maps(db: Session, map_type: MapType) -> list[MapEntry]:
     if map_type not in ("main", "side"):
         raise ValueError("Maptype must be either 'main' or 'side'")
 
     filter_main = map_type == "main"
 
-    scenes = scene_crud.read_scenes(db)
-    if not scenes:
-        raise ValueError("Scenes not found")
-
-    filtered_maps = []
-    for scene in scenes:
-        if scene.main is filter_main:
-            source = scene.graphics_ground.source if scene.main else scene.graphics_wall.source
-            filtered_maps.append({"id": scene.id, "source": source})
+    filtered_maps: list[MapEntry] = []
+    for scene in scene_crud.read_scenes_by_main(db, filter_main):
+        graphic = scene.graphics_ground if scene.main else scene.graphics_wall
+        if graphic is None:
+            raise ValueError(f"Scene {scene.id} has no graphic for its map type")
+        filtered_maps.append({"id": scene.id, "source": graphic.source})
 
     return filtered_maps

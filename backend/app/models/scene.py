@@ -1,7 +1,12 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, Text
-from sqlalchemy.orm import relationship
+from typing import TYPE_CHECKING
+
+from sqlalchemy import Column, ForeignKey, Integer, Table, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.media import GraphicsGround, GraphicsWall, Music
 
 scene_music_association = Table(
     "scene_music_association",
@@ -13,13 +18,13 @@ scene_music_association = Table(
 
 class Scene(Base):
     __tablename__ = "scene"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    description = Column(Text)
-    main = Column(Boolean)
-    graphics_wall_id = Column(Integer, ForeignKey("graphics_wall.id"))
-    graphics_wall = relationship("GraphicsWall", back_populates="scene", uselist=False)
-    graphics_ground_id = Column(Integer, ForeignKey("graphics_ground.id"), unique=True)
-    graphics_ground = relationship("GraphicsGround", back_populates="scene", uselist=False)
-    music_id = Column(Integer, ForeignKey("music.id"))
-    music = relationship("Music", secondary=scene_music_association, back_populates="scenes")
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str | None]
+    description: Mapped[str | None] = mapped_column(Text)
+    main: Mapped[bool | None]
+    graphics_wall_id: Mapped[int | None] = mapped_column(ForeignKey("graphics_wall.id"))
+    graphics_wall: Mapped["GraphicsWall | None"] = relationship(back_populates="scenes")
+    graphics_ground_id: Mapped[int | None] = mapped_column(ForeignKey("graphics_ground.id"), unique=True)
+    graphics_ground: Mapped["GraphicsGround | None"] = relationship(back_populates="scene")
+    music_id: Mapped[int | None] = mapped_column(ForeignKey("music.id"))
+    music: Mapped[list["Music"]] = relationship(secondary=scene_music_association, back_populates="scenes")
