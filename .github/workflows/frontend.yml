@@ -99,3 +99,14 @@ jobs:
 
       - name: Run Testing
         run: npm run test:unit
+
+  docker-prod:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Production image (nginx) as used by compose.prod.yaml; VITE_API_URL keeps its default. No push.
+      - name: Build production image
+        run: docker build --target prod -t dnd-portal-frontend:ci .

@@ -12,7 +12,8 @@
             │ FastAPI        │────────▶│ PostgreSQL   │
             │ backend :8000  │         │ :5432        │
             └────────────────┘         └──────────────┘
- Statische Assets (Bilder, Musik, Sounds, Markdown) liefert der Vite-Server des Frontends (:5173) aus public/.
+ Statische Assets (Bilder, Musik, Sounds, Markdown) liefert das Frontend aus public/ aus:
+ Dev: Vite-Server (:5173), Production: nginx (:8080) mit dem gebauten public/.
 ```
 
 ## Synchronisation
@@ -65,7 +66,7 @@ IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement).
 - State: React-State + ein Context (`ActiveSceneContext`) + `localStorage`. Kein Store-Framework. Die aktive Kachel in
   den Kartenübersichten ergibt sich aus `activeSceneId` (Kachel-ID = Szenen-ID, im Frontend `Map.sceneId`).
 - Struktur: `src/app` (Routing, globaler State), `src/screens` (Screens), `src/components`, `src/service` (Datenladen je Screen),
-  `src/api` (axios-Client, Base-URL fest `http://localhost:8000/`, Timeout 5000 ms), `src/models`, `src/utils` (Audio, Filter),
+  `src/api` (axios-Client, Base-URL aus `VITE_API_URL`, Default `http://localhost:8000/`, Timeout 5000 ms), `src/models`, `src/utils` (Audio, Filter),
   `src/style` (Themes), `src/context`.
 - Fehlerbehandlung beim Datenladen (seit DND-11): `getData` reicht Fehler weiter. Die Services laden über `loadData`
   (`src/api/loadData.ts`) und werfen einen `LoadError`, dessen Meldung Netzwerkfehler/Timeout („backend not
@@ -94,7 +95,34 @@ Die ganze Anwendung läuft lokal in Docker und wird aus dem Root gestartet. `com
 
 UI unter http://localhost:5173 (`/admin`, `/wall`, `/ground`, `/`); das Frontend ruft die API über
 `http://localhost:8000/` auf. Einzelstart weiterhin mit `docker compose up` in `backend/` bzw. `frontend/`.
-Node-Version: `frontend/.nvmrc` (CI) und `frontend/Dockerfile` (`node:18-slim`) synchron halten.
+Node-Version: `frontend/.nvmrc` (CI) und `frontend/Dockerfile` (`node:18-slim`, Stages `dev` und `build`) synchron halten.
+
+**API-URL:** Das Frontend liest die Base-URL der API aus `VITE_API_URL` (Build-Zeit, von Vite ins Bundle
+eingesetzt); ohne Variable gilt `http://localhost:8000/`. Lokal per `frontend/.env` (Vorlage `frontend/.env.example`),
+im Production-Image per Build-Argument. Eine andere URL erfordert einen neuen Build.
+
+### Am Spieltisch (Production)
+
+Für den Spielabend gibt es einen eigenen Stack ohne Hot-Reload und ohne Code-Mounts: `compose.prod.yaml` im Root
+(Projektname `dnd-portal-prod`, eigenes DB-Volume; der Seeder füllt die DB beim ersten Start). Voraussetzung wie
+oben: `backend/.env`.
+
+| Befehl (im Root) | Wirkung |
+|---|---|
+| `docker compose -f compose.prod.yaml up -d --build` | `db` (Postgres :5432), `app` (API :8000, uvicorn ohne `--reload`, Code im Image), `web` (nginx :8080 mit dem statischen Build) – alle mit `restart: unless-stopped` |
+| `VITE_API_URL=http://<host>:8000/ docker compose -f compose.prod.yaml up -d --build` | Frontend mit anderer API-URL bauen (Default `http://localhost:8000/`) |
+| `docker compose -f compose.prod.yaml logs -f <service>` | Logs verfolgen |
+| `docker compose -f compose.prod.yaml down` | stoppen; mit `-v` auch DB-Volume löschen |
+
+UI unter http://localhost:8080/admin, `/wall` und `/ground` (Fenster im selben Browser auf dem Spieltisch-Rechner);
+Smartphones öffnen den Player Screen über `http://<IP des Rechners>:8080/`. nginx liefert `index.html` auch für
+direkt aufgerufene Unterrouten aus (SPA-Fallback); die Medien aus `public/` stecken im Image, Änderungen daran
+brauchen einen neuen Build (`--build`). pgAdmin ist nicht enthalten.
+Dev- und Prod-Stack nicht gleichzeitig betreiben: API (:8000) und DB (:5432) nutzen dieselben Ports.
+
+Frontend-Image: `frontend/Dockerfile` mit Stages `dev` (Vite-Dev-Server, von `frontend/docker-compose.yml` per
+`target: dev` genutzt), `build` (`npm ci`, `npm run build`) und `prod` (nginx, Konfiguration `frontend/nginx.conf`).
+Backend-Image: `backend/Dockerfile` startet uvicorn ohne `--reload`; den Reload setzt nur der Dev-Stack per `command`.
 
 ## Qualitätssicherung
 
@@ -103,6 +131,6 @@ Node-Version: `frontend/.nvmrc` (CI) und `frontend/Dockerfile` (`node:18-slim`) 
 | Lint | `pylint src/` (`.pylintrc`) | `npm run lint` (ESLint flat config, einfache Quotes, keine Semikolons) |
 | Unit-Tests | `python -m unittest discover -s __tests__` – aktuell **keine Tests** | `npm run test:unit` (vitest, nur `utils.spec.ts`) |
 | E2E | – | `npm run test:e2e` (jest-cucumber + Selenium/Chrome, braucht Backend; teilweise veraltet) |
-| CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: parallele Jobs `lint` (`pylint src/`) und `test` (unittest) direkt auf dem Runner, Python 3.11 mit pip-Cache | `.github/workflows/frontend.yml` – analog für `frontend/`: zuerst Job `build` (`vite build`), danach parallel `typecheck` (`tsc -b`), `lint` und `test` (`npm run test:unit`) mit `needs: build`, Node aus `frontend/.nvmrc` (18) mit npm-Cache, `npm ci`; kein E2E in CI |
+| CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: parallele Jobs `lint` (`pylint src/`) und `test` (unittest) direkt auf dem Runner, Python 3.11 mit pip-Cache; Job `docker` baut das Image (ohne Push) | `.github/workflows/frontend.yml` – analog für `frontend/`: zuerst Job `build` (`vite build`), danach parallel `typecheck` (`tsc -b`), `lint` und `test` (`npm run test:unit`) mit `needs: build`, Node aus `frontend/.nvmrc` (18) mit npm-Cache, `npm ci`; Job `docker-prod` baut das Production-Image (`--target prod`, ohne Push); kein E2E in CI |
 
 Die alten Branches `test` und `v1-roguelike` (verworfen) der früheren Einzel-Repos liegen als Tags `archive/{backend,frontend}-{test,v1-roguelike}` vor.

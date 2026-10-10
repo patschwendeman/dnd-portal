@@ -56,3 +56,14 @@ jobs:
 
       - name: Run tests
         run: python -m unittest discover -s __tests__ -p "*.py"
+
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Image as used by compose.prod.yaml. No push.
+      - name: Build image
+        run: docker build -t dnd-portal-backend:ci .

@@ -21,6 +21,9 @@ docker compose down                # stoppen (-v: DB-Reset)
 # in backend/: nur Backend (DB + API; pgAdmin mit --profile tools)
 docker compose up --build
 
+# Production-Stack am Spieltisch (im Root): API ohne Reload und ohne Code-Mount
+docker compose -f compose.prod.yaml up -d --build
+
 # Lint/Tests (Python 3.11 – lokal ggf. im Container: docker compose run --rm --no-deps app <befehl>)
 pylint src/                        # Lint (Konfig: .pylintrc)
 python -m unittest discover -s __tests__ -p "*.py"   # Tests (aktuell keine vorhanden)
@@ -31,6 +34,9 @@ Schlüssel: `DRIVERNAME`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `
 erreichbar), `PORT`, `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`. Der Service `app` erhält sie per
 `env_file`, nicht über das Image (`.dockerignore` schließt `.env` aus). Import von `src.main` braucht eine erreichbare
 DB (beim Start laufen `create_all` und der Seeder).
+
+`Dockerfile`: `CMD` startet uvicorn **ohne** `--reload` (so nutzt es `../compose.prod.yaml`). Den Reload samt Mount
+von `./src` setzt nur der Dev-Stack über `command`/`volumes` in `docker-compose.yml`.
 
 ## Struktur & Schichten
 
@@ -74,4 +80,5 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**. 
 
 `../.github/workflows/backend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter
 `backend/` zwei parallele Jobs direkt auf dem Runner (Python 3.11, pip-Cache, `pip install -r requirements.txt`):
-`lint` (`pylint src/`) und `test` (`python -m unittest discover -s __tests__ -p "*.py"`).
+`lint` (`pylint src/`) und `test` (`python -m unittest discover -s __tests__ -p "*.py"`). Zusätzlich baut der Job
+`docker` das Image (`docker build`, ohne Push).

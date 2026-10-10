@@ -1,7 +1,7 @@
 # DND-12: API-URL per Env-Variable und Production-Stack für den Spieltisch
 
 **Typ:** setup
-**Status:** Entwurf
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -82,28 +82,28 @@ eine per Build-Variable konfigurierbare API-URL. Die lokale Entwicklung bleibt u
 ## Subtasks
 
 ### Frontend
-- [ ] `src/api/apiClient.ts`: `baseURL` aus `import.meta.env.VITE_API_URL` mit Fallback (E2).
-- [ ] `src/vite-env.d.ts`: `ImportMetaEnv` mit `readonly VITE_API_URL?: string`.
-- [ ] `frontend/.env.example` mit `VITE_API_URL=http://localhost:8000/` und Kommentar; `.env` in `.gitignore`
+- [x] `src/api/apiClient.ts`: `baseURL` aus `import.meta.env.VITE_API_URL` mit Fallback (E2).
+- [x] `src/vite-env.d.ts`: `ImportMetaEnv` mit `readonly VITE_API_URL?: string`.
+- [x] `frontend/.env.example` mit `VITE_API_URL=http://localhost:8000/` und Kommentar; `.env` in `.gitignore`
       prüfen.
-- [ ] `frontend/Dockerfile` als Multi-Stage (E3); `frontend/nginx.conf`.
-- [ ] `frontend/docker-compose.yml`: `build.target: dev`.
+- [x] `frontend/Dockerfile` als Multi-Stage (E3); `frontend/nginx.conf`.
+- [x] `frontend/docker-compose.yml`: `build.target: dev`.
 
 ### Backend
-- [ ] `backend/Dockerfile`: `CMD` ohne `--reload` (Dev-Compose behält `command` mit `--reload`).
+- [x] `backend/Dockerfile`: `CMD` ohne `--reload` (Dev-Compose behält `command` mit `--reload`).
 
 ### Root / CI
-- [ ] `compose.prod.yaml` nach E1/E5.
-- [ ] `.github/workflows/frontend.yml`: Job `docker-prod` (`docker build --target prod`, Build-Arg Default).
-- [ ] `.github/workflows/backend.yml`: Job `docker` (`docker build`).
+- [x] `compose.prod.yaml` nach E1/E5.
+- [x] `.github/workflows/frontend.yml`: Job `docker-prod` (`docker build --target prod`, Build-Arg Default).
+- [x] `.github/workflows/backend.yml`: Job `docker` (`docker build`).
 
 ### Doku
-- [ ] `docs/architecture.md`: Abschnitt „Lokal starten“ um „Am Spieltisch (Production)“ ergänzen
+- [x] `docs/architecture.md`: Abschnitt „Lokal starten“ um „Am Spieltisch (Production)“ ergänzen
       (Befehle, Ports, URL http://localhost:8080/admin usw., Smartphones über `http://<IP des Rechners>:8080/`);
       Hinweis Assets (in Prod liefert nginx `public/` aus dem Build); `VITE_API_URL`.
-- [ ] `frontend/CLAUDE.md`: Dockerfile-Stages, `VITE_API_URL`, Node-Version-Hinweis (Stage `dev` und `build`).
-- [ ] `backend/CLAUDE.md`: `CMD` ohne Reload, Reload kommt aus Dev-Compose.
-- [ ] `docs/known-issues.md`: Einträge „API-Base-URL fest verdrahtet …“ und „Docker-Image startet den
+- [x] `frontend/CLAUDE.md`: Dockerfile-Stages, `VITE_API_URL`, Node-Version-Hinweis (Stage `dev` und `build`).
+- [x] `backend/CLAUDE.md`: `CMD` ohne Reload, Reload kommt aus Dev-Compose.
+- [x] `docs/known-issues.md`: Einträge „API-Base-URL fest verdrahtet …“ und „Docker-Image startet den
       Vite-Dev-Server …“ entfernen.
 
 ## Akzeptanzkriterien
@@ -117,7 +117,7 @@ eine per Build-Variable konfigurierbare API-URL. Die lokale Entwicklung bleibt u
       Bundle enthält diese URL (z. B. `grep` in `dist/assets`); ohne Variable `http://localhost:8000/`.
 - [ ] AK4: Alle Invarianten eingehalten: `docker compose up` im Root startet Dev wie vorher (Hot-Reload Frontend und
       Backend geprüft), `npm run lint`, `typecheck`, `test:unit`, `build` grün.
-- [ ] AK5: Doku nachgezogen, beide Known Issues entfernt.
+- [x] AK5: Doku nachgezogen, beide Known Issues entfernt.
 
 ## Teststrategie / Verifikation
 

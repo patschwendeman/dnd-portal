@@ -20,8 +20,10 @@ Tests: vitest (Unit), jest-cucumber + selenium-webdriver (BDD/E2E).
 ```bash
 # im Monorepo-Root: ganze Anwendung in Docker (Frontend mit Hot-Reload, ./ gemountet)
 docker compose up --build    # Frontend :5173, API :8000, DB :5432
-# in frontend/: nur Frontend in Docker
+# in frontend/: nur Frontend in Docker (Stage dev)
 docker compose up --build
+# Production-Image (nginx, statischer Build) – am Spieltisch über compose.prod.yaml im Root
+docker build --target prod [--build-arg VITE_API_URL=http://<host>:8000/] .
 
 npm run dev          # Vite-Dev-Server auf 0.0.0.0:5173 (nativ, ohne Docker)
 npm run build        # tsc -b && vite build
@@ -31,9 +33,17 @@ npm run test:unit    # vitest (__tests__/unit)
 npm run test:e2e     # jest-cucumber + Selenium/Chrome; braucht laufendes Backend auf :8000
 ```
 
-Das Backend muss auf `http://localhost:8000/` laufen (fest in `src/api/apiClient.ts`, keine Env-Variablen).
+API-URL: `src/api/apiClient.ts` nimmt `import.meta.env.VITE_API_URL` (Typ in `src/vite-env.d.ts`), Default
+`http://localhost:8000/`. Die Variable wirkt zur Build-Zeit (Vite setzt sie ins Bundle ein): lokal per `.env`
+(gitignored, Vorlage `.env.example`), im Docker-Build per `--build-arg VITE_API_URL=…`.
 
-Node-Version: `.nvmrc` (`18`, von CI und nvm/fnm gelesen) und `Dockerfile` (`node:18-slim`) synchron halten.
+`Dockerfile` hat drei Stages: `dev` (Vite-Dev-Server :5173, von `docker-compose.yml` per `target: dev` genutzt),
+`build` (`npm ci`, `npm run build`, `ARG VITE_API_URL`) und `prod` (nginx, `nginx.conf`: SPA-Fallback auf
+`index.html`, lange Cache-Dauer nur für gehashte Dateien direkt unter `/assets/`, gzip). Medien aus `public/` landen im
+Prod-Image.
+
+Node-Version: `.nvmrc` (`18`, von CI und nvm/fnm gelesen) und `Dockerfile` (`node:18-slim`, Stages `dev` und `build`)
+synchron halten.
 Im Container liegt `node_modules` in einem eigenen Volume; nach Änderungen an `package.json` mit
 `docker compose up --build -V` neu aufbauen.
 
@@ -109,4 +119,5 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
 `../.github/workflows/frontend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter
 `frontend/` vier Jobs direkt auf dem Runner (Node aus `.nvmrc`, npm-Cache, `npm ci`): zuerst `build` (`npx vite build`),
 danach parallel `typecheck` (`npm run typecheck`, also `tsc -b`), `lint` (`npm run lint`) und `test`
-(`npm run test:unit`), alle mit `needs: build` – bricht der Build, laufen sie nicht. E2E läuft nicht in CI.
+(`npm run test:unit`), alle mit `needs: build` – bricht der Build, laufen sie nicht. Unabhängig davon baut
+`docker-prod` das Production-Image (`docker build --target prod`, ohne Push). E2E läuft nicht in CI.
