@@ -22,3 +22,4 @@
 | DND-16 | setup | Backend-Tooling: uv, ruff, mypy, pytest mit Charakterisierungstests, Paket `app` | Fertig | [DND-16-backend-tooling-tests.md](DND-16-backend-tooling-tests.md) |
 | DND-17 | refactor | Backend-Struktur nach FastAPI-Konvention, Konfiguration per pydantic-settings | Fertig | [DND-17-backend-structure-config.md](DND-17-backend-structure-config.md) |
 | DND-18 | refactor | SQLAlchemy 2.0 typisiert (Mapped, select) und mypy strict | Fertig | [DND-18-sqlalchemy-2-typed.md](DND-18-sqlalchemy-2-typed.md) |
+| DND-19 | chore | Dev-Compose auf Root-Ebene zusammenführen | Entwurf | [DND-19-dev-compose-root.md](DND-19-dev-compose-root.md) |
