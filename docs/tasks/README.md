@@ -19,3 +19,4 @@
 | DND-13 | setup | React-Hooks-Lint aktivieren, Effect-Abhängigkeiten und veraltete Antworten bereinigen | Fertig | [DND-13-react-hooks-lint.md](DND-13-react-hooks-lint.md) |
 | DND-14 | refactor | Alte Asset-Benennungen battle/side_maps auf main/side umstellen | Fertig | [DND-14-rename-legacy-asset-names.md](DND-14-rename-legacy-asset-names.md) |
 | DND-15 | fix | E2E-Tests und SceneDetailMock an aktuellen Stand anpassen | Fertig | [DND-15-e2e-tests-update.md](DND-15-e2e-tests-update.md) |
+| DND-16 | setup | Backend-Tooling: uv, ruff, mypy, pytest mit Charakterisierungstests | Entwurf | [DND-16-backend-tooling-tests.md](DND-16-backend-tooling-tests.md) |
