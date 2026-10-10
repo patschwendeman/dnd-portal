@@ -24,8 +24,6 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - Keine Tests; CI läuft trotzdem grün. Testordner `__tests__/` folgt der JS-Konvention – in Python üblich: `tests/`
   mit `test_*.py` und pytest.
 - Seed: Ground „Level_up“ zeigt auf den `wall_screen`-Ordner; doppelte/unpassende Musiknamen; Beschreibungen großteils Copy-Paste.
-- Seed: `name`-Werte der Ground-Bilder (`graphics_ground`) heißen noch `battle_N` – sollten analog zu den Dateien
-  `main_N` heißen.
 - README ist nur ein Zweizeiler – nicht löschen, sondern wie `frontend/README.md` aktualisieren (Zweck, Starten,
   Konfiguration, Befehle, Links auf `CLAUDE.md` und `../docs/`). **Erst nach dem Backend-Refactoring**, da sich
   Paketstruktur, Befehle und Konfiguration bis dahin noch ändern.
