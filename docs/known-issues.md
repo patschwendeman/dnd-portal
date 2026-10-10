@@ -27,8 +27,9 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - Seed: Ground „Level_up“ zeigt auf den `wall_screen`-Ordner; doppelte/unpassende Musiknamen; Beschreibungen großteils Copy-Paste.
 - Seed: `name`-Werte der Ground-Bilder (`graphics_ground`) heißen noch `battle_N` – sollten analog zu den Dateien
   `main_N` heißen.
-- README ist nur ein Zweizeiler – analog zu `frontend/README.md` ausbauen (Zweck, Starten, Konfiguration, Befehle,
-  Links auf `CLAUDE.md` und `../docs/`).
+- README ist nur ein Zweizeiler – nicht löschen, sondern wie `frontend/README.md` aktualisieren (Zweck, Starten,
+  Konfiguration, Befehle, Links auf `CLAUDE.md` und `../docs/`). **Erst nach dem Backend-Refactoring**, da sich
+  Paketstruktur, Befehle und Konfiguration bis dahin noch ändern.
 
 ### Struktur & Benennung
 
