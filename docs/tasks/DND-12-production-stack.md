@@ -121,6 +121,26 @@ eine per Build-Variable konfigurierbare API-URL. Die lokale Entwicklung bleibt u
     klare Fehlermeldung.
 - **Verworfene Alternativen:** zwei Skripte (`dev.sh`/`prod.sh`); Makefile.
 
+### E10: Healthcheck für die API, Prod-Start mit `--wait`
+- **Entscheidung:** `compose.prod.yaml`, Service `app`: Healthcheck ohne Zusatzpakete (`python:3.11-slim` hat kein
+  curl): `["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/scenes', timeout=3)"]`,
+  `interval: 3s`, `timeout: 5s`, `retries: 20`, `start_period: 10s`. `web` hängt per `depends_on` mit
+  `condition: service_healthy` von `app` ab. `dnd.sh prod` startet mit `up -d --build --wait --wait-timeout 180`
+  (statt `wait_for_web`, entfällt) und öffnet die Tabs erst danach; bei Timeout Fehlermeldung mit Hinweis auf die Logs,
+  Exit ≠ 0, keine Tabs. Dev-Stack unverändert.
+- **Begründung:** Rückmeldung des Users: Der Browser öffnete, bevor die API bereit war (Admin zeigte „Backend nicht
+  erreichbar“), weil nur :8080 abgefragt wurde.
+
+### E11: Globaler Befehl `dnd`
+- **Entscheidung:** `./dnd.sh install` legt einen Symlink `dnd` → `<repo>/dnd.sh` im ersten beschreibbaren
+  Verzeichnis aus `/opt/homebrew/bin`, `/usr/local/bin` an, das im `PATH` liegt; ein vorhandener fremder `dnd` wird
+  nicht überschrieben (Abbruch mit Meldung). `./dnd.sh uninstall` entfernt den Symlink nur, wenn er auf dieses Skript
+  zeigt. Das Skript ermittelt sein echtes Verzeichnis über die Symlink-Kette (`readlink`-Schleife, bash 3.2) statt
+  `dirname "$0"`. Hilfe und Ausgaben zeigen den aufgerufenen Namen (`dnd` bzw. `./dnd.sh`). `./dnd.sh <befehl>`
+  funktioniert weiter ohne Installation.
+- **Begründung:** Rückmeldung des Users: `./dnd.sh …` ist zu viel Tipparbeit.
+- **Verworfene Alternativen:** Ein-Buchstaben-Aliase; Doppelklick-`.command`-Dateien; Makefile.
+
 ## Subtasks
 
 ### Frontend
@@ -157,6 +177,13 @@ eine per Build-Variable konfigurierbare API-URL. Die lokale Entwicklung bleibt u
 - [x] `docs/known-issues.md`: Einträge „API-Base-URL fest verdrahtet …“ und „Docker-Image startet den
       Vite-Dev-Server …“ entfernen.
 
+### Runde 4 (E10–E11)
+- [x] `compose.prod.yaml`: Healthcheck `app`, `web` wartet auf `service_healthy` (E10).
+- [x] `dnd.sh`: `prod` mit `--wait`, `wait_for_web` entfernen (E10); `install`/`uninstall`, Symlink-Auflösung,
+      aufgerufener Name in Hilfe/Ausgaben (E11).
+- [x] Doku: `README.md`, `CONTRIBUTING.md`, `docs/architecture.md`, `backend/CLAUDE.md`, `frontend/CLAUDE.md`
+      (einmalig `./dnd.sh install`, danach `dnd prod|dev|stop|logs`; Healthcheck erwähnen).
+
 ## Akzeptanzkriterien
 
 - [x] AK1: `docker compose -f compose.prod.yaml up -d --build` startet DB, API und nginx; http://localhost:8080/admin,
@@ -175,6 +202,11 @@ eine per Build-Variable konfigurierbare API-URL. Die lokale Entwicklung bleibt u
       Prod gestoppt, kein Port-Konflikt); `stop` stoppt beide; Hilfe ohne Argument; Start von Docker Desktop bei
       beendetem Daemon (geprüft oder als manuell offen markiert).
 - [x] AK8: Doku und CI-Jobname nachgezogen; keine Verweise mehr auf `compose.yaml` außerhalb von `docs/tasks/`.
+- [ ] AK9: `dnd prod` öffnet die Tabs erst, wenn die API healthy ist: `docker ps` zeigt `dnd-prod-api (healthy)`,
+      `curl :8000/scenes` direkt nach Rückkehr 200 (Kaltstart nach `down`); im Admin kein „Backend nicht erreichbar“
+      (manuell durch den User); Timeout-Pfad bricht ohne Tabs ab.
+- [ ] AK10: `./dnd.sh install` legt `dnd` an; `dnd` funktioniert aus beliebigem Ordner (Hilfe zeigt `dnd`,
+      `dnd stop` ok); fremder `dnd` wird nicht überschrieben; `uninstall` entfernt nur den eigenen Symlink.
 
 ## Teststrategie / Verifikation
 
@@ -389,3 +421,56 @@ manuell (AK7). Zwei versionierte Dateien außerhalb der Subtasks sind durch E7 v
 `.claude/skills/quick-task/SKILL.md` (Root-Befehle mit `-f compose.dev.yaml`/`compose.prod.yaml`),
 `backend/.env.example` (pgAdmin-Hinweis mit `./dnd.sh dev --tools`) sowie Jobname `docker-prod` in
 `backend/CLAUDE.md` korrigiert. `docker compose -f compose.dev.yaml config -q` ok, `launch.json` valides JSON.
+
+### Runde 4 – Nachweise der Umsetzung
+
+Docker Desktop lief (Compose v5.5.1, `docker compose up --help` kennt `--wait` und `--wait-timeout`). Am Ende laufen
+keine Container (`docker ps -a` leer), Testdateien im Scratchpad entfernt. Weder `/opt/homebrew/bin/dnd` noch
+`/usr/local/bin/dnd` existieren (nicht angelegt).
+
+**Checks**
+- `/bin/bash -n dnd.sh` ok (GNU bash 3.2.57); Mode 100755; shellcheck nicht installiert.
+- `docker compose config -q` → Exit 0 für `-f compose.dev.yaml`, `-f compose.prod.yaml`, in `backend/` und in
+  `frontend/` (nur bekannte Warnung `version` obsolet).
+
+**AK9 – Healthcheck und `--wait`**
+- Kaltstart: `docker compose -f compose.prod.yaml down`, dann `dnd.sh prod` aus `/tmp` (absoluter Pfad) → Exit 0 nach
+  15 s; Log-Reihenfolge `dnd-prod-db Healthy` → `dnd-prod-api Started` → `dnd-prod-api Healthy` →
+  `dnd-prod-frontend Started` → `Healthy`, erst danach Ausgabe der URLs (Tabs öffneten sich einmal).
+- Unmittelbar danach: `curl :8000/scenes` → 200; `docker ps`: `dnd-prod-frontend Up`, `dnd-prod-api Up 6 seconds (healthy)`,
+  `dnd-prod-db Up 12 seconds (healthy)`; :8080 `/`, `/admin`, `/wall`, `/ground` → 200.
+- Timeout-Pfad (temporäre Kopie `dnd-timeouttest.sh` mit `WAIT_TIMEOUT=1`, danach gelöscht; `open` per Stub im `PATH`
+  ersetzt): nach `down` → `timeout waiting for dependencies`, `Fehler: Prod-Stack ist nicht bereit (Timeout oder
+  Healthcheck fehlgeschlagen). Logs: … logs`, Exit 1, Stub-`open` nicht aufgerufen (keine Tabs).
+- Kaputter Healthcheck (temporäre Override-Datei im Scratchpad, Healthcheck gegen `/does-not-exist`):
+  `docker compose -f compose.prod.yaml -f <override> up -d --wait --wait-timeout 60` → Exit 1,
+  `dependency failed to start: container dnd-prod-api is unhealthy`; `dnd-prod-frontend` bleibt `Created`
+  (`web` wartet auf `service_healthy`). Danach `down`.
+- **Manuell offen (User):** im Admin nach `dnd prod` kein „Backend nicht erreichbar“.
+
+**AK10 – `install`/`uninstall`, globaler Befehl** (alles im Scratchpad, nie in `/opt/homebrew/bin` oder `/usr/local/bin`)
+- Symlink-Auflösung mit echtem Skript: Kette `bin/dnd -> ../links/dnd-link` (relativ) → `links/dnd-link ->
+  <repo>/dnd.sh` (absolut), `bin` im `PATH`, Aufruf aus `/tmp`: `dnd` → `Usage: dnd <command>`, Exit 1;
+  `dnd foo` → Exit 1; `dnd stop` → Exit 0 (Compose-Dateien im Repo gefunden). `./dnd.sh` im Repo → `Usage: ./dnd.sh <command>`.
+- Install-Logik mit einer Kopie des Skripts, in der nur `INSTALL_DIRS` auf Testverzeichnisse `ro` (nicht beschreibbar),
+  `a`, `b` zeigt (`diff`: nur diese Zeile):
+  1. keines im `PATH` → `Fehler: kein beschreibbares Verzeichnis im PATH gefunden`, Exit 1;
+  2. `ro` und `b` im `PATH` → `ro` übersprungen, `b/dnd -> <kopie>/dnd.sh`, Exit 0;
+  3. erneut → `'dnd' ist bereits installiert`, Exit 0;
+  4. `dnd` aus `/tmp` über den Link → `Usage: dnd <command>`;
+  5. fremde Datei `a/dnd` (a vor b im `PATH`) → `… existiert bereits und gehört nicht zu diesem Projekt – nicht
+     überschrieben.`, Exit 1, Inhalt unverändert;
+  6. fremder Symlink `a/dnd -> /bin/echo` → ebenso abgebrochen, Link unverändert;
+  7. `uninstall` → `Übersprungen: a/dnd gehört nicht zu diesem Projekt.`, `Entfernt: b/dnd`; `a/dnd` bleibt;
+  8. erneut `uninstall` → `'dnd' war nicht installiert.`, Exit 0;
+  9. `dnd uninstall` über den Link selbst → entfernt;
+  10. `./dnd.sh install` relativ aufgerufen → Link-Ziel absolut (`<kopie>/dnd.sh`).
+- **Manuell offen (User):** echte Installation `./dnd.sh install` (legt `/opt/homebrew/bin/dnd` an), danach `dnd`
+  aus beliebigem Ordner.
+
+**Doku**
+- `README.md`, `CONTRIBUTING.md`: einmalig `./dnd.sh install`, danach `dnd …`; README: `prod` wartet auf healthy API.
+- `docs/architecture.md`: `prod` mit `--wait --wait-timeout 180` und Fehlerpfad, Zeilen `install`/`uninstall`,
+  Absatz zu `dnd`, Healthchecks (`db`, `app`, `web` wartet auf `app`).
+- `backend/CLAUDE.md`, `frontend/CLAUDE.md`: `dnd prod`/`install`, Healthcheck; Kopfkommentar `compose.prod.yaml`.
+- `git grep` nach `wait_for_web`/„auf :8080 warten“ außerhalb `docs/tasks/` → keine Treffer.

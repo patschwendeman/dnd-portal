@@ -1,5 +1,5 @@
 # Production-Stack für den Spieltisch: DB, API und Frontend (statischer Build hinter nginx).
-#   ./dnd.sh prod                                        # empfohlen: stoppt Dev, startet, öffnet Admin/Wall/Ground
+#   ./dnd.sh prod (bzw. dnd prod)                        # empfohlen: stoppt Dev, startet, wartet auf API healthy, öffnet Admin/Wall/Ground
 #   docker compose -f compose.prod.yaml up -d --build    # web :8080, app :8000, db :5432
 #   docker compose -f compose.prod.yaml down             # stoppen (-v: DB-Reset)
 # Nicht gleichzeitig mit dem Dev-Stack (compose.dev.yaml) betreiben: API und DB nutzen dieselben Ports.
@@ -37,6 +37,13 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
+    # python:3.11-slim hat kein curl; ./dnd.sh prod wartet per --wait, bis die API healthy ist.
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/scenes', timeout=3)"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
 
   web:
     build:
@@ -47,7 +54,8 @@ services:
     container_name: dnd-prod-frontend
     restart: unless-stopped
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     ports:
       - "8080:80"
 

@@ -22,7 +22,8 @@ docker compose -f compose.dev.yaml down          # stoppen (-v: DB-Reset); ./dnd
 docker compose up --build
 
 # Production-Stack am Spieltisch (im Root): API ohne Reload und ohne Code-Mount (Container dnd-prod-api)
-./dnd.sh prod                      # bzw. docker compose -f compose.prod.yaml up -d --build
+./dnd.sh prod                      # bzw. dnd prod (nach einmaligem ./dnd.sh install) oder docker compose -f compose.prod.yaml up -d --build
+# Healthcheck in compose.prod.yaml: GET /scenes per Python (kein curl im Image); dnd prod wartet per --wait auf healthy
 
 # Lint/Tests (Python 3.11 – lokal ggf. im Container, in backend/: docker compose run --rm --no-deps app <befehl>)
 pylint src/                        # Lint (Konfig: .pylintrc)

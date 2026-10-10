@@ -1,27 +1,57 @@
 #!/usr/bin/env bash
 # Start-Skript für das DnD Portal (macOS). Dev- und Prod-Stack laufen nie gleichzeitig (gleiche Ports).
 #   ./dnd.sh dev [--tools]   Dev-Stack im Vordergrund (Hot-Reload; --tools: zusätzlich pgAdmin), Ctrl+C beendet
-#   ./dnd.sh prod            Prod-Stack im Hintergrund, öffnet Admin/Wall/Ground, zeigt die Smartphone-URL
+#   ./dnd.sh prod            Prod-Stack im Hintergrund, wartet bis alle Dienste healthy sind, öffnet
+#                            Admin/Wall/Ground, zeigt die Smartphone-URL
 #   ./dnd.sh stop            beide Stacks stoppen (DB-Volumes bleiben erhalten)
 #   ./dnd.sh logs [service]  Logs des Prod-Stacks verfolgen (db, app, web)
+#   ./dnd.sh install         globalen Befehl `dnd` anlegen (Symlink), danach z. B. `dnd prod` aus jedem Ordner
+#   ./dnd.sh uninstall       Symlink `dnd` wieder entfernen (nur wenn er auf dieses Skript zeigt)
 set -euo pipefail
 
-cd "$(dirname "$0")"
+# Pfad nach Auflösung aller Symlinks (bash 3.2: kein readlink -f; relative Link-Ziele gelten ab dem Link-Ordner).
+resolve_path() {
+  local path=$1 dir target
+  while [ -L "$path" ]; do
+    dir=$(cd -P "$(dirname "$path")" && pwd)
+    target=$(readlink "$path")
+    case "$target" in
+      /*) path=$target ;;
+      *) path=$dir/$target ;;
+    esac
+  done
+  dir=$(cd -P "$(dirname "$path")" && pwd)
+  echo "$dir/$(basename "$path")"
+}
+
+SCRIPT_PATH=$(resolve_path "${BASH_SOURCE[0]}")
+SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
+# Aufgerufener Name für Hilfe und Ausgaben: `dnd` (globaler Befehl) bzw. z. B. `./dnd.sh`.
+case "$(basename "$0")" in
+  dnd) PROG=dnd ;;
+  *) PROG=$0 ;;
+esac
+
+cd "$SCRIPT_DIR"
 
 DEV_FILE=compose.dev.yaml
 PROD_FILE=compose.prod.yaml
 PROD_URL=http://localhost:8080
 DOCKER_TIMEOUT=120
-WEB_TIMEOUT=60
+WAIT_TIMEOUT=180
+INSTALL_DIRS="/opt/homebrew/bin /usr/local/bin"
+INSTALL_NAME=dnd
 
 usage() {
-  cat <<'EOF'
-Usage: ./dnd.sh <command>
+  cat <<EOF
+Usage: $PROG <command>
 
   dev [--tools]    Dev-Stack starten (Vite :5173, API :8000 mit Reload, DB :5432; --tools: pgAdmin :5050)
-  prod             Prod-Stack starten (UI :8080, API :8000, DB :5432) und Admin/Wall/Ground öffnen
+  prod             Prod-Stack starten (UI :8080, API :8000, DB :5432), auf healthy warten, Admin/Wall/Ground öffnen
   stop             Dev- und Prod-Stack stoppen (ohne Volumes zu löschen)
   logs [service]   Logs des Prod-Stacks verfolgen (db, app, web)
+  install          globalen Befehl '$INSTALL_NAME' anlegen (Symlink in /opt/homebrew/bin bzw. /usr/local/bin)
+  uninstall        globalen Befehl '$INSTALL_NAME' entfernen
 EOF
   exit 1
 }
@@ -52,18 +82,6 @@ stop_prod() {
   docker compose -f "$PROD_FILE" down
 }
 
-wait_for_web() {
-  local waited=0
-  until curl -fsS -o /dev/null "$PROD_URL/"; do
-    if [ "$waited" -ge "$WEB_TIMEOUT" ]; then
-      echo "Fehler: $PROD_URL antwortet nach ${WEB_TIMEOUT}s nicht. Logs: ./dnd.sh logs" >&2
-      exit 1
-    fi
-    sleep 1
-    waited=$((waited + 1))
-  done
-}
-
 cmd_dev() {
   local profile=()
   case "${1:-}" in
@@ -80,9 +98,12 @@ cmd_prod() {
   ensure_docker
   stop_dev
   # VITE_API_URL aus der Umgebung wird von compose.prod.yaml als Build-Argument übernommen.
-  docker compose -f "$PROD_FILE" up -d --build
-  echo "Warte auf $PROD_URL ..."
-  wait_for_web
+  # --wait: kehrt erst zurück, wenn alle Dienste laufen bzw. healthy sind (API-Healthcheck in compose.prod.yaml).
+  echo "Starte Prod-Stack und warte bis zu ${WAIT_TIMEOUT}s, bis alle Dienste bereit sind ..."
+  if ! docker compose -f "$PROD_FILE" up -d --build --wait --wait-timeout "$WAIT_TIMEOUT"; then
+    echo "Fehler: Prod-Stack ist nicht bereit (Timeout oder Healthcheck fehlgeschlagen). Logs: $PROG logs" >&2
+    exit 1
+  fi
   open "$PROD_URL/admin"
   open "$PROD_URL/wall"
   open "$PROD_URL/ground"
@@ -95,7 +116,7 @@ cmd_prod() {
   else
     echo "Smartphones (Player): http://<IP des Rechners>:8080/ (IP für en0 nicht ermittelbar)"
   fi
-  echo "Stoppen: ./dnd.sh stop"
+  echo "Stoppen: $PROG stop"
 }
 
 cmd_stop() {
@@ -108,10 +129,62 @@ cmd_logs() {
   docker compose -f "$PROD_FILE" logs -f "$@"
 }
 
+# Zeigt der Pfad (Symlink) auf dieses Skript?
+is_own_link() {
+  [ -L "$1" ] && [ "$(resolve_path "$1")" = "$SCRIPT_PATH" ]
+}
+
+cmd_install() {
+  local dir link
+  for dir in $INSTALL_DIRS; do
+    case ":$PATH:" in
+      *":$dir:"*) ;;
+      *) continue ;;
+    esac
+    if [ ! -d "$dir" ] || [ ! -w "$dir" ]; then
+      continue
+    fi
+    link=$dir/$INSTALL_NAME
+    if is_own_link "$link"; then
+      echo "'$INSTALL_NAME' ist bereits installiert: $link -> $SCRIPT_PATH"
+      return
+    fi
+    if [ -e "$link" ] || [ -L "$link" ]; then
+      echo "Fehler: $link existiert bereits und gehört nicht zu diesem Projekt – nicht überschrieben." >&2
+      exit 1
+    fi
+    ln -s "$SCRIPT_PATH" "$link"
+    echo "Installiert: $link -> $SCRIPT_PATH"
+    echo "Ab jetzt aus jedem Ordner: $INSTALL_NAME prod | dev | stop | logs"
+    return
+  done
+  echo "Fehler: kein beschreibbares Verzeichnis im PATH gefunden ($INSTALL_DIRS)." >&2
+  exit 1
+}
+
+cmd_uninstall() {
+  local dir link removed=0
+  for dir in $INSTALL_DIRS; do
+    link=$dir/$INSTALL_NAME
+    if is_own_link "$link"; then
+      rm "$link"
+      echo "Entfernt: $link"
+      removed=1
+    elif [ -e "$link" ] || [ -L "$link" ]; then
+      echo "Übersprungen: $link gehört nicht zu diesem Projekt."
+    fi
+  done
+  if [ "$removed" -eq 0 ]; then
+    echo "'$INSTALL_NAME' war nicht installiert."
+  fi
+}
+
 case "${1:-}" in
   dev) shift; [ "$#" -le 1 ] || usage; cmd_dev "$@" ;;
   prod) shift; [ "$#" -eq 0 ] || usage; cmd_prod ;;
   stop) shift; [ "$#" -eq 0 ] || usage; cmd_stop ;;
   logs) shift; cmd_logs "$@" ;;
+  install) shift; [ "$#" -eq 0 ] || usage; cmd_install ;;
+  uninstall) shift; [ "$#" -eq 0 ] || usage; cmd_uninstall ;;
   *) usage ;;
 esac

@@ -105,6 +105,7 @@ Die ganze Anwendung läuft in Docker und startet aus dem Root (Details:
 
 ```bash
 cp backend/.env.example backend/.env    # einmalig, Platzhalter ersetzen (gitignored)
+./dnd.sh install                        # einmalig: globaler Befehl `dnd` (danach `dnd dev|prod|stop|logs`)
 ./dnd.sh dev                            # db, app (API :8000), react-app (UI :5173), mit Hot-Reload; Ctrl+C beendet
 ./dnd.sh dev --tools                    # zusätzlich pgAdmin :5050
 ./dnd.sh stop                           # Dev- und Prod-Stack stoppen
