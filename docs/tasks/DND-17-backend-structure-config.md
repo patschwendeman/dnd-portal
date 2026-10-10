@@ -195,3 +195,28 @@ vorhersagbare, konventionelle Struktur – für Menschen und Agents – ohne Än
 - keine
 
 ## Review
+
+### Runde 1 – 2026-10-11
+**Empfehlung:** Abnahme (unter Vorbehalt: CI-Lauf nach Push und manuelle Prüfschritte 1–4 noch nachzuweisen)
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | Struktur nach E1 (`core/config.py`, `db/{base,session,seed}.py`, `models/{scene,media}.py`, `crud/scene.py`, `services/{scene,map}.py`, `api/deps.py`, `api/routes/{scenes,maps}.py`); alte Module entfernt; `router = APIRouter()` ohne Prefix, Prefix/Tags in `main.py`; Services als Modul-Funktionen, `MapType = Literal["main", "side"]`; alte `type: ignore` entfallen |
+| AK2 | erfüllt | `import app.main` mit `DB_HOST=nonexistent.invalid DB_PORT=1` ok; `lifespan` mit `create_all` und `with SessionLocal() as db: run_seeder(db)`; `TestClient` als Context Manager |
+| AK3 | erfüllt | Pflichtfelder ohne Default, `database_url` via `URL.create`; `python-dotenv` als direkte Abhängigkeit entfernt, `pydantic-settings==2.15.0`; kein `os.environ`/`load_dotenv` in `app`; fehlende Werte → `db_host Field required`; `test_config.py` 4 grün |
+| AK4 | erfüllt | `allow_origins=settings.cors_origins`, `allow_credentials=False`, `allow_methods=["GET"]`; `test_cors.py` 4 grün (Gegenprobe Implementer: mit Altkonfiguration 4 rot); Erweiterbarkeit per `test_config.py` |
+| AK5 | erfüllt | `test_scenes.py`/`test_maps.py` unverändert; 21 passed; Service-Logik inkl. `ValueError`s 1:1; Pfade und Reihenfolge identisch; Ports, Container, Compose, `app.main:app` unverändert |
+| AK6 | lokal erfüllt, CI nicht prüfbar (nach Push) | `ruff check`, `ruff format --check` (29 files), `mypy app` (21 files) grün; `pytest` 21 passed; `docker build --target prod` ok; CI-Env auf `DB_DRIVER`/`DB_HOST`/`DB_PORT` umgestellt |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- Lokale `backend/.env` hat noch `DRIVERNAME`/`HOST`/`PORT` – Stack startet erst nach Umstellung (gitignored, nicht angefasst); Dev-Container nach Hot Reload abgestürzt (`pydantic_settings` fehlt) → `./script.sh dev` neu bauen
+- Neues gezieltes `# type: ignore[call-arg]` bei `Settings()` (und in `test_config.py`); in `docs/known-issues.md` vermerkt; Alternative pydantic-mypy-Plugin wäre Tooling-Änderung
+- Vermutung: pydantic-Fehlermeldung bei fehlenden Werten gibt `input_value` aus, könnte Teile von Secrets ins Log schreiben (nur Startfehler, nicht verifiziert)
+- `test_cors.py` überspringt sich, wenn `CORS_ORIGINS` die Defaults überschreibt – bei erweiterter `.env` still übersprungen
+- `python-dotenv` bleibt transitiv in `uv.lock` (über `pydantic-settings`, `uvicorn[standard]`)
+- `main.py` importiert `app.models` ausdrücklich für vollständige `Base.metadata`; Route-Handler bewusst ohne Rückgabe-Annotation (sonst implizites `response_model`)
+
+**Checks:** Lint ruff/mypy grün, Tests 21 passed, Import ohne DB ok, Build prod/dev grün, leere DB → Seed 29 Szenen/327 Musik-Zuordnungen (Implementer); nach Push zu prüfen: Backend-CI und manuelle Prüfschritte 1–4 (Dev-Stack mit Hot Reload, Prod-Stack healthy, Validierungsfehler im Log, `/docs` nach Tags)

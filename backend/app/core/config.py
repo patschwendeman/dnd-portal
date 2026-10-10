@@ -3,8 +3,6 @@ from sqlalchemy.engine import URL
 
 
 class Settings(BaseSettings):
-    """Configuration from environment variables or backend/.env (see .env.example)."""
-
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     db_driver: str
@@ -14,7 +12,6 @@ class Settings(BaseSettings):
     postgres_password: str
     postgres_db: str
 
-    # Dev frontend (Vite) and prod frontend on the game table computer; extend via CORS_ORIGINS for LAN access.
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:8080"]
 
     @property
