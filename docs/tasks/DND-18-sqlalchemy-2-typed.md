@@ -1,7 +1,7 @@
 # DND-18: SQLAlchemy 2.0 typisiert (Mapped, select) und mypy strict
 
 **Typ:** refactor
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -144,3 +144,28 @@ laden alle Szenen und filtern in Python. mypy läuft nur im Basis-Modus, mit ein
 - keine
 
 ## Review
+
+### Runde 1 – 2026-10-11 (Commit 06ff26b)
+**Empfehlung:** Abnahme (CI-Lauf nach Push noch nachzuweisen)
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | Kein `declarative_base`, `db.query`, `bulk_save_objects`, `# type: ignore` mehr in `backend/app`; `Column(` nur in der Assoziationstabelle; `class Base(DeclarativeBase)`; alle Model-Felder `Mapped[...]` |
+| AK2 | erfüllt | `GraphicsWall.scenes: Mapped[list["Scene"]]` mit `back_populates`; DDL-Vergleich (`CreateTable`/`CreateIndex`, postgresql) 06ff26b^ vs. 06ff26b identisch – 5 Tabellen inkl. Indizes, FKs, `UNIQUE (graphics_ground_id)` |
+| AK3 | erfüllt (Code) | `/maps/*` via `crud.read_scenes_by_main` (`where(Scene.main == main)`, joinedload, `order_by(id)`); Detail via `crud.read_scene_with_relations` (`.unique().one_or_none()`); Gesamtliste nur bei unbekannter ID (E3); SQL-Echo laut Implementer je eine Abfrage |
+| AK4 | erfüllt | `mypy app` strict + `pydantic.mypy`: no issues (21 files); kein `# type: ignore` in `app/` |
+| AK5 | erfüllt | `backend/tests/` unverändert, 21 passed (Dev-DB und frische DB); Seed-Dump alt/neu identisch (433 INSERTs); 12 Requests über alle 6 Endpoints (inkl. 500/422/307) alt/neu auf derselben DB byte-identisch; E4 (leere DB → `[]`) nur im Code geprüft |
+| AK6 | lokal erfüllt, CI nach Push | `ruff check`, `ruff format --check` (29 files), `mypy` grün; pytest 21 passed; `docker build --target prod` ok |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- `docs/known-issues.md` sagt weiter „kein `response_model`“ – gilt nur noch für `/scenes*`; `/maps/*` haben jetzt `array[MapEntry]` im OpenAPI (E5, Ausgabe identisch)
+- `MapEntry` aus `typing_extensions` (Pydantic verlangt das unter Python < 3.12), nur transitiv in `uv.lock`, nicht direkt in `pyproject.toml`
+- `get_maps` wirft bei Szene ohne passendes Bild `ValueError` statt `AttributeError` – nach außen weiterhin 500; tritt mit Seed nicht auf
+- `/maps/*` ohne `response_model=None` → FastAPI validiert gegen `MapEntry` (E5)
+- Reihenfolge von `Scene.music` weiterhin undefiniert (Altbestand)
+- Lokale `backend/.env` noch im alten Format; Checks mit `DB_HOST=localhost DB_PORT=5432 DB_DRIVER=postgresql+psycopg2`
+
+**Checks:** ruff/mypy strict grün, pytest 21 passed (Dev-DB + frische DB), Build prod grün, DDL/Seed/Endpoint-Antworten alt vs. neu identisch; nach Push zu prüfen: Backend-CI und manueller Test (`down -v`, `./script.sh dev`, Admin/Wall/Ground/Musik)

@@ -33,8 +33,8 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 
 ### FastAPI & SQLAlchemy
 
-- Keine Pydantic-Schemas, kein `response_model`: OpenAPI ohne Antworttypen, Antwortform hängt von `joinedload` ab,
-  Vertrag zu `SceneDetail` im Frontend nicht abgesichert.
+- `/scenes*` ohne Pydantic-Schemas und `response_model`: OpenAPI ohne Antworttypen, Antwortform hängt von `joinedload`
+  ab, Vertrag zu `SceneDetail` im Frontend nicht abgesichert (`/maps/*` typisiert über `MapEntry`).
 
 ## Frontend
 
