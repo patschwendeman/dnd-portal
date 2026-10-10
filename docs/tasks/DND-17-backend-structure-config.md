@@ -1,7 +1,7 @@
 # DND-17: Backend-Struktur nach FastAPI-Konvention, Konfiguration per pydantic-settings
 
 **Typ:** refactor
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -175,7 +175,7 @@ vorhersagbare, konventionelle Struktur – für Menschen und Agents – ohne Än
 - [x] AK4: CORS erlaubt nur konfigurierte Origins, ohne Credentials; per `CORS_ORIGINS` um LAN-Origins erweiterbar
       (durch `tests/test_cors.py` belegt).
 - [x] AK5: Alle Invarianten eingehalten – Charakterisierungstests inhaltlich unverändert grün.
-- [ ] AK6: `uv run ruff check`, `ruff format --check`, `mypy app`, `pytest` und CI grün; Docker-Build ok.
+- [x] AK6: `uv run ruff check`, `ruff format --check`, `mypy app`, `pytest` und CI grün; Docker-Build ok.
       (lokal grün inkl. Docker-Build; CI nach Push zu prüfen)
 
 ## Teststrategie / Verifikation
@@ -220,3 +220,5 @@ vorhersagbare, konventionelle Struktur – für Menschen und Agents – ohne Än
 - `main.py` importiert `app.models` ausdrücklich für vollständige `Base.metadata`; Route-Handler bewusst ohne Rückgabe-Annotation (sonst implizites `response_model`)
 
 **Checks:** Lint ruff/mypy grün, Tests 21 passed, Import ohne DB ok, Build prod/dev grün, leere DB → Seed 29 Szenen/327 Musik-Zuordnungen (Implementer); nach Push zu prüfen: Backend-CI und manuelle Prüfschritte 1–4 (Dev-Stack mit Hot Reload, Prod-Stack healthy, Validierungsfehler im Log, `/docs` nach Tags)
+
+**Nachweise nach Push (2026-10-11):** Backend-CI für `87afc81` grün. Abnahme durch den User.
