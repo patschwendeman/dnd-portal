@@ -177,7 +177,7 @@ einzelne Antworten im Browser künstlich um 3 s verzögert (XHR- bzw. `fetch`-Wr
    sichtbar – ok
 5. 8 s Leerlauf: 0 neue Requests in Admin, Wall und Ground; keine unhandled rejections, Wall/Ground ohne Konsolenfehler – ok
 
-### Runde 2 – Review 6ed1e76
+### Runde 2 – Review 7968362
 
 **Empfehlung:** Abnahme. Runde 2 setzt nur die drei Hinweise aus Runde 1 um, ohne Verhaltensänderung; alle AKs erfüllt
 (AK3 inkl. dokumentierter manueller Prüfung).
@@ -209,7 +209,7 @@ alle Subtasks abgehakt, nichts außerhalb des Scopes.
 - `npm run test:unit`: 57/57 grün
 - `npm run build`: grün
 
-### Runde 3 – Review c22db85
+### Runde 3 – Review 7968362
 
 **Empfehlung:** Abnahme (Runde 3 und gesamter Task). Runde 3 entfernt bzw. kürzt nur Kommentare, keine Logik;
 alle AKs erfüllt, alle Checks grün.
