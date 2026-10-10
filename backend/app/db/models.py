@@ -1,46 +1,50 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey, Table
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, Text
 from sqlalchemy.orm import relationship
-from src.db.database import Base
 
-# pylint: disable=too-few-public-methods
+from app.db.database import Base
 
 scene_music_association = Table(
-    'scene_music_association', Base.metadata,
-    Column('scene_id', Integer, ForeignKey('scene.id')),
-    Column('music_id', Integer, ForeignKey('music.id'))
+    "scene_music_association",
+    Base.metadata,
+    Column("scene_id", Integer, ForeignKey("scene.id")),
+    Column("music_id", Integer, ForeignKey("music.id")),
 )
 
+
 class GraphicsWall(Base):
-    __tablename__ = 'graphics_wall'
+    __tablename__ = "graphics_wall"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     source = Column(String)
     scene = relationship("Scene", back_populates="graphics_wall", uselist=False)
 
+
 class GraphicsGround(Base):
-    __tablename__ = 'graphics_ground'
+    __tablename__ = "graphics_ground"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     source = Column(String)
     main = Column(Boolean)
     scene = relationship("Scene", back_populates="graphics_ground", uselist=False)
 
+
 class Music(Base):
-    __tablename__ = 'music'
+    __tablename__ = "music"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     source = Column(String)
-    scenes = relationship('Scene', secondary=scene_music_association, back_populates='music')
+    scenes = relationship("Scene", secondary=scene_music_association, back_populates="music")
+
 
 class Scene(Base):
-    __tablename__ = 'scene'
+    __tablename__ = "scene"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     description = Column(Text)
     main = Column(Boolean)
-    graphics_wall_id = Column(Integer, ForeignKey('graphics_wall.id'))
+    graphics_wall_id = Column(Integer, ForeignKey("graphics_wall.id"))
     graphics_wall = relationship("GraphicsWall", back_populates="scene", uselist=False)
-    graphics_ground_id = Column(Integer, ForeignKey('graphics_ground.id'), unique=True)
+    graphics_ground_id = Column(Integer, ForeignKey("graphics_ground.id"), unique=True)
     graphics_ground = relationship("GraphicsGround", back_populates="scene", uselist=False)
-    music_id = Column(Integer, ForeignKey('music.id'))
-    music = relationship('Music', secondary=scene_music_association, back_populates='scenes')
+    music_id = Column(Integer, ForeignKey("music.id"))
+    music = relationship("Music", secondary=scene_music_association, back_populates="scenes")

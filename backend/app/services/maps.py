@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
-from src.db.crud import read_all
-from src.db.models import Scene
 
-# pylint: disable=too-few-public-methods
+from app.db.crud import read_all
+from app.db.models import Scene
+
 
 class MapsService:
     @staticmethod
@@ -20,9 +20,6 @@ class MapsService:
         for scene in scenes:
             if scene.main is filter_main:
                 source = scene.graphics_ground.source if scene.main else scene.graphics_wall.source
-                filtered_maps.append({
-                    'id': scene.id,
-                    'source': source
-                })
+                filtered_maps.append({"id": scene.id, "source": source})
 
         return filtered_maps

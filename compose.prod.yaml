@@ -30,8 +30,6 @@ services:
     restart: unless-stopped
     working_dir: /app
     env_file: backend/.env
-    environment:
-      - PYTHONPATH=/app/src
     depends_on:
       db:
         condition: service_healthy

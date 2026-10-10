@@ -18,11 +18,11 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - Nicht gefundene Datensätze erzeugen 500 statt 404 (Services werfen `ValueError`, Routen prüfen auf `None`).
 - `/scenes/details/{id}` lädt alle Szenen und gibt bei unbekannter ID die **ganze Liste** zurück. Auch
   `MapsService.read_maps` lädt alle Szenen und filtert in Python statt per SQL (`where`/`get`).
-- `/scenes/details` ohne Slash landet vermutlich auf `/scenes/{scene_id}` → 422 (ungeprüft).
+- `/scenes/details` ohne Slash landet auf `/scenes/{scene_id}` → 422 (`int_parsing`).
+- Die Bugs dieses Abschnitts sind durch Charakterisierungstests (`backend/tests/`, `# known issue: …`) festgehalten;
+  ein Fix-Task stellt die betroffenen Tests gezielt um.
 - `Scene.music_id` und `GraphicsGround.main` sind ungenutzte Spalten; `GraphicsWall.scene` hat fälschlich `uselist=False`.
 - Keine Migrationen: Schemaänderungen erfordern DB-Reset.
-- Keine Tests; CI läuft trotzdem grün. Testordner `__tests__/` folgt der JS-Konvention – in Python üblich: `tests/`
-  mit `test_*.py` und pytest.
 - Seed: Ground „Level_up“ zeigt auf den `wall_screen`-Ordner; doppelte/unpassende Musiknamen; Beschreibungen großteils Copy-Paste.
 - README ist nur ein Zweizeiler – nicht löschen, sondern wie `frontend/README.md` aktualisieren (Zweck, Starten,
   Konfiguration, Befehle, Links auf `CLAUDE.md` und `../docs/`). **Erst nach dem Backend-Refactoring**, da sich
@@ -30,14 +30,11 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 
 ### Struktur & Benennung
 
-- Paketname `src` (Imports `from src.…`): `src/` ist üblicherweise ein Layout-Ordner, kein Paket; `.pylintrc` hängt
-  zusätzlich `src` an `sys.path` → zwei Import-Wurzeln. Üblich: `app/`.
-- `src/db/` mischt Engine, Models, CRUD, Seeder und Seed-JSON. Üblich: getrennt in `core/config`, `db/session`,
+- `app/db/` mischt Engine, Models, CRUD, Seeder und Seed-JSON. Üblich: getrennt in `core/config`, `db/session`,
   `models/`, `schemas/`, `crud/`, `services/`, `api/routes/`.
 - Router heißen `scenes_router`/`maps_router` statt `router`; das Prefix `/scenes` bzw. `/maps` steht in jedem Pfad
   statt zentral über `include_router(..., prefix=..., tags=...)`.
-- Services sind Klassen mit nur `@staticmethod` (`SceneService`, `MapsService`), dafür ist `too-few-public-methods`
-  deaktiviert. Pythonischer: Modul-Funktionen.
+- Services sind Klassen mit nur `@staticmethod` (`SceneService`, `MapsService`). Pythonischer: Modul-Funktionen.
 - Uneinheitliche Parameterreihenfolge (`read_scene_by_id(scene_id, db)` vs. `read_maps(db, maptype)`); `maptype` ist
   ein String mit Laufzeit-Check statt `map_type: Literal`/`Enum`.
 - Singular/Plural gemischt (`MapsService` vs. `SceneService`; Relation `Scene.music` ist eine Liste).
@@ -47,20 +44,19 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - Keine Pydantic-Schemas, kein `response_model`: OpenAPI ohne Antworttypen, Antwortform hängt von `joinedload` ab,
   Vertrag zu `SceneDetail` im Frontend nicht abgesichert.
 - Seiteneffekte beim Import von `main.py`: `create_all` und Seeder laufen beim Import, die Session aus `next(get_db())`
-  wird nie geschlossen. Üblich: `lifespan`-Handler – dann wäre `app` ohne DB importierbar (Tests).
+  wird nie geschlossen. Üblich: `lifespan`-Handler – dann wäre `app.main` ohne DB importierbar (Tests laufen bisher nur gegen eine echte DB).
 - Dependencies im alten Stil `db: Session = Depends(get_db)` statt `Annotated` (`SessionDep`).
 - CORS: `allow_origins=["*"]` zusammen mit `allow_credentials=True` ist widersprüchlich; Origins gehören in die Konfiguration.
-- SQLAlchemy im 1.x-Stil: `declarative_base` aus dem veralteten `sqlalchemy.ext.declarative`, `Column`, `db.query`.
+  Seit Starlette 1.x spiegelt die Middleware in dieser Kombination den `Origin` des Requests in
+  `Access-Control-Allow-Origin` (vorher `*`).
+- SQLAlchemy im 1.x-Stil: `declarative_base()`, `Column`, `db.query`.
   2.0-Stil: `DeclarativeBase`, `Mapped[...]`/`mapped_column`, `select()`.
 
 ### Konfiguration & Tooling
 
 - Konfiguration per `os.environ.get` + `load_dotenv` ohne Validierung. Üblich: `pydantic-settings`.
-- Nur `requirements.txt`: `pylint` landet als Laufzeit-Abhängigkeit im Prod-Image. Üblich: `pyproject.toml` mit
-  getrennten Dev-Abhängigkeiten.
-- Lint nur mit pylint, keine Typprüfung. Üblich: ruff (Lint + Format) und mypy/pyright.
-- Dockerfile: `COPY . /app` kopiert auch Tests/Configs; kein Non-Root-User.
-- Versionen von 2024 (FastAPI 0.114, Pydantic 2.9).
+- mypy nur im Basis-Modus (kein `strict`); gezielte `# type: ignore` in `app/db/crud.py` und `app/db/database.py`.
+  Verschärfung sinnvoll nach Umstellung auf SQLAlchemy-2.0-Stil und Pydantic-Schemas.
 
 ## Frontend
 

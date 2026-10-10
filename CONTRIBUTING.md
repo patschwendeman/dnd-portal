@@ -135,10 +135,11 @@ auf dem Runner (`ubuntu-latest`):
 - **Frontend** (in `frontend/`): vier Jobs – Node aus `frontend/.nvmrc` über `actions/setup-node` mit npm-Cache, `npm ci`. Zuerst läuft
   `build` (`npx vite build`), danach parallel `typecheck` (`npm run typecheck`, also `tsc -b`), `lint`
   (`npm run lint`) und `test` (`npm run test:unit`), alle mit `needs: build`; bricht der Build, laufen sie nicht.
-- **Backend** (in `backend/`): zwei parallele Jobs `lint` und `test` – Python 3.11 über `actions/setup-python` mit pip-Cache,
-  `pip install -r requirements.txt`, dann `pylint src/` bzw. `python -m unittest discover -s __tests__ -p "*.py"`.
+- **Backend** (in `backend/`): zwei parallele Jobs `lint` und `test` – uv über `astral-sh/setup-uv` mit Cache auf
+  `uv.lock`, `uv sync --frozen`, dann `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app` bzw.
+  `uv run pytest` gegen einen Service-Container `postgres:17`.
 - **Production-Images:** In beiden Workflows baut zusätzlich ein Job `docker-prod` das Image für `compose.prod.yaml`
-  (ohne Push; Frontend mit `--target prod`, Backend ohne `--target`, da einstufig).
+  (ohne Push; jeweils mit `--target prod`).
 
 Schlägt ein Job fehl (Build, Typecheck, Lint, Test oder Image-Build), ist der Workflow rot. E2E-Tests laufen
 nicht in CI.

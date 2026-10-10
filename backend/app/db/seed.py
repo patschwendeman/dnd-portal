@@ -1,17 +1,22 @@
 import json
 import os
-from sqlalchemy.orm import Session
-from src.db.models import Scene, GraphicsWall, GraphicsGround, Music
 
-SEED_DATA_PATH = os.path.join(os.path.dirname(__file__), 'data', 'seed_data.json')
+from sqlalchemy.orm import Session
+
+from app.db.models import GraphicsGround, GraphicsWall, Music, Scene
+
+SEED_DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "seed_data.json")
+
 
 def load_seed_data(file_path):
-    with open(file_path, 'r', encoding='utf-8') as file:
+    with open(file_path, encoding="utf-8") as file:
         return json.load(file)
+
 
 def bulk_insert(db: Session, model, data):
     db.bulk_save_objects([model(**item) for item in data])
     db.commit()
+
 
 def seed_data(db: Session, data):
     if not db.query(GraphicsWall).first():
@@ -30,6 +35,7 @@ def seed_data(db: Session, data):
             scene.music = db.query(Music).filter(Music.id.in_(music_ids)).all()
             db.add(scene)
         db.commit()
+
 
 def run_seeder(db: Session):
     seed_data_from_json = load_seed_data(SEED_DATA_PATH)

@@ -31,8 +31,9 @@ sind die Checks in Schritt 4 Pflicht.
    `frontend/`- bzw. `backend/CLAUDE.md` beachten. Nur das Beauftragte ändern – Gefundenes nebenbei nur melden.
 4. **Checks des betroffenen Teils** ausführen und Ergebnis festhalten:
    - Frontend (in `frontend/`): `npm run lint`, `npm run typecheck`, `npm run test:unit`, `npm run build`
-   - Backend (in `backend/`): `pylint src/`, `python -m unittest discover -s __tests__ -p "*.py"`
-     (lokal per Docker, da lokal kein Python 3.11: im Root `docker compose -f compose.dev.yaml run --rm --no-deps --build app <befehl>`)
+   - Backend (in `backend/`): `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app`,
+     `HOST=localhost uv run pytest` (braucht die DB des laufenden Dev-Stacks; alternativ im Root
+     `docker compose -f compose.dev.yaml run --rm --build app pytest`)
    - Compose-Dateien geändert: `docker compose -f compose.dev.yaml config -q` bzw. `-f compose.prod.yaml config -q` im Root und
      `docker compose config -q` im betroffenen Teilordner
    - Workflows geändert: Syntax prüfen; Wirksamkeit zeigt erst ein CI-Lauf nach dem Push – im Bericht erwähnen

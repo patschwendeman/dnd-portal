@@ -1,7 +1,7 @@
 # DND-16: Backend-Tooling: uv, ruff, mypy, pytest mit Charakterisierungstests, Paket `app`
 
 **Typ:** setup
-**Status:** Freigegeben
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -99,17 +99,17 @@ die neuen Tests.
 ## Subtasks
 
 ### Schritt 1: Abhängigkeiten & Lint
-- [ ] `backend/pyproject.toml` anlegen (E3), bestehende Pins übernehmen (`fastapi==0.114.1`, `uvicorn[standard]==0.30.6`,
+- [x] `backend/pyproject.toml` anlegen (E3), bestehende Pins übernehmen (`fastapi==0.114.1`, `uvicorn[standard]==0.30.6`,
       `sqlalchemy==2.0.34`, `psycopg2-binary==2.9.9`, `pydantic==2.9.1`, `python-dotenv`), Dev-Gruppe ergänzen;
       `uv.lock` erzeugen; `requirements.txt` und `.pylintrc` löschen.
-- [ ] ruff konfigurieren (E2), `ruff check --fix` + `ruff format` – als eigener Commit; `# pylint: disable`-Kommentare
+- [x] ruff konfigurieren (E2), `ruff check --fix` + `ruff format` – als eigener Commit; `# pylint: disable`-Kommentare
       in `src/db/models.py` und `src/services/maps.py` entfernen.
-- [ ] mypy konfigurieren (E6), bis `mypy src` grün ist (nur Annotationen/gezielte Ignores, keine Logik).
+- [x] mypy konfigurieren (E6), bis `mypy src` grün ist (nur Annotationen/gezielte Ignores, keine Logik).
 
 ### Schritt 2: Tests
-- [ ] `__tests__/` → `tests/` (`__init__.py` + `conftest.py`); pytest-Konfiguration in `pyproject.toml`.
-- [ ] `conftest.py`: `TestClient(app, raise_server_exceptions=False)` als Fixture; Seed-Daten als Fixture.
-- [ ] Charakterisierungstests (E5) für:
+- [x] `__tests__/` → `tests/` (`__init__.py` + `conftest.py`); pytest-Konfiguration in `pyproject.toml`.
+- [x] `conftest.py`: `TestClient(app, raise_server_exceptions=False)` als Fixture; Seed-Daten als Fixture.
+- [x] Charakterisierungstests (E5) für:
   - `GET /scenes` – alle Szenen, nach ID sortiert, Felder ohne Relationen.
   - `GET /scenes/{id}` – vorhandene ID; unbekannte ID → **500** (known issue).
   - `GET /scenes/details/` – alle Szenen mit `graphics_wall`, `graphics_ground`, `music`.
@@ -118,45 +118,46 @@ die neuen Tests.
   - `GET /maps/main` und `GET /maps/side` – `{id, source}` je Szene; main → Ground-Bild, side → Wall-Bild.
   - Aufruf mit Trailing Slash wie im Frontend (`maps/main/`, `maps/side/`, siehe `frontend/src/service/adminScreen.ts`)
     – Redirect-Verhalten festhalten.
-- [ ] Gegenprobe: je Testdatei einmal Erwartung bewusst verfälschen → Test schlägt fehl (nicht trivial grün).
+- [x] Gegenprobe: je Testdatei einmal Erwartung bewusst verfälschen → Test schlägt fehl (nicht trivial grün).
 
 ### Schritt 3: Umbenennung `src` → `app` (E7)
-- [ ] `git mv backend/src backend/app`; alle Importe `from src.…` → `from app.…` (inkl. `tests/`).
-- [ ] Modulpfad `src.main:app` → `app.main:app` in `Dockerfile`, `backend/docker-compose.yml` (`command`).
-- [ ] `PYTHONPATH=/app/src` in `backend/docker-compose.yml` und `compose.prod.yaml` entfernen bzw. auf das Paket-Root
+- [x] `git mv backend/src backend/app`; alle Importe `from src.…` → `from app.…` (inkl. `tests/`).
+- [x] Modulpfad `src.main:app` → `app.main:app` in `Dockerfile`, `backend/docker-compose.yml` (`command`).
+- [x] `PYTHONPATH=/app/src` in `backend/docker-compose.yml` und `compose.prod.yaml` entfernen bzw. auf das Paket-Root
       anpassen; Mount `./src:/app/src` → `./app:/app/app`.
-- [ ] Konfiguration in `pyproject.toml` (ruff, mypy, pytest) und Pfade in CI auf `app` umstellen.
-- [ ] Suche nach Restvorkommen (`rg "src\.main|/app/src|backend/src|src/db|src/routes|src/services"`) außerhalb von
+- [x] Konfiguration in `pyproject.toml` (ruff, mypy, pytest) und Pfade in CI auf `app` umstellen.
+- [x] Suche nach Restvorkommen (`rg "src\.main|/app/src|backend/src|src/db|src/routes|src/services"`) außerhalb von
       `frontend/` und `docs/tasks/` – keine Treffer mehr.
 
 ### Schritt 4: Docker & Compose
-- [ ] `Dockerfile` Multi-Stage mit uv: Basis-Stage, `dev` (inkl. Dev-Gruppe), `prod` als **letzte** Stage
+- [x] `Dockerfile` Multi-Stage mit uv: Basis-Stage, `dev` (inkl. Dev-Gruppe), `prod` als **letzte** Stage
       (`uv sync --frozen --no-dev`); nur `pyproject.toml`, `uv.lock`, `app/` kopieren; Non-Root-User; `.venv/bin` im `PATH`;
       `CMD` `uvicorn app.main:app --host 0.0.0.0 --port 8000` (ohne `--reload`).
-- [ ] `backend/docker-compose.yml`: `app` baut `target: dev`, mountet zusätzlich `./tests` (für `docker compose run --rm app pytest`);
+- [x] `backend/docker-compose.yml`: `app` baut `target: dev`, mountet zusätzlich `./tests` (für `docker compose run --rm app pytest`);
       Hot Reload bleibt.
-- [ ] `.dockerignore` ergänzen (`.venv`, `tests/`, Caches von ruff/mypy/pytest).
-- [ ] `compose.prod.yaml` prüfen: baut ohne `target` → `prod`-Stage; Healthcheck funktioniert weiter.
+- [x] `.dockerignore` ergänzen (`.venv`, `tests/`, Caches von ruff/mypy/pytest).
+- [x] `compose.prod.yaml` prüfen: baut ohne `target` → `prod`-Stage; Healthcheck funktioniert weiter.
 
 ### Schritt 5: CI
-- [ ] `.github/workflows/backend.yml`: `setup-uv` (mit Cache auf `uv.lock`), `uv sync --frozen`;
+- [x] `.github/workflows/backend.yml`: `setup-uv` (mit Cache auf `uv.lock`), `uv sync --frozen`;
       `lint`: `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app`;
       `test`: Postgres-17-Service mit Healthcheck, Env-Variablen wie `.env.example` (HOST=localhost), `uv run pytest`;
       `docker-prod`: `docker build --target prod`.
 - [ ] Wirksamkeit: CI-Lauf auf `development` grün; zusätzlich einmal nachweisen, dass ein absichtlich kaputter Test
       den Job rot macht (lokal ausreichend, nicht pushen).
+      *Lokal nachgewiesen (Test-Job simuliert gegen frischen `postgres:17`, kaputter Test → Exit 1); CI-Lauf nach Push zu prüfen.*
 
 ### Schritt 6: Upgrade (E4)
-- [ ] Laufzeit-Abhängigkeiten auf aktuelle stabile Versionen heben (`uv lock --upgrade` bzw. Pins anpassen),
+- [x] Laufzeit-Abhängigkeiten auf aktuelle stabile Versionen heben (`uv lock --upgrade` bzw. Pins anpassen),
       Deprecation-Warnungen im Testlauf prüfen und, falls trivial und ohne Verhaltensänderung, beheben – sonst in
       `docs/known-issues.md` notieren.
-- [ ] Alle Tests, Lint, mypy und Docker-Build grün; Dev- und Prod-Stack starten, Frontend lädt Szenen.
+- [x] Alle Tests, Lint, mypy und Docker-Build grün; Dev- und Prod-Stack starten, Frontend lädt Szenen.
 
 ### Doku
-- [ ] `backend/CLAUDE.md`: Stack, Befehle (uv, ruff, mypy, pytest, Testlauf im Container), Struktur (`app/…`),
+- [x] `backend/CLAUDE.md`: Stack, Befehle (uv, ruff, mypy, pytest, Testlauf im Container), Struktur (`app/…`),
       Konventionen (Importe ab `app.`, pylint-Abschnitt ersetzen), CI.
-- [ ] `CONTRIBUTING.md` (Zeile ~139), `docs/architecture.md` (Schichten, Seeder-Pfade, CI-Zeile), `.claude/skills/quick-task/SKILL.md` (Backend-Checks).
-- [ ] `docs/known-issues.md`: Punkte zu Tests/`__tests__`, `requirements.txt`/Dev-Abhängigkeiten, Lint/Typprüfung,
+- [x] `CONTRIBUTING.md` (Zeile ~139), `docs/architecture.md` (Schichten, Seeder-Pfade, CI-Zeile), `.claude/skills/quick-task/SKILL.md` (Backend-Checks).
+- [x] `docs/known-issues.md`: Punkte zu Tests/`__tests__`, `requirements.txt`/Dev-Abhängigkeiten, Lint/Typprüfung,
       Dockerfile, Versionen und Paketname `src` entfernen bzw. anpassen; verbleibende Pfade `src/…` auf `app/…`.
 
 ## Akzeptanzkriterien
@@ -188,5 +189,14 @@ die neuen Tests.
 
 ## Offene Fragen
 - keine
+
+## Abweichungen (Umsetzung Runde 1)
+- `ruff format` nicht als eigener Commit: Vorgabe „ein Commit pro Umsetzungsrunde“ hat Vorrang; die Formatierung
+  steckt im Runden-Commit (ohne Logikänderung).
+- Dev-Abhängigkeit `httpx2` statt `httpx`: Starlette 1.x meldet `httpx` für den `TestClient` als deprecated.
+- `declarative_base` aus `sqlalchemy.orm` statt `sqlalchemy.ext.declarative` (Deprecation-Warnung, gleiche Funktion).
+- Rückgabe-Annotationen in `SceneService` korrigiert (`list[Scene]`, `Scene | list[Scene]`), damit mypy grün ist.
+- Upgrade ändert den CORS-Header: Starlette 1.x spiegelt bei `allow_origins=["*"]` + `allow_credentials=True` den
+  `Origin` statt `*` (Pfade, Statuscodes, Response-Inhalt unverändert); in `docs/known-issues.md` notiert.
 
 ## Review

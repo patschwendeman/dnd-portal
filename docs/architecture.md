@@ -26,11 +26,12 @@
 
 ## Backend (`backend`)
 
-- Python 3.11, FastAPI 0.114, SQLAlchemy 2.0 (klassischer `declarative_base`/`db.query`-Stil), psycopg2, PostgreSQL.
-- Schichten: `src/routes/*` → `src/services/*` (statische Methoden) → `src/db/crud.py` (generische Helfer) → `src/db/models.py`.
+- Python 3.11, FastAPI 0.143, SQLAlchemy 2.1 (klassischer `declarative_base`/`db.query`-Stil), psycopg2, PostgreSQL 17;
+  Abhängigkeiten per uv (`pyproject.toml`, `uv.lock`).
+- Schichten (Paket `app`): `app/routes/*` → `app/services/*` (statische Methoden) → `app/db/crud.py` (generische Helfer) → `app/db/models.py`.
   Kein Pydantic-Schema-Layer, keine `response_model`s.
 - Tabellen werden beim Start per `Base.metadata.create_all` angelegt (keine Migrationen). Danach läuft der Seeder
-  (`src/db/seed.py`, Daten in `src/db/data/seed_data.json`) – je Tabelle nur, wenn sie leer ist.
+  (`app/db/seed.py`, Daten in `app/db/data/seed_data.json`) – je Tabelle nur, wenn sie leer ist.
 
 ### Endpoints (alle GET, keine Auth)
 
@@ -111,7 +112,7 @@ Skript ermittelt sein Verzeichnis über die Symlink-Kette; Hilfe und Ausgaben ze
 
 | Befehl (im Root, ohne Skript) | Wirkung |
 |---|---|
-| `docker compose -f compose.dev.yaml up --build` | `db` (Postgres :5432), `app` (API :8000, uvicorn `--reload`, `backend/src` gemountet), `react-app` (Vite :5173, `frontend/` gemountet) |
+| `docker compose -f compose.dev.yaml up --build` | `db` (Postgres :5432), `app` (API :8000, uvicorn `--reload`, `backend/app` und `backend/tests` gemountet), `react-app` (Vite :5173, `frontend/` gemountet) |
 | `docker compose -f compose.dev.yaml --profile tools up` | zusätzlich `pgadmin` (:5050) |
 | `docker compose -f compose.dev.yaml logs -f <service>` | Logs verfolgen |
 | `docker compose -f compose.dev.yaml down` | stoppen; mit `-v` auch DB-Volume löschen (DB-Reset, Seeder läuft neu) |
@@ -160,15 +161,17 @@ kein curl); `app` startet erst bei gesunder DB, `web` erst bei gesunder API. `do
 
 Frontend-Image: `frontend/Dockerfile` mit Stages `dev` (Vite-Dev-Server, von `frontend/docker-compose.yml` per
 `target: dev` genutzt), `build` (`npm ci`, `npm run build`) und `prod` (nginx, Konfiguration `frontend/nginx.conf`).
-Backend-Image: `backend/Dockerfile` startet uvicorn ohne `--reload`; den Reload setzt nur der Dev-Stack per `command`.
+Backend-Image: `backend/Dockerfile` mit uv und Stages `base`, `dev` (inkl. Dev-Abhängigkeiten, von
+`backend/docker-compose.yml` per `target: dev` genutzt) und `prod` (letzte Stage, ohne Dev-Abhängigkeiten, Non-Root-User);
+startet `uvicorn app.main:app` ohne `--reload`; den Reload setzt nur der Dev-Stack per `command`.
 
 ## Qualitätssicherung
 
 | | Backend | Frontend |
 |---|---|---|
-| Lint | `pylint src/` (`.pylintrc`) | `npm run lint` (ESLint flat config, einfache Quotes, keine Semikolons) |
-| Unit-Tests | `python -m unittest discover -s __tests__` – aktuell **keine Tests** | `npm run test:unit` (vitest, nur `utils.spec.ts`) |
+| Lint | `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app` (Konfig in `pyproject.toml`) | `npm run lint` (ESLint flat config, einfache Quotes, keine Semikolons) |
+| Unit-Tests | `uv run pytest` – Charakterisierungstests aller Endpoints in `tests/`, gegen PostgreSQL (lokal Dev-DB bzw. Dev-Container) | `npm run test:unit` (vitest, nur `utils.spec.ts`) |
 | E2E | – | `npm run test:e2e` (jest-cucumber + Selenium/Chrome, braucht laufendes Backend mit Seed-Daten) |
-| CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: parallele Jobs `lint` (`pylint src/`) und `test` (unittest) direkt auf dem Runner, Python 3.11 mit pip-Cache; Job `docker-prod` baut das Image (ohne Push, ohne `--target`, da einstufig) | `.github/workflows/frontend.yml` – analog für `frontend/`: zuerst Job `build` (`vite build`), danach parallel `typecheck` (`tsc -b`), `lint` und `test` (`npm run test:unit`) mit `needs: build`, Node aus `frontend/.nvmrc` (18) mit npm-Cache, `npm ci`; Job `docker-prod` baut das Production-Image (`--target prod`, ohne Push); kein E2E in CI |
+| CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: parallele Jobs `lint` (ruff check, ruff format --check, mypy) und `test` (pytest gegen Service-Container `postgres:17`) direkt auf dem Runner, uv mit Cache auf `uv.lock`; Job `docker-prod` baut das Image (`--target prod`, ohne Push) | `.github/workflows/frontend.yml` – analog für `frontend/`: zuerst Job `build` (`vite build`), danach parallel `typecheck` (`tsc -b`), `lint` und `test` (`npm run test:unit`) mit `needs: build`, Node aus `frontend/.nvmrc` (18) mit npm-Cache, `npm ci`; Job `docker-prod` baut das Production-Image (`--target prod`, ohne Push); kein E2E in CI |
 
 Die alten Branches `test` und `v1-roguelike` (verworfen) der früheren Einzel-Repos liegen als Tags `archive/{backend,frontend}-{test,v1-roguelike}` vor.

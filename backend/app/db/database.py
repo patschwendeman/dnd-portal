@@ -1,26 +1,26 @@
 import os
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.engine import URL
+
 from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 load_dotenv()
 
-DRIVERNAME = os.environ.get('DRIVERNAME')
-POSTGRES_USER = os.environ.get('POSTGRES_USER')
-POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
-POSTGRES_DB = os.environ.get('POSTGRES_DB')
-PORT = os.environ.get('PORT')
-HOST = os.environ.get('HOST')
+DRIVERNAME = os.environ.get("DRIVERNAME")
+POSTGRES_USER = os.environ.get("POSTGRES_USER")
+POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD")
+POSTGRES_DB = os.environ.get("POSTGRES_DB")
+PORT = os.environ.get("PORT")
+HOST = os.environ.get("HOST")
 
 url = URL.create(
-    drivername=DRIVERNAME,
+    drivername=DRIVERNAME,  # type: ignore[arg-type]
     username=POSTGRES_USER,
     host=HOST,
     password=POSTGRES_PASSWORD,
     database=POSTGRES_DB,
-    port=PORT
+    port=PORT,  # type: ignore[arg-type]
 )
 
 engine = create_engine(url)
