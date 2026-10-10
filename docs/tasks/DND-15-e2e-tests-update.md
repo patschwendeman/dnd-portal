@@ -1,7 +1,7 @@
 # DND-15: E2E-Tests und SceneDetailMock an aktuellen Stand anpassen
 
 **Typ:** fix
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 Die BDD/E2E-Tests (`frontend/__tests__/bdd/`, jest-cucumber + Selenium) sind teilweise veraltet: Der Ground-Screen-Test
@@ -139,3 +139,39 @@ statt Array; das fällt nicht auf, weil `tsconfig.app.json` nur `src` typprüft 
 - keine
 
 ## Review
+
+### Runde 1 – Review 5c9c797
+
+**Empfehlung:** Abnahme. Keine blockierenden Befunde.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1: Ground-Szenario lauffähig | erfüllt | `GroundScreen.tsx:102` trägt `data-test-id='groundImg'`; `selectMainScene.ts:58-62` vergleicht `src`; E2E gegen Docker-Frontend :5173 + API :8000: 4/4 grün |
+| AK2: Regressionstest | erfüllt | Alter Stand (`5c9c797^`) mit neuen Tests: `TimeoutError` im Step „I see the correct main map“, 1 von 4 rot; mit Fix 4/4 grün. `<video>` trägt dieselbe ID (`GroundScreen.tsx:103`), Video-Fall nur im Code belegt |
+| AK3: Mock entspricht Modell | erfüllt | `SceneDetailMock.json`: `main: boolean`, `music` als Array; `test:unit` 57/57 |
+| AK4: BDD-Tests aufgeräumt | erfüllt | „fight“ nur noch im Asset-Pfad `wall_screen/fight.jpg`; kein `sleep`/`setTimeout`; `getRandomNumber` typisiert in `support/helpers.ts`; `support/` außerhalb `testMatch`; Bereich 1–25 zentral (`MAIN_SCENE_COUNT`), Seed: 25 Kampfszenen |
+| AK5: Keine weiteren Verhaltensänderungen | erfüllt | Einziger Diff unter `src`: Attribut in `GroundScreen.tsx`; Lint, Typecheck, Build grün |
+
+**Typspezifisch (fix):** Regressionstest selbst gegen alten Stand geprüft (rot → grün). Beide Ursachen behoben
+(Test-ID im Produktivcode nach E1, Mock). `elementIsNotVisible` statt `stalenessOf` passt zu `Dialogue.tsx:21`
+(`display: none`). Wait-Timeout 5 s < jest-Timeout 10 s; Klicks werden abgewartet.
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- `docs/domain.md:25` außerhalb des Plans geändert (Verweis auf veralteten Mock entfernt) – zwingende Folge des Fixes.
+- Kein separater Commit `docs(DND-15): approve plan`; Plan kam mit dem Umsetzungs-Commit (gleiche Praxis wie DND-13/14).
+- `npm run test:e2e` kollidiert mit laufendem Docker-Dev-Stack auf :5173 (`start-server-and-test` weicht auf :5174 aus,
+  Tests nutzen fest :5173); Lauf daher per `npx jest` gegen Docker-Frontend. Ggf. in der E2E-Doku vermerken.
+- Vorbestehend: BDD-Dateien nicht typgeprüft, `@types/selenium-webdriver` fehlt.
+- Vorbestehend: Lint-Warnung `src/screens/WallScreen.tsx:164` (`alt-text`).
+- Commit-Konvention eingehalten.
+
+**Checks**
+- `npm run lint`: 0 Fehler, 1 Warnung (vorbestehend)
+- `npm run typecheck`: grün
+- `npm run test:unit`: 57/57 grün
+- `npm run build`: grün
+- E2E (`npx jest`, Docker-Frontend :5173, API :8000 mit Seed): 4/4 grün
+- Regression (alter Stand + neue Tests): 1 von 4 rot
