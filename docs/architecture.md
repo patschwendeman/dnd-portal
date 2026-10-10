@@ -123,7 +123,7 @@ Container-Namen nach dem Schema `dnd-<umgebung>-<rolle>`:
 |---|---|---|
 | DB | `dnd-dev-db` | `dnd-prod-db` |
 | API | `dnd-dev-api` | `dnd-prod-api` |
-| Frontend | `dnd-dev-frontend` | `dnd-prod-frontend` |
+| Frontend | `dnd-dev-ui` | `dnd-prod-ui` |
 | pgAdmin | `dnd-dev-pgadmin` | – |
 
 Das DB-Volume des Dev-Stacks heißt `dnd-portal-dev_postgres_data` (der Seeder füllt es beim ersten Start). Das Volume

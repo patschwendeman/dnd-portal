@@ -116,7 +116,7 @@ docker compose -f compose.dev.yaml down # -v setzt zusätzlich die DB zurück
 ```
 
 - Die Services haben feste Containernamen nach dem Schema `dnd-<umgebung>-<rolle>` (Dev: `dnd-dev-db`, `dnd-dev-api`,
-  `dnd-dev-frontend`, `dnd-dev-pgadmin`; Prod: `dnd-prod-db`, `dnd-prod-api`, `dnd-prod-frontend`):
+  `dnd-dev-ui`, `dnd-dev-pgadmin`; Prod: `dnd-prod-db`, `dnd-prod-api`, `dnd-prod-ui`):
   Root-Start und Einzelstart in `backend/` bzw. `frontend/` können nicht gleichzeitig existieren – vorher im
   jeweils anderen Ordner `docker compose down`.
 - Der Dev-Stack heißt `dnd-portal-dev` und hat ein eigenes DB-Volume (`dnd-portal-dev_postgres_data`). Das Volume
