@@ -45,7 +45,7 @@ def update(db: Session, model: Type[T], model_id: int, data: Dict[str, Any]) -> 
         if hasattr(instance, key):
             setattr(instance, key, value)
         else:
-            raise ValueError(f"Attribute {key} does not exist on BattleMap")
+            raise ValueError(f"Attribute {key} does not exist on {model.__name__}")
 
     db.add(instance)
     db.commit()

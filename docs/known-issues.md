@@ -30,7 +30,8 @@ Stand: Analyse vom 2026-09-27. Punkte mit „(ungeprüft)“ wurden aus dem Code
 - E2E-Tests teilweise veraltet (`groundImg`-Selector existiert nicht mehr); `SceneDetailMock.json` nutzt noch `fight`.
 - README ist das unveränderte Vite-Template.
 
-## Altlasten aus `v1-roguelike` (verworfen)
+## Altlasten
 
-`map_locked.png`, `players`-Query-Parameter auf `/maps/main`,
-Fehlermeldung „…on BattleMap“ in `crud.update`, Asset-Ordner `battle_maps`/`side_maps`.
+- Alte Benennungen aus der Zeit vor „mainmap“: Musik-Ordner `battle_maps`/`side_maps`, Bilder `battle_N.jpg`,
+  WallScreen-Button „BATTLE“ (siehe [domain.md](domain.md#historische-bezeichnungen)). Umbenennen betrifft Assets,
+  `seed_data.json`, Tests und erfordert einen DB-Reset.

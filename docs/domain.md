@@ -24,5 +24,4 @@
 - `sidemap(s)` → heute über `/maps/side`; Musik-Ordner heißen noch `side_maps`.
 - `fight` (Bool auf Scene) → heute `main`. Veraltet u. a. noch in `__tests__/unit/SceneDetailMock.json`.
 - `v1-roguelike` (Tags `archive/*-v1-roguelike`): altes, **verworfenes** Konzept mit Tabelle `battlemaps` (loot, xp, enemies, locked,
-  source_locked) und PUT-Endpoint zum Entsperren. Reste: `updateData()` im Frontend, `map_locked.png`,
-  Fehlermeldung „…on BattleMap“ in `crud.update`.
+  source_locked) und PUT-Endpoint zum Entsperren. Im Code sind keine Reste mehr vorhanden.
