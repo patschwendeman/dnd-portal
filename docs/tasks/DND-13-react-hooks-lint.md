@@ -1,7 +1,7 @@
 # DND-13: React-Hooks-Lint aktivieren, Effect-Abhängigkeiten und veraltete Antworten bereinigen
 
 **Typ:** setup
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 

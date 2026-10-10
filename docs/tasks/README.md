@@ -16,4 +16,4 @@
 | DND-10 | fix | Musik spielt die Playlist der aktiven Szene durchgehend | Fertig | [DND-10-music-playback.md](DND-10-music-playback.md) |
 | DND-11 | fix | Ladefehler abfangen statt unhandled rejections, Hinweis im Admin Screen | Fertig | [DND-11-load-error-handling.md](DND-11-load-error-handling.md) |
 | DND-12 | setup | API-URL per Env-Variable und Production-Stack für den Spieltisch | Fertig | [DND-12-production-stack.md](DND-12-production-stack.md) |
-| DND-13 | setup | React-Hooks-Lint aktivieren, Effect-Abhängigkeiten und veraltete Antworten bereinigen | Im Review | [DND-13-react-hooks-lint.md](DND-13-react-hooks-lint.md) |
+| DND-13 | setup | React-Hooks-Lint aktivieren, Effect-Abhängigkeiten und veraltete Antworten bereinigen | Fertig | [DND-13-react-hooks-lint.md](DND-13-react-hooks-lint.md) |
