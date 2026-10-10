@@ -20,3 +20,4 @@
 | DND-14 | refactor | Alte Asset-Benennungen battle/side_maps auf main/side umstellen | Fertig | [DND-14-rename-legacy-asset-names.md](DND-14-rename-legacy-asset-names.md) |
 | DND-15 | fix | E2E-Tests und SceneDetailMock an aktuellen Stand anpassen | Fertig | [DND-15-e2e-tests-update.md](DND-15-e2e-tests-update.md) |
 | DND-16 | setup | Backend-Tooling: uv, ruff, mypy, pytest mit Charakterisierungstests, Paket `app` | Fertig | [DND-16-backend-tooling-tests.md](DND-16-backend-tooling-tests.md) |
+| DND-17 | refactor | Backend-Struktur nach FastAPI-Konvention, Konfiguration per pydantic-settings | Entwurf | [DND-17-backend-structure-config.md](DND-17-backend-structure-config.md) |
