@@ -24,6 +24,8 @@ Stand: Analyse vom 2026-09-27. Punkte mit „(ungeprüft)“ wurden aus dem Code
 - Seed: Ground „Level_up“ zeigt auf den `wall_screen`-Ordner; doppelte/unpassende Musiknamen; Beschreibungen großteils Copy-Paste.
 - Seed: `name`-Werte der Ground-Bilder (`graphics_ground`) heißen noch `battle_N` – sollten analog zu den Dateien
   `main_N` heißen.
+- README ist nur ein Zweizeiler – analog zu `frontend/README.md` ausbauen (Zweck, Starten, Konfiguration, Befehle,
+  Links auf `CLAUDE.md` und `../docs/`).
 
 ## Frontend
 
