@@ -16,7 +16,7 @@ import { Map, SceneDetail } from '../models/models'
 import { getAdminData, getSceneById, handleDialogue } from '../service/adminScreen'
 import { GlobalStyle } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
-import { loadSafely } from '../utils/loadSafely'
+import { loadLatest } from '../utils/loadSafely'
 import { filterSceneByKey, getMusicTitle } from '../utils/utils'
 
 import { ReactSVG } from 'react-svg'
@@ -139,53 +139,62 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
     // Until the active scene is loaded, the default track is the playlist
     const music = useMusicPlayer([defaultMusic])
 
-    const handleAdminData = (sidemaps: Map[], mainmaps: Map[], scenesDetails: SceneDetail[]) => {
-        setMainmaps(mainmaps)
-        setSidemaps(sidemaps)
-        setScenesDetails(scenesDetails)
-    }
+    // Stable across renders (useCallback in useMusicPlayer), so it does not retrigger the scene effect
+    const { setPlaylist: setMusicPlaylist } = music
 
-    const handleActiveScene = (activeScene: SceneDetail) => {
-        setActiveScene(activeScene)
-        music.setPlaylist(activeScene.music.map((item) => item.source))
-    }
-
-    const fetchAdminData = () => loadSafely(
-        async () => {
-            const [sidemaps, mainmaps, scenesDetails] = await getAdminData()
-            handleAdminData(sidemaps, mainmaps, scenesDetails)
-            setAdminDataFailed(false)
-        },
-        (err) => {
-            console.error('Error fetching admin data:', err)
-            setAdminDataFailed(true)
-        }
-    )
-
-    const fetchActiveScene = () => loadSafely(
-        async () => {
-            const activeScene = await getSceneById(activeSceneId)
-            handleActiveScene(activeScene)
-            setActiveSceneFailed(false)
-        },
-        (err) => {
-            console.error('Error fetching active scene data:', err)
-            setActiveSceneFailed(true)
-        }
-    )
+    // Every load runs in an effect; a retry only bumps this counter so both effects load again
+    const [reloadCount, setReloadCount] = useState<number>(0)
 
     const retryLoading = () => {
-        fetchAdminData()
-        fetchActiveScene()
+        setReloadCount((count) => count + 1)
     }
 
-    useEffect(() => {  
-        fetchAdminData()
-    }, [])
+    useEffect(() => {
+        let stale = false
 
-    useEffect(() => { 
-        fetchActiveScene()
-    }, [activeSceneId])
+        loadLatest(
+            getAdminData,
+            ([sidemaps, mainmaps, scenesDetails]) => {
+                setMainmaps(mainmaps)
+                setSidemaps(sidemaps)
+                setScenesDetails(scenesDetails)
+                setAdminDataFailed(false)
+            },
+            (err) => {
+                console.error('Error fetching admin data:', err)
+                setAdminDataFailed(true)
+            },
+            () => stale
+        )
+
+        // A load overtaken by a retry must not overwrite the result or error of the newer load.
+        return () => {
+            stale = true
+        }
+    }, [reloadCount])
+
+    useEffect(() => {
+        let stale = false
+
+        loadLatest(
+            () => getSceneById(activeSceneId),
+            (activeScene: SceneDetail) => {
+                setActiveScene(activeScene)
+                setMusicPlaylist(activeScene.music.map((item) => item.source))
+                setActiveSceneFailed(false)
+            },
+            (err) => {
+                console.error('Error fetching active scene data:', err)
+                setActiveSceneFailed(true)
+            },
+            () => stale
+        )
+
+        // A scene switched before its data arrived must not overwrite the newly selected scene.
+        return () => {
+            stale = true
+        }
+    }, [activeSceneId, reloadCount, setMusicPlaylist])
 
     const handleSceneSelection = (sceneId: number) => {
         const scene = filterSceneByKey('id', sceneId, scenesDetails)

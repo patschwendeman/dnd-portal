@@ -6,13 +6,15 @@ import { ReactSVG } from 'react-svg'
 import { Label } from './Label'
 import { SideBarLeftElement } from './SideBarLeftElement'
 import { textStyle } from '../style/tokens'
-import { loadSafely } from '../utils/loadSafely'
+import { loadLatest } from '../utils/loadSafely'
 
 const markdownFilesMain = import.meta.glob('../../public/story/main/*.md')
 const markdownFilesFight = import.meta.glob('../../public/story/fight/*.md')
 const markdownFilesNoneFight = import.meta.glob('../../public/story/noneFight/*.md')
 const markdownFilesLeveling = import.meta.glob('../../public/story/leveling/*.md')
 const markdownFilesMechanics = import.meta.glob('../../public/story/mechanics/*.md')
+
+const markdownLists = [markdownFilesMain, markdownFilesFight, markdownFilesNoneFight, markdownFilesLeveling, markdownFilesMechanics]
 
 import arrowUpIcon from '/assets/icons/arrowUp.svg'
 
@@ -193,9 +195,9 @@ const DocumentReader: FunctionComponent = (): ReactElement => {
   const [isVisible, setIsVisible] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-  const markdownLists = [markdownFilesMain, markdownFilesFight, markdownFilesNoneFight, markdownFilesLeveling, markdownFilesMechanics]
-
   useEffect(() => {
+    let stale = false
+
     const loadMarkdownFiles = async () => {
       const selectedMarkdownFiles = markdownLists[selectedStoryIndex]
       const paths = Object.keys(selectedMarkdownFiles)
@@ -207,15 +209,26 @@ const DocumentReader: FunctionComponent = (): ReactElement => {
         }
         return response.text()
       })
-      const markdownTextList = await Promise.all(markdownPromises)
-      setMarkdownContent(markdownTextList)
-      setLoadFailed(false)
+      return Promise.all(markdownPromises)
     }
 
-    loadSafely(loadMarkdownFiles, (error) => {
-      console.error('Error loading markdown files:', error)
-      setLoadFailed(true)
-    })
+    loadLatest(
+      loadMarkdownFiles,
+      (markdownTextList) => {
+        setMarkdownContent(markdownTextList)
+        setLoadFailed(false)
+      },
+      (error) => {
+        console.error('Error loading markdown files:', error)
+        setLoadFailed(true)
+      },
+      () => stale
+    )
+
+    // A tab switched before its notes arrived must not overwrite the notes of the newly selected tab.
+    return () => {
+      stale = true
+    }
   }, [selectedStoryIndex])
 
   const handleScroll = () => {

@@ -1,6 +1,7 @@
 import pluginJs from '@eslint/js'
 import importPlugin from 'eslint-plugin-import'
 import pluginReact from 'eslint-plugin-react'
+import reactHooks from 'eslint-plugin-react-hooks'
 import styledComponentsA11y from 'eslint-plugin-styled-components-a11y'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
@@ -15,6 +16,7 @@ export default [
   {
     plugins: {
       react: pluginReact,
+      'react-hooks': reactHooks,
       import: importPlugin,
       'styled-components-a11y': styledComponentsA11y,
     },
@@ -60,6 +62,8 @@ export default [
       'styled-components-a11y/anchor-is-valid': 'warn',
       'styled-components-a11y/aria-role': 'warn',
       'react/react-in-jsx-scope': 'off',
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'error',
     },
   },
 ]

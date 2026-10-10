@@ -7,7 +7,7 @@ import { ActiveSceneContext } from '../context/context'
 import { SceneDetail } from '../models/models'
 import { getGroundScreenData } from '../service/groundScreen'
 import { GlobalStyle } from '../style/GlobalStyle'
-import { loadSafely } from '../utils/loadSafely'
+import { loadLatest } from '../utils/loadSafely'
 
 
 const Screen = styled.div`
@@ -37,6 +37,21 @@ const BackgroundMedia = styled.video`
     z-index: ${(props) => props.theme.layer.media};
 `
 
+const determineMediaType = (src: string): 'image' | 'video' | null => {
+    const imageExtensions = ['.jpg', '.jpeg', '.png']
+    const videoExtensions = ['.mp4', '.webm', '.mkv']
+
+    const lowerSrc = src.toLowerCase()
+
+    if (videoExtensions.some(ext => lowerSrc.endsWith(ext))) {
+        return 'video'
+    }
+    if (imageExtensions.some(ext => lowerSrc.endsWith(ext))) {
+        return 'image'
+    }
+    return null
+}
+
 const GroundScreen: FunctionComponent = (): ReactElement => {
     const { activeSceneId } = useContext(ActiveSceneContext)
     const [mediaSRC, setMediaSRC] = useState<string>('')
@@ -53,44 +68,32 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
         2: 'transparent',
     }
 
-    const determineMediaType = (src: string): 'image' | 'video' | null => {
-        const imageExtensions = ['.jpg', '.jpeg', '.png']
-        const videoExtensions = ['.mp4', '.webm', '.mkv']
-    
-        const lowerSrc = src.toLowerCase()
-    
-        if (videoExtensions.some(ext => lowerSrc.endsWith(ext))) {
-            return 'video'
-        }
-        if (imageExtensions.some(ext => lowerSrc.endsWith(ext))) {
-            return 'image'
-        }
-        return null
-    }
-
-    const handleGroundScreen = (activeScene: SceneDetail) => {
-        const src = activeScene.graphics_ground.source 
-        setMediaSRC(src)
-        setMediaType(determineMediaType(src))
-    }
-
-
     const handleGridVisibility = (option: number) => {
         setActiveButton(option)
         setGridColor(gridColorMap[option] || 'transparent')
     }
 
-    // Players see no error: the screen keeps the last loaded scene, the next scene change loads again.
-    const fetchGroundScreenData = () => loadSafely(
-        async () => {
-            const activeScene = await getGroundScreenData(activeSceneId)
-            handleGroundScreen(activeScene)
-        },
-        (err) => console.error('Error fetching ground data:', err)
-    )
+    useEffect(() => {
+        let stale = false
 
-    useEffect(() => { 
-        fetchGroundScreenData()
+        const handleGroundScreen = (activeScene: SceneDetail) => {
+            const src = activeScene.graphics_ground.source 
+            setMediaSRC(src)
+            setMediaType(determineMediaType(src))
+        }
+
+        // Players see no error: the screen keeps the last loaded scene, the next scene change loads again.
+        loadLatest(
+            () => getGroundScreenData(activeSceneId),
+            handleGroundScreen,
+            (err) => console.error('Error fetching ground data:', err),
+            () => stale
+        )
+
+        // A scene switched before its data arrived must not overwrite the newly selected scene.
+        return () => {
+            stale = true
+        }
     }, [activeSceneId])
 
     return(

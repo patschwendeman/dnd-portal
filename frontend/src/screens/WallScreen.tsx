@@ -9,7 +9,7 @@ import { Map, SceneDetail } from '../models/models'
 import { getWallScreenData } from '../service/WallScreen'
 import { GlobalStyle } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
-import { loadSafely } from '../utils/loadSafely'
+import { loadLatest } from '../utils/loadSafely'
 import { getGridLayout } from '../utils/utils'
 import MapEnvironmentSrc from './../../public/assets/images/ground_screen/mapOverview.jpg'
 
@@ -103,20 +103,6 @@ const WallScreen: FunctionComponent = (): ReactElement => {
     const buttonLabels = ['BATTLE', 'WORLD', 'OFF']
     const activeButton = mainMapsVisibility ? 0 : worldMapVisibility ? 1 : 2
 
-    const handleWallScreenData = (activeScene: SceneDetail, mainmaps: Map[]) => {
-        setActiveScene(activeScene)
-        setMainmaps(mainmaps)
-        setWorldMapVisibility(false)
-        if(activeScene.main === true) {
-            setIsActiveMainMap(true)
-            setMainMapsVisibility(true)
-        }
-        else {
-            setIsActiveMainMap(false)
-            setMainMapsVisibility(false)
-        }
-    }
-
     function handleMapsVisibility(option: number) {
         if (option === 0) {
             setMainMapsVisibility(true)
@@ -130,17 +116,35 @@ const WallScreen: FunctionComponent = (): ReactElement => {
         }
     }
 
-    // Players see no error: the screen keeps the last loaded scene, the next scene change loads again.
-    const fetchWallScreenData = () => loadSafely(
-        async () => {
-            const [activeScene, mainmaps] = await getWallScreenData(activeSceneId)
-            handleWallScreenData(activeScene, mainmaps)
-        },
-        (err) => console.error('Error fetching wall data:', err)
-    )
-
     useEffect(() => {
-        fetchWallScreenData()
+        let stale = false
+
+        const handleWallScreenData = (activeScene: SceneDetail, mainmaps: Map[]) => {
+            setActiveScene(activeScene)
+            setMainmaps(mainmaps)
+            setWorldMapVisibility(false)
+            if(activeScene.main === true) {
+                setIsActiveMainMap(true)
+                setMainMapsVisibility(true)
+            }
+            else {
+                setIsActiveMainMap(false)
+                setMainMapsVisibility(false)
+            }
+        }
+
+        // Players see no error: the screen keeps the last loaded scene, the next scene change loads again.
+        loadLatest(
+            () => getWallScreenData(activeSceneId),
+            ([activeScene, mainmaps]) => handleWallScreenData(activeScene, mainmaps),
+            (err) => console.error('Error fetching wall data:', err),
+            () => stale
+        )
+
+        // A scene switched before its data arrived must not overwrite the newly selected scene.
+        return () => {
+            stale = true
+        }
     }, [activeSceneId])
 
     return(

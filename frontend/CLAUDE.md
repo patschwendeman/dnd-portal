@@ -89,6 +89,9 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
 - Einfache Anführungszeichen, **keine Semikolons**, `curly: all`, `prefer-const`, `camelcase` (auch Properties).
 - `import/order`: Gruppen builtin → external → internal, Leerzeile zwischen Gruppen, alphabetisch; `react` zuerst.
 - `no-console` ist `warn`.
+- React-Hooks-Regeln werden erzwungen (`react-hooks/rules-of-hooks`, `react-hooks/exhaustive-deps`, beide `error`).
+  Ladefunktionen liegen im Effect selbst, nicht im Component-Body. Ladevorgänge in Effects laufen über `loadLatest`
+  (`src/utils/loadSafely.ts`) mit einem `stale`-Flag, das der Cleanup setzt – veraltete Antworten werden verworfen.
 - Komponenten als `const X: FunctionComponent<XProps> = (…): ReactElement => …` mit Props-Interface,
   **benannter Export am Dateiende** (`export { X }`). Nur `App` ist Default-Export.
 - Styles als styled-components in derselben Datei; Farben über `props.theme.colors.*`, nicht hart codiert.
@@ -110,8 +113,6 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
   Raster mit `⌈√n⌉` Spalten (`getGridLayout` in `src/utils/utils.ts`, auch Basis der Wall-Overlay-Breite).
 - `DocumentReader` sammelt Markdown per `import.meta.glob` aus `public/story/**` – neue Notizen dort ablegen.
 - Player-Ressourcen (`ResourceBarPlayer`) sind reiner lokaler State; Zauberplatz-Maxima sind hart codiert (`SpellMax`).
-- `eslint-plugin-react-hooks` ist installiert, aber nicht aktiv – `useEffect`-Abhängigkeiten nicht blind „reparieren“,
-  ohne das Verhalten zu prüfen.
 - Die Ressource „Bewegung“ ist Work in Progress; `/spells` ist auf dem Branch `feature/spells-screen` geparkt; `v1-roguelike` (Tags `archive/*`) ist verworfen
   (Rest: `map_locked.png`).
 - Weitere bekannte Bugs/Altlasten: `../docs/known-issues.md`.
