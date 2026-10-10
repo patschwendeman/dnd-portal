@@ -3,7 +3,7 @@ import os
 
 from sqlalchemy.orm import Session
 
-from app.db.models import GraphicsGround, GraphicsWall, Music, Scene
+from app.models import GraphicsGround, GraphicsWall, Music, Scene
 
 SEED_DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "seed_data.json")
 

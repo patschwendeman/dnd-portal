@@ -17,7 +17,7 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 
 - Nicht gefundene Datensätze erzeugen 500 statt 404 (Services werfen `ValueError`, Routen prüfen auf `None`).
 - `/scenes/details/{id}` lädt alle Szenen und gibt bei unbekannter ID die **ganze Liste** zurück. Auch
-  `MapsService.read_maps` lädt alle Szenen und filtert in Python statt per SQL (`where`/`get`).
+  `get_maps` (`app/services/map.py`) lädt alle Szenen und filtert in Python statt per SQL (`where`/`get`).
 - `/scenes/details` ohne Slash landet auf `/scenes/{scene_id}` → 422 (`int_parsing`).
 - Die Bugs dieses Abschnitts sind durch Charakterisierungstests (`backend/tests/`, `# known issue: …`) festgehalten;
   ein Fix-Task stellt die betroffenen Tests gezielt um.
@@ -30,32 +30,19 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 
 ### Struktur & Benennung
 
-- `app/db/` mischt Engine, Models, CRUD, Seeder und Seed-JSON. Üblich: getrennt in `core/config`, `db/session`,
-  `models/`, `schemas/`, `crud/`, `services/`, `api/routes/`.
-- Router heißen `scenes_router`/`maps_router` statt `router`; das Prefix `/scenes` bzw. `/maps` steht in jedem Pfad
-  statt zentral über `include_router(..., prefix=..., tags=...)`.
-- Services sind Klassen mit nur `@staticmethod` (`SceneService`, `MapsService`). Pythonischer: Modul-Funktionen.
-- Uneinheitliche Parameterreihenfolge (`read_scene_by_id(scene_id, db)` vs. `read_maps(db, maptype)`); `maptype` ist
-  ein String mit Laufzeit-Check statt `map_type: Literal`/`Enum`.
-- Singular/Plural gemischt (`MapsService` vs. `SceneService`; Relation `Scene.music` ist eine Liste).
+- Relation `Scene.music` ist eine Liste, heißt aber im Singular (Umbenennung ändert den API-Vertrag → Schema-Task).
 
 ### FastAPI & SQLAlchemy
 
 - Keine Pydantic-Schemas, kein `response_model`: OpenAPI ohne Antworttypen, Antwortform hängt von `joinedload` ab,
   Vertrag zu `SceneDetail` im Frontend nicht abgesichert.
-- Seiteneffekte beim Import von `main.py`: `create_all` und Seeder laufen beim Import, die Session aus `next(get_db())`
-  wird nie geschlossen. Üblich: `lifespan`-Handler – dann wäre `app.main` ohne DB importierbar (Tests laufen bisher nur gegen eine echte DB).
-- Dependencies im alten Stil `db: Session = Depends(get_db)` statt `Annotated` (`SessionDep`).
-- CORS: `allow_origins=["*"]` zusammen mit `allow_credentials=True` ist widersprüchlich; Origins gehören in die Konfiguration.
-  Seit Starlette 1.x spiegelt die Middleware in dieser Kombination den `Origin` des Requests in
-  `Access-Control-Allow-Origin` (vorher `*`).
 - SQLAlchemy im 1.x-Stil: `declarative_base()`, `Column`, `db.query`.
   2.0-Stil: `DeclarativeBase`, `Mapped[...]`/`mapped_column`, `select()`.
 
 ### Konfiguration & Tooling
 
-- Konfiguration per `os.environ.get` + `load_dotenv` ohne Validierung. Üblich: `pydantic-settings`.
-- mypy nur im Basis-Modus (kein `strict`); gezielte `# type: ignore` in `app/db/crud.py` und `app/db/database.py`.
+- mypy nur im Basis-Modus (kein `strict`); gezielte `# type: ignore[call-arg]` bei `Settings()` in `app/core/config.py`
+  (Werte kommen aus der Umgebung, mypy kennt sie ohne Pydantic-Plugin nicht).
   Verschärfung sinnvoll nach Umstellung auf SQLAlchemy-2.0-Stil und Pydantic-Schemas.
 
 ## Frontend

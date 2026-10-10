@@ -1,10 +1,11 @@
 """Shared fixtures for the characterization tests.
 
-Importing `app.main` creates the tables and runs the seeder, so a reachable PostgreSQL is required
-(HOST/PORT/... from the environment or backend/.env; see backend/CLAUDE.md).
+Starting the app (lifespan) creates the tables and runs the seeder, so a reachable PostgreSQL is required
+(DB_HOST/DB_PORT/... from the environment or backend/.env; see backend/CLAUDE.md).
 """
 
 import json
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -15,10 +16,12 @@ SEED_DATA_PATH = Path(__file__).resolve().parent.parent / "app" / "db" / "data" 
 
 
 @pytest.fixture(scope="session")
-def client() -> TestClient:
+def client() -> Iterator[TestClient]:
     from app.main import app
 
-    return TestClient(app, raise_server_exceptions=False)
+    # As a context manager the TestClient runs the lifespan (create_all and seeder).
+    with TestClient(app, raise_server_exceptions=False) as client:
+        yield client
 
 
 @pytest.fixture(scope="session")

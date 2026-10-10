@@ -1,7 +1,7 @@
 # DND-17: Backend-Struktur nach FastAPI-Konvention, Konfiguration per pydantic-settings
 
 **Typ:** refactor
-**Status:** Entwurf
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -130,52 +130,53 @@ vorhersagbare, konventionelle Struktur – für Menschen und Agents – ohne Än
 ## Subtasks
 
 ### Schritt 1: Konfiguration & DB-Basis
-- [ ] `pydantic-settings` hinzufügen, `python-dotenv` entfernen (`uv add`/`uv remove`, `uv.lock`).
-- [ ] `app/core/config.py` (E5, E6, E7).
-- [ ] `app/db/base.py`, `app/db/session.py` (Engine aus `settings.database_url`, `SessionLocal`, `get_db`).
-- [ ] `backend/.env.example` auf neue Namen und `CORS_ORIGINS` (auskommentiertes LAN-Beispiel) umstellen;
+- [x] `pydantic-settings` hinzufügen, `python-dotenv` entfernen (`uv add`/`uv remove`, `uv.lock`).
+- [x] `app/core/config.py` (E5, E6, E7).
+- [x] `app/db/base.py`, `app/db/session.py` (Engine aus `settings.database_url`, `SessionLocal`, `get_db`).
+- [x] `backend/.env.example` auf neue Namen und `CORS_ORIGINS` (auskommentiertes LAN-Beispiel) umstellen;
       `.github/workflows/backend.yml` (Test-Job-Env: `DB_DRIVER`, `DB_HOST=localhost`, `DB_PORT`).
 
 ### Schritt 2: Models & CRUD
-- [ ] `app/models/{__init__,scene,media}.py` (Inhalt 1:1 aus `app/db/models.py`, nur aufgeteilt).
-- [ ] `app/crud/scene.py` (E3); `app/db/seed.py` Importe anpassen.
+- [x] `app/models/{__init__,scene,media}.py` (Inhalt 1:1 aus `app/db/models.py`, nur aufgeteilt).
+- [x] `app/crud/scene.py` (E3); `app/db/seed.py` Importe anpassen.
 
 ### Schritt 3: Services, Routen, App
-- [ ] `app/services/{scene,map}.py` als Modul-Funktionen (E3).
-- [ ] `app/api/deps.py` (`SessionDep`), `app/api/routes/{scenes,maps}.py` mit `router` (E2).
-- [ ] `app/main.py`: `lifespan` (E4), CORS (E7), `include_router` mit Prefix/Tags.
-- [ ] Alte Module löschen; leere `__init__.py` für alle neuen Pakete.
+- [x] `app/services/{scene,map}.py` als Modul-Funktionen (E3).
+- [x] `app/api/deps.py` (`SessionDep`), `app/api/routes/{scenes,maps}.py` mit `router` (E2).
+- [x] `app/main.py`: `lifespan` (E4), CORS (E7), `include_router` mit Prefix/Tags.
+- [x] Alte Module löschen; leere `__init__.py` für alle neuen Pakete.
 
 ### Schritt 4: Tests
-- [ ] `tests/conftest.py`: `TestClient` als Context Manager (E4), Docstring auf neue Env-Namen.
-- [ ] `tests/test_cors.py`: Preflight/GET mit erlaubtem Origin → `Access-Control-Allow-Origin` = Origin, ohne
+- [x] `tests/conftest.py`: `TestClient` als Context Manager (E4), Docstring auf neue Env-Namen.
+- [x] `tests/test_cors.py`: Preflight/GET mit erlaubtem Origin → `Access-Control-Allow-Origin` = Origin, ohne
       `Access-Control-Allow-Credentials`; mit fremdem Origin → kein `Access-Control-Allow-Origin`.
-- [ ] `tests/test_config.py`: `Settings` liest `DB_*`/`POSTGRES_*`/`CORS_ORIGINS` und baut die URL korrekt;
+- [x] `tests/test_config.py`: `Settings` liest `DB_*`/`POSTGRES_*`/`CORS_ORIGINS` und baut die URL korrekt;
       fehlendes Pflichtfeld → `ValidationError` (mit `monkeypatch`, ohne `.env`: `Settings(_env_file=None)`).
-- [ ] Charakterisierungstests unverändert grün; Gegenprobe: `python -c "import app.main"` ohne erreichbare DB wirft nicht.
+- [x] Charakterisierungstests unverändert grün; Gegenprobe: `python -c "import app.main"` ohne erreichbare DB wirft nicht.
 
 ### Schritt 5: Doku
-- [ ] `backend/CLAUDE.md`: Struktur & Schichten, Konventionen (Router, Services, `SessionDep`, Settings), Env-Schlüssel,
+- [x] `backend/CLAUDE.md`: Struktur & Schichten, Konventionen (Router, Services, `SessionDep`, Settings), Env-Schlüssel,
       Befehle (`DB_HOST=localhost uv run pytest`), Hinweis „Import von `app.main` braucht DB“ entfernen.
-- [ ] `docs/architecture.md` (Schichten, Env-Schlüssel, Abschnitt LAN/CORS bei `VITE_API_URL`),
+- [x] `docs/architecture.md` (Schichten, Env-Schlüssel, Abschnitt LAN/CORS bei `VITE_API_URL`),
       `.claude/skills/quick-task/SKILL.md` (`HOST=localhost` → `DB_HOST=localhost`).
-- [ ] `docs/known-issues.md`: erledigte Punkte entfernen (`app/db/`-Mischung, Router-Benennung/Prefix, Services als
+- [x] `docs/known-issues.md`: erledigte Punkte entfernen (`app/db/`-Mischung, Router-Benennung/Prefix, Services als
       Klassen, Parameterreihenfolge/`maptype`, `MapsService`/`SceneService`-Teil des Singular/Plural-Punkts,
       Seiteneffekte beim Import, `Depends` ohne `Annotated`, CORS, `os.environ`/`load_dotenv`); `# type: ignore`-Hinweis
       zu `database.py` anpassen. Verbleibend: Relation `Scene.music` (Schema-Task).
 
 ## Akzeptanzkriterien
 
-- [ ] AK1: Struktur unter `app/` entspricht E1; keine Module mehr unter `app/routes/`, `app/db/{database,models,crud}.py`;
+- [x] AK1: Struktur unter `app/` entspricht E1; keine Module mehr unter `app/routes/`, `app/db/{database,models,crud}.py`;
       Routen heißen `router`, Prefix/Tags zentral; Services sind Modul-Funktionen mit `db` als erstem Parameter.
-- [ ] AK2: `import app.main` funktioniert ohne erreichbare DB; Tabellen und Seed entstehen beim App-Start (`lifespan`);
+- [x] AK2: `import app.main` funktioniert ohne erreichbare DB; Tabellen und Seed entstehen beim App-Start (`lifespan`);
       die Seeder-Session wird geschlossen.
-- [ ] AK3: Konfiguration über `Settings` mit `DB_DRIVER`, `DB_HOST`, `DB_PORT`, `POSTGRES_*`, `CORS_ORIGINS`;
+- [x] AK3: Konfiguration über `Settings` mit `DB_DRIVER`, `DB_HOST`, `DB_PORT`, `POSTGRES_*`, `CORS_ORIGINS`;
       `python-dotenv` und `os.environ`-Zugriffe sind entfernt; fehlende Pflichtwerte → klare Fehlermeldung beim Start.
-- [ ] AK4: CORS erlaubt nur konfigurierte Origins, ohne Credentials; per `CORS_ORIGINS` um LAN-Origins erweiterbar
+- [x] AK4: CORS erlaubt nur konfigurierte Origins, ohne Credentials; per `CORS_ORIGINS` um LAN-Origins erweiterbar
       (durch `tests/test_cors.py` belegt).
-- [ ] AK5: Alle Invarianten eingehalten – Charakterisierungstests inhaltlich unverändert grün.
+- [x] AK5: Alle Invarianten eingehalten – Charakterisierungstests inhaltlich unverändert grün.
 - [ ] AK6: `uv run ruff check`, `ruff format --check`, `mypy app`, `pytest` und CI grün; Docker-Build ok.
+      (lokal grün inkl. Docker-Build; CI nach Push zu prüfen)
 
 ## Teststrategie / Verifikation
 

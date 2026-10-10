@@ -28,10 +28,12 @@
 
 - Python 3.11, FastAPI 0.143, SQLAlchemy 2.1 (klassischer `declarative_base`/`db.query`-Stil), psycopg2, PostgreSQL 17;
   Abhängigkeiten per uv (`pyproject.toml`, `uv.lock`).
-- Schichten (Paket `app`): `app/routes/*` → `app/services/*` (statische Methoden) → `app/db/crud.py` (generische Helfer) → `app/db/models.py`.
-  Kein Pydantic-Schema-Layer, keine `response_model`s.
-- Tabellen werden beim Start per `Base.metadata.create_all` angelegt (keine Migrationen). Danach läuft der Seeder
-  (`app/db/seed.py`, Daten in `app/db/data/seed_data.json`) – je Tabelle nur, wenn sie leer ist.
+- Schichten (Paket `app`): `app/api/routes/*` (je Modul ein `router`, Prefix/Tags zentral in `app/main.py`) →
+  `app/services/*` (Modul-Funktionen) → `app/crud/*` → `app/models/*`. Konfiguration in `app/core/config.py`
+  (pydantic-settings), Engine/Session in `app/db/session.py`. Kein Pydantic-Schema-Layer, keine `response_model`s.
+- Beim App-Start (`lifespan`) werden die Tabellen per `Base.metadata.create_all` angelegt (keine Migrationen). Danach
+  läuft der Seeder (`app/db/seed.py`, Daten in `app/db/data/seed_data.json`) – je Tabelle nur, wenn sie leer ist.
+  `import app.main` allein baut keine DB-Verbindung auf.
 
 ### Endpoints (alle GET, keine Auth)
 
@@ -106,9 +108,12 @@ Einmalig `./script.sh install`, danach funktionieren alle Befehle aus jedem Ordn
 Skript ermittelt sein Verzeichnis über die Symlink-Kette; Hilfe und Ausgaben zeigen den aufgerufenen Namen).
 `./script.sh <befehl>` funktioniert weiterhin ohne Installation.
 
-**Voraussetzung:** `backend/.env` (gitignored) aus `backend/.env.example` anlegen: `DRIVERNAME`, `POSTGRES_USER`,
-`POSTGRES_PASSWORD`, `POSTGRES_DB`, `HOST` (`db` = Service-Name im Compose-Netz), `PORT`,
-`PGADMIN_DEFAULT_EMAIL/PASSWORD`. Die API erhält sie per `env_file`; `backend/.dockerignore` hält die `.env` aus dem Image.
+**Voraussetzung:** `backend/.env` (gitignored) aus `backend/.env.example` anlegen: `POSTGRES_USER`,
+`POSTGRES_PASSWORD`, `POSTGRES_DB` (Postgres-Container und API), `DB_DRIVER`, `DB_HOST` (`db` = Service-Name im
+Compose-Netz), `DB_PORT`, optional `CORS_ORIGINS`, `PGADMIN_DEFAULT_EMAIL/PASSWORD`. Die API erhält sie per
+`env_file`; `backend/.dockerignore` hält die `.env` aus dem Image. Fehlt ein Pflichtwert, bricht die API beim Start mit
+einem Validierungsfehler ab (Feldname im Log). Ältere `.env` mit `DRIVERNAME`/`HOST`/`PORT` einmalig auf
+`DB_DRIVER`/`DB_HOST`/`DB_PORT` umbenennen.
 
 | Befehl (im Root, ohne Skript) | Wirkung |
 |---|---|
@@ -137,6 +142,11 @@ Node-Version: `frontend/.nvmrc` (CI) und `frontend/Dockerfile` (`node:18-slim`, 
 **API-URL:** Das Frontend liest die Base-URL der API aus `VITE_API_URL` (Build-Zeit, von Vite ins Bundle
 eingesetzt); ohne Variable gilt `http://localhost:8000/`. Lokal per `frontend/.env` (Vorlage `frontend/.env.example`),
 im Production-Image per Build-Argument. Eine andere URL erfordert einen neuen Build.
+
+**LAN/CORS:** Die API erlaubt per CORS nur die Origins aus `CORS_ORIGINS` (`backend/.env`, JSON-Liste; Default
+`["http://localhost:5173","http://localhost:8080"]` = Dev- und Prod-Frontend), nur `GET`, ohne Credentials. Wird das
+Frontend über das LAN geöffnet (z. B. `http://192.168.x.y:8080`), muss dieser Origin in `CORS_ORIGINS` stehen und das
+Frontend mit `VITE_API_URL=http://192.168.x.y:8000/` gebaut sein. Der Player Screen ruft die API nicht auf.
 
 ### Am Spieltisch (Production)
 

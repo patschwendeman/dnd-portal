@@ -32,7 +32,7 @@ sind die Checks in Schritt 4 Pflicht.
 4. **Checks des betroffenen Teils** ausführen und Ergebnis festhalten:
    - Frontend (in `frontend/`): `npm run lint`, `npm run typecheck`, `npm run test:unit`, `npm run build`
    - Backend (in `backend/`): `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app`,
-     `HOST=localhost uv run pytest` (braucht die DB des laufenden Dev-Stacks; alternativ im Root
+     `DB_HOST=localhost uv run pytest` (braucht die DB des laufenden Dev-Stacks; alternativ im Root
      `docker compose -f compose.dev.yaml run --rm --build app pytest`)
    - Compose-Dateien geändert: `docker compose -f compose.dev.yaml config -q` bzw. `-f compose.prod.yaml config -q` im Root und
      `docker compose config -q` im betroffenen Teilordner

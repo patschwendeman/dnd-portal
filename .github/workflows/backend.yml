@@ -61,14 +61,14 @@ jobs:
           --health-timeout 5s
           --health-retries 10
 
-    # Same keys as backend/.env.example; the API runs on the runner, so HOST=localhost.
+    # Same keys as backend/.env.example; the API runs on the runner, so DB_HOST=localhost.
     env:
-      DRIVERNAME: postgresql+psycopg2
+      DB_DRIVER: postgresql+psycopg2
+      DB_HOST: localhost
+      DB_PORT: "5432"
       POSTGRES_USER: dnd
       POSTGRES_PASSWORD: dnd
       POSTGRES_DB: dnd
-      HOST: localhost
-      PORT: "5432"
 
     steps:
       - name: Checkout code
