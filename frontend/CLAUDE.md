@@ -19,10 +19,10 @@ Tests: vitest (Unit), jest-cucumber + selenium-webdriver (BDD/E2E).
 
 ```bash
 # im Monorepo-Root: ganze Anwendung in Docker (Frontend mit Hot-Reload, ./ gemountet)
-docker compose up --build    # Frontend :5173, API :8000, DB :5432
+./dnd.sh dev                 # Frontend :5173, API :8000, DB :5432 (bzw. docker compose -f compose.dev.yaml up --build)
 # in frontend/: nur Frontend in Docker (Stage dev)
 docker compose up --build
-# Production-Image (nginx, statischer Build) – am Spieltisch über compose.prod.yaml im Root
+# Production-Image (nginx, statischer Build) – am Spieltisch per ./dnd.sh prod (compose.prod.yaml) im Root
 docker build --target prod [--build-arg VITE_API_URL=http://<host>:8000/] .
 
 npm run dev          # Vite-Dev-Server auf 0.0.0.0:5173 (nativ, ohne Docker)
@@ -45,7 +45,7 @@ Prod-Image.
 Node-Version: `.nvmrc` (`18`, von CI und nvm/fnm gelesen) und `Dockerfile` (`node:18-slim`, Stages `dev` und `build`)
 synchron halten.
 Im Container liegt `node_modules` in einem eigenen Volume; nach Änderungen an `package.json` mit
-`docker compose up --build -V` neu aufbauen.
+`docker compose up --build -V` (in `frontend/`; im Root `docker compose -f compose.dev.yaml up --build -V`) neu aufbauen.
 
 ## Routen
 

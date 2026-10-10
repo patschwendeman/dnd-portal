@@ -1,7 +1,8 @@
 # Production-Stack für den Spieltisch: DB, API und Frontend (statischer Build hinter nginx).
+#   ./dnd.sh prod                                        # empfohlen: stoppt Dev, startet, öffnet Admin/Wall/Ground
 #   docker compose -f compose.prod.yaml up -d --build    # web :8080, app :8000, db :5432
 #   docker compose -f compose.prod.yaml down             # stoppen (-v: DB-Reset)
-# Nicht gleichzeitig mit dem Dev-Stack (compose.yaml) betreiben: API und DB nutzen dieselben Ports.
+# Nicht gleichzeitig mit dem Dev-Stack (compose.dev.yaml) betreiben: API und DB nutzen dieselben Ports.
 # Eigener Projektname → eigenes DB-Volume; der Seeder füllt die DB beim ersten Start.
 # Andere API-URL im Frontend: VITE_API_URL=... docker compose -f compose.prod.yaml up -d --build
 name: dnd-portal-prod
@@ -9,6 +10,7 @@ name: dnd-portal-prod
 services:
   db:
     image: postgres:17
+    container_name: dnd-prod-db
     restart: unless-stopped
     # POSTGRES_DB/USER/PASSWORD aus backend/.env (wie im Dev-Stack)
     env_file: backend/.env
@@ -24,6 +26,7 @@ services:
   app:
     build:
       context: backend
+    container_name: dnd-prod-api
     restart: unless-stopped
     working_dir: /app
     env_file: backend/.env
@@ -41,6 +44,7 @@ services:
       target: prod
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/}
+    container_name: dnd-prod-frontend
     restart: unless-stopped
     depends_on:
       - app

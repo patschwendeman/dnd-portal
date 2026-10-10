@@ -105,18 +105,25 @@ Die ganze Anwendung läuft in Docker und startet aus dem Root (Details:
 
 ```bash
 cp backend/.env.example backend/.env    # einmalig, Platzhalter ersetzen (gitignored)
-docker compose up --build               # db, app (API :8000), react-app (UI :5173), mit Hot-Reload
-docker compose --profile tools up       # zusätzlich pgAdmin :5050
-docker compose logs -f <service>
-docker compose down                     # -v setzt zusätzlich die DB zurück
+./dnd.sh dev                            # db, app (API :8000), react-app (UI :5173), mit Hot-Reload; Ctrl+C beendet
+./dnd.sh dev --tools                    # zusätzlich pgAdmin :5050
+./dnd.sh stop                           # Dev- und Prod-Stack stoppen
+# ohne Skript:
+docker compose -f compose.dev.yaml up --build
+docker compose -f compose.dev.yaml logs -f <service>
+docker compose -f compose.dev.yaml down # -v setzt zusätzlich die DB zurück
 ```
 
-- Die Services haben feste Containernamen (`dnd-postgres_db`, `dnd-fastapi_backend`, `dnd-pgadmin4`, `dnd-react_frontend`):
+- Die Services haben feste Containernamen nach dem Schema `dnd-<umgebung>-<rolle>` (Dev: `dnd-dev-db`, `dnd-dev-api`,
+  `dnd-dev-frontend`, `dnd-dev-pgadmin`; Prod: `dnd-prod-db`, `dnd-prod-api`, `dnd-prod-frontend`):
   Root-Start und Einzelstart in `backend/` bzw. `frontend/` können nicht gleichzeitig existieren – vorher im
   jeweils anderen Ordner `docker compose down`.
+- Der Dev-Stack heißt `dnd-portal-dev` und hat ein eigenes DB-Volume (`dnd-portal-dev_postgres_data`). Das Volume
+  `dnd-portal_postgres_data` aus der Zeit vor `compose.dev.yaml` wird nicht mehr genutzt und nicht automatisch
+  gelöscht (bei Bedarf `docker volume rm dnd-portal_postgres_data`).
 - Alte Container aus den früheren Einzel-Repos belegen dieselben Ports (5432, 8000, 5050, 5173) – vorher stoppen.
 - Root- und Einzelstart sind verschiedene Compose-Projekte und nutzen getrennte DB-Volumes.
-- Nach Änderungen an `frontend/package.json`: `docker compose up --build -V` (erneuert das `node_modules`-Volume).
+- Nach Änderungen an `frontend/package.json`: `docker compose -f compose.dev.yaml up --build -V` (erneuert das `node_modules`-Volume).
 
 ## CI
 
@@ -129,8 +136,10 @@ auf dem Runner (`ubuntu-latest`):
   (`npm run lint`) und `test` (`npm run test:unit`), alle mit `needs: build`; bricht der Build, laufen sie nicht.
 - **Backend** (in `backend/`): zwei parallele Jobs `lint` und `test` – Python 3.11 über `actions/setup-python` mit pip-Cache,
   `pip install -r requirements.txt`, dann `pylint src/` bzw. `python -m unittest discover -s __tests__ -p "*.py"`.
+- **Production-Images:** In beiden Workflows baut zusätzlich ein Job `docker-prod` das Image für `compose.prod.yaml`
+  (ohne Push; Frontend mit `--target prod`, Backend ohne `--target`, da einstufig).
 
-Schlägt ein Job fehl (Build, Typecheck, Lint oder Test), ist der Workflow rot. E2E-Tests laufen
+Schlägt ein Job fehl (Build, Typecheck, Lint, Test oder Image-Build), ist der Workflow rot. E2E-Tests laufen
 nicht in CI.
 
 ## Archiv

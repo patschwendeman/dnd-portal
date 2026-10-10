@@ -79,19 +79,44 @@ IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement).
 
 ## Lokal starten
 
-Die ganze Anwendung läuft lokal in Docker und wird aus dem Root gestartet. `compose.yaml` bindet per `include`
-`backend/docker-compose.yml` (mit `backend/.env` für die Interpolation) und `frontend/docker-compose.yml` ein.
+Die ganze Anwendung läuft lokal in Docker und wird aus dem Root gestartet, am einfachsten per Start-Skript `dnd.sh`
+(macOS). `compose.dev.yaml` (Projektname `dnd-portal-dev`) bindet per `include` `backend/docker-compose.yml` (mit
+`backend/.env` für die Interpolation) und `frontend/docker-compose.yml` ein.
+
+| `./dnd.sh …` | Wirkung |
+|---|---|
+| `dev [--tools]` | Docker sicherstellen, Prod-Stack stoppen, Dev-Stack im Vordergrund starten (`--tools`: mit pgAdmin); Ctrl+C beendet |
+| `prod` | Docker sicherstellen, Dev-Stack stoppen, Prod-Stack im Hintergrund starten, auf :8080 warten, `/admin`, `/wall`, `/ground` im Browser öffnen, Smartphone-URL (`http://<IP von en0>:8080/`) ausgeben; `VITE_API_URL` aus der Umgebung wird durchgereicht |
+| `stop` | beide Stacks stoppen (`down` ohne `-v`, DB-Volumes bleiben) |
+| `logs [service]` | Logs des Prod-Stacks verfolgen |
+| ohne/unbekanntes Argument | Hilfe, Exit 1 |
+
+„Docker sicherstellen“: Antwortet `docker info` nicht, startet das Skript Docker Desktop (`open -a Docker`) und wartet
+bis zu 120 s.
 
 **Voraussetzung:** `backend/.env` (gitignored) aus `backend/.env.example` anlegen: `DRIVERNAME`, `POSTGRES_USER`,
 `POSTGRES_PASSWORD`, `POSTGRES_DB`, `HOST` (`db` = Service-Name im Compose-Netz), `PORT`,
 `PGADMIN_DEFAULT_EMAIL/PASSWORD`. Die API erhält sie per `env_file`; `backend/.dockerignore` hält die `.env` aus dem Image.
 
-| Befehl (im Root) | Wirkung |
+| Befehl (im Root, ohne Skript) | Wirkung |
 |---|---|
-| `docker compose up --build` | `db` (Postgres :5432), `app` (API :8000, uvicorn `--reload`, `backend/src` gemountet), `react-app` (Vite :5173, `frontend/` gemountet) |
-| `docker compose --profile tools up` | zusätzlich `pgadmin` (:5050) |
-| `docker compose logs -f <service>` | Logs verfolgen |
-| `docker compose down` | stoppen; mit `-v` auch DB-Volume löschen (DB-Reset, Seeder läuft neu) |
+| `docker compose -f compose.dev.yaml up --build` | `db` (Postgres :5432), `app` (API :8000, uvicorn `--reload`, `backend/src` gemountet), `react-app` (Vite :5173, `frontend/` gemountet) |
+| `docker compose -f compose.dev.yaml --profile tools up` | zusätzlich `pgadmin` (:5050) |
+| `docker compose -f compose.dev.yaml logs -f <service>` | Logs verfolgen |
+| `docker compose -f compose.dev.yaml down` | stoppen; mit `-v` auch DB-Volume löschen (DB-Reset, Seeder läuft neu) |
+
+Container-Namen nach dem Schema `dnd-<umgebung>-<rolle>`:
+
+| Rolle | Dev | Prod |
+|---|---|---|
+| DB | `dnd-dev-db` | `dnd-prod-db` |
+| API | `dnd-dev-api` | `dnd-prod-api` |
+| Frontend | `dnd-dev-frontend` | `dnd-prod-frontend` |
+| pgAdmin | `dnd-dev-pgadmin` | – |
+
+Das DB-Volume des Dev-Stacks heißt `dnd-portal-dev_postgres_data` (der Seeder füllt es beim ersten Start). Das Volume
+`dnd-portal_postgres_data` aus der Zeit vor `compose.dev.yaml` wird nicht mehr genutzt und nicht automatisch
+gelöscht (bei Bedarf `docker volume rm dnd-portal_postgres_data`).
 
 UI unter http://localhost:5173 (`/admin`, `/wall`, `/ground`, `/`); das Frontend ruft die API über
 `http://localhost:8000/` auf. Einzelstart weiterhin mit `docker compose up` in `backend/` bzw. `frontend/`.
@@ -107,7 +132,7 @@ Für den Spielabend gibt es einen eigenen Stack ohne Hot-Reload und ohne Code-Mo
 (Projektname `dnd-portal-prod`, eigenes DB-Volume; der Seeder füllt die DB beim ersten Start). Voraussetzung wie
 oben: `backend/.env`.
 
-| Befehl (im Root) | Wirkung |
+| Befehl (im Root, ohne Skript; mit Skript: `./dnd.sh prod`) | Wirkung |
 |---|---|
 | `docker compose -f compose.prod.yaml up -d --build` | `db` (Postgres :5432), `app` (API :8000, uvicorn ohne `--reload`, Code im Image), `web` (nginx :8080 mit dem statischen Build) – alle mit `restart: unless-stopped` |
 | `VITE_API_URL=http://<host>:8000/ docker compose -f compose.prod.yaml up -d --build` | Frontend mit anderer API-URL bauen (Default `http://localhost:8000/`) |
@@ -131,6 +156,6 @@ Backend-Image: `backend/Dockerfile` startet uvicorn ohne `--reload`; den Reload 
 | Lint | `pylint src/` (`.pylintrc`) | `npm run lint` (ESLint flat config, einfache Quotes, keine Semikolons) |
 | Unit-Tests | `python -m unittest discover -s __tests__` – aktuell **keine Tests** | `npm run test:unit` (vitest, nur `utils.spec.ts`) |
 | E2E | – | `npm run test:e2e` (jest-cucumber + Selenium/Chrome, braucht Backend; teilweise veraltet) |
-| CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: parallele Jobs `lint` (`pylint src/`) und `test` (unittest) direkt auf dem Runner, Python 3.11 mit pip-Cache; Job `docker` baut das Image (ohne Push) | `.github/workflows/frontend.yml` – analog für `frontend/`: zuerst Job `build` (`vite build`), danach parallel `typecheck` (`tsc -b`), `lint` und `test` (`npm run test:unit`) mit `needs: build`, Node aus `frontend/.nvmrc` (18) mit npm-Cache, `npm ci`; Job `docker-prod` baut das Production-Image (`--target prod`, ohne Push); kein E2E in CI |
+| CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: parallele Jobs `lint` (`pylint src/`) und `test` (unittest) direkt auf dem Runner, Python 3.11 mit pip-Cache; Job `docker-prod` baut das Image (ohne Push, ohne `--target`, da einstufig) | `.github/workflows/frontend.yml` – analog für `frontend/`: zuerst Job `build` (`vite build`), danach parallel `typecheck` (`tsc -b`), `lint` und `test` (`npm run test:unit`) mit `needs: build`, Node aus `frontend/.nvmrc` (18) mit npm-Cache, `npm ci`; Job `docker-prod` baut das Production-Image (`--target prod`, ohne Push); kein E2E in CI |
 
 Die alten Branches `test` und `v1-roguelike` (verworfen) der früheren Einzel-Repos liegen als Tags `archive/{backend,frontend}-{test,v1-roguelike}` vor.

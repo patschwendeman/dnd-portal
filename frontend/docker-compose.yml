@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   react-app:
-    container_name: dnd-react_frontend
+    container_name: dnd-dev-frontend
     build:
       context: .
       dockerfile: ./Dockerfile
