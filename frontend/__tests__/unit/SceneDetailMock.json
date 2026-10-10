@@ -5,7 +5,7 @@
         "graphics_ground_id": 1,
         "id": 1,
         "description": "This is an example scene for testing purposes.",
-        "fight": true,
+        "main": true,
         "music_id": 1,
         "graphics_ground": {
             "name": "Grassland",
@@ -17,11 +17,13 @@
             "source": "https://example.com/wall_castle.png",
             "id": 1
         },
-        "music": {
-            "name": "Battle Theme",
-            "source": "https://example.com/battle_theme.mp3",
-            "id": 1
-        }
+        "music": [
+            {
+                "name": "Battle Theme",
+                "source": "https://example.com/battle_theme.mp3",
+                "id": 1
+            }
+        ]
     },
     {
         "name": "Example Scene",
@@ -29,7 +31,7 @@
         "graphics_ground_id": 2,
         "id": 2,
         "description": "This is an example scene for testing purposes.",
-        "fight": true,
+        "main": true,
         "music_id": 2,
         "graphics_ground": {
             "name": "Grassland",
@@ -41,11 +43,13 @@
             "source": "https://example.com/wall_castle.png",
             "id": 2
         },
-        "music": {
-            "name": "Battle Theme",
-            "source": "https://example.com/battle_theme.mp3",
-            "id": 2
-        }
+        "music": [
+            {
+                "name": "Battle Theme",
+                "source": "https://example.com/battle_theme.mp3",
+                "id": 2
+            }
+        ]
     },
     {
         "name": "Example Scene",
@@ -53,7 +57,7 @@
         "graphics_ground_id": 3,
         "id": 3,
         "description": "This is an example scene for testing purposes.",
-        "fight": true,
+        "main": true,
         "music_id": 3,
         "graphics_ground": {
             "name": "Grassland",
@@ -65,11 +69,13 @@
             "source": "https://example.com/wall_castle.png",
             "id": 3
         },
-        "music": {
-            "name": "Battle Theme",
-            "source": "https://example.com/battle_theme.mp3",
-            "id": 3
-        }
+        "music": [
+            {
+                "name": "Battle Theme",
+                "source": "https://example.com/battle_theme.mp3",
+                "id": 3
+            }
+        ]
     },
     {
         "name": "Example Scene",
@@ -77,7 +83,7 @@
         "graphics_ground_id": 4,
         "id": 4,
         "description": "This is an example scene for testing purposes.",
-        "fight": false,
+        "main": false,
         "music_id": 4,
         "graphics_ground": {
             "name": "Grassland",
@@ -89,11 +95,12 @@
             "source": "https://example.com/wall_castle.png",
             "id": 4
         },
-        "music": {
-            "name": "Battle Theme",
-            "source": "https://example.com/battle_theme.mp3",
-            "id": 4
-        }
+        "music": [
+            {
+                "name": "Battle Theme",
+                "source": "https://example.com/battle_theme.mp3",
+                "id": 4
+            }
+        ]
     }
-
 ]

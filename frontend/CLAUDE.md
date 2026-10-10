@@ -35,6 +35,10 @@ npm run test:unit    # vitest (__tests__/unit)
 npm run test:e2e     # jest-cucumber + Selenium/Chrome; braucht laufendes Backend auf :8000
 ```
 
+E2E-Struktur: `__tests__/bdd/features/*.feature` (Szenarien), `__tests__/bdd/steps/*.ts` (Steps, von jest per
+`testMatch` ausgeführt), `__tests__/bdd/support/helpers.ts` (gemeinsame Helper: Driver, Basis-URL, explizite Waits –
+liegt bewusst außerhalb von `steps/`). Die Tests erwarten die Seed-Daten (25 Kampfszenen).
+
 API-URL: `src/api/apiClient.ts` nimmt `import.meta.env.VITE_API_URL` (Typ in `src/vite-env.d.ts`), Default
 `http://localhost:8000/`. Die Variable wirkt zur Build-Zeit (Vite setzt sie ins Bundle ein): lokal per `.env`
 (gitignored, Vorlage `.env.example`), im Docker-Build per `--build-arg VITE_API_URL=…`.

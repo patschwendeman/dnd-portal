@@ -18,3 +18,4 @@
 | DND-12 | setup | API-URL per Env-Variable und Production-Stack für den Spieltisch | Fertig | [DND-12-production-stack.md](DND-12-production-stack.md) |
 | DND-13 | setup | React-Hooks-Lint aktivieren, Effect-Abhängigkeiten und veraltete Antworten bereinigen | Fertig | [DND-13-react-hooks-lint.md](DND-13-react-hooks-lint.md) |
 | DND-14 | refactor | Alte Asset-Benennungen battle/side_maps auf main/side umstellen | Fertig | [DND-14-rename-legacy-asset-names.md](DND-14-rename-legacy-asset-names.md) |
+| DND-15 | fix | E2E-Tests und SceneDetailMock an aktuellen Stand anpassen | Im Review | [DND-15-e2e-tests-update.md](DND-15-e2e-tests-update.md) |

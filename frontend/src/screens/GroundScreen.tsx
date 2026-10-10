@@ -99,8 +99,8 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
         <Screen>
             <GlobalStyle />
             <GridOverlay gridColor={gridColor} gridOption={gridOption} />
-            {mediaType === 'image' && <BackgroundMedia as="img" src={mediaSRC} alt="Background" />}
-            {mediaType === 'video' && <BackgroundMedia src={mediaSRC} autoPlay loop muted />}
+            {mediaType === 'image' && <BackgroundMedia as="img" data-test-id='groundImg' src={mediaSRC} alt="Background" />}
+            {mediaType === 'video' && <BackgroundMedia data-test-id='groundImg' src={mediaSRC} autoPlay loop muted />}
             <ScreenControlBar onVisibilityChange={handleGridVisibility} onSliderChange={setGridOption} buttonLabels={buttonLabels} label='Raster' />
         </Screen> 
     )
