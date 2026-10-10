@@ -32,8 +32,9 @@ sind die Checks in Schritt 4 Pflicht.
 4. **Checks des betroffenen Teils** ausführen und Ergebnis festhalten:
    - Frontend (in `frontend/`): `npm run lint`, `npm run typecheck`, `npm run test:unit`, `npm run build`
    - Backend (in `backend/`): `pylint src/`, `python -m unittest discover -s __tests__ -p "*.py"`
-     (lokal per Docker, da lokal kein Python 3.11: im Root `docker compose run --rm --no-deps --build app <befehl>`)
-   - Compose-Dateien geändert: `docker compose config -q` im Root und im betroffenen Teilordner
+     (lokal per Docker, da lokal kein Python 3.11: im Root `docker compose -f compose.dev.yaml run --rm --no-deps --build app <befehl>`)
+   - Compose-Dateien geändert: `docker compose -f compose.dev.yaml config -q` bzw. `-f compose.prod.yaml config -q` im Root und
+     `docker compose config -q` im betroffenen Teilordner
    - Workflows geändert: Syntax prüfen; Wirksamkeit zeigt erst ein CI-Lauf nach dem Push – im Bericht erwähnen
    - Bei Bedarf Gegenprobe (z. B. Fehler absichtlich einbauen, Check muss rot werden; danach verwerfen)
 

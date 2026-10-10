@@ -356,3 +356,36 @@ Docker Desktop lief (nicht beendet). Zu Beginn lief noch ein Prod-Stack mit alte
 **Checks**
 - Frontend: `npm run lint` 0 Fehler (1 Altwarnung `WallScreen.tsx:161`), `typecheck` ok, `test:unit` 52/52, `build` ok.
 - **Nach Push zu prüfen:** CI-Jobs `docker-prod` in frontend.yml und backend.yml (AK2).
+
+### Runde 3 – Review 09e02dd
+
+**Empfehlung:** Abnahme. E6–E9 vollständig umgesetzt, `dnd.sh` robust (bash 3.2), Compose-Dateien gültig,
+Container-Namen per eigenem Prod-Start belegt. Offen: CI-Jobs `docker-prod` nach Push (AK2), Docker-Desktop-Autostart
+manuell (AK7). Zwei versionierte Dateien außerhalb der Subtasks sind durch E7 veraltet (siehe Hinweise).
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | Unverändert; Browser-Teil vom User bestätigt; eigener Start: Routen auf :8080 → 200 |
+| AK2 | lokal erfüllt, CI nach Push | `compose.prod.yaml up -d --build` Exit 0, `dnd-prod-db` healthy; Job `docker-prod` in `backend.yml:60` |
+| AK3 | erfüllt | `VITE_API_URL` aus der Umgebung landet in `args` (`config`); `dnd.sh:82-83` überschreibt nicht |
+| AK4 | erfüllt | Kein Diff in `frontend/src`, `backend/src` seit 85a2672; Dev nur `container_name`/`name` geändert |
+| AK5 | erfüllt | Unverändert |
+| AK6 | erfüllt | `config -q` für alle Compose-Dateien Exit 0; `name: dnd-portal-dev`, `dnd-dev-*`; `docker ps` Prod: `dnd-prod-frontend`, `dnd-prod-api`, `dnd-prod-db` |
+| AK7 | erfüllt (Docker-Autostart manuell offen) | Mode 100755, `bash -n` ok; Fehlaufrufe → Hilfe, Exit 1; `stop` Exit 0; `logs nosuch` Exit 1; leeres Array unter `set -u`/bash 3.2 ok |
+| AK8 | erfüllt | Kein `compose.yaml` und keine alten Container-Namen außerhalb `docs/tasks/`; Doku und Jobname nachgezogen |
+
+#### Blockierende Befunde
+- keine
+
+#### Hinweise (nicht blockierend)
+- `.claude/launch.json:7`: `["compose", "up"]` ohne `-f` → im Root kein Compose-File mehr, Preview-Start kaputt.
+- `.claude/skills/quick-task/SKILL.md:35-36`: `docker compose run …`/`config -q` im Root brauchen `-f compose.dev.yaml`.
+- `backend/.env.example:13`: `docker compose --profile tools up` stimmt nur in `backend/`; optional `./dnd.sh dev --tools` ergänzen.
+- Alte Root-Container (`dnd-portal`-Projekt) stoppt `dnd.sh` nicht; dann `docker compose -p dnd-portal down` (optional in Doku).
+- `dnd.sh` optional: `curl --max-time` in `wait_for_web`; `docker info` kann beim Desktop-Start blockieren; `stop` startet Docker Desktop unnötig; fehlende `backend/.env` lässt `stop` scheitern; IP nur über `en0`.
+- Aus Vorrunden: kein Commit `docs(DND-12): approve plan`; `version: '3.4'` (Altlast).
+
+**Nachtrag nach Runde 3 (auf Wunsch des Users):** `.claude/launch.json` (`compose -f compose.dev.yaml up`),
+`.claude/skills/quick-task/SKILL.md` (Root-Befehle mit `-f compose.dev.yaml`/`compose.prod.yaml`),
+`backend/.env.example` (pgAdmin-Hinweis mit `./dnd.sh dev --tools`) sowie Jobname `docker-prod` in
+`backend/CLAUDE.md` korrigiert. `docker compose -f compose.dev.yaml config -q` ok, `launch.json` valides JSON.

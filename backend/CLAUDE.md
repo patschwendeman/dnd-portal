@@ -81,4 +81,4 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**. 
 `../.github/workflows/backend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter
 `backend/` zwei parallele Jobs direkt auf dem Runner (Python 3.11, pip-Cache, `pip install -r requirements.txt`):
 `lint` (`pylint src/`) und `test` (`python -m unittest discover -s __tests__ -p "*.py"`). Zusätzlich baut der Job
-`docker` das Image (`docker build`, ohne Push).
+`docker-prod` das Image (`docker build`, ohne Push).

@@ -4,7 +4,7 @@
     {
       "name": "dnd-portal",
       "runtimeExecutable": "docker",
-      "runtimeArgs": ["compose", "up"],
+      "runtimeArgs": ["compose", "-f", "compose.dev.yaml", "up"],
       "port": 5173
     }
   ]
