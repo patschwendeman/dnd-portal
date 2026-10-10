@@ -1,7 +1,7 @@
 # DND-16: Backend-Tooling: uv, ruff, mypy, pytest mit Charakterisierungstests, Paket `app`
 
 **Typ:** setup
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -143,9 +143,9 @@ die neuen Tests.
       `lint`: `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app`;
       `test`: Postgres-17-Service mit Healthcheck, Env-Variablen wie `.env.example` (HOST=localhost), `uv run pytest`;
       `docker-prod`: `docker build --target prod`.
-- [ ] Wirksamkeit: CI-Lauf auf `development` grün; zusätzlich einmal nachweisen, dass ein absichtlich kaputter Test
+- [x] Wirksamkeit: CI-Lauf auf `development` grün; zusätzlich einmal nachweisen, dass ein absichtlich kaputter Test
       den Job rot macht (lokal ausreichend, nicht pushen).
-      *Lokal nachgewiesen (Test-Job simuliert gegen frischen `postgres:17`, kaputter Test → Exit 1); CI-Lauf nach Push zu prüfen.*
+      *Lokal nachgewiesen (Test-Job simuliert gegen frischen `postgres:17`, kaputter Test → Exit 1); CI-Lauf auf `development` (1bd4649) grün.*
 
 ### Schritt 6: Upgrade (E4)
 - [x] Laufzeit-Abhängigkeiten auf aktuelle stabile Versionen heben (`uv lock --upgrade` bzw. Pins anpassen),
@@ -162,17 +162,17 @@ die neuen Tests.
 
 ## Akzeptanzkriterien
 
-- [ ] AK1: `uv sync`, `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app` und `uv run pytest` laufen
+- [x] AK1: `uv sync`, `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app` und `uv run pytest` laufen
       grün; pylint, `.pylintrc` und `requirements.txt` sind entfernt.
-- [ ] AK2: Alle 6 Endpoints sind durch Charakterisierungstests abgedeckt (inkl. 500 bei unbekannter Szene,
+- [x] AK2: Alle 6 Endpoints sind durch Charakterisierungstests abgedeckt (inkl. 500 bei unbekannter Szene,
       Liste bei unbekannter Detail-ID, Verhalten ohne/mit Trailing Slash); die Tests schlagen fehl, wenn das
       Verhalten sich ändert.
-- [ ] AK3: Das Prod-Image enthält keine Dev-Abhängigkeiten und läuft als Non-Root-User; `./script.sh prod` wird healthy.
-- [ ] AK4: `./script.sh dev` startet wie bisher inkl. Hot Reload; `docker compose run --rm app pytest` läuft im Dev-Container.
-- [ ] AK5: CI-Lauf auf `development` grün mit allen drei Jobs; der Test-Job läuft gegen Postgres.
-- [ ] AK6: Abhängigkeiten auf aktuellen stabilen Versionen; Tests unverändert grün.
-- [ ] AK7: Alle Invarianten eingehalten – API-Verhalten unverändert.
-- [ ] AK8: Paket heißt `app`, Modulpfad `app.main:app`; keine Verweise auf das alte Paket `src` mehr außerhalb von
+- [x] AK3: Das Prod-Image enthält keine Dev-Abhängigkeiten und läuft als Non-Root-User; `./script.sh prod` wird healthy.
+- [x] AK4: `./script.sh dev` startet wie bisher inkl. Hot Reload; `docker compose run --rm app pytest` läuft im Dev-Container.
+- [x] AK5: CI-Lauf auf `development` grün mit allen drei Jobs; der Test-Job läuft gegen Postgres.
+- [x] AK6: Abhängigkeiten auf aktuellen stabilen Versionen; Tests unverändert grün.
+- [x] AK7: Alle Invarianten eingehalten – API-Verhalten unverändert.
+- [x] AK8: Paket heißt `app`, Modulpfad `app.main:app`; keine Verweise auf das alte Paket `src` mehr außerhalb von
       `docs/tasks/`; Tests nach der Umbenennung inhaltlich unverändert grün.
 
 ## Teststrategie / Verifikation
@@ -200,3 +200,33 @@ die neuen Tests.
   `Origin` statt `*` (Pfade, Statuscodes, Response-Inhalt unverändert); in `docs/known-issues.md` notiert.
 
 ## Review
+
+### Runde 1 – 2026-10-10
+**Empfehlung:** Abnahme (unter Vorbehalt: CI-Lauf nach Push und `./script.sh prod` healthy noch nachzuweisen)
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | `uv lock --check`, `ruff check`, `ruff format --check` (19 files), `mypy app` (13 files) grün; `pytest -W error::DeprecationWarning` 13 passed; `.pylintrc`/`requirements.txt` gelöscht, `rg pylint` leer |
+| AK2 | erfüllt | `tests/test_scenes.py:34-38` (500), `:50-56` (422 `int_parsing`), `:69-76` (ganze Liste); `tests/test_maps.py` (307 + Location, Redirect gefolgt); Erwartungen aus Seed; Mutationsprobe im Produktivcode: 2 failed |
+| AK3 | Image erfüllt, `./script.sh prod` nicht prüfbar | `docker build --target prod` und ohne Target: User `dnd`, ruff/pytest nicht importierbar, `prod` letzte Stage (`Dockerfile:36-40`); Healthcheck-Befehl gegen Dev-DB OK; `./script.sh prod` nicht ausgeführt (stoppt Dev-Stack) |
+| AK4 | erfüllt | `uvicorn app.main:app --reload`, User `dnd`, Mounts `app`/`tests`; Reload nach `touch` beobachtet; `docker compose -f compose.dev.yaml run --rm app pytest`: 13 passed |
+| AK5 | nicht prüfbar (nach Push) | Workflow statisch korrekt: `lint`, `test` (Service `postgres:17` mit Healthcheck), `docker-prod` (`--target prod`), Cache-Glob `backend/uv.lock` |
+| AK6 | erfüllt | `uv tree --outdated --depth 1` ohne veraltete direkte Abhängigkeiten; 13/13 grün |
+| AK7 | erfüllt (Hinweis CORS) | Neue Tests gegen Altstand `1bd4649^` mit alten Pins: 13 passed; Produktivcode-Diff nur Formatierung, Importe, `declarative_base`-Quelle, Annotationen, `# type: ignore` |
+| AK8 | erfüllt | `rg` nach `src`-/`__tests__`-Verweisen außerhalb `frontend/`, `docs/tasks/`, `uv.lock` leer; `app.main:app` in Dockerfile und Compose; `PYTHONPATH` entfernt |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- `httpx2` ist legitim: Starlette 1.7.0 importiert es bevorzugt (`starlette/testclient.py:33-50`), Fallback auf `httpx` gibt Deprecation-Warnung; Metadaten: Repo `github.com/pydantic/httpx2`, BSD-3, Lock mit sha256 von `pypi.org`
+- CORS: einfacher GET spiegelt jetzt den Origin statt `*` (Preflight tat das schon vorher); unkritisch, da keine Credentials/Auth; in `docs/known-issues.md:50-51` dokumentiert. Nicht dokumentiert: Preflight nennt zusätzlich Methode `QUERY`. Gespiegelter Origin + Credentials wird relevant, sobald es Auth gibt
+- `ruff format` im Runden-Commit statt eigenem Commit: Widerspruch Plan vs. Prozessvorgabe, begründet dokumentiert, nicht blockierend; optional `.git-blame-ignore-revs`
+- Rename-Erkennung von git zeigt leere `__init__.py` verwirrend als Umbenennungen – inhaltlich korrekt
+- `uv` liegt über die `base`-Stage auch im Prod-Image (kein Dev-Paket im Sinne von AK3)
+- Root-`README.md` geändert: zwingende Folge des Renames
+
+**Checks:** Lint ruff/mypy grün, Tests 13 passed (lokal, Dev-Container, gegen Altstand), Build prod/dev grün, Compose-Configs OK; nach Push zu prüfen: Backend-CI (3 Jobs) und `./script.sh prod` healthy
+
+**Nachweise nach Push (2026-10-11):** Backend-CI für `1bd4649` grün (`lint`, `test`, `docker-prod`); `./script.sh prod`
+healthy, E2E-Tests gegen Prod grün (nach Neuaufbau der Prod-DB mit aktuellem Seed). Abnahme durch den User.
