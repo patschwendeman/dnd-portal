@@ -29,4 +29,3 @@ Stand: Analyse vom 2026-09-27. Punkte mit „(ungeprüft)“ wurden aus dem Code
 
 - `DocumentReader` sucht in `public/story/noneFight/` (existiert nicht) → Tab „Side“ leer.
 - `ResourceBarPlayer`: `spellData[].max` weicht von `SpellMax` ab (Stufe II: 4 vs. 3); Spezial startet bei 1 statt 3.
-- README ist das unveränderte Vite-Template.

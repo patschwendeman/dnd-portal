@@ -1,50 +1,60 @@
-# React + TypeScript + Vite
+# dnd-portal – Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+UI des DnD Portals mit vier Screens für den Spieltisch. Holt Szenen vom Backend ([`../backend`](../backend/)) und
+liefert alle Medien (Bilder, Musik, Sounds, Markdown-Notizen) selbst aus `public/` aus.
 
-Currently, two official plugins are available:
+| Route | Screen | Zweck |
+|---|---|---|
+| `/admin` | Admin | Spielleiter: Szenen aktivieren, Notizen lesen, Musik und Sounds steuern |
+| `/wall` | Wall | Atmosphäre: Hintergrundbild der aktiven Szene, optional Karten-Overlay |
+| `/ground` | Ground | Digitales Spielbrett: Kampfschauplatz, optional mit Grid |
+| `/` | Player | Smartphone der Spieler: Ressourcen des Charakters |
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Admin, Wall und Ground laufen als Fenster im selben Browser und synchronisieren sich über `localStorage`;
+der Player Screen ist nicht angebunden.
 
-## Expanding the ESLint configuration
+## Starten
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Empfohlen ist der Start der ganzen Anwendung aus dem Monorepo-Root (siehe [README](../README.md)):
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+./script.sh dev
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+Nur das Frontend (das Backend muss auf `:8000` laufen):
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+```bash
+docker compose up --build    # in frontend/, Vite-Dev-Server mit Hot-Reload auf :5173
+npm ci && npm run dev        # nativ, Node 18 (siehe .nvmrc)
 ```
+
+## Konfiguration
+
+`VITE_API_URL` legt die Backend-URL fest (Default `http://localhost:8000/`). Vite setzt den Wert zur Build-Zeit ins
+Bundle ein: lokal per `.env` (Vorlage [`.env.example`](.env.example)), im Docker-Build per
+`--build-arg VITE_API_URL=…`.
+
+## Skripte
+
+| Befehl | Zweck |
+|---|---|
+| `npm run dev` | Vite-Dev-Server |
+| `npm run build` | Typprüfung und Production-Build |
+| `npm run typecheck` | nur Typprüfung (`tsc -b`) |
+| `npm run lint` | ESLint |
+| `npm run test:unit` | Unit-Tests (vitest) |
+| `npm run test:e2e` | BDD/E2E (jest-cucumber + Selenium/Chrome); braucht laufendes Backend mit Seed-Daten, läuft nicht in CI |
+
+## Medien und Notizen
+
+- `public/assets/` – Bilder (Wall/Ground), Musik, Sounds, Icons
+- `public/story/` – Markdown-Notizen für den Admin Screen (deutsch)
+
+Medienpfade kommen aus dem Backend-Seed und müssen zu den Dateien in `public/` passen.
+
+## Weiterführend
+
+- [CLAUDE.md](CLAUDE.md) – Entwickler-Referenz: Stack, Struktur, Datenfluss, Konventionen, CI
+- [DESIGN.md](DESIGN.md) – Style Guide
+- [../docs/](../docs/) – Vision, Screens, Architektur, bekannte Probleme
+- [../CONTRIBUTING.md](../CONTRIBUTING.md) – Branches, Commits, Tasks
