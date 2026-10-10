@@ -113,17 +113,18 @@ cp backend/.env.example backend/.env    # einmalig, Platzhalter ersetzen (gitign
 docker compose -f compose.dev.yaml up --build
 docker compose -f compose.dev.yaml logs -f <service>
 docker compose -f compose.dev.yaml down # -v setzt zusätzlich die DB zurück
+docker compose -f compose.dev.yaml up --build db app    # nur Backend
+docker compose -f compose.dev.yaml up --build react-app # nur Frontend (oder nativ: npm run dev in frontend/)
+docker compose -f compose.dev.yaml run --rm app pytest  # Backend-Tests
 ```
 
 - Die Services haben feste Containernamen nach dem Schema `dnd-<umgebung>-<rolle>` (Dev: `dnd-dev-db`, `dnd-dev-api`,
-  `dnd-dev-ui`, `dnd-dev-pgadmin`; Prod: `dnd-prod-db`, `dnd-prod-api`, `dnd-prod-ui`):
-  Root-Start und Einzelstart in `backend/` bzw. `frontend/` können nicht gleichzeitig existieren – vorher im
-  jeweils anderen Ordner `docker compose down`.
-- Der Dev-Stack heißt `dnd-portal-dev` und hat ein eigenes DB-Volume (`dnd-portal-dev_postgres_data`). Das Volume
-  `dnd-portal_postgres_data` aus der Zeit vor `compose.dev.yaml` wird nicht mehr genutzt und nicht automatisch
-  gelöscht (bei Bedarf `docker volume rm dnd-portal_postgres_data`).
+  `dnd-dev-ui`, `dnd-dev-pgadmin`; Prod: `dnd-prod-db`, `dnd-prod-api`, `dnd-prod-ui`).
+- Der Dev-Stack heißt `dnd-portal-dev` und hat ein eigenes DB-Volume (`dnd-portal-dev_postgres_data`). Die Volumes
+  `dnd-portal_postgres_data` (aus der Zeit vor `compose.dev.yaml`), `backend_postgres_data` und
+  `dnd-portal-backend_postgres_data` (früherer Einzelstart in `backend/` bzw. Einzel-Repo) werden nicht mehr genutzt
+  und nicht automatisch gelöscht (bei Bedarf `docker volume rm <name>`).
 - Alte Container aus den früheren Einzel-Repos belegen dieselben Ports (5432, 8000, 5050, 5173) – vorher stoppen.
-- Root- und Einzelstart sind verschiedene Compose-Projekte und nutzen getrennte DB-Volumes.
 - Nach Änderungen an `frontend/package.json`: `docker compose -f compose.dev.yaml up --build -V` (erneuert das `node_modules`-Volume).
 
 ## CI

@@ -1,5 +1,5 @@
 # Multi-stage image with uv. compose.prod.yaml builds without target -> last stage (prod).
-# Dev stack (docker-compose.yml) builds target dev: includes the dev dependency group (ruff, mypy, pytest).
+# Dev stack (../compose.dev.yaml) builds target dev: includes the dev dependency group (ruff, mypy, pytest).
 
 FROM python:3.11-slim AS base
 

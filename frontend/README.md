@@ -24,7 +24,7 @@ Empfohlen ist der Start der ganzen Anwendung aus dem Monorepo-Root (siehe [READM
 Nur das Frontend (das Backend muss auf `:8000` laufen):
 
 ```bash
-docker compose up --build    # in frontend/, Vite-Dev-Server mit Hot-Reload auf :5173
+docker compose -f compose.dev.yaml up --build react-app    # im Root, Vite-Dev-Server mit Hot-Reload auf :5173
 npm ci && npm run dev        # nativ, Node 18 (siehe .nvmrc)
 ```
 

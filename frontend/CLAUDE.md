@@ -21,8 +21,7 @@ Tests: vitest (Unit), jest-cucumber + selenium-webdriver (BDD/E2E).
 # im Monorepo-Root: ganze Anwendung in Docker (Frontend mit Hot-Reload, ./ gemountet)
 ./script.sh dev              # Frontend :5173, API :8000, DB :5432 (bzw. docker compose -f compose.dev.yaml up --build)
                              # einmalig ./script.sh install → danach dnd dev|prod|stop|logs aus jedem Ordner
-# in frontend/: nur Frontend in Docker (Stage dev)
-docker compose up --build
+docker compose -f compose.dev.yaml up --build react-app   # im Root: nur Frontend in Docker (Stage dev)
 # Production-Image (nginx, statischer Build) – am Spieltisch per ./script.sh prod bzw. dnd prod (compose.prod.yaml);
 # web startet erst, wenn die API healthy ist (Healthcheck), Tabs öffnen sich erst danach
 docker build --target prod [--build-arg VITE_API_URL=http://<host>:8000/] .
@@ -43,7 +42,7 @@ API-URL: `src/api/apiClient.ts` nimmt `import.meta.env.VITE_API_URL` (Typ in `sr
 `http://localhost:8000/`. Die Variable wirkt zur Build-Zeit (Vite setzt sie ins Bundle ein): lokal per `.env`
 (gitignored, Vorlage `.env.example`), im Docker-Build per `--build-arg VITE_API_URL=…`.
 
-`Dockerfile` hat drei Stages: `dev` (Vite-Dev-Server :5173, von `docker-compose.yml` per `target: dev` genutzt),
+`Dockerfile` hat drei Stages: `dev` (Vite-Dev-Server :5173, von `../compose.dev.yaml` per `target: dev` genutzt),
 `build` (`npm ci`, `npm run build`, `ARG VITE_API_URL`) und `prod` (nginx, `nginx.conf`: SPA-Fallback auf
 `index.html`, lange Cache-Dauer nur für gehashte Dateien direkt unter `/assets/`, gzip). Medien aus `public/` landen im
 Prod-Image.
@@ -51,7 +50,7 @@ Prod-Image.
 Node-Version: `.nvmrc` (`18`, von CI und nvm/fnm gelesen) und `Dockerfile` (`node:18-slim`, Stages `dev` und `build`)
 synchron halten.
 Im Container liegt `node_modules` in einem eigenen Volume; nach Änderungen an `package.json` mit
-`docker compose up --build -V` (in `frontend/`; im Root `docker compose -f compose.dev.yaml up --build -V`) neu aufbauen.
+`docker compose -f compose.dev.yaml up --build -V` (im Root) neu aufbauen.
 
 ## Routen
 

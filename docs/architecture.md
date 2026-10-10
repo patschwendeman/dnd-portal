@@ -88,8 +88,9 @@ IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement).
 ## Lokal starten
 
 Die ganze Anwendung läuft lokal in Docker und wird aus dem Root gestartet, am einfachsten per Start-Skript `script.sh`
-(macOS). `compose.dev.yaml` (Projektname `dnd-portal-dev`) bindet per `include` `backend/docker-compose.yml` (mit
-`backend/.env` für die Interpolation) und `frontend/docker-compose.yml` ein.
+(macOS). `compose.dev.yaml` (Projektname `dnd-portal-dev`) definiert alle Dev-Services (`db`, `app`, `pgadmin`,
+`react-app`) selbst, aufgebaut wie `compose.prod.yaml`; `db`, `app` und `pgadmin` lesen ihre Variablen per
+`env_file: backend/.env`. Eigene Compose-Dateien in `backend/` bzw. `frontend/` gibt es nicht.
 
 | `./script.sh …` | Wirkung |
 |---|---|
@@ -119,6 +120,9 @@ einem Validierungsfehler ab (Feldname im Log). Ältere `.env` mit `DRIVERNAME`/`
 |---|---|
 | `docker compose -f compose.dev.yaml up --build` | `db` (Postgres :5432), `app` (API :8000, uvicorn `--reload`, `backend/app` und `backend/tests` gemountet), `react-app` (Vite :5173, `frontend/` gemountet) |
 | `docker compose -f compose.dev.yaml --profile tools up` | zusätzlich `pgadmin` (:5050) |
+| `docker compose -f compose.dev.yaml up --build db app` | nur Backend (DB und API) |
+| `docker compose -f compose.dev.yaml up --build react-app` | nur Frontend (alternativ nativ `npm run dev` in `frontend/`) |
+| `docker compose -f compose.dev.yaml run --rm app pytest` | Backend-Tests im Dev-Container |
 | `docker compose -f compose.dev.yaml logs -f <service>` | Logs verfolgen |
 | `docker compose -f compose.dev.yaml down` | stoppen; mit `-v` auch DB-Volume löschen (DB-Reset, Seeder läuft neu) |
 
@@ -131,12 +135,13 @@ Container-Namen nach dem Schema `dnd-<umgebung>-<rolle>`:
 | Frontend | `dnd-dev-ui` | `dnd-prod-ui` |
 | pgAdmin | `dnd-dev-pgadmin` | – |
 
-Das DB-Volume des Dev-Stacks heißt `dnd-portal-dev_postgres_data` (der Seeder füllt es beim ersten Start). Das Volume
-`dnd-portal_postgres_data` aus der Zeit vor `compose.dev.yaml` wird nicht mehr genutzt und nicht automatisch
-gelöscht (bei Bedarf `docker volume rm dnd-portal_postgres_data`).
+Das DB-Volume des Dev-Stacks heißt `dnd-portal-dev_postgres_data` (der Seeder füllt es beim ersten Start). Die Volumes
+`dnd-portal_postgres_data` (aus der Zeit vor `compose.dev.yaml`) sowie `backend_postgres_data` und
+`dnd-portal-backend_postgres_data` (früherer Einzelstart in `backend/` bzw. Einzel-Repo) werden nicht mehr genutzt und
+nicht automatisch gelöscht (bei Bedarf `docker volume rm <name>`).
 
 UI unter http://localhost:5173 (`/admin`, `/wall`, `/ground`, `/`); das Frontend ruft die API über
-`http://localhost:8000/` auf. Einzelstart weiterhin mit `docker compose up` in `backend/` bzw. `frontend/`.
+`http://localhost:8000/` auf.
 Node-Version: `frontend/.nvmrc` (CI) und `frontend/Dockerfile` (`node:18-slim`, Stages `dev` und `build`) synchron halten.
 
 **API-URL:** Das Frontend liest die Base-URL der API aus `VITE_API_URL` (Build-Zeit, von Vite ins Bundle
@@ -169,10 +174,10 @@ Dev- und Prod-Stack nicht gleichzeitig betreiben: API (:8000) und DB (:5432) nut
 Healthchecks: `db` per `pg_isready`, `app` per Python-Einzeiler gegen `http://localhost:8000/scenes` (das Image hat
 kein curl); `app` startet erst bei gesunder DB, `web` erst bei gesunder API. `docker ps` zeigt `dnd-prod-api (healthy)`.
 
-Frontend-Image: `frontend/Dockerfile` mit Stages `dev` (Vite-Dev-Server, von `frontend/docker-compose.yml` per
+Frontend-Image: `frontend/Dockerfile` mit Stages `dev` (Vite-Dev-Server, von `compose.dev.yaml` per
 `target: dev` genutzt), `build` (`npm ci`, `npm run build`) und `prod` (nginx, Konfiguration `frontend/nginx.conf`).
 Backend-Image: `backend/Dockerfile` mit uv und Stages `base`, `dev` (inkl. Dev-Abhängigkeiten, von
-`backend/docker-compose.yml` per `target: dev` genutzt) und `prod` (letzte Stage, ohne Dev-Abhängigkeiten, Non-Root-User);
+`compose.dev.yaml` per `target: dev` genutzt) und `prod` (letzte Stage, ohne Dev-Abhängigkeiten, Non-Root-User);
 startet `uvicorn app.main:app` ohne `--reload`; den Reload setzt nur der Dev-Stack per `command`.
 
 ## Qualitätssicherung

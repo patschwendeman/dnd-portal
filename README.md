@@ -27,7 +27,9 @@ Nach `./script.sh install` gehen alle Befehle auch als `dnd prod|dev|stop|logs` 
 `./script.sh` startet bei Bedarf Docker Desktop und stoppt vor dem Start den jeweils anderen Stack. Ohne Skript:
 `docker compose -f compose.dev.yaml up --build` bzw. `docker compose -f compose.prod.yaml up -d --build --wait`.
 Hot-Reload (nur Dev): Änderungen in `frontend/src` (Vite) und `backend/app` (uvicorn `--reload`) wirken ohne Neustart.
-Einzelstart weiterhin mit `cd backend && docker compose up` bzw. `cd frontend && docker compose up`.
+Nur Backend: `docker compose -f compose.dev.yaml up --build db app`, nur Frontend:
+`docker compose -f compose.dev.yaml up --build react-app` (oder nativ `npm run dev` in `frontend/`), Backend-Tests:
+`docker compose -f compose.dev.yaml run --rm app pytest`.
 Hinweise: [CONTRIBUTING.md](CONTRIBUTING.md#lokale-entwicklung).
 
 Details: [CLAUDE.md](CLAUDE.md), [backend/CLAUDE.md](backend/CLAUDE.md), [frontend/CLAUDE.md](frontend/CLAUDE.md).

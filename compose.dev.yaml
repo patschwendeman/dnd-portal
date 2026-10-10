@@ -2,11 +2,66 @@
 #   dnd dev [--tools]                                             # recommended (or ./script.sh dev); stops the prod stack first
 #   docker compose -f compose.dev.yaml up --build                 # db :5432, app :8000, react-app :5173
 #   docker compose -f compose.dev.yaml --profile tools up         # additionally pgAdmin :5050
-# The services are defined in the sub-project files and can still be started there on their own.
+#   docker compose -f compose.dev.yaml up --build db app          # backend only
+#   docker compose -f compose.dev.yaml up --build react-app       # frontend only
+#   docker compose -f compose.dev.yaml run --rm app pytest        # backend tests
 # Own project name → own DB volume (dnd-portal-dev_postgres_data); the seeder fills it on first start.
 name: dnd-portal-dev
 
-include:
-  - path: backend/docker-compose.yml
+services:
+  db:
+    image: postgres:17
+    container_name: dnd-dev-db
+    # POSTGRES_DB/USER/PASSWORD from backend/.env (as in the prod stack)
     env_file: backend/.env
-  - path: frontend/docker-compose.yml
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      retries: 5
+
+  pgadmin:
+    container_name: dnd-dev-pgadmin
+    image: dpage/pgadmin4
+    restart: always
+    profiles: [tools]
+    # PGADMIN_DEFAULT_EMAIL/PASSWORD from backend/.env
+    env_file: backend/.env
+    ports:
+      - "5050:80"
+
+  app:
+    build:
+      context: backend
+      target: dev
+    container_name: dnd-dev-api
+    working_dir: /app
+    env_file: backend/.env
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/tests:/app/tests
+
+  react-app:
+    container_name: dnd-dev-ui
+    build:
+      context: frontend
+      target: dev
+    ports:
+      - "5173:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:

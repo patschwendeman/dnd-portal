@@ -1,7 +1,7 @@
 # DND-19: Dev-Compose auf Root-Ebene zusammenführen
 
 **Typ:** chore
-**Status:** Entwurf
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -73,41 +73,41 @@ entfallen.
 ## Subtasks
 
 ### Compose
-- [ ] Vorher `docker compose -f compose.dev.yaml config` (Stand mit `include`) als Referenz sichern.
-- [ ] `compose.dev.yaml`: Kopfkommentar anpassen (keine Teil-Dateien mehr), `include` durch `services:` mit `db`,
+- [x] Vorher `docker compose -f compose.dev.yaml config` (Stand mit `include`) als Referenz sichern.
+- [x] `compose.dev.yaml`: Kopfkommentar anpassen (keine Teil-Dateien mehr), `include` durch `services:` mit `db`,
       `pgadmin`, `app`, `react-app` und `volumes: postgres_data:` ersetzen (E1, E2); kein `version`-Schlüssel.
-- [ ] `backend/docker-compose.yml` und `frontend/docker-compose.yml` löschen.
-- [ ] `docker compose -f compose.dev.yaml config` neu gegen die Referenz vergleichen: Unterschiede nur bei
+- [x] `backend/docker-compose.yml` und `frontend/docker-compose.yml` löschen.
+- [x] `docker compose -f compose.dev.yaml config` neu gegen die Referenz vergleichen: Unterschiede nur bei
       `environment` ↔ `env_file`-Werten der `db`/`pgadmin` (zusätzliche Variablen) und dem Healthcheck-Ausdruck.
 
 ### Kommentare
-- [ ] `backend/Dockerfile`, `frontend/Dockerfile`: Verweis `docker-compose.yml` → `compose.dev.yaml`.
-- [ ] `backend/.env.example`: Verweise auf `docker-compose.yml` und `in backend/ docker compose --profile tools up`
+- [x] `backend/Dockerfile`, `frontend/Dockerfile`: Verweis `docker-compose.yml` → `compose.dev.yaml`.
+- [x] `backend/.env.example`: Verweise auf `docker-compose.yml` und `in backend/ docker compose --profile tools up`
       anpassen.
 
 ### Doku
-- [ ] `docs/architecture.md` „Lokal starten“: Absatz zu `include` ersetzen, „Einzelstart weiterhin …“ durch E3
+- [x] `docs/architecture.md` „Lokal starten“: Absatz zu `include` ersetzen, „Einzelstart weiterhin …“ durch E3
       ersetzen, Image-Absätze (`von frontend/docker-compose.yml`/`backend/docker-compose.yml`) anpassen.
-- [ ] `README.md`: Zeile „Einzelstart weiterhin …“ durch E3 ersetzen.
-- [ ] `CONTRIBUTING.md` „Lokale Entwicklung“: Hinweise zu Root- vs. Einzelstart (Containernamen-Konflikt, getrennte
+- [x] `README.md`: Zeile „Einzelstart weiterhin …“ durch E3 ersetzen.
+- [x] `CONTRIBUTING.md` „Lokale Entwicklung“: Hinweise zu Root- vs. Einzelstart (Containernamen-Konflikt, getrennte
       Volumes) streichen bzw. durch E3 ersetzen; Hinweis auf nicht mehr genutzte Volumes um `backend_postgres_data`
       und `dnd-portal-backend_postgres_data` ergänzen.
-- [ ] `backend/CLAUDE.md`: `in backend/: docker compose up --build`, `docker compose run --rm app pytest  # in backend/`
+- [x] `backend/CLAUDE.md`: `in backend/: docker compose up --build`, `docker compose run --rm app pytest  # in backend/`
       und Verweise auf `docker-compose.yml` anpassen; `docker compose down -v` → `-f compose.dev.yaml`.
-- [ ] `frontend/CLAUDE.md`, `frontend/README.md`: `docker compose up --build` in `frontend/` und Verweise auf
+- [x] `frontend/CLAUDE.md`, `frontend/README.md`: `docker compose up --build` in `frontend/` und Verweise auf
       `docker-compose.yml` anpassen.
-- [ ] `.claude/skills/quick-task/SKILL.md`: Check „`docker compose config -q` im betroffenen Teilordner“ streichen.
-- [ ] `grep -rn "docker-compose" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=tasks .` findet nichts mehr.
+- [x] `.claude/skills/quick-task/SKILL.md`: Check „`docker compose config -q` im betroffenen Teilordner“ streichen.
+- [x] `grep -rn "docker-compose" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=tasks .` findet nichts mehr.
 
 ## Akzeptanzkriterien
-- [ ] AK1: `compose.dev.yaml` definiert `db`, `app`, `pgadmin`, `react-app` selbst, ohne `include` und ohne
+- [x] AK1: `compose.dev.yaml` definiert `db`, `app`, `pgadmin`, `react-app` selbst, ohne `include` und ohne
       `version`; `backend/docker-compose.yml` und `frontend/docker-compose.yml` existieren nicht mehr.
-- [ ] AK2: Alle Invarianten eingehalten – `config`-Vergleich vorher/nachher zeigt nur die in den Subtasks genannten
+- [x] AK2: Alle Invarianten eingehalten – `config`-Vergleich vorher/nachher zeigt nur die in den Subtasks genannten
       Unterschiede; bestehendes Volume `dnd-portal-dev_postgres_data` wird weiter genutzt (kein Re-Seed).
-- [ ] AK3: `docker compose -f compose.dev.yaml config -q`, `--profile tools config -q` und
+- [x] AK3: `docker compose -f compose.dev.yaml config -q`, `--profile tools config -q` und
       `-f compose.prod.yaml config -q` ohne Fehler und ohne Warnung; Backend-Checks (ruff, mypy, pytest im Container)
       und CI so grün wie vorher.
-- [ ] AK4: Keine Verweise mehr auf `docker-compose.yml` oder den Einzelstart in Unterordnern (außer `docs/tasks/`);
+- [x] AK4: Keine Verweise mehr auf `docker-compose.yml` oder den Einzelstart in Unterordnern (außer `docs/tasks/`);
       Doku nennt die Ersatzbefehle aus E3.
 
 ## Teststrategie / Verifikation

@@ -1,5 +1,5 @@
 # Stages:
-#   dev   – Vite dev server with hot reload (local development, docker-compose.yml)
+#   dev   – Vite dev server with hot reload (local development, compose.dev.yaml in the repo root)
 #   build – static build into /app/dist
 #   prod  – nginx serves the build (compose.prod.yaml in the repo root)
 # Keep the Node version in sync with .nvmrc (stages dev and build).

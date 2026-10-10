@@ -20,8 +20,7 @@ psycopg2 · PostgreSQL 17. Tooling: uv · ruff (Lint + Format) · mypy · pytest
 docker compose -f compose.dev.yaml logs -f app   # API-Logs (Container dnd-dev-api)
 docker compose -f compose.dev.yaml down          # stoppen (-v: DB-Reset); ./script.sh stop stoppt Dev und Prod
 
-# in backend/: nur Backend (DB + API; pgAdmin mit --profile tools)
-docker compose up --build
+docker compose -f compose.dev.yaml up --build db app   # nur Backend (DB + API; pgAdmin: --profile tools up --build db app pgadmin)
 
 # Production-Stack am Spieltisch (im Root): API ohne Reload und ohne Code-Mount (Container dnd-prod-api)
 ./script.sh prod                   # bzw. dnd prod (nach einmaligem ./script.sh install) oder docker compose -f compose.prod.yaml up -d --build --wait
@@ -35,8 +34,7 @@ uv run mypy app                    # Typprüfung (strict, Pydantic-Plugin)
 DB_HOST=localhost uv run pytest    # Tests gegen die DB des laufenden Dev-Stacks (Port 5432); DB_HOST aus .env (db) überschreiben
 
 # Tests im Dev-Container (DB `db` aus dem Compose-Netz, Image mit Dev-Gruppe)
-docker compose run --rm app pytest                          # in backend/, wenn der Root-Stack nicht läuft
-docker compose -f compose.dev.yaml run --rm app pytest      # im Root bzw. bei laufendem ./script.sh dev
+docker compose -f compose.dev.yaml run --rm app pytest      # im Root (startet bei Bedarf die DB mit)
 docker compose -f compose.dev.yaml run --rm --no-deps app sh -c 'ruff check && ruff format --check && mypy app'
 # Nach Änderungen an pyproject.toml/uv.lock das Image neu bauen (--build bzw. ./script.sh dev).
 ```
@@ -46,7 +44,7 @@ in `pyproject.toml` und `uv lock`. `requirements.txt` gibt es nicht mehr.
 
 **Tests** (`tests/`, pytest) sind Charakterisierungstests: Sie halten das **aktuelle** Verhalten aller Endpoints fest,
 auch bekannte Bugs (markiert mit `# known issue: …`). Erwartungen werden aus `app/db/data/seed_data.json` berechnet;
-die Test-DB muss daher genau diesen Seed enthalten – nach Seed-Änderungen DB zurücksetzen (`docker compose down -v`).
+die Test-DB muss daher genau diesen Seed enthalten – nach Seed-Änderungen DB zurücksetzen (`docker compose -f compose.dev.yaml down -v` im Root).
 Der `TestClient` läuft als Context Manager (damit der `lifespan` Tabellen und Seed anlegt) und mit
 `raise_server_exceptions=False`, damit 500er als Response prüfbar sind. Daneben prüfen `test_cors.py` (erlaubte
 Origins, keine Credentials) und `test_config.py` (`Settings`, ohne DB). Behebt ein Task
@@ -62,11 +60,11 @@ in `app/core/config.py` (Umgebung vor `.env`); fehlende Pflichtwerte brechen den
 laufen erst beim App-Start (`lifespan`).
 
 `Dockerfile`: Multi-Stage mit uv (Version gepinnt über `ghcr.io/astral-sh/uv`): `base` → `dev` (inkl. Dev-Gruppe,
-von `docker-compose.yml` per `target: dev` gebaut) → `prod` (letzte Stage, `uv sync --frozen --no-dev`; von
+von `../compose.dev.yaml` per `target: dev` gebaut) → `prod` (letzte Stage, `uv sync --frozen --no-dev`; von
 `../compose.prod.yaml` ohne `target` gebaut). Kopiert werden nur `pyproject.toml`, `uv.lock` und `app/`; das venv liegt
 unter `/app/.venv` (im `PATH`), der Prozess läuft als Non-Root-User `dnd`. `CMD` startet `uvicorn app.main:app` **ohne**
 `--reload`. Den Reload samt Mount von `./app` (und `./tests`) setzt nur der Dev-Stack über `command`/`volumes` in
-`docker-compose.yml`.
+`../compose.dev.yaml`.
 
 ## Struktur & Schichten
 
@@ -121,7 +119,7 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
   `/assets/images/ground_screen/main_1.jpg`). Das Backend liefert keine Dateien aus.
 - **Seed:** Referenzen (`graphics_wall_id`, `graphics_ground_id`, `music_id`-Liste) sind Autoincrement-IDs in
   Dateireihenfolge – Einträge nicht umsortieren. Der Seeder befüllt nur leere Tabellen; Änderungen an der JSON
-  erfordern einen DB-Reset (z. B. `docker compose down -v`).
+  erfordern einen DB-Reset (z. B. `docker compose -f compose.dev.yaml down -v` im Root).
 - **Keine Migrationen:** `create_all` legt nur fehlende Tabellen an; Schemaänderungen brauchen ebenfalls einen DB-Reset.
 - `Scene.main == true` = Kampfszene (Mainmap), `false` = Nicht-Kampfszene (Sidemap). Alte Namen
   (`battlemap`, `sidemap`, `fight`) nicht wieder einführen; `v1-roguelike` (Tags `archive/*`) ist verworfen.
