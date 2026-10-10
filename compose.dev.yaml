@@ -1,9 +1,9 @@
-# Lokale Entwicklung: DB, API und Frontend mit Hot-Reload aus dem Root starten.
-#   ./dnd.sh dev [--tools]                                        # empfohlen (stoppt vorher den Prod-Stack)
+# Local development: DB, API and frontend with hot reload, started from the repo root.
+#   dnd dev [--tools]                                             # recommended (or ./script.sh dev); stops the prod stack first
 #   docker compose -f compose.dev.yaml up --build                 # db :5432, app :8000, react-app :5173
-#   docker compose -f compose.dev.yaml --profile tools up         # zusätzlich pgAdmin :5050
-# Die Services sind in den Teil-Dateien definiert und lassen sich dort weiterhin einzeln starten.
-# Eigener Projektname → eigenes DB-Volume (dnd-portal-dev_postgres_data); der Seeder füllt es beim ersten Start.
+#   docker compose -f compose.dev.yaml --profile tools up         # additionally pgAdmin :5050
+# The services are defined in the sub-project files and can still be started there on their own.
+# Own project name → own DB volume (dnd-portal-dev_postgres_data); the seeder fills it on first start.
 name: dnd-portal-dev
 
 include:

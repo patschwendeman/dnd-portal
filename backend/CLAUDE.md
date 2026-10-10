@@ -13,16 +13,16 @@ psycopg2 · PostgreSQL · pylint. Versionen gepinnt in `requirements.txt`.
 
 ```bash
 # im Monorepo-Root: ganze Anwendung (DB, API, Frontend) – siehe ../docs/architecture.md#lokal-starten
-./dnd.sh dev                       # Postgres :5432, API :8000 (uvicorn --reload, ./src gemountet), Frontend :5173
-./dnd.sh dev --tools               # zusätzlich pgAdmin :5050
+./script.sh dev                    # Postgres :5432, API :8000 (uvicorn --reload, ./src gemountet), Frontend :5173
+./script.sh dev --tools            # zusätzlich pgAdmin :5050
 docker compose -f compose.dev.yaml logs -f app   # API-Logs (Container dnd-dev-api)
-docker compose -f compose.dev.yaml down          # stoppen (-v: DB-Reset); ./dnd.sh stop stoppt Dev und Prod
+docker compose -f compose.dev.yaml down          # stoppen (-v: DB-Reset); ./script.sh stop stoppt Dev und Prod
 
 # in backend/: nur Backend (DB + API; pgAdmin mit --profile tools)
 docker compose up --build
 
 # Production-Stack am Spieltisch (im Root): API ohne Reload und ohne Code-Mount (Container dnd-prod-api)
-./dnd.sh prod                      # bzw. dnd prod (nach einmaligem ./dnd.sh install) oder docker compose -f compose.prod.yaml up -d --build
+./script.sh prod                   # bzw. dnd prod (nach einmaligem ./script.sh install) oder docker compose -f compose.prod.yaml up -d --build --wait
 # Healthcheck in compose.prod.yaml: GET /scenes per Python (kein curl im Image); dnd prod wartet per --wait auf healthy
 
 # Lint/Tests (Python 3.11 – lokal ggf. im Container, in backend/: docker compose run --rm --no-deps app <befehl>)

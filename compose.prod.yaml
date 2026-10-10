@@ -1,10 +1,10 @@
-# Production-Stack für den Spieltisch: DB, API und Frontend (statischer Build hinter nginx).
-#   ./dnd.sh prod (bzw. dnd prod)                        # empfohlen: stoppt Dev, startet, wartet auf API healthy, öffnet Admin/Wall/Ground
-#   docker compose -f compose.prod.yaml up -d --build    # web :8080, app :8000, db :5432
-#   docker compose -f compose.prod.yaml down             # stoppen (-v: DB-Reset)
-# Nicht gleichzeitig mit dem Dev-Stack (compose.dev.yaml) betreiben: API und DB nutzen dieselben Ports.
-# Eigener Projektname → eigenes DB-Volume; der Seeder füllt die DB beim ersten Start.
-# Andere API-URL im Frontend: VITE_API_URL=... docker compose -f compose.prod.yaml up -d --build
+# Production stack for the game table: DB, API and frontend (static build served by nginx).
+#   dnd prod                                                    # recommended (or ./script.sh prod), see script.sh
+#   docker compose -f compose.prod.yaml up -d --build --wait    # web :8080, app :8000, db :5432
+#   docker compose -f compose.prod.yaml down                    # stop (-v: reset DB)
+# Do not run together with the dev stack (compose.dev.yaml): API and DB use the same ports.
+# Own project name → own DB volume; the seeder fills the DB on first start.
+# Different API URL for the frontend: VITE_API_URL=... docker compose -f compose.prod.yaml up -d --build --wait
 name: dnd-portal-prod
 
 services:
@@ -12,7 +12,7 @@ services:
     image: postgres:17
     container_name: dnd-prod-db
     restart: unless-stopped
-    # POSTGRES_DB/USER/PASSWORD aus backend/.env (wie im Dev-Stack)
+    # POSTGRES_DB/USER/PASSWORD from backend/.env (as in the dev stack)
     env_file: backend/.env
     ports:
       - "5432:5432"
@@ -37,7 +37,8 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
-    # python:3.11-slim hat kein curl; ./dnd.sh prod wartet per --wait, bis die API healthy ist.
+    # Checked with Python because python:3.11-slim has no curl. web and `up --wait` wait for it so that
+    # Admin/Wall/Ground do not load before the API is ready.
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/scenes', timeout=3)"]
       interval: 3s

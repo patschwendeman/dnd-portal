@@ -79,26 +79,26 @@ IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement).
 
 ## Lokal starten
 
-Die ganze Anwendung läuft lokal in Docker und wird aus dem Root gestartet, am einfachsten per Start-Skript `dnd.sh`
+Die ganze Anwendung läuft lokal in Docker und wird aus dem Root gestartet, am einfachsten per Start-Skript `script.sh`
 (macOS). `compose.dev.yaml` (Projektname `dnd-portal-dev`) bindet per `include` `backend/docker-compose.yml` (mit
 `backend/.env` für die Interpolation) und `frontend/docker-compose.yml` ein.
 
-| `./dnd.sh …` | Wirkung |
+| `./script.sh …` | Wirkung |
 |---|---|
 | `dev [--tools]` | Docker sicherstellen, Prod-Stack stoppen, Dev-Stack im Vordergrund starten (`--tools`: mit pgAdmin); Ctrl+C beendet |
 | `prod` | Docker sicherstellen, Dev-Stack stoppen, Prod-Stack im Hintergrund starten (`up -d --build --wait --wait-timeout 180`: wartet, bis DB und API healthy sind und nginx läuft; sonst Fehlermeldung, Exit ≠ 0, keine Tabs), dann `/admin`, `/wall`, `/ground` im Browser öffnen, Smartphone-URL (`http://<IP von en0>:8080/`) ausgeben; `VITE_API_URL` aus der Umgebung wird durchgereicht |
 | `stop` | beide Stacks stoppen (`down` ohne `-v`, DB-Volumes bleiben) |
 | `logs [service]` | Logs des Prod-Stacks verfolgen |
-| `install` | globalen Befehl `dnd` anlegen: Symlink `dnd` → `<repo>/dnd.sh` im ersten beschreibbaren Verzeichnis aus `/opt/homebrew/bin`, `/usr/local/bin`, das im `PATH` liegt; ein fremder `dnd` wird nicht überschrieben |
+| `install` | globalen Befehl `dnd` anlegen: Symlink `dnd` → `<repo>/script.sh` im ersten beschreibbaren Verzeichnis aus `/opt/homebrew/bin`, `/usr/local/bin`, das im `PATH` liegt; ein fremder `dnd` wird nicht überschrieben |
 | `uninstall` | Symlink `dnd` entfernen, nur wenn er auf dieses Skript zeigt |
 | ohne/unbekanntes Argument | Hilfe, Exit 1 |
 
 „Docker sicherstellen“: Antwortet `docker info` nicht, startet das Skript Docker Desktop (`open -a Docker`) und wartet
 bis zu 120 s.
 
-Einmalig `./dnd.sh install`, danach funktionieren alle Befehle aus jedem Ordner als `dnd prod|dev|stop|logs` (das
+Einmalig `./script.sh install`, danach funktionieren alle Befehle aus jedem Ordner als `dnd prod|dev|stop|logs` (das
 Skript ermittelt sein Verzeichnis über die Symlink-Kette; Hilfe und Ausgaben zeigen den aufgerufenen Namen).
-`./dnd.sh <befehl>` funktioniert weiterhin ohne Installation.
+`./script.sh <befehl>` funktioniert weiterhin ohne Installation.
 
 **Voraussetzung:** `backend/.env` (gitignored) aus `backend/.env.example` anlegen: `DRIVERNAME`, `POSTGRES_USER`,
 `POSTGRES_PASSWORD`, `POSTGRES_DB`, `HOST` (`db` = Service-Name im Compose-Netz), `PORT`,
@@ -138,10 +138,10 @@ Für den Spielabend gibt es einen eigenen Stack ohne Hot-Reload und ohne Code-Mo
 (Projektname `dnd-portal-prod`, eigenes DB-Volume; der Seeder füllt die DB beim ersten Start). Voraussetzung wie
 oben: `backend/.env`.
 
-| Befehl (im Root, ohne Skript; mit Skript: `./dnd.sh prod` bzw. `dnd prod`) | Wirkung |
+| Befehl (im Root, ohne Skript; mit Skript: `./script.sh prod` bzw. `dnd prod`) | Wirkung |
 |---|---|
-| `docker compose -f compose.prod.yaml up -d --build` | `db` (Postgres :5432), `app` (API :8000, uvicorn ohne `--reload`, Code im Image), `web` (nginx :8080 mit dem statischen Build) – alle mit `restart: unless-stopped` |
-| `VITE_API_URL=http://<host>:8000/ docker compose -f compose.prod.yaml up -d --build` | Frontend mit anderer API-URL bauen (Default `http://localhost:8000/`) |
+| `docker compose -f compose.prod.yaml up -d --build --wait` | `db` (Postgres :5432), `app` (API :8000, uvicorn ohne `--reload`, Code im Image), `web` (nginx :8080 mit dem statischen Build) – alle mit `restart: unless-stopped` |
+| `VITE_API_URL=http://<host>:8000/ docker compose -f compose.prod.yaml up -d --build --wait` | Frontend mit anderer API-URL bauen (Default `http://localhost:8000/`) |
 | `docker compose -f compose.prod.yaml logs -f <service>` | Logs verfolgen |
 | `docker compose -f compose.prod.yaml down` | stoppen; mit `-v` auch DB-Volume löschen |
 

@@ -1,15 +1,10 @@
 #!/usr/bin/env bash
-# Start-Skript für das DnD Portal (macOS). Dev- und Prod-Stack laufen nie gleichzeitig (gleiche Ports).
-#   ./dnd.sh dev [--tools]   Dev-Stack im Vordergrund (Hot-Reload; --tools: zusätzlich pgAdmin), Ctrl+C beendet
-#   ./dnd.sh prod            Prod-Stack im Hintergrund, wartet bis alle Dienste healthy sind, öffnet
-#                            Admin/Wall/Ground, zeigt die Smartphone-URL
-#   ./dnd.sh stop            beide Stacks stoppen (DB-Volumes bleiben erhalten)
-#   ./dnd.sh logs [service]  Logs des Prod-Stacks verfolgen (db, app, web)
-#   ./dnd.sh install         globalen Befehl `dnd` anlegen (Symlink), danach z. B. `dnd prod` aus jedem Ordner
-#   ./dnd.sh uninstall       Symlink `dnd` wieder entfernen (nur wenn er auf dieses Skript zeigt)
+# Start script for the DnD Portal (macOS): starts/stops the dev or prod stack and starts Docker Desktop if needed.
+# Dev and prod never run at the same time (same ports). Commands: see usage() or run without arguments.
+# Run `./script.sh install` once, then use `dnd <command>` from any directory.
 set -euo pipefail
 
-# Pfad nach Auflösung aller Symlinks (bash 3.2: kein readlink -f; relative Link-Ziele gelten ab dem Link-Ordner).
+# Path after resolving all symlinks (bash 3.2 has no readlink -f; relative link targets are relative to the link's directory).
 resolve_path() {
   local path=$1 dir target
   while [ -L "$path" ]; do
@@ -26,7 +21,7 @@ resolve_path() {
 
 SCRIPT_PATH=$(resolve_path "${BASH_SOURCE[0]}")
 SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
-# Aufgerufener Name für Hilfe und Ausgaben: `dnd` (globaler Befehl) bzw. z. B. `./dnd.sh`.
+# Name used in help and output: `dnd` (global command) or e.g. `./script.sh`.
 case "$(basename "$0")" in
   dnd) PROG=dnd ;;
   *) PROG=$0 ;;
@@ -97,8 +92,8 @@ cmd_dev() {
 cmd_prod() {
   ensure_docker
   stop_dev
-  # VITE_API_URL aus der Umgebung wird von compose.prod.yaml als Build-Argument übernommen.
-  # --wait: kehrt erst zurück, wenn alle Dienste laufen bzw. healthy sind (API-Healthcheck in compose.prod.yaml).
+  # VITE_API_URL from the environment is passed on as a build argument by compose.prod.yaml.
+  # --wait: returns only once all services are running or healthy (API healthcheck in compose.prod.yaml).
   echo "Starte Prod-Stack und warte bis zu ${WAIT_TIMEOUT}s, bis alle Dienste bereit sind ..."
   if ! docker compose -f "$PROD_FILE" up -d --build --wait --wait-timeout "$WAIT_TIMEOUT"; then
     echo "Fehler: Prod-Stack ist nicht bereit (Timeout oder Healthcheck fehlgeschlagen). Logs: $PROG logs" >&2
@@ -129,7 +124,7 @@ cmd_logs() {
   docker compose -f "$PROD_FILE" logs -f "$@"
 }
 
-# Zeigt der Pfad (Symlink) auf dieses Skript?
+# Does the path (symlink) point to this script?
 is_own_link() {
   [ -L "$1" ] && [ "$(resolve_path "$1")" = "$SCRIPT_PATH" ]
 }

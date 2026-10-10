@@ -64,7 +64,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Image as used by compose.prod.yaml. No push.
-      # Single-stage Dockerfile, hence no --target (frontend needs --target prod).
+      # Image as used by compose.prod.yaml (single-stage Dockerfile, so no --target). No push.
       - name: Build image
         run: docker build -t dnd-portal-backend:ci .

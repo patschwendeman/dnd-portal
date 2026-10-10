@@ -1,7 +1,7 @@
 # DND-12: API-URL per Env-Variable und Production-Stack für den Spieltisch
 
 **Typ:** setup
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -474,3 +474,39 @@ keine Container (`docker ps -a` leer), Testdateien im Scratchpad entfernt. Weder
   Absatz zu `dnd`, Healthchecks (`db`, `app`, `web` wartet auf `app`).
 - `backend/CLAUDE.md`, `frontend/CLAUDE.md`: `dnd prod`/`install`, Healthcheck; Kopfkommentar `compose.prod.yaml`.
 - `git grep` nach `wait_for_web`/„auf :8080 warten“ außerhalb `docs/tasks/` → keine Treffer.
+
+### Runde 4 – Review cfb01ec
+
+**Empfehlung:** Abnahme. E10 und E11 vollständig umgesetzt; Kaltstart mit `--wait`, Timeout-Pfad ohne Tabs sowie
+Symlink-Kette und install/uninstall in Testverzeichnissen selbst nachgeprüft. Offen nur manuell beim User: AK9 (Admin
+ohne „Backend nicht erreichbar“), AK10 (echte Installation); aus Vorrunden AK2 (CI nach Push), AK7 (Docker-Autostart).
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | Routen auf :8080 → 200 (eigener Start) |
+| AK2 | lokal erfüllt, CI nach Push | `up -d --build --wait`: alle Dienste healthy (18 s) |
+| AK3 | erfüllt | Unverändert (`compose.prod.yaml:53`) |
+| AK4 | erfüllt | Kein Diff in `backend/src`, `frontend/src` seit e7d050e; Dev-Compose unverändert |
+| AK5 | erfüllt | Unverändert |
+| AK6 | erfüllt | `config -q` viermal Exit 0; `docker ps`: `dnd-prod-db`, `dnd-prod-api`, `dnd-prod-frontend` |
+| AK7 | erfüllt (Docker-Autostart manuell offen) | Hilfe Exit 1, `prod extra` Exit 1, `stop` Exit 0 |
+| AK8 | erfüllt | Kein `wait_for_web` außerhalb `docs/tasks/`; Doku nennt `dnd` |
+| AK9 | erfüllt (Browser-Teil offen) | Healthcheck `compose.prod.yaml:41-46`, `web` → `service_healthy` (`:56-58`); Kaltstart: `db Healthy` → `api Healthy` → `frontend Started`, danach `/scenes` 200, `dnd-prod-api (healthy)`; Timeout-Kopie: Exit 1, keine Tabs (`dnd.sh:103-106`) |
+| AK10 | erfüllt (echte Installation offen) | Relative+absolute Link-Kette aus `/tmp`: `Usage: dnd <command>`, `dnd stop` Exit 0; install/uninstall-Fälle (nicht im PATH, schreibgeschützt, bereits installiert, fremde Datei/fremder/toter Link, uninstall über Link) korrekt |
+
+#### Blockierende Befunde
+- keine
+
+#### Hinweise (nicht blockierend)
+- Nach Timeout/unhealthy bleibt der Stack halb gestartet (`db` läuft); Fehlermeldung könnte auf `dnd stop` hinweisen.
+- Zirkulärer Symlink `dnd -> dnd` im Installationsverzeichnis lässt `resolve_path` endlos laufen (Schleife begrenzen).
+- Toter fremder Link erzeugt kosmetische `cd`-Meldung auf stderr (`dnd.sh:23`).
+- Nach Verschieben des Repos gilt der alte tote Link als fremd → manuell entfernen.
+- Ein `dnd` weiter vorne im PATH außerhalb von `INSTALL_DIRS` würde verdecken (nicht geprüft).
+- Aus Vorrunden: kein Commit `docs(DND-12): approve plan`; `version: '3.4'` (Altlast).
+
+**Nachtrag nach Runde 4 (auf Wunsch des Users):** Kommentare aus DND-12 überarbeitet (daab600) und anschließend
+durchgängig auf Englisch umgestellt; `dnd.sh` in `script.sh` umbenannt (der globale Befehl heißt weiter `dnd`; in
+Abschnitten oben bleibt der alte Name als historische Angabe stehen). Doku-Verweise angepasst, manuelle Prod-Starts mit
+`--wait`. Geprüft: `bash -n`, `config -q` (dev/prod), Symlink `/opt/homebrew/bin/dnd` → `script.sh` neu angelegt,
+`dnd` aus `/tmp`: Hilfe zeigt `dnd`, `dnd stop` Exit 0.
