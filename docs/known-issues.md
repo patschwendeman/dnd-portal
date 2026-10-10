@@ -59,7 +59,6 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 ### Konfiguration & Tooling
 
 - Konfiguration per `os.environ.get` + `load_dotenv` ohne Validierung. Üblich: `pydantic-settings`.
-- `python-dotenv` wird importiert, steht aber nicht in `requirements.txt`.
 - Nur `requirements.txt`: `pylint` landet als Laufzeit-Abhängigkeit im Prod-Image. Üblich: `pyproject.toml` mit
   getrennten Dev-Abhängigkeiten.
 - Lint nur mit pylint, keine Typprüfung. Üblich: ruff (Lint + Format) und mypy/pyright.
