@@ -20,7 +20,6 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
   `MapsService.read_maps` lädt alle Szenen und filtert in Python statt per SQL (`where`/`get`).
 - `/scenes/details` ohne Slash landet vermutlich auf `/scenes/{scene_id}` → 422 (ungeprüft).
 - `Scene.music_id` und `GraphicsGround.main` sind ungenutzte Spalten; `GraphicsWall.scene` hat fälschlich `uselist=False`.
-- `crud.create`/`crud.update` ungenutzt; `crud.py` definiert eine Dummy-Klasse `Base`, die den ORM-Namen überschattet.
 - Keine Migrationen: Schemaänderungen erfordern DB-Reset.
 - Keine Tests; CI läuft trotzdem grün. Testordner `__tests__/` folgt der JS-Konvention – in Python üblich: `tests/`
   mit `test_*.py` und pytest.
