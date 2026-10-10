@@ -113,9 +113,9 @@ eine per Build-Variable konfigurierbare API-URL. Die lokale Entwicklung bleibt u
       Notizen funktionieren, Szenenwechsel synchronisiert Wall und Ground.
 - [ ] AK2: Wirksamkeit nachgewiesen: lokaler Prod-Build und -Start (Ausgabe/Screenshots im Review), CI-Jobs
       `docker-prod` (Frontend) und `docker` (Backend) grün nach dem Push.
-- [ ] AK3: `VITE_API_URL` wirkt: Build mit `--build-arg VITE_API_URL=http://example.invalid:9999/` → das gebaute
+- [x] AK3: `VITE_API_URL` wirkt: Build mit `--build-arg VITE_API_URL=http://example.invalid:9999/` → das gebaute
       Bundle enthält diese URL (z. B. `grep` in `dist/assets`); ohne Variable `http://localhost:8000/`.
-- [ ] AK4: Alle Invarianten eingehalten: `docker compose up` im Root startet Dev wie vorher (Hot-Reload Frontend und
+- [x] AK4: Alle Invarianten eingehalten: `docker compose up` im Root startet Dev wie vorher (Hot-Reload Frontend und
       Backend geprüft), `npm run lint`, `typecheck`, `test:unit`, `build` grün.
 - [x] AK5: Doku nachgezogen, beide Known Issues entfernt.
 
@@ -138,3 +138,88 @@ eine per Build-Variable konfigurierbare API-URL. Die lokale Entwicklung bleibt u
 - keine
 
 ## Review
+
+### Runde 1 – Review c6bf131
+
+**Empfehlung:** Nacharbeiten. Statisch keine Fehler in Code/Konfiguration; es fehlen die Docker-Nachweise (Daemon lief
+nicht, `docker info` Exit 1). Voraussichtlich keine Codeänderung nötig.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Prod-Stack, Routen, Szenen/Medien/Notizen/Sync | nicht prüfbar | `docker compose -f compose.prod.yaml config -q` Exit 0; SPA-Fallback `frontend/nginx.conf:26-28`; Notizen per `fetch('/story/...')` (`DocumentReader.tsx:203-204`), `dist/story/main/*.md` im Build |
+| AK2 Lokaler Prod-Build/-Start, CI-Jobs grün | nicht erfüllt | Keine Build-/Start-Ausgabe; CI erst nach Push. Statisch: `working-directory` `frontend`/`backend`, `package-lock.json` vorhanden |
+| AK3 `VITE_API_URL` per Build-Arg | teilweise (Docker nicht prüfbar) | Nativ: mit Variable URL im Bundle, kein `localhost:8000`; ohne Variable `localhost:8000`. `ARG`→`ENV` (`frontend/Dockerfile:32-33`) schlüssig |
+| AK4 Invarianten | teilweise (Hot-Reload nicht prüfbar) | lint 0 Fehler (1 Altwarnung `WallScreen.tsx:161`), typecheck, 52/52 Tests, build grün; Dev-Config: `target: dev`, `--reload`, Mount `./src:/app/src` erhalten |
+| AK5 Doku, Known Issues | erfüllt | Beide Einträge entfernt; `architecture.md`, `frontend/CLAUDE.md`, `backend/CLAUDE.md` angepasst |
+
+**Scope/Konventionen:** Alle Änderungen im Scope, `backend/src` unverändert, ein Commit `setup(DND-12): ...` ohne
+KI-Signatur, alle Subtasks im Diff.
+
+#### Blockierende Befunde
+- [x] AK1: Prod-Stack per Docker starten, `/`, `/admin`, `/wall`, `/ground` direkt aufrufen und neu laden, Szenenwechsel, Musik, Notizen prüfen; Ergebnis im Plan. – per curl belegt (siehe Nachweise Runde 2); Browser-Teil (Szenenwechsel-Sync, Abspielen) manuell offen.
+- [x] AK2: Ausgabe von lokalem Prod-Build und -Start im Plan; CI-Jobs `docker-prod`/`docker` als „nach Push“ markieren und belegen. – lokal belegt (siehe Nachweise Runde 2); CI: nach Push zu prüfen.
+- [x] AK3: `docker build --target build --build-arg VITE_API_URL=http://example.invalid:9999/ frontend/` und URL im Ergebnis suchen.
+- [x] AK4: Hot-Reload im Dev-Stack für Frontend und Backend prüfen.
+
+#### Hinweise (nicht blockierend)
+- Kein Commit `docs(DND-12): approve plan`; Freigabe erfolgte durch den User im Chat, Status-Wechsel ging in den Runden-Commit.
+- `frontend/.dockerignore` schließt `.env*` nicht aus (Prod-URL unbeeinflusst, da `ENV` Vorrang hat).
+- `gzip_types text/markdown` greift vermutlich nicht: nginx-`mime.types` kennt `.md` nicht (`types { text/markdown md; }`).
+- `db` erhält per `env_file` alle Variablen aus `backend/.env` (unschädlich); Healthcheck-Escaping `$${POSTGRES_USER}` korrekt.
+- `nginx:1.27-alpine` pinnt nur Minor-Version.
+- CI-Path-Filter lösen bei Änderung nur an `compose.prod.yaml` nicht aus (vertretbar).
+- `version: '3.4'` in `frontend/docker-compose.yml` erzeugt Warnung (Altlast).
+
+### Runde 2 – Nachweise der Umsetzung
+
+Docker Desktop lief; Dev- und Prod-Stack nie gleichzeitig.
+
+**Hinweise aus Runde 1 umgesetzt**
+- `frontend/.dockerignore`: `.env`, `.env.*` ausgeschlossen, `!.env.example` bleibt (im Build-Image liegt nur
+  `/app/.env.example`).
+- `frontend/nginx.conf`: `location ~* \.md$ { types { } default_type text/markdown; … }` – nur für `.md`, die
+  Standard-`mime.types` bleiben für alles andere gültig; `nginx -t` im Image ok.
+- `frontend/Dockerfile`: `nginx:1.27.5-alpine` (exakte Patch-Version, `nginx -v` → `nginx/1.27.5`).
+
+**AK2 – lokaler Prod-Build und -Start** (gekürzt)
+- `docker build --target prod frontend/` → Exit 0; `vite v5.4.2 building for production... ✓ built in 1.24s`,
+  Image-Export ok.
+- `docker build backend/` → Exit 0; `Config.Cmd` = `["uvicorn","src.main:app","--host","0.0.0.0","--port","8000"]`
+  (ohne `--reload`).
+- `docker compose -f compose.prod.yaml up -d --build` → `db` healthy, `app` und `web` gestartet; `ps`:
+  `dnd-portal-prod-app-1 0.0.0.0:8000->8000`, `dnd-portal-prod-db-1 (healthy) 0.0.0.0:5432->5432`,
+  `dnd-portal-prod-web-1 0.0.0.0:8080->80`; App-Log `Application startup complete.`, kein Reloader.
+- **Nach Push zu prüfen:** CI-Jobs `docker-prod` (frontend.yml) und `docker` (backend.yml).
+
+**AK1 – Prod-Stack per curl** (Browser-Interaktion nicht möglich)
+- `/`, `/admin`, `/wall`, `/ground`, `/admin/`, `/wall?reload=1` auf :8080 → je `200 text/html`, `index.html`
+  (`<title>DnD</title>`, `id="root"`); `Cache-Control: no-cache` auch für `/admin` (Fallback auf `/index.html`).
+- API :8000: `/scenes` 200 (29 Szenen → Seeder gelaufen), `/scenes/1` 200, `/maps/main` 200 (25), `/maps/side` 200 (4);
+  `access-control-allow-origin: *`.
+- Medien :8080: `/assets/images/maps/battle_17.jpg` 200 `image/jpeg`; `/assets/music/battle_maps/boss/Track_44.mp3`
+  200 `audio/mpeg`; `/assets/sounds/debuff_1.mp3` 200 `audio/mpeg`; `/story/fight/assets/room_8.png` 200 `image/png`.
+- Notizen: alle 46 `.md` unter `public/story` → `200 text/markdown`; `/story/main/tavern.md` mit
+  `Content-Encoding: gzip`, Inhalt korrekt (UTF-8).
+- Gehashtes Bundle `/assets/index-*.js`: `application/javascript`, `Content-Encoding: gzip`,
+  `Cache-Control: public, max-age=31536000, immutable`; Medien in `/assets/<Unterordner>/` ohne Immutable-Header.
+- Fehlende Dateien: `/story/main/missing.md` und `/assets/missing.png` → 404 (kein HTML-Fallback).
+- `docker compose -f compose.prod.yaml down` → Container und Netzwerk entfernt (Volume bleibt).
+- **Manuell offen (User):** im Browser Szenenwechsel im Admin → Sync auf Wall und Ground, Musik abspielen, Notizen
+  anzeigen.
+
+**AK3 – `VITE_API_URL`**
+- `docker build --target build --build-arg VITE_API_URL=http://example.invalid:9999/ frontend/`, darin
+  `grep -rl` in `/app/dist/assets`: `http://example.invalid:9999/` in `index-DOaxWd6r.js`, `http://localhost:8000/`
+  nirgends.
+- Gegenprobe ohne Build-Arg: `http://localhost:8000/` in `index-yUum66nz.js`, `example.invalid` nirgends.
+
+**AK4 – Invarianten / Dev-Stack**
+- `docker compose up -d --build` im Root: `dnd-react_frontend` :5173, `dnd-fastapi_backend` :8000
+  (`Started reloader process [1] using WatchFiles`), `dnd-postgres_db` healthy; `/admin` :5173 → 200, `/scenes` :8000 → 200.
+- Frontend: Kommentarzeile an `frontend/src/main.tsx` angehängt → Datei im Container geändert (Mount),
+  Vite-Log `[vite] page reload src/main.tsx`.
+- Backend: Kommentarzeile an `backend/src/main.py` angehängt → `WatchFiles detected changes in 'src/main.py'.
+  Reloading...`, `Started server process [11]`, `/scenes` danach 200.
+- Beide Änderungen per `git checkout` zurückgenommen (Arbeitsverzeichnis ohne Änderungen an `src`), `docker compose down`.
+- `npm run lint` 0 Fehler (1 Altwarnung `WallScreen.tsx:161`), `typecheck` ok, `test:unit` 52/52, `build` ok;
+  `docker compose config -q` für `compose.yaml`, `compose.prod.yaml`, `backend/`, `frontend/` ok.
