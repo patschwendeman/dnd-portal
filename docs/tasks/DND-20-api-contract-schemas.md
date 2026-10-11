@@ -1,7 +1,7 @@
 # DND-20: API-Vertrag mit Pydantic-Schemas, 404 statt 500, generierte Frontend-Typen
 
 **Typ:** fix
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -302,3 +302,11 @@ keine Pfade mehr, die von einer `{scene_id}`-Route verschluckt werden.
 - Backend: ruff check/format, mypy grün; pytest gegen Dev-DB 24 passed; Export ohne Diff
 - Frontend: lint 0 Fehler/1 Warnung, typecheck grün, `generate:api` ohne Diff, unit 57/57, build grün
 - E2E 4/4 (Implementer); CI erst nach Push
+
+### Runde 3 – Nachbesserung Kommentare/Doku (e6f752d, ohne Review-Runde)
+
+Nach Abnahme-Empfehlung auf Wunsch des Users: Kommentare und Doku des Tasks geprüft, drei Kleinigkeiten nachgezogen
+- `frontend/src/models/models.ts`: mehrdeutigen Kommentar zu den abgeleiteten API-Typen präzisiert
+- `backend/CLAUDE.md`: ausgeschriebenen Ablauf bei Vertragsänderungen auf Kern + Link gekürzt, doppelten Nullable-Hinweis gestrichen
+- `docs/domain.md`: `SceneDetail` als API-Schema (Backend, Frontend-Typ generiert) statt „Frontend“
+- Checks: Frontend lint (0 Fehler, bestehende Warnung `WallScreen.tsx:164`) und typecheck grün
