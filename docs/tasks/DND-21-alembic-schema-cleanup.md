@@ -1,7 +1,7 @@
 # DND-21: Alembic-Migrationen und bereinigtes Datenbankschema
 
 **Typ:** setup
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -140,7 +140,7 @@ künftige Schemaänderungen.
       `Music`, `graphics_wall`, `graphics_ground`, `music_id`, `scene_music_association` außerhalb von `docs/tasks/`
       (Asset-Pfade wie `/assets/music/…` ausgenommen).
 - [x] AK5: Alle Invarianten eingehalten – `openapi.json` byte-gleich, API-Tests grün, Frontend unverändert.
-- [ ] AK6: ruff, mypy strict, pytest, CI und Docker-Build grün; `./script.sh dev` und `./script.sh prod` nach Reset lauffähig.
+- [x] AK6: ruff, mypy strict, pytest, CI und Docker-Build grün; `./script.sh dev` und `./script.sh prod` nach Reset lauffähig.
 
 ## Teststrategie / Verifikation
 
@@ -177,8 +177,8 @@ verfehlt (alte Tabellennamen in einer Testkonstante); AK6 erst nach Push (CI) un
 **Blockierende Befunde**
 - [x] AK4: `backend/tests/test_migrate.py:7` – alte Tabellennamen durch neutrale ersetzen (z. B. `["scene", "legacy_table"]`;
   `check_legacy_schema` prüft nur das Fehlen von `alembic_version`) oder Ausnahme im Plan durch den User.
-- [ ] AK6: CI-Lauf nach Push prüfen (`lint`, `test` inkl. „Migrations“, `docker-prod`).
-- [ ] AK6: User setzt Volumes zurück, `./script.sh dev` und `./script.sh prod` müssen healthy werden; vorher einmal mit
+- [x] AK6: CI-Lauf nach Push prüfen (`lint`, `test` inkl. „Migrations“, `docker-prod`).
+- [x] AK6: User setzt Volumes zurück, `./script.sh dev` und `./script.sh prod` müssen healthy werden; vorher einmal mit
   altem Dev-Volume starten (Reset-Hinweis im Log = Original-Nachweis AK3).
 
 **Hinweise (nicht blockierend)**
@@ -196,3 +196,43 @@ verfehlt (alte Tabellennamen in einer Testkonstante); AK6 erst nach Push (CI) un
 - `alembic upgrade head`/`check`/`downgrade base`/`upgrade head`: fehlerfrei
 - `export_openapi.py` + `git diff --exit-code openapi.json`: unverändert
 - `docker build --target prod`/`dev`: ok
+
+### Runde 2 – Review (9ab44a0)
+
+**Empfehlung:** Nacharbeiten – ausschließlich wegen User-/Push-abhängiger Punkte. Vom Implementer ist nichts mehr offen;
+AK4 erfüllt, lokale Checks grün. Offen: AK6 (CI nach Push, Volume-Reset, `./script.sh dev`/`prod`) und User-Entscheidung
+zu `tests/test_maps.py`.
+
+**Akzeptanzkriterien**
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | unverändert; leere DB → `alembic current` = `0001 (head)` |
+| AK2 | erfüllt lokal (CI offen) | `alembic check` ohne Drift, `downgrade base` + `upgrade head` fehlerfrei |
+| AK3 | erfüllt (manuell nachgestellt) | `tests/test_migrate.py` mit `["scene", "legacy_table"]` prüft weiter `RuntimeError` und beide Reset-Befehle; echtes Alt-Volume offen (AK6) |
+| AK4 | erfüllt | `LEGACY_TABLES = ["scene", "legacy_table"]`; `git grep` nach alten Namen außerhalb `docs/tasks/` leer (Asset-Pfade ausgenommen) |
+| AK5 | erfüllt | `openapi.json` unverändert, kein Diff in `frontend/`, pytest 28 passed |
+| AK6 | offen | lokal grün; offen: CI nach Push, `./script.sh dev`/`prod` nach `down -v` |
+
+**Blockierende Befunde**
+- [x] AK6: CI-Lauf nach Push prüfen (`lint`, `test` inkl. „Migrations“, `docker-prod`).
+- [x] AK6: User setzt Volumes zurück, `./script.sh dev` und `./script.sh prod` müssen healthy werden; vorher einmal mit
+  altem Dev-Volume starten (Reset-Hinweis im Log = Nachweis AK3).
+
+**Hinweise (nicht blockierend)**
+- Entscheidung beim User: `tests/test_maps.py` zusätzlich zu `conftest.py` angepasst (nur Seed-Keys, Folge von E4).
+- `backend/CLAUDE.md`-Nullbarkeitsbeispiel korrigiert; Runden-Commit ohne Verhaltensänderung, Konventionen eingehalten.
+
+**Checks**
+- `ruff check`, `ruff format --check`, `mypy app`: grün
+- `pytest -q` (Wegwerf-DB postgres:17): 28 passed
+- `alembic upgrade head`/`check`/`downgrade base`/`upgrade head`: fehlerfrei
+- `export_openapi.py` + `git diff --exit-code openapi.json`: unverändert
+- Docker-Build in Runde 2 nicht wiederholt (Dockerfile/Compose unverändert, Runde 1 ok)
+
+**Nachtrag (User-Verifikation)**
+- AK3: altes Dev-Volume → `./script.sh dev` bricht mit Reset-Hinweis ab.
+- AK6: nach `down -v` Dev und Prod lauffähig (`alembic_version` = `0001`, 29 Szenen, Prod-Container healthy, `/admin`,
+  `/wall`, `/ground` 200); Backend-CI auf `dec54f6` grün (`lint`, `test`, `docker-prod`).
+- `tests/test_maps.py`-Anpassung vom User akzeptiert.
+- Nachgang: redundante Kommentare entfernt (`dec54f6`).
