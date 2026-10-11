@@ -1,5 +1,3 @@
-"""Schema migrations with Alembic, run on app start (lifespan) before the seeder."""
-
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -18,7 +16,6 @@ RESET_HINT = (
 
 
 def check_legacy_schema(table_names: Iterable[str]) -> None:
-    """Refuse a database created before Alembic (tables, but no alembic_version): it has to be reset once."""
     names = set(table_names)
     if names and ALEMBIC_VERSION_TABLE not in names:
         raise RuntimeError(
