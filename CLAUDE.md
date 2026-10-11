@@ -7,8 +7,9 @@ unterstützt den Spielleiter und steigert durch digitale Elemente (Bilder, Karte
 
 | Ordner | Inhalt | Stack |
 |---|---|---|
-| [frontend](frontend/) | UI aller Screens (Admin, Player, Wall, Ground), Markdown-Notizen, Sounds/Musik/Bilder als statische Assets | React 18, Vite, TypeScript, styled-components |
-| [backend](backend/) | REST-API und Datenbank (Szenen und ihre Bilder/Musik) | Python 3.11, FastAPI, SQLAlchemy, PostgreSQL |
+| [frontend](frontend/) | UI aller Screens (Admin, Player, Wall, Ground), Markdown-Notizen, statische Assets: Sounds, Icons und die E7-Kopien `mapOverview.jpg`, `From_Past_To_Present.mp3` | React 18, Vite, TypeScript, styled-components |
+| [backend](backend/) | REST-API und Datenbank (Szenen, Medien in Tabelle `media`); liefert `media/` unter `/media` aus | Python 3.11, FastAPI, SQLAlchemy, PostgreSQL |
+| [media](media/) | Szenenmedien: Wall-/Ground-Bilder (`images/`), Musik (`music/`); vom Backend ausgeliefert, per Compose read-only eingebunden | – |
 
 Entstanden aus den früheren Einzel-Repos `dnd-portal-frontend` und `dnd-portal-backend` (Historie per
 `git filter-repo` übernommen). Deren Branches `test` und `v1-roguelike` liegen als Tags
