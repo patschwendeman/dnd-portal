@@ -105,7 +105,7 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
   ORM-Objekte zurück, steht das Schema als `response_model` im Decorator (`/scenes*`: Services liefern `Scene` bzw.
   `None`); sonst reicht die Rückgabe-Annotation (`/maps/*` liefert `list[MapEntry]`). Kein `response_model=None`.
   „Nicht gefunden“ meldet der Service mit `None`, die Route wirft `HTTPException(404, "Scene not found")` und
-  dokumentiert sie per `responses={404: …}`. Pflichtfelder der Schemas sind nicht nullable (DB-Spalten noch nullable).
+  dokumentiert sie per `responses={404: …}`.
   Relationen, die ein Schema braucht, lädt die CRUD-Funktion eager (`joinedload`/`contains_eager`).
 - Models im typisierten 2.0-Stil: `Mapped[...]`/`mapped_column`, Nullbarkeit im Typ (`Mapped[str | None]`) spiegelt das
   Schema; Relationen zwischen Modulen per `TYPE_CHECKING`-Import und String-Annotation. Abfragen nur mit `select()`,
@@ -118,11 +118,10 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
 
 ## Wichtig beim Ändern
 
-- **API-Vertrag:** `openapi.json` ist versioniert; das Frontend generiert daraus seine Typen
-  (`npm run generate:api` → `../frontend/src/api/schema.d.ts`). Nach Änderungen an Schemas oder Routen
-  `uv run python scripts/export_openapi.py` ausführen, danach im Frontend `npm run generate:api` und anpassen
-  (Ablauf: `../docs/architecture.md#api-vertrag--typgenerierung`). Die ORM-Relationen heißen wie die API-Felder
-  (`Scene.wall_image`, `Scene.ground_image`, `Scene.tracks`); Klassen/Tabellen behalten die alten Namen.
+- **API-Vertrag:** `openapi.json` ist versioniert und Basis der Frontend-Typen; nach Änderungen an Schemas oder
+  Routen neu exportieren (Ablauf: `../docs/architecture.md#api-vertrag--typgenerierung`). Die ORM-Relationen heißen
+  wie die API-Felder (`Scene.wall_image`, `Scene.ground_image`, `Scene.tracks`); Klassen/Tabellen behalten die alten
+  Namen.
 - **`source`-Pfade** in `seed_data.json` verweisen auf Dateien in `../frontend/public/` (z. B.
   `/assets/images/ground_screen/main_1.jpg`). Das Backend liefert keine Dateien aus.
 - **Seed:** Referenzen (`graphics_wall_id`, `graphics_ground_id`, `music_id`-Liste) sind Autoincrement-IDs in

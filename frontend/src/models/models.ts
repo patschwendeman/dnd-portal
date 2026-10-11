@@ -1,6 +1,6 @@
 import { components } from '../api/schema'
 
-// API types are generated from ../backend/openapi.json (npm run generate:api), do not edit them here
+// Derived from the generated src/api/schema.d.ts (npm run generate:api); change the backend schemas, not these types
 type Schemas = components['schemas']
 
 export type SceneDetail = Schemas['SceneDetail']

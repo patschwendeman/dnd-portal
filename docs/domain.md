@@ -5,7 +5,7 @@
 | Spielleiter / Admin | Erzählt die Geschichte, spielt alle NPCs, steuert die App | Route `/admin`, `AdminScreen` |
 | Spieler | Spielt einen Charakter, nutzt den Player Screen | Route `/` (`PlayerScreen`); geparkt: `/spells` (Branch `feature/spells-screen`) |
 | NPC | Nicht-Spieler-Charakter, freundlich oder feindlich, vom Spielleiter gespielt | kein eigenes Datenmodell; Infos nur in Markdown-Notizen |
-| Szene | Situation, die der Spielleiter aktiviert; bündelt Wall-Bild, Ground-Bild und Musik | Tabelle/Model `Scene` (Backend), `SceneDetail` (Frontend) |
+| Szene | Situation, die der Spielleiter aktiviert; bündelt Wall-Bild, Ground-Bild und Musik | Tabelle/Model `Scene` (Backend), API-Schema `SceneDetail` (Backend `app/schemas/`, Frontend-Typ generiert) |
 | Kampfszene | Szene mit taktischem Kampf | `Scene.main == true` → „Mainmap“, Endpoint `/maps/main` |
 | Nicht-Kampfszene | Dorf, Shop, Taverne, Level-Up … | `Scene.main == false` → „Sidemap“, Endpoint `/maps/side` |
 | Wall-Bild | Atmosphäre-Hintergrund der Szene | `GraphicsWall` / `scene.wall_image` |

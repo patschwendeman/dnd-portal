@@ -241,9 +241,13 @@ keine Pfade mehr, die von einer `{scene_id}`-Route verschluckt werden.
   - (b) AK7 für Schritt 2 im Plan ausdrücklich als nicht anwendbar festhalten
   - Umgesetzt (Runde 2, Variante a): `test_removed_details_path_with_slash_returns_no_scene_list`; gegen `844e637^` rot
     (`assert 200 == 422`), jetzt grün
-- [ ] AK6: Manuellen Screen-Test (Kampf-/Nicht-Kampfszene, Wall, Ground, Playlist, Beschreibung, Dialog) durchführen, sobald der Dev-Stack laufen kann
+- [x] AK6: Manuellen Screen-Test (Kampf-/Nicht-Kampfszene, Wall, Ground, Playlist, Beschreibung, Dialog) durchführen, sobald der Dev-Stack laufen kann
   - Runde 2: Dev-Stack läuft; `npm run test:e2e` 4/4 grün; `/scenes`, `/scenes/1`, `/maps/main`, `/maps/side` → 200
-    ohne 307, `/docs` → 200. Manueller Browser-Test durch den User steht noch aus
+    ohne 307, `/docs` → 200
+  - Browser-Test im Dev-Stack (Admin, Wall, Ground in Tabs desselben Browsers): Kampfszene „Fight 3 (Ereignis)“ und
+    Nicht-Kampfszene „Shop“ aktiviert – Dialog-Vorschau mit Bild/Beschreibung, Wall-Bild (bei Kampfszene mit
+    Übersicht und markierter Kachel) und Ground-Bild korrekt, Track wechselt und spielt (206), keine 307, keine
+    Konsolenfehler
 
 **Hinweise (nicht blockierend)**
 - Abweichungen des Implementers verletzen keine Plan-Entscheidung: Export-Skript setzt `sys.path` und braucht `DB_*`/`POSTGRES_*`-Env (CI per `env`, `.github/workflows/backend.yml:46-55`), aber keine DB-Verbindung; 404 nur mit `description` dokumentiert (reicht für E5); leere Listen per monkeypatch
@@ -263,3 +267,38 @@ keine Pfade mehr, die von einer `{scene_id}`-Route verschluckt werden.
 - Backend: ruff check/format, mypy grün; pytest 23 passed (temporäre `postgres:17` auf 55432); Export-Diff leer
 - Frontend: lint 0 Fehler/1 Warnung, typecheck grün, `generate:api`-Diff leer, unit 57/57, build grün
 - Nicht ausgeführt: E2E, AK6; CI erst nach Push
+
+### Runde 2 – Review (2bb4e95)
+
+**Empfehlung:** Abnahme. Beide blockierenden Befunde aus Runde 1 behoben; neuer Regressionstest am alten Stand rot, jetzt grün; AK6 per Browser-Test, E2E und curl belegt; lokale Checks grün, CI nach Push prüfen.
+
+**Akzeptanzkriterien**
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Unbekannte Szene | erfüllt | Dev-Stack `GET /scenes/999` → `404 {"detail":"Scene not found"}`; Test grün, gegen `844e637^` rot |
+| AK2 Szenen mit Relationen | erfüllt | `GET /scenes/1` → Keys genau `description, ground_image, id, main, name, tracks, wall_image`; Bild-Keys `id, name, source`; Track-IDs `[1, 2, 3]` sortiert |
+| AK3 Keine verschluckten Pfade | erfüllt | `/scenes/details/1` → 404, `/scenes/details` → 422 `int_parsing`, `/scenes/details/` → 307 → 422 |
+| AK4 Leere Listen | erfüllt | Tests grün, `test_read_scenes_returns_empty_list_without_scenes` am alten Stand rot |
+| AK5 Generierte Typen | erfüllt (CI nach Push prüfen) | Export- und `generate:api`-Diffs leer; Gegenprobe aus Runde 1 |
+| AK6 Screens unverändert nutzbar | erfüllt | Browser-Test der Hauptsession (Kampfszene „Fight 3 (Ereignis)“, Nicht-Kampfszene „Shop“), E2E 4/4, curl ohne 307 |
+| AK7 Regressionstests + Checks | erfüllt (CI nach Push prüfen) | Worktree `844e637^` mit Tests aus `2bb4e95`: 7 rot, u. a. `test_removed_details_path_with_slash_returns_no_scene_list` (`assert 200 == 422`); aktuell 24 passed; `…_is_rejected_as_invalid_scene_id` als reine AK3-Festschreibung im Plan vermerkt |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+- Runden-Commit präzisiert auch Plantext (Reproduktionsschritt 2/Ist um `GET /scenes/details/`, AK7 um Testzuordnung) – entspricht der vom User gewählten Variante (a)
+- Slash-Test folgt dem Redirect (Default `follow_redirects=True`), prüft das Endergebnis 422, nicht den 307 selbst – reicht für „keine Szenendaten“
+- `docs/architecture.md:217` korrigiert („vitest, `__tests__/unit/*.spec.ts`“)
+- Lint-Warnung `frontend/src/screens/WallScreen.tsx:164` (alt-text) bestand schon, nicht im Diff
+- Übrige Hinweise aus Runde 1 (Export-Skript-Env, Lockfile, Test-ID) gelten unverändert
+
+**Scope / Subtasks / Konventionen**
+- Alle Subtasks abgehakt; Runde 2 ändert nur `backend/tests/test_scenes.py`, `docs/architecture.md` und den Plan; Produktivcode unverändert
+- Commit `fix(DND-20): address review round 1` nach Konvention, ohne KI-Signatur, auf `development`
+
+**Checks**
+- Backend: ruff check/format, mypy grün; pytest gegen Dev-DB 24 passed; Export ohne Diff
+- Frontend: lint 0 Fehler/1 Warnung, typecheck grün, `generate:api` ohne Diff, unit 57/57, build grün
+- E2E 4/4 (Implementer); CI erst nach Push
