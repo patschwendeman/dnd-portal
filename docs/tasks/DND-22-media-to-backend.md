@@ -149,7 +149,10 @@ Upload im Admin Screen (eigener feat-Task).
 - [x] AK3: Eine bestehende DB mit Stand `0001` wird beim Start auf `0002` migriert; Szenen zeigen danach dieselben
       Medien wie vorher.
 - [ ] AK4: Alle Invarianten eingehalten – sichtbares Verhalten in Admin, Wall, Ground und Player unverändert (Dev und Prod).
-- [ ] AK5: Lint (ruff, eslint), Typecheck (mypy strict, tsc), Tests (pytest, Jest, BDD) und Build sind grün.
+      Runde 2: manuelle Schritte 1 und 6 erledigt, API-Antworten nach Migration identisch (bis auf neue Media-IDs, E4);
+      offen: Browser-Schritte 2–4 (Dev) und 5 (Prod).
+- [x] AK5: Lint (ruff, eslint), Typecheck (mypy strict, tsc), Tests (pytest, Jest, BDD) und Build sind grün.
+      Runde 2: `npm run test:e2e` gegen migrierten Dev-Stack grün (2 Suites, 4 Tests).
 - [x] AK6: Bestehende Tests nur in Pfaden/Mocks angepasst, nicht in ihrer Aussage; neue Tests gemäß Subtasks vorhanden.
 
 ## Teststrategie / Verifikation
@@ -170,3 +173,37 @@ Upload im Admin Screen (eigener feat-Task).
 - keine
 
 ## Review
+
+### Runde 1 – 2026-10-11
+**Empfehlung:** Nacharbeiten (keine Code-Mängel; offen sind nur nicht gelaufene Prüfungen)
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | `frontend/public/assets/{images,music}` enthält nur noch die E7-Kopien (`ground_screen/mapOverview.jpg`, `music/side/forest/From_Past_To_Present.mp3`); `alembic upgrade head` legt `media` an, alte Tabellen fehlen (`test_migration_0002.py`); Model `backend/app/models/media.py` |
+| AK2 | erfüllt | Alle 74 referenzierten Dateien per TestClient ausgeliefert (33 × jpg 200, 41 × mp3 mit Range 206); `test_media.py` (Range, 404, Traversal) grün; Mount `backend/app/main.py`, Bind-Mounts in `compose.dev.yaml`/`compose.prod.yaml` |
+| AK3 | erfüllt | Frische DB auf `325141d^` mit Alt-Seed befüllt, dann auf `0002` migriert: Szenen, Medien-Namen, Quellen (`/assets/…` → `/media/…`), Track-Reihenfolge und Maps identisch; migrierte und frisch geseedete DB identisch |
+| AK4 | nicht prüfbar | Code-Review ohne Befund (`mediaUrl` an allen sechs Stellen); manuelle Schritte Dev/Prod nicht gelaufen (Prod-Stack belegt 8000/5432/8080) |
+| AK5 | teilweise erfüllt | ruff, mypy strict, pytest 47 passed, Alembic-CI-Folge, eslint (1 vorbestehende Warnung), tsc, vitest 60 passed, Build grün; `openapi.json`/`schema.d.ts` ohne Diff; `npm run test:e2e` nicht gelaufen |
+| AK6 | erfüllt | Bestehende Tests nur in Datenquelle/Pfaden angepasst; neu: `test_media.py`, `test_seed.py`, `test_migration_0002.py`, `test_config.py` (MEDIA_DIR), `mediaUrl.spec.ts` |
+
+**Blockierende Befunde**
+- [x] AK5: `npm run test:e2e` gegen Dev-Stack auf Stand 325141d ausführen (Prod-Stack muss dafür gestoppt werden)
+      → grün: 2 Suites, 4 Tests (`selectMainScene`, `selectSideScene`); Vite-Hinweise zu `public/`-Imports vorbestehend (E7)
+- [ ] AK4: Manuelle Schritte 1–6 der Teststrategie (Dev mit Migration, Prod auf :8080 – Prod-DB liegt danach auf `0002`)
+      → Schritt 1 erledigt: Dev-DB per Worktree `325141d^` auf `0001` mit Alt-Seed (29 Szenen), dann `./script.sh dev`:
+        `alembic_version` = `0002`, Tabellen `media` (33 image, 43 audio), `scene`, `scene_track`; Log ohne Fehler
+        (`Application startup complete.`); `/maps/main`, `/maps/side` identisch (`/assets/` → `/media/`), `/scenes` identisch
+        bis auf neue IDs der Bilder/Tracks (E4, Zuordnung gleich)
+      → curl gegen :8000: alle 74 Quellen aus `/scenes`, `/maps/*` beginnen mit `/media/`; 33 × jpg 200, 41 × mp3 mit Range 206
+      → Schritt 6 erledigt: `media/images/wall_screen/forest.jpg` umbenannt, leere DB: Log
+        `Media file images/wall_screen/forest.jpg not found in /app/media; seeding the entry without size`, Start läuft,
+        `/scenes` 200; danach zurückbenannt, DB neu geseedet (76 Medien mit `size`)
+      → offen: Browser-Schritte 2–4 (Dev :5173) und 5 (Prod :8080)
+- [ ] Nach dem Push CI prüfen (Backend inkl. `test_migration_0002` mit `CREATE DATABASE`, Frontend) → nach Push zu prüfen
+
+**Hinweise (nicht blockierend)**
+- Root-`CLAUDE.md` (Monorepo-Tabelle) nennt noch Frontend-Assets, `media/` fehlt beim Backend – Kandidat für `/quick-task`
+- `.github/workflows/backend.yml`: `paths` ohne `media/**`
+- Downgrade `0002` → `0001` vergibt Ground-Bildern/Tracks neue IDs, Zuordnung bleibt
+- `media_source()` doppelt in `tests/conftest.py` und `tests/test_maps.py`
+- eslint-Warnung `WallScreen.tsx` (alt-text) vorbestehend
