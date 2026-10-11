@@ -98,7 +98,7 @@ Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets.
 
 ### Ist
 - **Layout** (seit DND-5 nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Vollbild-Hintergrund =
-  `graphics_wall.source` der aktiven Szene, unverzerrt und randlos (`object-fit: cover`). Schrift Inter.
+  `wall_image.source` der aktiven Szene, unverzerrt und randlos (`object-fit: cover`). Schrift Inter.
 - Overlay-Panel (`OverlayPanel`) oben mittig, 48px unter der Oberkante, höchstens 1440px breit und mit dem Monitor
   schrumpfend, mit Kopfzeile. Umschaltbar über die schwebende Steuerleiste (`ScreenControlBar`), die beim Hover
   mittig über der Unterkante erscheint (Buttons BATTLE/WORLD/OFF, der aktive in `primary`):
@@ -122,7 +122,7 @@ Die Oberfläche der Welt als **digitales Spielbrett**. Bei einer Kampfszene wird
 optional mit **Grid** als Layout für taktische Kämpfe.
 
 ### Ist
-- Vollbild-Medium = `graphics_ground.source` der aktiven Szene; Bild (`.jpg/.jpeg/.png`) oder Video
+- Vollbild-Medium = `ground_image.source` der aktiven Szene; Bild (`.jpg/.jpeg/.png`) oder Video
   (`.mp4/.webm/.mkv`, autoplay, loop, stumm) je nach Dateiendung.
 - `GridOverlay` mit Hover-Steuerung: Farbe BLACK / WHITE / OFF, Slider für Zellgröße (100–200).
   Die Steuerleiste hat dieselbe schwebende Form wie auf der Wall (geteilte `ScreenControlBar`), auf dem Ground mit den

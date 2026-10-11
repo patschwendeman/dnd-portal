@@ -33,6 +33,7 @@ npm run typecheck    # tsc -b (nur Typprüfung)
 npm run lint         # ESLint (eslint.config.js)
 npm run test:unit    # vitest (__tests__/unit)
 npm run test:e2e     # jest-cucumber + Selenium/Chrome; braucht laufendes Backend auf :8000
+npm run generate:api # API-Typen src/api/schema.d.ts aus ../backend/openapi.json erzeugen (openapi-typescript)
 ```
 
 E2E-Struktur: `__tests__/bdd/features/*.feature` (Szenarien), `__tests__/bdd/steps/*.ts` (Steps, von jest per
@@ -70,8 +71,8 @@ src/context/         ActiveSceneContext
 src/screens/         Screens
 src/components/      UI-Bausteine (TopBar, DocumentReader, MapOverview, GridOverlay, ScreenControlBar, ResourceBarPlayer …)
 src/service/         Datenladen je Screen (getAdminData, getWallScreenData, getGroundScreenData …)
-src/api/             axios-Client (apiClient.ts) und getData (apiMethods.ts)
-src/models/models.ts Interfaces (SceneDetail, Screen, Music, MapResponse) – spiegeln die Backend-Antworten;
+src/api/             axios-Client (apiClient.ts), getData (apiMethods.ts), loadData; schema.d.ts generiert
+src/models/models.ts API-Typen SceneDetail, Image, Track, MapResponse (= MapEntry) aus src/api/schema.d.ts;
                      Map ist Frontend-Modell (sceneId), Umwandlung aus MapResponse im Service
 src/hooks/           useMusicPlayer (bindet MusicPlayer an den Admin Screen: Track/Play-Zustand, Cleanup)
 src/utils/utils.ts   Zufallstrack (getRandomTrack), Musiktitel, Soundeffekte (playAtmoSounds), filterSceneByKey,
@@ -86,7 +87,7 @@ public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mec
 
 Datenfluss: Screen → `src/service/*` → `getData()` → Backend. Szenenwechsel: Admin setzt `activeSceneId` über den
 Context → `App.tsx` schreibt `localStorage` → andere Fenster desselben Browsers erhalten das `storage`-Event →
-jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polling; Player-Screens sind nicht angebunden.
+jeder Screen lädt die Szene per `scenes/{id}` neu. Kein WebSocket/Polling; Player-Screens sind nicht angebunden.
 
 ## Konventionen (durch ESLint erzwungen bzw. im Code üblich)
 
@@ -105,7 +106,9 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
 - `GlobalStyle` (box-sizing, margin, Body-Schrift) wird nicht in `App.tsx`, sondern im Screen gerendert – in allen
   vier Screens (`AdminScreen`, `WallScreen`, `GroundScreen`, `PlayerScreen`).
 - Icons als SVG über `react-svg` (Füllfarbe aus dem Theme), Pfade ab `/assets/...`.
-- Neue Backend-Felder zuerst in `src/models/models.ts` ergänzen.
+- API-Typen nicht von Hand pflegen: `src/api/schema.d.ts` wird aus `../backend/openapi.json` generiert
+  (`npm run generate:api`, nicht editieren, von ESLint ausgenommen); `src/models/models.ts` leitet die Typen davon ab.
+  Ablauf bei Vertragsänderungen: `../docs/architecture.md#api-vertrag--typgenerierung`. API-Pfade ohne Slash am Ende.
 - Code-Kommentare erklären das Warum. Keine Verweise auf DESIGN.md-/docs-Abschnitte im Code – die Zuordnung
   steht in der Doku (z. B. Layout-Konstanten in `docs/design/screen-layouts.md`).
 
@@ -123,7 +126,8 @@ jeder Screen lädt die Szene per `scenes/details/{id}` neu. Kein WebSocket/Polli
 ## CI
 
 `../.github/workflows/frontend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter
-`frontend/` vier Jobs direkt auf dem Runner (Node aus `.nvmrc`, npm-Cache, `npm ci`): zuerst `build` (`npx vite build`),
-danach parallel `typecheck` (`npm run typecheck`, also `tsc -b`), `lint` (`npm run lint`) und `test`
+`frontend/` oder an `backend/openapi.json` vier Jobs direkt auf dem Runner (Node aus `.nvmrc`, npm-Cache, `npm ci`): zuerst `build` (`npx vite build`),
+danach parallel `typecheck` (erst `npm run generate:api` + `git diff --exit-code src/api/schema.d.ts`, dann
+`npm run typecheck`, also `tsc -b`), `lint` (`npm run lint`) und `test`
 (`npm run test:unit`), alle mit `needs: build` – bricht der Build, laufen sie nicht. Unabhängig davon baut
 `docker-prod` das Production-Image (`docker build --target prod`, ohne Push). E2E läuft nicht in CI.

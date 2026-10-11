@@ -1,105 +1,93 @@
 [
     {
-        "name": "Example Scene",
-        "graphics_wall_id": 1,
-        "graphics_ground_id": 1,
         "id": 1,
+        "name": "Example Scene",
         "description": "This is an example scene for testing purposes.",
         "main": true,
-        "music_id": 1,
-        "graphics_ground": {
-            "name": "Grassland",
-            "source": "https://example.com/ground_grassland.png",
-            "id": 1
-        },
-        "graphics_wall": {
+        "wall_image": {
+            "id": 1,
             "name": "Castle Wall",
-            "source": "https://example.com/wall_castle.png",
-            "id": 1
+            "source": "https://example.com/wall_castle.png"
         },
-        "music": [
+        "ground_image": {
+            "id": 1,
+            "name": "Grassland",
+            "source": "https://example.com/ground_grassland.png"
+        },
+        "tracks": [
             {
+                "id": 1,
                 "name": "Battle Theme",
-                "source": "https://example.com/battle_theme.mp3",
-                "id": 1
+                "source": "https://example.com/battle_theme.mp3"
             }
         ]
     },
     {
-        "name": "Example Scene",
-        "graphics_wall_id": 2,
-        "graphics_ground_id": 2,
         "id": 2,
+        "name": "Example Scene",
         "description": "This is an example scene for testing purposes.",
         "main": true,
-        "music_id": 2,
-        "graphics_ground": {
-            "name": "Grassland",
-            "source": "https://example.com/ground_grassland.png",
-            "id": 2
-        },
-        "graphics_wall": {
+        "wall_image": {
+            "id": 2,
             "name": "Castle Wall",
-            "source": "https://example.com/wall_castle.png",
-            "id": 2
+            "source": "https://example.com/wall_castle.png"
         },
-        "music": [
+        "ground_image": {
+            "id": 2,
+            "name": "Grassland",
+            "source": "https://example.com/ground_grassland.png"
+        },
+        "tracks": [
             {
+                "id": 2,
                 "name": "Battle Theme",
-                "source": "https://example.com/battle_theme.mp3",
-                "id": 2
+                "source": "https://example.com/battle_theme.mp3"
             }
         ]
     },
     {
-        "name": "Example Scene",
-        "graphics_wall_id": 3,
-        "graphics_ground_id": 3,
         "id": 3,
+        "name": "Example Scene",
         "description": "This is an example scene for testing purposes.",
         "main": true,
-        "music_id": 3,
-        "graphics_ground": {
-            "name": "Grassland",
-            "source": "https://example.com/ground_grassland.png",
-            "id": 3
-        },
-        "graphics_wall": {
+        "wall_image": {
+            "id": 3,
             "name": "Castle Wall",
-            "source": "https://example.com/wall_castle.png",
-            "id": 3
+            "source": "https://example.com/wall_castle.png"
         },
-        "music": [
+        "ground_image": {
+            "id": 3,
+            "name": "Grassland",
+            "source": "https://example.com/ground_grassland.png"
+        },
+        "tracks": [
             {
+                "id": 3,
                 "name": "Battle Theme",
-                "source": "https://example.com/battle_theme.mp3",
-                "id": 3
+                "source": "https://example.com/battle_theme.mp3"
             }
         ]
     },
     {
-        "name": "Example Scene",
-        "graphics_wall_id": 4,
-        "graphics_ground_id": 4,
         "id": 4,
+        "name": "Example Scene",
         "description": "This is an example scene for testing purposes.",
         "main": false,
-        "music_id": 4,
-        "graphics_ground": {
-            "name": "Grassland",
-            "source": "https://example.com/ground_grassland.png",
-            "id": 4
-        },
-        "graphics_wall": {
+        "wall_image": {
+            "id": 4,
             "name": "Castle Wall",
-            "source": "https://example.com/wall_castle.png",
-            "id": 4
+            "source": "https://example.com/wall_castle.png"
         },
-        "music": [
+        "ground_image": {
+            "id": 4,
+            "name": "Grassland",
+            "source": "https://example.com/ground_grassland.png"
+        },
+        "tracks": [
             {
+                "id": 4,
                 "name": "Battle Theme",
-                "source": "https://example.com/battle_theme.mp3",
-                "id": 4
+                "source": "https://example.com/battle_theme.mp3"
             }
         ]
     }

@@ -149,7 +149,7 @@ const WallScreen: FunctionComponent = (): ReactElement => {
     return(
         <Screen>
             <GlobalStyle />
-            <BackgroundImage data-test-id='wallImg' src={activeScene?.graphics_wall.source} alt='' /> 
+            <BackgroundImage data-test-id='wallImg' src={activeScene?.wall_image.source} alt='' /> 
             <OverlayPanel $isVisible={mainMapsVisibility} $columns={columns} $rows={rows}>
                 <PanelHeader>
                     <PanelTitle>Kampfschauplätze</PanelTitle>

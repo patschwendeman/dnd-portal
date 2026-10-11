@@ -30,7 +30,8 @@
   Abhängigkeiten per uv (`pyproject.toml`, `uv.lock`).
 - Schichten (Paket `app`): `app/api/routes/*` (je Modul ein `router`, Prefix/Tags zentral in `app/main.py`) →
   `app/services/*` (Modul-Funktionen) → `app/crud/*` → `app/models/*`. Konfiguration in `app/core/config.py`
-  (pydantic-settings), Engine/Session in `app/db/session.py`. Kein Pydantic-Schema-Layer, keine `response_model`s.
+  (pydantic-settings), Engine/Session in `app/db/session.py`. Antwortformen als Pydantic-Schemas in `app/schemas/*`
+  (`response_model` bzw. Rückgabe-Annotation der Routen).
 - Beim App-Start (`lifespan`) werden die Tabellen per `Base.metadata.create_all` angelegt (keine Migrationen). Danach
   läuft der Seeder (`app/db/seed.py`, Daten in `app/db/data/seed_data.json`) – je Tabelle nur, wenn sie leer ist.
   `import app.main` allein baut keine DB-Verbindung auf.
@@ -39,20 +40,51 @@
 
 | Pfad | Liefert |
 |---|---|
-| `/scenes` | Szenen (nur Spalten) |
-| `/scenes/{scene_id}` | eine Szene (nur Spalten) |
-| `/scenes/details/` | alle Szenen inkl. `graphics_wall`, `graphics_ground`, `music[]` |
-| `/scenes/details/{scene_id}` | eine Szene inkl. Relationen |
-| `/maps/main` | `[{id: scene.id, source: graphics_ground.source}]` für Kampfszenen |
-| `/maps/side` | `[{id: scene.id, source: graphics_wall.source}]` für Nicht-Kampfszenen |
+| `/scenes` | `list[SceneDetail]`: alle Szenen nach ID (200, ggf. `[]`) |
+| `/scenes/{scene_id}` | `SceneDetail` (200) bzw. 404 `{"detail": "Scene not found"}` |
+| `/maps/main` | `list[MapEntry]`: `{id: scene.id, source: ground_image.source}` je Kampfszene (200, ggf. `[]`) |
+| `/maps/side` | `list[MapEntry]`: `{id: scene.id, source: wall_image.source}` je Nicht-Kampfszene (200, ggf. `[]`) |
+
+Kanonische Pfade sind ohne Slash am Ende (mit Slash antwortet FastAPI mit 307-Redirect). Fehler im Default-Format
+`{"detail": "..."}`.
+
+### Antwortformat
+
+```
+SceneDetail { id: int, name: str, description: str, main: bool,
+              wall_image: Image, ground_image: Image, tracks: list[Track] }   tracks nach ID sortiert
+Image       { id: int, name: str, source: str }
+Track       { id: int, name: str, source: str }
+MapEntry    { id: int, source: str }                                         id = Szenen-ID
+```
+
+Alle Felder sind Pflicht und nicht nullable, obwohl die DB-Spalten (noch) nullable sind; fehlt ein Wert, schlägt die
+Response-Validierung fehl (500). Die Fremdschlüssel (`graphics_wall_id` …) und ungenutzten Spalten sind nicht Teil
+der Antwort.
+
+### API-Vertrag & Typgenerierung
+
+`backend/openapi.json` (versioniert) ist die Single Source of Truth für den Vertrag: Das Skript
+`backend/scripts/export_openapi.py` schreibt `app.openapi()` deterministisch dorthin (ohne DB-Verbindung, die
+`Settings`-Werte aus `.env` bzw. Umgebung reichen). Das Frontend erzeugt daraus per `openapi-typescript`
+`frontend/src/api/schema.d.ts` (versioniert, von ESLint ausgenommen); `src/models/models.ts` leitet `SceneDetail`,
+`Image`, `Track` und `MapResponse` (= `MapEntry`) davon ab.
+
+Ablauf bei einer Vertragsänderung:
+1. Backend ändern (Schema in `app/schemas/`, Route, Tests).
+2. `uv run python scripts/export_openapi.py` (in `backend/`).
+3. `npm run generate:api` (in `frontend/`).
+4. Frontend an die geänderten Typen anpassen (`npm run typecheck` zeigt die Stellen).
+
+CI prüft beide Dateien auf Aktualität (Export bzw. Generierung + `git diff --exit-code`).
 
 ### Datenmodell
 
 ```
 Scene(id, name, description, main: bool, graphics_wall_id → GraphicsWall, graphics_ground_id → GraphicsGround (unique), music_id [ungenutzt])
-GraphicsWall(id, name, source)            Scene N:1 (z. B. teilen sich alle Kampfszenen ein Wall-Bild; Relation GraphicsWall.scenes ist eine Liste)
-GraphicsGround(id, name, source, main)    Scene 1:1; Feld main ungenutzt
-Music(id, name, source)                   Scene N:M über scene_music_association(scene_id, music_id)
+GraphicsWall(id, name, source)            Scene N:1 über Relation Scene.wall_image (z. B. teilen sich alle Kampfszenen ein Wall-Bild; GraphicsWall.scenes ist eine Liste)
+GraphicsGround(id, name, source, main)    Scene 1:1 über Relation Scene.ground_image; Feld main ungenutzt
+Music(id, name, source)                   Scene N:M über Relation Scene.tracks und scene_music_association(scene_id, music_id)
 ```
 
 `source` ist jeweils ein Pfad-String relativ zum Frontend-Public-Ordner, z. B. `/assets/images/ground_screen/main_1.jpg`.
@@ -182,8 +214,8 @@ startet `uvicorn app.main:app` ohne `--reload`; den Reload setzt nur der Dev-Sta
 | | Backend | Frontend |
 |---|---|---|
 | Lint | `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app` (strict, Pydantic-Plugin; Konfig in `pyproject.toml`) | `npm run lint` (ESLint flat config, einfache Quotes, keine Semikolons) |
-| Unit-Tests | `uv run pytest` – Charakterisierungstests aller Endpoints in `tests/`, gegen PostgreSQL (lokal Dev-DB bzw. Dev-Container) | `npm run test:unit` (vitest, nur `utils.spec.ts`) |
+| Unit-Tests | `uv run pytest` – Tests aller Endpoints in `tests/` (Erwartungen aus dem Seed), gegen PostgreSQL (lokal Dev-DB bzw. Dev-Container) | `npm run test:unit` (vitest, nur `utils.spec.ts`) |
 | E2E | – | `npm run test:e2e` (jest-cucumber + Selenium/Chrome, braucht laufendes Backend mit Seed-Daten) |
-| CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: parallele Jobs `lint` (ruff check, ruff format --check, mypy) und `test` (pytest gegen Service-Container `postgres:17`) direkt auf dem Runner, uv mit Cache auf `uv.lock`; Job `docker-prod` baut das Image (`--target prod`, ohne Push) | `.github/workflows/frontend.yml` – analog für `frontend/`: zuerst Job `build` (`vite build`), danach parallel `typecheck` (`tsc -b`), `lint` und `test` (`npm run test:unit`) mit `needs: build`, Node aus `frontend/.nvmrc` (18) mit npm-Cache, `npm ci`; Job `docker-prod` baut das Production-Image (`--target prod`, ohne Push); kein E2E in CI |
+| CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: parallele Jobs `lint` (ruff check, ruff format --check, mypy, `openapi.json` aktuell) und `test` (pytest gegen Service-Container `postgres:17`) direkt auf dem Runner, uv mit Cache auf `uv.lock`; Job `docker-prod` baut das Image (`--target prod`, ohne Push) | `.github/workflows/frontend.yml` – analog für `frontend/` und `backend/openapi.json`: zuerst Job `build` (`vite build`), danach parallel `typecheck` (`src/api/schema.d.ts` aktuell, `tsc -b`), `lint` und `test` (`npm run test:unit`) mit `needs: build`, Node aus `frontend/.nvmrc` (18) mit npm-Cache, `npm ci`; Job `docker-prod` baut das Production-Image (`--target prod`, ohne Push); kein E2E in CI |
 
 Die alten Branches `test` und `v1-roguelike` (verworfen) der früheren Einzel-Repos liegen als Tags `archive/{backend,frontend}-{test,v1-roguelike}` vor.

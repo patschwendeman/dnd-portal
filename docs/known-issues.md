@@ -15,12 +15,9 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 
 ### Bugs & Daten
 
-- Nicht gefundene Datensätze erzeugen 500 statt 404 (Services werfen `ValueError`, Routen prüfen auf `None`).
-- `/scenes/details/{id}` gibt bei unbekannter ID die **ganze Liste** zurück.
-- `/scenes/details` ohne Slash landet auf `/scenes/{scene_id}` → 422 (`int_parsing`).
-- Die Bugs dieses Abschnitts sind durch Charakterisierungstests (`backend/tests/`, `# known issue: …`) festgehalten;
-  ein Fix-Task stellt die betroffenen Tests gezielt um.
-- `Scene.music_id` und `GraphicsGround.main` sind ungenutzte Spalten.
+- `Scene.music_id` und `GraphicsGround.main` sind ungenutzte Spalten; Spalten wie `name`, `source`, `description`,
+  `main` sind nullable, obwohl der API-Vertrag sie als Pflicht führt (fehlender Wert → 500 bei der
+  Response-Validierung). Entfernen bzw. `NOT NULL` erst mit Migrationen.
 - Keine Migrationen: Schemaänderungen erfordern DB-Reset.
 - Seed: Ground „Level_up“ zeigt auf den `wall_screen`-Ordner; doppelte/unpassende Musiknamen; Beschreibungen großteils Copy-Paste.
 - README ist nur ein Zweizeiler – nicht löschen, sondern wie `frontend/README.md` aktualisieren (Zweck, Starten,
@@ -29,12 +26,8 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 
 ### Struktur & Benennung
 
-- Relation `Scene.music` ist eine Liste, heißt aber im Singular (Umbenennung ändert den API-Vertrag → Schema-Task).
-
-### FastAPI & SQLAlchemy
-
-- `/scenes*` ohne Pydantic-Schemas und `response_model`: OpenAPI ohne Antworttypen, Antwortform hängt von `joinedload`
-  ab, Vertrag zu `SceneDetail` im Frontend nicht abgesichert (`/maps/*` typisiert über `MapEntry`).
+- Model-Klassen und Tabellen heißen noch `GraphicsWall`/`GraphicsGround`/`Music` (`graphics_wall`, `graphics_ground`,
+  `music`), während Relationen und API `wall_image`, `ground_image`, `tracks` heißen – Umbenennung mit Migrationen.
 
 ## Frontend
 

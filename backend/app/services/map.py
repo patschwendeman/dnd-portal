@@ -1,16 +1,11 @@
 from typing import Literal
 
 from sqlalchemy.orm import Session
-from typing_extensions import TypedDict
 
 from app.crud import scene as scene_crud
+from app.schemas import MapEntry
 
 MapType = Literal["main", "side"]
-
-
-class MapEntry(TypedDict):
-    id: int
-    source: str | None
 
 
 def get_maps(db: Session, map_type: MapType) -> list[MapEntry]:
@@ -19,11 +14,9 @@ def get_maps(db: Session, map_type: MapType) -> list[MapEntry]:
 
     filter_main = map_type == "main"
 
-    filtered_maps: list[MapEntry] = []
+    maps: list[MapEntry] = []
     for scene in scene_crud.read_scenes_by_main(db, filter_main):
-        graphic = scene.graphics_ground if scene.main else scene.graphics_wall
-        if graphic is None:
-            raise ValueError(f"Scene {scene.id} has no graphic for its map type")
-        filtered_maps.append({"id": scene.id, "source": graphic.source})
-
-    return filtered_maps
+        image = scene.ground_image if scene.main else scene.wall_image
+        # A missing image or source fails the schema validation (MapEntry.source is required).
+        maps.append(MapEntry.model_validate({"id": scene.id, "source": image.source if image is not None else None}))
+    return maps

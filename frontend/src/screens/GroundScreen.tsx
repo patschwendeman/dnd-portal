@@ -77,7 +77,7 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
         let stale = false
 
         const handleGroundScreen = (activeScene: SceneDetail) => {
-            const src = activeScene.graphics_ground.source
+            const src = activeScene.ground_image.source
             setMediaSRC(src)
             setMediaType(determineMediaType(src))
         }

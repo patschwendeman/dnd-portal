@@ -1,7 +1,7 @@
 # DND-20: API-Vertrag mit Pydantic-Schemas, 404 statt 500, generierte Frontend-Typen
 
 **Typ:** fix
-**Status:** Entwurf
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -123,42 +123,42 @@ keine Pfade mehr, die von einer `{scene_id}`-Route verschluckt werden.
 ## Subtasks
 
 ### Vertrag
-- [ ] `backend/app/schemas/{__init__,scene,map}.py` (E3, E4).
-- [ ] Endpoints gemäß E1, Fehler gemäß E5.
+- [x] `backend/app/schemas/{__init__,scene,map}.py` (E3, E4).
+- [x] Endpoints gemäß E1, Fehler gemäß E5.
 
 ### Backend
-- [ ] ORM-Relationen umbenennen (E2) in `app/models/scene.py`, `app/models/media.py`; `app/crud/scene.py`
+- [x] ORM-Relationen umbenennen (E2) in `app/models/scene.py`, `app/models/media.py`; `app/crud/scene.py`
       (Eager Loading der neuen Namen, `tracks` sortiert), `app/services/{scene,map}.py`, `app/db/seed.py`
       (`scene.tracks = …`; Seed-JSON-Key `music_id` bleibt, da Datenformat – nur Zuweisung anpassen).
-- [ ] `app/api/routes/scenes.py`: zwei Routen (`""`, `"/{scene_id}"`) mit `response_model`; `maps.py` mit `list[MapEntry]`.
-- [ ] `MapEntry`-`TypedDict` durch Schema ersetzen; `get_maps` ohne `ValueError` für „kein Bild“ → Schema-Validierung
+- [x] `app/api/routes/scenes.py`: zwei Routen (`""`, `"/{scene_id}"`) mit `response_model`; `maps.py` mit `list[MapEntry]`.
+- [x] `MapEntry`-`TypedDict` durch Schema ersetzen; `get_maps` ohne `ValueError` für „kein Bild“ → Schema-Validierung
       (E4) übernimmt.
-- [ ] Tests: `tests/conftest.py` (Erwartungen im neuen Format aus dem Seed); `tests/test_scenes.py`: Liste, by ID,
+- [x] Tests: `tests/conftest.py` (Erwartungen im neuen Format aus dem Seed); `tests/test_scenes.py`: Liste, by ID,
       404 bei unbekannter ID, entfernte Pfade (AK3); `tests/test_maps.py` bis auf das neue Schema unverändert.
       `# known issue`-Markierungen entfernen. Regressionstests für alle Reproduktionsschritte.
-- [ ] `backend/scripts/export_openapi.py`, `backend/openapi.json` (E6).
+- [x] `backend/scripts/export_openapi.py`, `backend/openapi.json` (E6).
 
 ### Frontend
-- [ ] `openapi-typescript` + Script `generate:api`, `src/api/schema.d.ts` generieren; ESLint-Ignore.
-- [ ] `src/models/models.ts` (E6).
-- [ ] `src/service/{adminScreen,WallScreen,groundScreen}.ts`: Pfade `scenes`, `scenes/{id}`, `maps/main`, `maps/side`.
-- [ ] `src/screens/{AdminScreen,WallScreen,GroundScreen}.tsx`, `src/components/{Dialogue,DetailsSideBar}.tsx` u. a.:
+- [x] `openapi-typescript` + Script `generate:api`, `src/api/schema.d.ts` generieren; ESLint-Ignore.
+- [x] `src/models/models.ts` (E6).
+- [x] `src/service/{adminScreen,WallScreen,groundScreen}.ts`: Pfade `scenes`, `scenes/{id}`, `maps/main`, `maps/side`.
+- [x] `src/screens/{AdminScreen,WallScreen,GroundScreen}.tsx`, `src/components/{Dialogue,DetailsSideBar}.tsx` u. a.:
       `graphics_wall` → `wall_image`, `graphics_ground` → `ground_image`, `music` → `tracks`; `MapResponse.source` nicht
       mehr optional.
-- [ ] `__tests__/unit/SceneDetailMock.json` auf neues Format; `utils.spec.ts` mit vorhandenem Key (z. B. `id`);
+- [x] `__tests__/unit/SceneDetailMock.json` auf neues Format; `utils.spec.ts` mit vorhandenem Key (z. B. `id`);
       BDD-Steps/Mocks prüfen.
 
 ### CI
-- [ ] `.github/workflows/backend.yml`: OpenAPI-Aktualitätscheck (E6).
-- [ ] `.github/workflows/frontend.yml`: Trigger-Pfad `backend/openapi.json`, Typ-Aktualitätscheck (E6).
+- [x] `.github/workflows/backend.yml`: OpenAPI-Aktualitätscheck (E6).
+- [x] `.github/workflows/frontend.yml`: Trigger-Pfad `backend/openapi.json`, Typ-Aktualitätscheck (E6).
 
 ### Doku
-- [ ] `docs/architecture.md`: Endpoint-Tabelle, Antwortformat, Abschnitt „API-Vertrag & Typgenerierung“ (Ablauf bei
+- [x] `docs/architecture.md`: Endpoint-Tabelle, Antwortformat, Abschnitt „API-Vertrag & Typgenerierung“ (Ablauf bei
       Vertragsänderung: Backend ändern → `export_openapi.py` → `npm run generate:api` → Frontend anpassen).
-- [ ] `docs/domain.md` (Code-Namen `scene.wall_image`, `scene.ground_image`, `scene.tracks`), `docs/screens.md`
+- [x] `docs/domain.md` (Code-Namen `scene.wall_image`, `scene.ground_image`, `scene.tracks`), `docs/screens.md`
       (Feldnamen), `frontend/CLAUDE.md` (Pfad `scenes/{id}`, Typgenerierung), `backend/CLAUDE.md` (API-Vertrag,
       Schemas, `response_model`, Export-Befehl; Hinweis auf `response_model=None` entfernen).
-- [ ] `docs/known-issues.md`: Bugs (500/404, Liste, 422), Punkt „Relation `Scene.music`“ und „ohne Pydantic-Schemas“
+- [x] `docs/known-issues.md`: Bugs (500/404, Liste, 422), Punkt „Relation `Scene.music`“ und „ohne Pydantic-Schemas“
       entfernen; neuen Punkt: Model-Klassen/Tabellen heißen noch `GraphicsWall`/`GraphicsGround`/`Music` – Umbenennung
       mit Migrationen; Satz zu Charakterisierungstests anpassen.
 

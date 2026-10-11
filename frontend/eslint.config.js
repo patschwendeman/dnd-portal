@@ -7,7 +7,8 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default [
-  { ignores: ['dist/'] },
+  // src/api/schema.d.ts is generated from ../backend/openapi.json (npm run generate:api)
+  { ignores: ['dist/', 'src/api/schema.d.ts'] },
   { files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'] },
   { languageOptions: { globals: globals.browser } },
   pluginJs.configs.recommended,

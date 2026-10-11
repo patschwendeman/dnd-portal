@@ -1,4 +1,4 @@
-"""Shared fixtures for the characterization tests.
+"""Shared fixtures for the API tests.
 
 Starting the app (lifespan) creates the tables and runs the seeder, so a reachable PostgreSQL is required
 (DB_HOST/DB_PORT/... from the environment or backend/.env; see backend/CLAUDE.md).
@@ -36,50 +36,25 @@ def with_ids(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [{"id": index, **item} for index, item in enumerate(items, start=1)]
 
 
+def image(item: dict[str, Any]) -> dict[str, Any]:
+    return {"id": item["id"], "name": item["name"], "source": item["source"]}
+
+
 @pytest.fixture(scope="session")
-def expected_scenes(seed: dict[str, Any]) -> list[dict[str, Any]]:
-    """Scene rows as returned without relations: `music_id` column is never set by the seeder."""
+def expected_scene_details(seed: dict[str, Any]) -> list[dict[str, Any]]:
+    """Scenes in the `SceneDetail` schema: images and tracks (sorted by ID) with `id`, `name`, `source`."""
+    walls = with_ids(seed["graphics_walls"])
+    grounds = with_ids(seed["graphics_grounds"])
+    tracks = with_ids(seed["music"])
     return [
         {
             "id": scene["id"],
             "name": scene["name"],
             "description": scene["description"],
             "main": scene["main"],
-            "graphics_wall_id": scene["graphics_wall_id"],
-            "graphics_ground_id": scene["graphics_ground_id"],
-            "music_id": None,
+            "wall_image": image(walls[scene["graphics_wall_id"] - 1]),
+            "ground_image": image(grounds[scene["graphics_ground_id"] - 1]),
+            "tracks": [image(track) for track in tracks if track["id"] in scene["music_id"]],
         }
         for scene in with_ids(seed["scenes"])
     ]
-
-
-@pytest.fixture(scope="session")
-def expected_scene_details(seed: dict[str, Any], expected_scenes: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    walls = with_ids(seed["graphics_walls"])
-    grounds = with_ids(seed["graphics_grounds"])
-    music = with_ids(seed["music"])
-    details = []
-    for scene, seed_scene in zip(expected_scenes, seed["scenes"], strict=True):
-        wall = walls[scene["graphics_wall_id"] - 1]
-        ground = grounds[scene["graphics_ground_id"] - 1]
-        details.append(
-            {
-                **scene,
-                "graphics_wall": {"id": wall["id"], "name": wall["name"], "source": wall["source"]},
-                "graphics_ground": {
-                    "id": ground["id"],
-                    "name": ground["name"],
-                    "source": ground["source"],
-                    "main": ground.get("main"),
-                },
-                "music": sorted(
-                    (
-                        {"id": m["id"], "name": m["name"], "source": m["source"]}
-                        for m in music
-                        if m["id"] in seed_scene["music_id"]
-                    ),
-                    key=lambda m: m["id"],
-                ),
-            }
-        )
-    return details

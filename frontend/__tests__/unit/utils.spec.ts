@@ -12,10 +12,10 @@ function getRandomNumber(min: number, max: number) {
 
 describe('should return scene by key', () => {
   const SceneDetailMock: SceneDetail[] = data
-  const key = 'graphics_ground_id'
+  const key = 'id'
 
-  it('should return scene by graphics_ground_id', () => {
-    const value = SceneDetailMock[0].graphics_ground.id
+  it('should return scene by id', () => {
+    const value = SceneDetailMock[0].id
     if (value !== null) {
       const scene = filterSceneByKey(key, value, SceneDetailMock)
       expect(scene).toBe(SceneDetailMock[0])
@@ -25,7 +25,7 @@ describe('should return scene by key', () => {
   })
 
   it('should return type SceneDetail', () => {
-    const value = SceneDetailMock[0].graphics_ground.id
+    const value = SceneDetailMock[0].id
     if (value !== null) {
       const scene = filterSceneByKey(key, value, SceneDetailMock)
       expect(typeof scene).toBe(typeof SceneDetailMock[0])

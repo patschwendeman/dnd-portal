@@ -33,6 +33,7 @@ uv run ruff check                  # Lint (--fix behebt Import-Sortierung u. a.)
 uv run ruff format                 # Formatierung (CI: --check)
 uv run mypy app                    # Typprüfung (strict, Pydantic-Plugin)
 DB_HOST=localhost uv run pytest    # Tests gegen die DB des laufenden Dev-Stacks (Port 5432); DB_HOST aus .env (db) überschreiben
+uv run python scripts/export_openapi.py   # API-Vertrag nach openapi.json schreiben (nach jeder Schema-/Routenänderung)
 
 # Tests im Dev-Container (DB `db` aus dem Compose-Netz, Image mit Dev-Gruppe)
 docker compose -f compose.dev.yaml run --rm api pytest      # im Root (startet bei Bedarf die DB mit)
@@ -43,13 +44,13 @@ docker compose -f compose.dev.yaml run --rm --no-deps api sh -c 'ruff check && r
 Abhängigkeiten ändern: `uv add <paket>==<version>` (Laufzeit) bzw. `uv add --dev <paket>`; Upgrade per Pin-Anpassung
 in `pyproject.toml` und `uv lock`. `requirements.txt` gibt es nicht mehr.
 
-**Tests** (`tests/`, pytest) sind Charakterisierungstests: Sie halten das **aktuelle** Verhalten aller Endpoints fest,
-auch bekannte Bugs (markiert mit `# known issue: …`). Erwartungen werden aus `app/db/data/seed_data.json` berechnet;
+**Tests** (`tests/`, pytest) prüfen alle Endpoints gegen den Vertrag aus `app/schemas/` (Felder, Statuscodes, 404,
+leere Listen). Erwartungen werden aus `app/db/data/seed_data.json` berechnet;
 die Test-DB muss daher genau diesen Seed enthalten – nach Seed-Änderungen DB zurücksetzen (`docker compose -f compose.dev.yaml down -v` im Root).
 Der `TestClient` läuft als Context Manager (damit der `lifespan` Tabellen und Seed anlegt) und mit
-`raise_server_exceptions=False`, damit 500er als Response prüfbar sind. Daneben prüfen `test_cors.py` (erlaubte
-Origins, keine Credentials) und `test_config.py` (`Settings`, ohne DB). Behebt ein Task
-einen der Bugs, stellt er den zugehörigen Test gezielt um.
+`raise_server_exceptions=False`, damit 500er als Response prüfbar sind. Leere Listen werden per `monkeypatch` auf die
+CRUD-Funktion geprüft. Daneben prüfen `test_cors.py` (erlaubte Origins, keine Credentials) und `test_config.py`
+(`Settings`, ohne DB).
 
 Benötigt `backend/.env` (gitignored), angelegt aus `.env.example`: `cp .env.example .env`, Platzhalter ersetzen.
 Schlüssel: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` (Postgres-Container und API), `DB_DRIVER`, `DB_HOST`
@@ -77,14 +78,15 @@ app/db/session.py         engine, SessionLocal, get_db()
 app/db/seed.py            Seeder; Daten in app/db/data/seed_data.json
 app/models/               SQLAlchemy-Models: scene.py (Scene, scene_music_association), media.py (GraphicsWall,
                           GraphicsGround, Music); __init__.py re-exportiert alle (vollständige Base.metadata)
-app/crud/scene.py         Lesezugriffe auf Scene (read_scenes, read_scene, read_scenes_with_relations,
-                          read_scene_with_relations, read_scenes_by_main)
-app/services/scene.py     Fachlogik Szenen (get_scenes, get_scene, get_scene_details, get_scene_detail)
-app/services/map.py       Fachlogik Karten (get_maps, MapType, MapEntry)
+app/schemas/              Pydantic-Schemas des API-Vertrags: scene.py (SceneDetail, Image, Track), map.py (MapEntry)
+app/crud/scene.py         Lesezugriffe auf Scene, immer mit Relationen (read_scenes, read_scene, read_scenes_by_main)
+app/services/scene.py     Fachlogik Szenen (get_scenes, get_scene → Scene | None)
+app/services/map.py       Fachlogik Karten (get_maps → list[MapEntry], MapType)
 app/api/deps.py           SessionDep
 app/api/routes/*.py       je Ressource ein `router` (scenes, maps) – nur HTTP-Mapping
 tests/conftest.py         Fixtures: TestClient, Seed-Daten und daraus berechnete Erwartungen
-tests/test_*.py           Charakterisierungstests je Router (scenes, maps), CORS, Config
+tests/test_*.py           Tests je Router (scenes, maps), CORS, Config
+scripts/export_openapi.py schreibt app.openapi() nach openapi.json (versioniert, Basis der Frontend-Typen)
 ```
 
 Neue Funktionalität folgt dem Muster **route → service → crud → model**.
@@ -99,10 +101,12 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
 - DB-Session in Routen per `db: SessionDep` (`app/api/deps.py`, `Annotated[Session, Depends(get_db)]`).
 - Konfiguration nur über `from app.core.config import settings` – kein `os.environ`. Neue Werte als Feld in
   `Settings` und in `.env.example` ergänzen.
-- Routen geben ORM-Objekte direkt zurück (keine Pydantic-Schemas); bis zum Schema-Task mit `response_model=None` im
-  Decorator, damit FastAPI die Rückgabe-Annotation nicht als Response-Modell nutzt. Relationen sind nur enthalten,
-  wenn sie per `joinedload` geladen wurden (siehe `read_scenes_with_relations`). Karten liefern `MapEntry`
-  (`TypedDict` aus `typing_extensions`, Pydantic verlangt das unter Python < 3.12).
+- Antworten sind Pydantic-Schemas in `app/schemas/` (`ConfigDict(from_attributes=True)`). Geben Route/Service
+  ORM-Objekte zurück, steht das Schema als `response_model` im Decorator (`/scenes*`: Services liefern `Scene` bzw.
+  `None`); sonst reicht die Rückgabe-Annotation (`/maps/*` liefert `list[MapEntry]`). Kein `response_model=None`.
+  „Nicht gefunden“ meldet der Service mit `None`, die Route wirft `HTTPException(404, "Scene not found")` und
+  dokumentiert sie per `responses={404: …}`. Pflichtfelder der Schemas sind nicht nullable (DB-Spalten noch nullable).
+  Relationen, die ein Schema braucht, lädt die CRUD-Funktion eager (`joinedload`/`contains_eager`).
 - Models im typisierten 2.0-Stil: `Mapped[...]`/`mapped_column`, Nullbarkeit im Typ (`Mapped[str | None]`) spiegelt das
   Schema; Relationen zwischen Modulen per `TYPE_CHECKING`-Import und String-Annotation. Abfragen nur mit `select()`,
   `db.scalars()`, `db.get()` (kein `db.query`); bei `joinedload` von Collections `.unique()`; gefiltert wird in SQL.
@@ -114,8 +118,11 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
 
 ## Wichtig beim Ändern
 
-- **API-Vertrag:** Das Frontend spiegelt die Antwort von `/scenes/details` im Interface `SceneDetail`
-  (`../frontend/src/models/models.ts`). Feld- oder Pfadänderungen dort mitziehen.
+- **API-Vertrag:** `openapi.json` ist versioniert; das Frontend generiert daraus seine Typen
+  (`npm run generate:api` → `../frontend/src/api/schema.d.ts`). Nach Änderungen an Schemas oder Routen
+  `uv run python scripts/export_openapi.py` ausführen, danach im Frontend `npm run generate:api` und anpassen
+  (Ablauf: `../docs/architecture.md#api-vertrag--typgenerierung`). Die ORM-Relationen heißen wie die API-Felder
+  (`Scene.wall_image`, `Scene.ground_image`, `Scene.tracks`); Klassen/Tabellen behalten die alten Namen.
 - **`source`-Pfade** in `seed_data.json` verweisen auf Dateien in `../frontend/public/` (z. B.
   `/assets/images/ground_screen/main_1.jpg`). Das Backend liefert keine Dateien aus.
 - **Seed:** Referenzen (`graphics_wall_id`, `graphics_ground_id`, `music_id`-Liste) sind Autoincrement-IDs in
@@ -124,13 +131,13 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
 - **Keine Migrationen:** `create_all` legt nur fehlende Tabellen an; Schemaänderungen brauchen ebenfalls einen DB-Reset.
 - `Scene.main == true` = Kampfszene (Mainmap), `false` = Nicht-Kampfszene (Sidemap). Alte Namen
   (`battlemap`, `sidemap`, `fight`) nicht wieder einführen; `v1-roguelike` (Tags `archive/*`) ist verworfen.
-- Bekannte Bugs (500 statt 404, `/scenes/details/{id}` gibt bei unbekannter ID die Liste zurück, ungenutzte Spalten
-  u. a.): siehe `../docs/known-issues.md`.
+- Bekannte Lücken und Altlasten (ungenutzte Spalten, alte Klassen-/Tabellennamen u. a.): siehe `../docs/known-issues.md`.
 
 ## CI
 
 `../.github/workflows/backend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter
 `backend/` drei parallele Jobs: `lint` und `test` direkt auf dem Runner (`astral-sh/setup-uv` mit Cache auf `uv.lock`,
-`uv sync --frozen`) – `lint`: `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app`; `test`:
+`uv sync --frozen`) – `lint`: `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app`, danach
+`scripts/export_openapi.py` + `git diff --exit-code openapi.json` (Settings-Werte per `env`, keine DB); `test`:
 `uv run pytest` gegen einen Service-Container `postgres:17` (Env wie `.env.example`, `DB_HOST=localhost`). Der Job
 `docker-prod` baut das Prod-Image (`docker build --target prod`, ohne Push).

@@ -14,7 +14,7 @@ class GraphicsWall(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str | None]
     source: Mapped[str | None]
-    scenes: Mapped[list["Scene"]] = relationship(back_populates="graphics_wall")
+    scenes: Mapped[list["Scene"]] = relationship(back_populates="wall_image")
 
 
 class GraphicsGround(Base):
@@ -23,7 +23,7 @@ class GraphicsGround(Base):
     name: Mapped[str | None]
     source: Mapped[str | None]
     main: Mapped[bool | None]
-    scene: Mapped["Scene | None"] = relationship(back_populates="graphics_ground")
+    scene: Mapped["Scene | None"] = relationship(back_populates="ground_image")
 
 
 class Music(Base):
@@ -31,4 +31,4 @@ class Music(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str | None]
     source: Mapped[str | None]
-    scenes: Mapped[list["Scene"]] = relationship(secondary=scene_music_association, back_populates="music")
+    scenes: Mapped[list["Scene"]] = relationship(secondary=scene_music_association, back_populates="tracks")

@@ -179,7 +179,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
             () => getSceneById(activeSceneId),
             (activeScene: SceneDetail) => {
                 setActiveScene(activeScene)
-                setMusicPlaylist(activeScene.music.map((item) => item.source))
+                setMusicPlaylist(activeScene.tracks.map((item) => item.source))
                 setActiveSceneFailed(false)
             },
             (err) => {

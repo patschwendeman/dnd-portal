@@ -95,7 +95,7 @@ const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogu
   return (
     <LayoutContainer $isVisible={isVisible}>
       <DialogueContainer>
-        <DialogueImage src={sceneOption?.graphics_wall?.source} alt={sceneOption?.name || 'Scene Image'} />
+        <DialogueImage src={sceneOption?.wall_image?.source} alt={sceneOption?.name || 'Scene Image'} />
         <TextBlock>
           <Label>Szene wechseln</Label>
           <SceneName>{sceneOption?.name}</SceneName>

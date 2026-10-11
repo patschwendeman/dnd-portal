@@ -40,7 +40,7 @@ def seed_data(db: Session, data: dict[str, Any]) -> None:
         for scene_data in data["scenes"]:
             music_ids = scene_data.pop("music_id", [])
             scene = Scene(**scene_data)
-            scene.music = list(db.scalars(select(Music).where(Music.id.in_(music_ids))))
+            scene.tracks = list(db.scalars(select(Music).where(Music.id.in_(music_ids))))
             db.add(scene)
         db.commit()
 

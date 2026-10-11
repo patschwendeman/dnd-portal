@@ -31,22 +31,22 @@ beforeEach(() => {
 describe('getData', () => {
   it('rejects on a network error instead of resolving with undefined', async () => {
     get.mockRejectedValue(networkError())
-    await expect(getData('scenes/details/1')).rejects.toBeInstanceOf(Error)
+    await expect(getData('scenes/1')).rejects.toBeInstanceOf(Error)
   })
 
   it('rejects on a timeout', async () => {
     get.mockRejectedValue(timeoutError())
-    await expect(getData('scenes/details/1')).rejects.toBeInstanceOf(Error)
+    await expect(getData('scenes/1')).rejects.toBeInstanceOf(Error)
   })
 
   it('rejects on HTTP 500 with the status recognisable', async () => {
     get.mockRejectedValue(httpError(500))
-    await expect(getData('scenes/details/1')).rejects.toMatchObject({ response: { status: 500 } })
+    await expect(getData('scenes/1')).rejects.toMatchObject({ response: { status: 500 } })
   })
 
   it('resolves with the response data on success', async () => {
     get.mockResolvedValue({ data: { id: 1 } })
-    await expect(getData('scenes/details/1')).resolves.toEqual({ id: 1 })
+    await expect(getData('scenes/1')).resolves.toEqual({ id: 1 })
   })
 })
 

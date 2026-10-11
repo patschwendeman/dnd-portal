@@ -23,8 +23,8 @@ class Scene(Base):
     description: Mapped[str | None] = mapped_column(Text)
     main: Mapped[bool | None]
     graphics_wall_id: Mapped[int | None] = mapped_column(ForeignKey("graphics_wall.id"))
-    graphics_wall: Mapped["GraphicsWall | None"] = relationship(back_populates="scenes")
+    wall_image: Mapped["GraphicsWall | None"] = relationship(back_populates="scenes")
     graphics_ground_id: Mapped[int | None] = mapped_column(ForeignKey("graphics_ground.id"), unique=True)
-    graphics_ground: Mapped["GraphicsGround | None"] = relationship(back_populates="scene")
+    ground_image: Mapped["GraphicsGround | None"] = relationship(back_populates="scene")
     music_id: Mapped[int | None] = mapped_column(ForeignKey("music.id"))
-    music: Mapped[list["Music"]] = relationship(secondary=scene_music_association, back_populates="scenes")
+    tracks: Mapped[list["Music"]] = relationship(secondary=scene_music_association, back_populates="scenes")

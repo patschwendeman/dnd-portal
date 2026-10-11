@@ -1,9 +1,11 @@
-"""Characterization tests for /maps: they pin the current behavior, including redirects."""
+"""Tests for /maps: one `MapEntry` per Kampf-/Nicht-Kampfszene, including redirects."""
 
 from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+
+from app.crud import scene as scene_crud
 
 
 @pytest.fixture(scope="module")
@@ -48,7 +50,7 @@ def test_read_side_maps_returns_wall_image_per_non_fight_scene(
 
 @pytest.mark.parametrize("maptype", ["main", "side"])
 def test_trailing_slash_redirects_to_path_without_slash(client: TestClient, maptype: str) -> None:
-    # The frontend requests "maps/main/" and "maps/side/" (frontend/src/service/adminScreen.ts).
+    # FastAPI's default redirect for a trailing slash (the frontend requests the canonical path without slash).
     response = client.get(f"/maps/{maptype}/", follow_redirects=False)
 
     assert response.status_code == 307
@@ -61,3 +63,15 @@ def test_trailing_slash_followed_returns_same_maps(client: TestClient, maptype: 
 
     assert response.status_code == 200
     assert response.json() == client.get(f"/maps/{maptype}").json()
+
+
+@pytest.mark.parametrize("maptype", ["main", "side"])
+def test_read_maps_returns_empty_list_without_matching_scenes(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch, maptype: str
+) -> None:
+    monkeypatch.setattr(scene_crud, "read_scenes_by_main", lambda _db, _main: [])
+
+    response = client.get(f"/maps/{maptype}")
+
+    assert response.status_code == 200
+    assert response.json() == []

@@ -2,15 +2,15 @@ import { loadData } from '../api/loadData'
 import { Map, MapResponse, SceneDetail } from '../models/models'
 
 export const getAdminData = async () => {
-  const sidemaps = await loadData('sidemaps', 'maps/side/')
-  const mainmaps = await loadData('mainmaps', 'maps/main/')
-  const scenesDetails = await loadData('scenes details', 'scenes/details/')
+  const sidemaps = await loadData('sidemaps', 'maps/side')
+  const mainmaps = await loadData('mainmaps', 'maps/main')
+  const scenesDetails = await loadData('scenes details', 'scenes')
   const toMap = ({ id, source }: MapResponse): Map => ({ sceneId: id, source })
   return [sidemaps.map(toMap), mainmaps.map(toMap), scenesDetails]
 }
 
 export const getSceneById = async (id: number) => {
-  return loadData(`scene detail by id ${id}`, `scenes/details/${id}`)
+  return loadData(`scene detail by id ${id}`, `scenes/${id}`)
 }
 
 export const handleDialogue = (
