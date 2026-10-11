@@ -4,7 +4,7 @@ import pytest
 
 from app.db.migrate import check_legacy_schema
 
-LEGACY_TABLES = ["graphics_wall", "graphics_ground", "music", "scene", "scene_music_association"]
+LEGACY_TABLES = ["scene", "legacy_table"]
 
 
 def test_tables_without_alembic_version_raise_with_reset_hint() -> None:

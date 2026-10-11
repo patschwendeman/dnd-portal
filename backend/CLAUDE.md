@@ -111,8 +111,9 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
   „Nicht gefunden“ meldet der Service mit `None`, die Route wirft `HTTPException(404, "Scene not found")` und
   dokumentiert sie per `responses={404: …}`.
   Relationen, die ein Schema braucht, lädt die CRUD-Funktion eager (`joinedload`/`contains_eager`).
-- Models im typisierten 2.0-Stil: `Mapped[...]`/`mapped_column`, Nullbarkeit im Typ (`Mapped[str | None]`) spiegelt das
-  Schema; Relationen zwischen Modulen per `TYPE_CHECKING`-Import und String-Annotation. Abfragen nur mit `select()`,
+- Models im typisierten 2.0-Stil: `Mapped[...]`/`mapped_column`, Nullbarkeit im Typ spiegelt das Schema (aktuell
+  sind alle Spalten `NOT NULL`, eine nullable Spalte wäre `Mapped[str | None]`); Relationen zwischen Modulen per
+  `TYPE_CHECKING`-Import und String-Annotation. Abfragen nur mit `select()`,
   `db.scalars()`, `db.get()` (kein `db.query`); bei `joinedload` von Collections `.unique()`; gefiltert wird in SQL.
 - ruff: Zeilenlänge 120, Regelsets `E`, `F`, `W`, `I`, `B`, `UP`, `SIM`; ignoriert nur `B008` (`Depends(...)` als
   Default ist FastAPI-Idiom). Code ist mit `ruff format` formatiert (doppelte Quotes).

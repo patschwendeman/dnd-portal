@@ -157,3 +157,42 @@ künftige Schemaänderungen.
 - keine
 
 ## Review
+
+### Runde 1 – Review (6e3b975)
+
+**Empfehlung:** Nacharbeiten. E1–E5 umgesetzt, lokale Checks grün, Down-/Upgrade-Rundlauf auf frischer DB ok. AK4 knapp
+verfehlt (alte Tabellennamen in einer Testkonstante); AK6 erst nach Push (CI) und Volume-Reset durch den User prüfbar.
+
+**Akzeptanzkriterien**
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | `lifespan` ruft `run_migrations()` + Seeder, kein `create_all`; leere DB → `alembic current` = `0001 (head)`, `\d` wie E3, 29 Szenen / 327 `scene_track`-Zeilen; Prod-Image gegen leere DB: `GET /scenes` 200 |
+| AK2 | erfüllt lokal (CI offen) | `alembic check` ohne Drift, `downgrade base` + `upgrade head` fehlerfrei; CI-Schritt „Migrations“ in `.github/workflows/backend.yml` |
+| AK3 | erfüllt (manuell nachgestellt) | `app/db/migrate.py`, `tests/test_migrate.py` grün; Wegwerf-DB mit Alt-Tabelle → `RuntimeError` mit Reset-Befehlen; echtes Alt-Volume nicht geprüft (siehe AK6) |
+| AK4 | **nicht erfüllt (knapp)** | `backend/tests/test_migrate.py:7` `LEGACY_TABLES` enthält `graphics_wall`, `graphics_ground`, `scene_music_association`; sonst keine Treffer (Asset-Pfade ausgenommen) |
+| AK5 | erfüllt | `openapi.json` nach Export unverändert; kein Diff in `frontend`, Schemas, Services, Routen; pytest 28 passed; Seed-Werte und Reihenfolge unverändert |
+| AK6 | offen | lokal grün (ruff, format, mypy, pytest, Docker-Build prod/dev); offen: CI nach Push, `./script.sh dev`/`prod` nach `down -v` |
+
+**Blockierende Befunde**
+- [x] AK4: `backend/tests/test_migrate.py:7` – alte Tabellennamen durch neutrale ersetzen (z. B. `["scene", "legacy_table"]`;
+  `check_legacy_schema` prüft nur das Fehlen von `alembic_version`) oder Ausnahme im Plan durch den User.
+- [ ] AK6: CI-Lauf nach Push prüfen (`lint`, `test` inkl. „Migrations“, `docker-prod`).
+- [ ] AK6: User setzt Volumes zurück, `./script.sh dev` und `./script.sh prod` müssen healthy werden; vorher einmal mit
+  altem Dev-Volume starten (Reset-Hinweis im Log = Original-Nachweis AK3).
+
+**Hinweise (nicht blockierend)**
+- Invariante „Tests bis auf Seed-Keys in `conftest.py` unverändert“: auch `tests/test_maps.py` angepasst (nur Seed-Keys,
+  Assertions unverändert) – zwangsläufige Folge von E4, Entscheidung beim User.
+- Weitere Abweichungen (ruff-`post_write_hooks`, `script.py.mako`, `migrations/README` entfernt, `configure_logger`-Flag,
+  Import `from app import models` in `main.py` entfallen) verletzen keine Plan-Entscheidung.
+- `backend/CLAUDE.md` nennt `Mapped[str | None]` als Beispiel, obwohl keine nullable Spalte mehr existiert – kosmetisch.
+- INFO zu `ground_image_id_seq` („assuming SERIAL“) bei `alembic check` ist erwartetes Verhalten.
+- Konventionen und Scope eingehalten (ein Commit, Typ passt, keine KI-Signatur, `development`).
+
+**Checks**
+- `ruff check`, `ruff format --check`, `mypy app`: grün
+- `pytest -q` (Wegwerf-DB postgres:17): 28 passed
+- `alembic upgrade head`/`check`/`downgrade base`/`upgrade head`: fehlerfrei
+- `export_openapi.py` + `git diff --exit-code openapi.json`: unverändert
+- `docker build --target prod`/`dev`: ok
