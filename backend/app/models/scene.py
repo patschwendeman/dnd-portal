@@ -1,30 +1,29 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, ForeignKey, Integer, Table, Text
+from sqlalchemy import Column, ForeignKey, Table, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
 if TYPE_CHECKING:
-    from app.models.media import GraphicsGround, GraphicsWall, Music
+    from app.models.media import GroundImage, Track, WallImage
 
-scene_music_association = Table(
-    "scene_music_association",
+scene_track = Table(
+    "scene_track",
     Base.metadata,
-    Column("scene_id", Integer, ForeignKey("scene.id")),
-    Column("music_id", Integer, ForeignKey("music.id")),
+    Column("scene_id", ForeignKey("scene.id"), primary_key=True),
+    Column("track_id", ForeignKey("track.id"), primary_key=True),
 )
 
 
 class Scene(Base):
     __tablename__ = "scene"
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    name: Mapped[str | None]
-    description: Mapped[str | None] = mapped_column(Text)
-    main: Mapped[bool | None]
-    graphics_wall_id: Mapped[int | None] = mapped_column(ForeignKey("graphics_wall.id"))
-    wall_image: Mapped["GraphicsWall | None"] = relationship(back_populates="scenes")
-    graphics_ground_id: Mapped[int | None] = mapped_column(ForeignKey("graphics_ground.id"), unique=True)
-    ground_image: Mapped["GraphicsGround | None"] = relationship(back_populates="scene")
-    music_id: Mapped[int | None] = mapped_column(ForeignKey("music.id"))
-    tracks: Mapped[list["Music"]] = relationship(secondary=scene_music_association, back_populates="scenes")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    description: Mapped[str] = mapped_column(Text)
+    main: Mapped[bool]
+    wall_image_id: Mapped[int] = mapped_column(ForeignKey("wall_image.id"))
+    wall_image: Mapped["WallImage"] = relationship(back_populates="scenes")
+    ground_image_id: Mapped[int] = mapped_column(ForeignKey("ground_image.id"), unique=True)
+    ground_image: Mapped["GroundImage"] = relationship(back_populates="scene")
+    tracks: Mapped[list["Track"]] = relationship(secondary=scene_track, back_populates="scenes")

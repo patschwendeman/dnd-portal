@@ -28,6 +28,8 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 FROM base AS dev
 
 RUN uv sync --frozen
+COPY alembic.ini ./
+COPY migrations ./migrations
 COPY app ./app
 # Writable work dir for caches of pytest/ruff/mypy when run in the container
 RUN chown dnd:dnd /app
@@ -37,5 +39,7 @@ USER dnd
 FROM base AS prod
 
 RUN uv sync --frozen --no-dev
+COPY alembic.ini ./
+COPY migrations ./migrations
 COPY app ./app
 USER dnd

@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.base import Base
-from app.models import GraphicsGround, GraphicsWall, Music, Scene
+from app.models import GroundImage, Scene, Track, WallImage
 
 SEED_DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "seed_data.json")
 
@@ -27,20 +27,20 @@ def bulk_insert(db: Session, model: type[Base], data: list[dict[str, Any]]) -> N
 
 
 def seed_data(db: Session, data: dict[str, Any]) -> None:
-    if is_empty(db, GraphicsWall):
-        bulk_insert(db, GraphicsWall, data["graphics_walls"])
+    if is_empty(db, WallImage):
+        bulk_insert(db, WallImage, data["wall_images"])
 
-    if is_empty(db, GraphicsGround):
-        bulk_insert(db, GraphicsGround, data["graphics_grounds"])
+    if is_empty(db, GroundImage):
+        bulk_insert(db, GroundImage, data["ground_images"])
 
-    if is_empty(db, Music):
-        bulk_insert(db, Music, data["music"])
+    if is_empty(db, Track):
+        bulk_insert(db, Track, data["tracks"])
 
     if is_empty(db, Scene):
         for scene_data in data["scenes"]:
-            music_ids = scene_data.pop("music_id", [])
+            track_ids = scene_data.pop("track_ids", [])
             scene = Scene(**scene_data)
-            scene.tracks = list(db.scalars(select(Music).where(Music.id.in_(music_ids))))
+            scene.tracks = list(db.scalars(select(Track).where(Track.id.in_(track_ids))))
             db.add(scene)
         db.commit()
 

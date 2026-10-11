@@ -1,12 +1,12 @@
 {
- "graphics_walls": [
+ "wall_images": [
     { "name": "Forest", "source": "/assets/images/wall_screen/forest.jpg" },
     { "name": "Fight", "source": "/assets/images/wall_screen/fight.jpg" },
     { "name": "Shop", "source": "/assets/images/wall_screen/shop.jpg" },
     { "name": "Tavern", "source": "/assets/images/wall_screen/tavern.jpg" },
     { "name": "Level_up", "source": "/assets/images/wall_screen/levelUp.jpg" }
   ],
-  "graphics_grounds": [
+  "ground_images": [
     { "name": "Forest", "source": "/assets/images/ground_screen/mapOverview.jpg" },
     { "name": "Shop", "source": "/assets/images/ground_screen/shop.jpg" },
     { "name": "Tavern", "source": "/assets/images/ground_screen/tavern.jpg" },
@@ -37,7 +37,7 @@
     { "name": "main_24", "source": "/assets/images/ground_screen/main_24.jpg" },
     { "name": "main_25", "source": "/assets/images/ground_screen/main_25.jpg" }
   ],
-  "music": [
+  "tracks": [
     { "name": "Forest", "source": "/assets/music/side/forest/From_Past_To_Present.mp3" },
     { "name": "Forest_2", "source": "/assets/music/side/forest/City_Gates.mp3" },
     { "name": "Forest_3", "source": "/assets/music/side/forest/Aincient_Stones.mp3" },
@@ -91,35 +91,35 @@
     { "name": "Level_up", "source": "/assets/music/side/level_up/FFXIV_Victory_Fanfare.mp3" }
   ],
   "scenes": [
-  { "name": "Default", "description": "A silent little Village", "main": false, "graphics_ground_id": 1, "graphics_wall_id": 1, "music_id": [1, 2, 3] },
-  { "name": "Shop", "description": "A small shop", "main": false, "graphics_ground_id": 2, "graphics_wall_id": 3, "music_id": [4, 5, 6] },
-  { "name": "Tavern", "description": "A warm place to rest", "main": false, "graphics_ground_id": 3, "graphics_wall_id": 4, "music_id": [7, 8, 9] },
-  { "name": "Level Up", "description": "Level Up Screen", "main": false, "graphics_ground_id": 4, "graphics_wall_id": 5, "music_id": [43] },
-  { "name": "Fight 1 [lvl. 6]", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 5, "graphics_wall_id": 2, "music_id": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
-  { "name": "Fight 2 [lvl. 5]", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 6, "graphics_wall_id": 2, "music_id": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
-  { "name": "Fight 3 (Ereignis)", "description": "A lonely Forest", "main": true,"graphics_ground_id": 7, "graphics_wall_id": 2, "music_id": [38, 39, 41] },
-  { "name": "Fight 4 [lvl. 5]", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 8, "graphics_wall_id": 2, "music_id": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
-  { "name": "Fight 5 (Loot)", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 9, "graphics_wall_id": 2, "music_id": [41, 42] },
-  { "name": "Fight 6 [lvl. 6]", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 10, "graphics_wall_id": 2, "music_id": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
-  { "name": "Fight 7 [lvl. 4] (Boss)", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 11, "graphics_wall_id": 2, "music_id": [31, 32, 33, 34, 35, 36] },
-  { "name": "Fight 8 [lvl. 4]", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 12, "graphics_wall_id": 2, "music_id": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
-  { "name": "Fight 9 (Ereignis)", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 13, "graphics_wall_id": 2, "music_id": [38, 39, 41] },
-  { "name": "Fight 10 [lvl. 5] (Boss)", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 14, "graphics_wall_id": 2, "music_id": [31, 32, 33, 34, 35, 36] },
-  { "name": "Fight 11 [lvl. 7] (Boss)", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 15, "graphics_wall_id": 2, "music_id": [31, 32, 33, 34, 35, 36] },
-  { "name": "Fight 12 [lvl. 4]", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 16, "graphics_wall_id": 2, "music_id": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
-  { "name": "Fight 13 (Loot)", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 17, "graphics_wall_id": 2, "music_id": [41, 42] },
-  { "name": "Fight 14 [lvl. 4]", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 18, "graphics_wall_id": 2, "music_id": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
-  { "name": "Fight 15 (Key)", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 19, "graphics_wall_id": 2, "music_id": [41, 42] },
-  { "name": "Fight 16 [lvl. 3]", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 20, "graphics_wall_id": 2, "music_id": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
-  { "name": "Fight 17 (Ereignis)", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 21, "graphics_wall_id": 2, "music_id": [38, 39, 41] },
-  { "name": "Fight 18 [lvl. 3]", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 22, "graphics_wall_id": 2, "music_id": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
-  { "name": "Fight 19 [lvl. 1]", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 23, "graphics_wall_id": 2, "music_id": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
-  { "name": "Fight 20 [lvl. 1]", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 24, "graphics_wall_id": 2, "music_id": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
-  { "name": "Fight 21 [lvl. 3] (Boss)", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 25, "graphics_wall_id": 2, "music_id": [31, 32, 33, 34, 35, 36] },
-  { "name": "Fight 22 (Loot)", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 26, "graphics_wall_id": 2, "music_id": [41, 42] },
-  { "name": "Fight 23 (Ereignis)", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 27, "graphics_wall_id": 2, "music_id": [38, 39, 41] },
-  { "name": "Fight 24 [lvl. 2]", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 28, "graphics_wall_id": 2, "music_id": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
-  { "name": "Fight 25 [lvl. 1]", "description": "A spooky Chamber", "main": true,"graphics_ground_id": 29, "graphics_wall_id": 2, "music_id": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] }
+  { "name": "Default", "description": "A silent little Village", "main": false, "ground_image_id": 1, "wall_image_id": 1, "track_ids": [1, 2, 3] },
+  { "name": "Shop", "description": "A small shop", "main": false, "ground_image_id": 2, "wall_image_id": 3, "track_ids": [4, 5, 6] },
+  { "name": "Tavern", "description": "A warm place to rest", "main": false, "ground_image_id": 3, "wall_image_id": 4, "track_ids": [7, 8, 9] },
+  { "name": "Level Up", "description": "Level Up Screen", "main": false, "ground_image_id": 4, "wall_image_id": 5, "track_ids": [43] },
+  { "name": "Fight 1 [lvl. 6]", "description": "A spooky Chamber", "main": true,"ground_image_id": 5, "wall_image_id": 2, "track_ids": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+  { "name": "Fight 2 [lvl. 5]", "description": "A spooky Chamber", "main": true,"ground_image_id": 6, "wall_image_id": 2, "track_ids": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+  { "name": "Fight 3 (Ereignis)", "description": "A lonely Forest", "main": true,"ground_image_id": 7, "wall_image_id": 2, "track_ids": [38, 39, 41] },
+  { "name": "Fight 4 [lvl. 5]", "description": "A spooky Chamber", "main": true,"ground_image_id": 8, "wall_image_id": 2, "track_ids": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+  { "name": "Fight 5 (Loot)", "description": "A spooky Chamber", "main": true,"ground_image_id": 9, "wall_image_id": 2, "track_ids": [41, 42] },
+  { "name": "Fight 6 [lvl. 6]", "description": "A spooky Chamber", "main": true,"ground_image_id": 10, "wall_image_id": 2, "track_ids": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+  { "name": "Fight 7 [lvl. 4] (Boss)", "description": "A spooky Chamber", "main": true,"ground_image_id": 11, "wall_image_id": 2, "track_ids": [31, 32, 33, 34, 35, 36] },
+  { "name": "Fight 8 [lvl. 4]", "description": "A spooky Chamber", "main": true,"ground_image_id": 12, "wall_image_id": 2, "track_ids": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+  { "name": "Fight 9 (Ereignis)", "description": "A spooky Chamber", "main": true,"ground_image_id": 13, "wall_image_id": 2, "track_ids": [38, 39, 41] },
+  { "name": "Fight 10 [lvl. 5] (Boss)", "description": "A spooky Chamber", "main": true,"ground_image_id": 14, "wall_image_id": 2, "track_ids": [31, 32, 33, 34, 35, 36] },
+  { "name": "Fight 11 [lvl. 7] (Boss)", "description": "A spooky Chamber", "main": true,"ground_image_id": 15, "wall_image_id": 2, "track_ids": [31, 32, 33, 34, 35, 36] },
+  { "name": "Fight 12 [lvl. 4]", "description": "A spooky Chamber", "main": true,"ground_image_id": 16, "wall_image_id": 2, "track_ids": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+  { "name": "Fight 13 (Loot)", "description": "A spooky Chamber", "main": true,"ground_image_id": 17, "wall_image_id": 2, "track_ids": [41, 42] },
+  { "name": "Fight 14 [lvl. 4]", "description": "A spooky Chamber", "main": true,"ground_image_id": 18, "wall_image_id": 2, "track_ids": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+  { "name": "Fight 15 (Key)", "description": "A spooky Chamber", "main": true,"ground_image_id": 19, "wall_image_id": 2, "track_ids": [41, 42] },
+  { "name": "Fight 16 [lvl. 3]", "description": "A spooky Chamber", "main": true,"ground_image_id": 20, "wall_image_id": 2, "track_ids": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+  { "name": "Fight 17 (Ereignis)", "description": "A spooky Chamber", "main": true,"ground_image_id": 21, "wall_image_id": 2, "track_ids": [38, 39, 41] },
+  { "name": "Fight 18 [lvl. 3]", "description": "A spooky Chamber", "main": true,"ground_image_id": 22, "wall_image_id": 2, "track_ids": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+  { "name": "Fight 19 [lvl. 1]", "description": "A spooky Chamber", "main": true,"ground_image_id": 23, "wall_image_id": 2, "track_ids": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+  { "name": "Fight 20 [lvl. 1]", "description": "A spooky Chamber", "main": true,"ground_image_id": 24, "wall_image_id": 2, "track_ids": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+  { "name": "Fight 21 [lvl. 3] (Boss)", "description": "A spooky Chamber", "main": true,"ground_image_id": 25, "wall_image_id": 2, "track_ids": [31, 32, 33, 34, 35, 36] },
+  { "name": "Fight 22 (Loot)", "description": "A spooky Chamber", "main": true,"ground_image_id": 26, "wall_image_id": 2, "track_ids": [41, 42] },
+  { "name": "Fight 23 (Ereignis)", "description": "A spooky Chamber", "main": true,"ground_image_id": 27, "wall_image_id": 2, "track_ids": [38, 39, 41] },
+  { "name": "Fight 24 [lvl. 2]", "description": "A spooky Chamber", "main": true,"ground_image_id": 28, "wall_image_id": 2, "track_ids": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+  { "name": "Fight 25 [lvl. 1]", "description": "A spooky Chamber", "main": true,"ground_image_id": 29, "wall_image_id": 2, "track_ids": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30] }
   
 ]
 }

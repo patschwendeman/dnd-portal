@@ -5,7 +5,8 @@
 #   docker compose -f compose.dev.yaml up --build db api          # backend only
 #   docker compose -f compose.dev.yaml up --build ui              # frontend only
 #   docker compose -f compose.dev.yaml run --rm api pytest        # backend tests
-# Own project name → own DB volume (dnd-portal-dev_postgres_data); the seeder fills it on first start.
+# Own project name → own DB volume (dnd-portal-dev_postgres_data); on start the API runs the migrations, the seeder
+# fills empty tables.
 name: dnd-portal-dev
 
 services:
@@ -48,6 +49,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend/app:/app/app
+      - ./backend/migrations:/app/migrations
       - ./backend/tests:/app/tests
 
   ui:

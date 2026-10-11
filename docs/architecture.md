@@ -26,15 +26,18 @@
 
 ## Backend (`backend`)
 
-- Python 3.11, FastAPI 0.143, SQLAlchemy 2.1 (typisierter 2.0-Stil: `DeclarativeBase`, `Mapped[...]`, `select()`), psycopg2, PostgreSQL 17;
+- Python 3.11, FastAPI 0.143, SQLAlchemy 2.1 (typisierter 2.0-Stil: `DeclarativeBase`, `Mapped[...]`, `select()`), psycopg2, Alembic, PostgreSQL 17;
   Abhängigkeiten per uv (`pyproject.toml`, `uv.lock`).
 - Schichten (Paket `app`): `app/api/routes/*` (je Modul ein `router`, Prefix/Tags zentral in `app/main.py`) →
   `app/services/*` (Modul-Funktionen) → `app/crud/*` → `app/models/*`. Konfiguration in `app/core/config.py`
   (pydantic-settings), Engine/Session in `app/db/session.py`. Antwortformen als Pydantic-Schemas in `app/schemas/*`
   (`response_model` bzw. Rückgabe-Annotation der Routen).
-- Beim App-Start (`lifespan`) werden die Tabellen per `Base.metadata.create_all` angelegt (keine Migrationen). Danach
-  läuft der Seeder (`app/db/seed.py`, Daten in `app/db/data/seed_data.json`) – je Tabelle nur, wenn sie leer ist.
-  `import app.main` allein baut keine DB-Verbindung auf.
+- Beim App-Start (`lifespan`) bringt `app/db/migrate.py` das Schema per Alembic auf den neuesten Stand
+  (`alembic upgrade head`, Migrationen in `backend/migrations/versions/`; kein `create_all`). Danach läuft der Seeder
+  (`app/db/seed.py`, Daten in `app/db/data/seed_data.json`) – je Tabelle nur, wenn sie leer ist. Enthält die DB
+  Tabellen, aber keine `alembic_version` (Schema von vor den Migrationen), bricht der Start mit Reset-Hinweis ab
+  (einmalig `docker compose -f compose.dev.yaml down -v` bzw. `… compose.prod.yaml down -v`). Ablauf für
+  Schemaänderungen: `backend/CLAUDE.md`, Abschnitt „Migrationen“. `import app.main` allein baut keine DB-Verbindung auf.
 
 ### Endpoints (alle GET, keine Auth)
 
@@ -58,9 +61,8 @@ Track       { id: int, name: str, source: str }
 MapEntry    { id: int, source: str }                                         id = Szenen-ID
 ```
 
-Alle Felder sind Pflicht und nicht nullable, obwohl die DB-Spalten (noch) nullable sind; fehlt ein Wert, schlägt die
-Response-Validierung fehl (500). Die Fremdschlüssel (`graphics_wall_id` …) und ungenutzten Spalten sind nicht Teil
-der Antwort.
+Alle Felder sind Pflicht und nicht nullable (wie die DB-Spalten). Die Fremdschlüssel (`wall_image_id` …) sind nicht
+Teil der Antwort.
 
 ### API-Vertrag & Typgenerierung
 
@@ -81,11 +83,14 @@ CI prüft beide Dateien auf Aktualität (Export bzw. Generierung + `git diff --e
 ### Datenmodell
 
 ```
-Scene(id, name, description, main: bool, graphics_wall_id → GraphicsWall, graphics_ground_id → GraphicsGround (unique), music_id [ungenutzt])
-GraphicsWall(id, name, source)            Scene N:1 über Relation Scene.wall_image (z. B. teilen sich alle Kampfszenen ein Wall-Bild; GraphicsWall.scenes ist eine Liste)
-GraphicsGround(id, name, source, main)    Scene 1:1 über Relation Scene.ground_image; Feld main ungenutzt
-Music(id, name, source)                   Scene N:M über Relation Scene.tracks und scene_music_association(scene_id, music_id)
+Scene        → scene        (id, name, description, main: bool, wall_image_id → wall_image, ground_image_id → ground_image (unique))
+WallImage    → wall_image   (id, name, source)   Scene N:1 über Relation Scene.wall_image (z. B. teilen sich alle Kampfszenen ein Wall-Bild; WallImage.scenes ist eine Liste)
+GroundImage  → ground_image (id, name, source)   Scene 1:1 über Relation Scene.ground_image
+Track        → track        (id, name, source)   Scene N:M über Relation Scene.tracks und scene_track(scene_id, track_id; PK aus beiden)
 ```
+
+Alle Spalten sind `NOT NULL`. Constraint-Namen folgen der Namenskonvention in `app/db/base.py` (z. B. `pk_scene`,
+`fk_scene_wall_image_id_wall_image`, `uq_scene_ground_image_id`).
 
 `source` ist jeweils ein Pfad-String relativ zum Frontend-Public-Ordner, z. B. `/assets/images/ground_screen/main_1.jpg`.
 Das Backend speichert/liefert **keine Dateien**.
@@ -150,13 +155,13 @@ einem Validierungsfehler ab (Feldname im Log). Ältere `.env` mit `DRIVERNAME`/`
 
 | Befehl (im Root, ohne Skript) | Wirkung |
 |---|---|
-| `docker compose -f compose.dev.yaml up --build` | `db` (Postgres :5432), `api` (API :8000, uvicorn `--reload`, `backend/app` und `backend/tests` gemountet), `ui` (Vite :5173, `frontend/` gemountet) |
+| `docker compose -f compose.dev.yaml up --build` | `db` (Postgres :5432), `api` (API :8000, uvicorn `--reload`, `backend/app`, `backend/migrations` und `backend/tests` gemountet), `ui` (Vite :5173, `frontend/` gemountet) |
 | `docker compose -f compose.dev.yaml --profile tools up` | zusätzlich `pgadmin` (:5050) |
 | `docker compose -f compose.dev.yaml up --build db api` | nur Backend (DB und API) |
 | `docker compose -f compose.dev.yaml up --build ui` | nur Frontend (alternativ nativ `npm run dev` in `frontend/`) |
 | `docker compose -f compose.dev.yaml run --rm api pytest` | Backend-Tests im Dev-Container |
 | `docker compose -f compose.dev.yaml logs -f <service>` | Logs verfolgen |
-| `docker compose -f compose.dev.yaml down` | stoppen; mit `-v` auch DB-Volume löschen (DB-Reset, Seeder läuft neu) |
+| `docker compose -f compose.dev.yaml down` | stoppen; mit `-v` auch DB-Volume löschen (DB-Reset; Migrationen und Seeder laufen neu) |
 
 Container-Namen nach dem Schema `dnd-<umgebung>-<rolle>`:
 
@@ -167,7 +172,7 @@ Container-Namen nach dem Schema `dnd-<umgebung>-<rolle>`:
 | Frontend | `dnd-dev-ui` | `dnd-prod-ui` |
 | pgAdmin | `dnd-dev-pgadmin` | – |
 
-Das DB-Volume des Dev-Stacks heißt `dnd-portal-dev_postgres_data` (der Seeder füllt es beim ersten Start).
+Das DB-Volume des Dev-Stacks heißt `dnd-portal-dev_postgres_data` (Migrationen und Seeder füllen es beim ersten Start).
 
 UI unter http://localhost:5173 (`/admin`, `/wall`, `/ground`, `/`); das Frontend ruft die API über
 `http://localhost:8000/` auf.
@@ -185,7 +190,7 @@ Frontend mit `VITE_API_URL=http://192.168.x.y:8000/` gebaut sein. Der Player Scr
 ### Am Spieltisch (Production)
 
 Für den Spielabend gibt es einen eigenen Stack ohne Hot-Reload und ohne Code-Mounts: `compose.prod.yaml` im Root
-(Projektname `dnd-portal-prod`, eigenes DB-Volume; der Seeder füllt die DB beim ersten Start). Voraussetzung wie
+(Projektname `dnd-portal-prod`, eigenes DB-Volume; Migrationen und Seeder füllen die DB beim ersten Start). Voraussetzung wie
 oben: `backend/.env`.
 
 | Befehl (im Root, ohne Skript; mit Skript: `./script.sh prod` bzw. `dnd prod`) | Wirkung |
@@ -193,7 +198,7 @@ oben: `backend/.env`.
 | `docker compose -f compose.prod.yaml up -d --build --wait` | `db` (Postgres :5432), `api` (API :8000, uvicorn ohne `--reload`, Code im Image), `ui` (nginx :8080 mit dem statischen Build) – alle mit `restart: unless-stopped` |
 | `VITE_API_URL=http://<host>:8000/ docker compose -f compose.prod.yaml up -d --build --wait` | Frontend mit anderer API-URL bauen (Default `http://localhost:8000/`) |
 | `docker compose -f compose.prod.yaml logs -f <service>` | Logs verfolgen |
-| `docker compose -f compose.prod.yaml down` | stoppen; mit `-v` auch DB-Volume löschen |
+| `docker compose -f compose.prod.yaml down` | stoppen; mit `-v` auch DB-Volume löschen (DB-Reset) |
 
 UI unter http://localhost:8080/admin, `/wall` und `/ground` (Fenster im selben Browser auf dem Spieltisch-Rechner);
 Smartphones öffnen den Player Screen über `http://<IP des Rechners>:8080/`. nginx liefert `index.html` auch für

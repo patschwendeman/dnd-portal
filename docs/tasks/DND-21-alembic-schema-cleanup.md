@@ -1,7 +1,7 @@
 # DND-21: Alembic-Migrationen und bereinigtes Datenbankschema
 
 **Typ:** setup
-**Status:** Entwurf
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -96,50 +96,50 @@ künftige Schemaänderungen.
 ## Subtasks
 
 ### Schema & Models
-- [ ] `alembic` hinzufügen (`uv add alembic==<aktuell>`), `alembic init migrations` als Ausgangspunkt; `alembic.ini`
+- [x] `alembic` hinzufügen (`uv add alembic==<aktuell>`), `alembic init migrations` als Ausgangspunkt; `alembic.ini`
       ohne URL (kommt aus `env.py`), Dateinamen-Template mit Nummernpräfix (`%%(rev)s_%%(slug)s`, Revision `0001`).
-- [ ] `app/db/base.py`: `MetaData(naming_convention=…)`.
-- [ ] `app/models/{media,scene,__init__}.py` gemäß E3.
-- [ ] `migrations/env.py` (E2), `migrations/versions/0001_initial_schema.py` (autogenerate, danach von Hand geprüft;
+- [x] `app/db/base.py`: `MetaData(naming_convention=…)`.
+- [x] `app/models/{media,scene,__init__}.py` gemäß E3.
+- [x] `migrations/env.py` (E2), `migrations/versions/0001_initial_schema.py` (autogenerate, danach von Hand geprüft;
       `upgrade` und `downgrade` vollständig).
 
 ### Start & Seeder
-- [ ] `app/db/migrate.py` (`run_migrations`, Alt-DB-Prüfung), `app/main.py` (`lifespan` ohne `create_all`).
-- [ ] `app/db/seed.py` und `app/db/data/seed_data.json` (E4); Seeder-Typen auf neue Klassen.
-- [ ] `app/crud/scene.py`, `app/services/*.py`, `app/schemas/*` nur soweit Klassen-/Feldnamen sich ändern;
+- [x] `app/db/migrate.py` (`run_migrations`, Alt-DB-Prüfung), `app/main.py` (`lifespan` ohne `create_all`).
+- [x] `app/db/seed.py` und `app/db/data/seed_data.json` (E4); Seeder-Typen auf neue Klassen.
+- [x] `app/crud/scene.py`, `app/services/*.py`, `app/schemas/*` nur soweit Klassen-/Feldnamen sich ändern;
       `uv run python scripts/export_openapi.py` → `openapi.json` unverändert (Invariante).
 
 ### Tests
-- [ ] `tests/conftest.py` auf neue Seed-Keys.
-- [ ] `tests/test_migrate.py`: Alt-DB-Prüfung (Tabellen ohne `alembic_version` → `RuntimeError` mit Reset-Hinweis;
+- [x] `tests/conftest.py` auf neue Seed-Keys.
+- [x] `tests/test_migrate.py`: Alt-DB-Prüfung (Tabellen ohne `alembic_version` → `RuntimeError` mit Reset-Hinweis;
       leere DB bzw. DB mit `alembic_version` → kein Fehler) – über die Prüffunktion mit Inspector-/Tabellenliste als
       Eingabe, ohne die gemeinsame Test-DB zu verändern.
-- [ ] Bestehende API-Tests unverändert grün.
+- [x] Bestehende API-Tests unverändert grün.
 
 ### Docker & CI
-- [ ] `backend/Dockerfile`, `compose.dev.yaml` (E5); `compose.prod.yaml` prüfen.
-- [ ] `.github/workflows/backend.yml` (E5).
+- [x] `backend/Dockerfile`, `compose.dev.yaml` (E5); `compose.prod.yaml` prüfen.
+- [x] `.github/workflows/backend.yml` (E5).
 
 ### Doku
-- [ ] `backend/CLAUDE.md`: Abschnitt „Migrationen“ (Ablauf E5, Befehle, Reset-Hinweis), Struktur (`migrations/`,
+- [x] `backend/CLAUDE.md`: Abschnitt „Migrationen“ (Ablauf E5, Befehle, Reset-Hinweis), Struktur (`migrations/`,
       `app/db/migrate.py`), Seed-Hinweise mit neuen Keys; „Keine Migrationen“ entfernen.
-- [ ] `docs/architecture.md`: Datenmodell (Tabellen/Klassen E3), Start-Ablauf (Migrationen → Seeder), Reset-Befehle.
-- [ ] `docs/domain.md`: Code-Namen (`WallImage`/`scene.wall_image`, `GroundImage`, `Track`/`scene.tracks`).
-- [ ] `docs/known-issues.md`: Punkte „ungenutzte Spalten/nullable“, „Keine Migrationen“ und
+- [x] `docs/architecture.md`: Datenmodell (Tabellen/Klassen E3), Start-Ablauf (Migrationen → Seeder), Reset-Befehle.
+- [x] `docs/domain.md`: Code-Namen (`WallImage`/`scene.wall_image`, `GroundImage`, `Track`/`scene.tracks`).
+- [x] `docs/known-issues.md`: Punkte „ungenutzte Spalten/nullable“, „Keine Migrationen“ und
       „Model-Klassen und Tabellen heißen noch …“ entfernen.
-- [ ] Commit-Body: Hinweis auf einmaligen Reset von Dev- und Prod-DB.
+- [x] Commit-Body: Hinweis auf einmaligen Reset von Dev- und Prod-DB.
 
 ## Akzeptanzkriterien
 
-- [ ] AK1: Auf leerer DB legt der App-Start per Alembic das Zielschema aus E3 an und seedet; `create_all` wird nicht
+- [x] AK1: Auf leerer DB legt der App-Start per Alembic das Zielschema aus E3 an und seedet; `create_all` wird nicht
       mehr verwendet; `alembic current` zeigt `0001`.
-- [ ] AK2: `alembic check` meldet keine Abweichung; `downgrade base` + `upgrade head` laufen fehlerfrei (CI).
-- [ ] AK3: Eine Alt-DB (Tabellen ohne `alembic_version`) bricht den Start mit verständlicher Meldung inkl.
+- [x] AK2: `alembic check` meldet keine Abweichung; `downgrade base` + `upgrade head` laufen fehlerfrei (CI).
+- [x] AK3: Eine Alt-DB (Tabellen ohne `alembic_version`) bricht den Start mit verständlicher Meldung inkl.
       Reset-Befehl ab (Test + einmal manuell mit altem Volume nachgewiesen).
-- [ ] AK4: Klassen/Tabellen/Seed-Keys heißen wie in E3/E4; keine Verweise mehr auf `GraphicsWall`, `GraphicsGround`,
+- [x] AK4: Klassen/Tabellen/Seed-Keys heißen wie in E3/E4; keine Verweise mehr auf `GraphicsWall`, `GraphicsGround`,
       `Music`, `graphics_wall`, `graphics_ground`, `music_id`, `scene_music_association` außerhalb von `docs/tasks/`
       (Asset-Pfade wie `/assets/music/…` ausgenommen).
-- [ ] AK5: Alle Invarianten eingehalten – `openapi.json` byte-gleich, API-Tests grün, Frontend unverändert.
+- [x] AK5: Alle Invarianten eingehalten – `openapi.json` byte-gleich, API-Tests grün, Frontend unverändert.
 - [ ] AK6: ruff, mypy strict, pytest, CI und Docker-Build grün; `./script.sh dev` und `./script.sh prod` nach Reset lauffähig.
 
 ## Teststrategie / Verifikation

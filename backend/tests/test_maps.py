@@ -11,9 +11,9 @@ from app.crud import scene as scene_crud
 @pytest.fixture(scope="module")
 def expected_main_maps(seed: dict[str, Any]) -> list[dict[str, Any]]:
     """Kampfszenen (main: true) with their ground image."""
-    grounds = seed["graphics_grounds"]
+    grounds = seed["ground_images"]
     return [
-        {"id": scene_id, "source": grounds[scene["graphics_ground_id"] - 1]["source"]}
+        {"id": scene_id, "source": grounds[scene["ground_image_id"] - 1]["source"]}
         for scene_id, scene in enumerate(seed["scenes"], start=1)
         if scene["main"] is True
     ]
@@ -22,9 +22,9 @@ def expected_main_maps(seed: dict[str, Any]) -> list[dict[str, Any]]:
 @pytest.fixture(scope="module")
 def expected_side_maps(seed: dict[str, Any]) -> list[dict[str, Any]]:
     """Nicht-Kampfszenen (main: false) with their wall image."""
-    walls = seed["graphics_walls"]
+    walls = seed["wall_images"]
     return [
-        {"id": scene_id, "source": walls[scene["graphics_wall_id"] - 1]["source"]}
+        {"id": scene_id, "source": walls[scene["wall_image_id"] - 1]["source"]}
         for scene_id, scene in enumerate(seed["scenes"], start=1)
         if scene["main"] is False
     ]

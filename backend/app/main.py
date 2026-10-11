@@ -4,17 +4,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app import models  # noqa: F401  (registers all tables on Base.metadata)
 from app.api.routes import maps, scenes
 from app.core.config import settings
-from app.db.base import Base
+from app.db.migrate import run_migrations
 from app.db.seed import run_seeder
-from app.db.session import SessionLocal, engine
+from app.db.session import SessionLocal
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    Base.metadata.create_all(bind=engine)
+    run_migrations()
     with SessionLocal() as db:
         run_seeder(db)
     yield

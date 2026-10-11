@@ -3,7 +3,7 @@
 #   docker compose -f compose.prod.yaml up -d --build --wait    # ui :8080, api :8000, db :5432
 #   docker compose -f compose.prod.yaml down                    # stop (-v: reset DB)
 # Do not run together with the dev stack (compose.dev.yaml): API and DB use the same ports.
-# Own project name → own DB volume; the seeder fills the DB on first start.
+# Own project name → own DB volume; on start the API runs the migrations, the seeder fills empty tables.
 # Different API URL for the frontend: VITE_API_URL=... docker compose -f compose.prod.yaml up -d --build --wait
 name: dnd-portal-prod
 

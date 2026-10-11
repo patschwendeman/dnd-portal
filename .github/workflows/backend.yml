@@ -97,6 +97,14 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen
 
+      # Migrations: models and migrations without drift, downgrade proven by a full down/up round trip.
+      - name: Migrations
+        run: |
+          uv run alembic upgrade head
+          uv run alembic check
+          uv run alembic downgrade base
+          uv run alembic upgrade head
+
       - name: Run tests
         run: uv run pytest
 

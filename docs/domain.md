@@ -8,9 +8,9 @@
 | Szene | Situation, die der Spielleiter aktiviert; bündelt Wall-Bild, Ground-Bild und Musik | Tabelle/Model `Scene` (Backend), API-Schema `SceneDetail` (Backend `app/schemas/`, Frontend-Typ generiert) |
 | Kampfszene | Szene mit taktischem Kampf | `Scene.main == true` → „Mainmap“, Endpoint `/maps/main` |
 | Nicht-Kampfszene | Dorf, Shop, Taverne, Level-Up … | `Scene.main == false` → „Sidemap“, Endpoint `/maps/side` |
-| Wall-Bild | Atmosphäre-Hintergrund der Szene | `GraphicsWall` / `scene.wall_image` |
-| Ground-Bild | Spielbrett/Kampfschauplatz der Szene (Bild oder Video) | `GraphicsGround` / `scene.ground_image` |
-| Musik (Sound-Element einer Szene) | Playlist von Tracks einer Szene, zufällig abgespielt | `Music`, n:m über `scene_music_association`; `scene.tracks[]` |
+| Wall-Bild | Atmosphäre-Hintergrund der Szene | `WallImage` / `scene.wall_image` |
+| Ground-Bild | Spielbrett/Kampfschauplatz der Szene (Bild oder Video) | `GroundImage` / `scene.ground_image` |
+| Musik (Sound-Element einer Szene) | Playlist von Tracks einer Szene, zufällig abgespielt | `Track`, n:m über `scene_track`; `scene.tracks[]` |
 | Soundeffekt | Einzelner Sound, den der Admin manuell abspielt (Heilung, Buff, Zauber …) | nur Frontend: `TopBar`, Dateien in `public/assets/sounds/` |
 | Notizen | Markdown-Dateien zu Story, NPCs, Kämpfen, Leveling, Regeln | nur Frontend: `public/story/**.md`, `DocumentReader` |
 | Ressourcen (Spieler) | Aktion, Bonusaktion, Zauberplätze I–IV, Spezial-Ressource (+ WIP: Bewegung) | nur Frontend: `ResourceBarPlayer` (lokaler State) |

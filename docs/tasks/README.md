@@ -24,4 +24,4 @@
 | DND-18 | refactor | SQLAlchemy 2.0 typisiert (Mapped, select) und mypy strict | Fertig | [DND-18-sqlalchemy-2-typed.md](DND-18-sqlalchemy-2-typed.md) |
 | DND-19 | chore | Dev-Compose auf Root-Ebene zusammenführen | Fertig | [DND-19-dev-compose-root.md](DND-19-dev-compose-root.md) |
 | DND-20 | fix | API-Vertrag mit Pydantic-Schemas, 404 statt 500, generierte Frontend-Typen | Fertig | [DND-20-api-contract-schemas.md](DND-20-api-contract-schemas.md) |
-| DND-21 | setup | Alembic-Migrationen und bereinigtes Datenbankschema | Entwurf | [DND-21-alembic-schema-cleanup.md](DND-21-alembic-schema-cleanup.md) |
+| DND-21 | setup | Alembic-Migrationen und bereinigtes Datenbankschema | Im Review | [DND-21-alembic-schema-cleanup.md](DND-21-alembic-schema-cleanup.md) |
