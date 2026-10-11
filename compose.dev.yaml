@@ -51,7 +51,7 @@ services:
       - ./backend/app:/app/app
       - ./backend/migrations:/app/migrations
       - ./backend/tests:/app/tests
-      # Scene media (images, music), served by the API under /media; read-only, there is no upload yet.
+      # Scene media, served under /media; read-only (no upload yet).
       - ./media:/app/media:ro
 
   ui:

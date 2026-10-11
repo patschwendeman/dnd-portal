@@ -33,6 +33,5 @@ app.add_middleware(
 
 app.include_router(scenes.router, prefix="/scenes", tags=["scenes"])
 app.include_router(maps.router, prefix="/maps", tags=["maps"])
-# Scene media (images, music) as static files incl. range requests; check_dir=False keeps `import app.main` working
-# without the folder (e.g. when exporting the OpenAPI schema).
+# check_dir=False keeps `import app.main` working without the media folder (e.g. when exporting the OpenAPI schema).
 app.mount(MEDIA_URL_PREFIX, StaticFiles(directory=settings.media_dir, check_dir=False), name="media")

@@ -34,7 +34,6 @@ def guess_content_type(storage_key: str) -> str:
 
 
 def build_media(item: dict[str, Any], media_dir: Path) -> Media:
-    """Media entry with content type and size; a missing file only logs a warning so that the start is not blocked."""
     storage_key: str = item["storage_key"]
     path = media_dir / storage_key
     size: int | None = None

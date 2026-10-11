@@ -16,7 +16,6 @@ class Settings(BaseSettings):
 
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:8080"]
 
-    # Folder with the scene media (images, music), served under /media; ../media is mounted here by the compose files.
     media_dir: Path = Path("/app/media")
 
     @property
