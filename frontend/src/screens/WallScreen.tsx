@@ -1,6 +1,7 @@
 import { FunctionComponent, ReactElement, useContext, useEffect, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
+import { mediaUrl } from '../api/mediaUrl'
 import { Label } from '../components/Label'
 import { MapOverview } from '../components/MapOverview'
 import { CONTROL_BAR_CLEARANCE, ScreenControlBar } from '../components/ScreenControlBar'
@@ -149,7 +150,7 @@ const WallScreen: FunctionComponent = (): ReactElement => {
     return(
         <Screen>
             <GlobalStyle />
-            <BackgroundImage data-test-id='wallImg' src={activeScene?.wall_image.source} alt='' /> 
+            <BackgroundImage data-test-id='wallImg' src={activeScene ? mediaUrl(activeScene.wall_image.source) : undefined} alt='' /> 
             <OverlayPanel $isVisible={mainMapsVisibility} $columns={columns} $rows={rows}>
                 <PanelHeader>
                     <PanelTitle>Kampfschauplätze</PanelTitle>

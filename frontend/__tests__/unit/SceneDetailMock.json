@@ -7,18 +7,18 @@
         "wall_image": {
             "id": 1,
             "name": "Castle Wall",
-            "source": "https://example.com/wall_castle.png"
+            "source": "/media/images/wall_screen/castle.png"
         },
         "ground_image": {
             "id": 1,
             "name": "Grassland",
-            "source": "https://example.com/ground_grassland.png"
+            "source": "/media/images/ground_screen/grassland.png"
         },
         "tracks": [
             {
                 "id": 1,
                 "name": "Battle Theme",
-                "source": "https://example.com/battle_theme.mp3"
+                "source": "/media/music/main/normal/battle_theme.mp3"
             }
         ]
     },
@@ -30,18 +30,18 @@
         "wall_image": {
             "id": 2,
             "name": "Castle Wall",
-            "source": "https://example.com/wall_castle.png"
+            "source": "/media/images/wall_screen/castle.png"
         },
         "ground_image": {
             "id": 2,
             "name": "Grassland",
-            "source": "https://example.com/ground_grassland.png"
+            "source": "/media/images/ground_screen/grassland.png"
         },
         "tracks": [
             {
                 "id": 2,
                 "name": "Battle Theme",
-                "source": "https://example.com/battle_theme.mp3"
+                "source": "/media/music/main/normal/battle_theme.mp3"
             }
         ]
     },
@@ -53,18 +53,18 @@
         "wall_image": {
             "id": 3,
             "name": "Castle Wall",
-            "source": "https://example.com/wall_castle.png"
+            "source": "/media/images/wall_screen/castle.png"
         },
         "ground_image": {
             "id": 3,
             "name": "Grassland",
-            "source": "https://example.com/ground_grassland.png"
+            "source": "/media/images/ground_screen/grassland.png"
         },
         "tracks": [
             {
                 "id": 3,
                 "name": "Battle Theme",
-                "source": "https://example.com/battle_theme.mp3"
+                "source": "/media/music/main/normal/battle_theme.mp3"
             }
         ]
     },
@@ -76,18 +76,18 @@
         "wall_image": {
             "id": 4,
             "name": "Castle Wall",
-            "source": "https://example.com/wall_castle.png"
+            "source": "/media/images/wall_screen/castle.png"
         },
         "ground_image": {
             "id": 4,
             "name": "Grassland",
-            "source": "https://example.com/ground_grassland.png"
+            "source": "/media/images/ground_screen/grassland.png"
         },
         "tracks": [
             {
                 "id": 4,
                 "name": "Battle Theme",
-                "source": "https://example.com/battle_theme.mp3"
+                "source": "/media/music/main/normal/battle_theme.mp3"
             }
         ]
     }

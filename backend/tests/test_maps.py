@@ -8,12 +8,16 @@ from fastapi.testclient import TestClient
 from app.crud import scene as scene_crud
 
 
+def media_source(item: dict[str, Any]) -> str:
+    return f"/media/{item['storage_key']}"
+
+
 @pytest.fixture(scope="module")
 def expected_main_maps(seed: dict[str, Any]) -> list[dict[str, Any]]:
     """Kampfszenen (main: true) with their ground image."""
-    grounds = seed["ground_images"]
+    media = seed["media"]
     return [
-        {"id": scene_id, "source": grounds[scene["ground_image_id"] - 1]["source"]}
+        {"id": scene_id, "source": media_source(media[scene["ground_image_id"] - 1])}
         for scene_id, scene in enumerate(seed["scenes"], start=1)
         if scene["main"] is True
     ]
@@ -22,9 +26,9 @@ def expected_main_maps(seed: dict[str, Any]) -> list[dict[str, Any]]:
 @pytest.fixture(scope="module")
 def expected_side_maps(seed: dict[str, Any]) -> list[dict[str, Any]]:
     """Nicht-Kampfszenen (main: false) with their wall image."""
-    walls = seed["wall_images"]
+    media = seed["media"]
     return [
-        {"id": scene_id, "source": walls[scene["wall_image_id"] - 1]["source"]}
+        {"id": scene_id, "source": media_source(media[scene["wall_image_id"] - 1])}
         for scene_id, scene in enumerate(seed["scenes"], start=1)
         if scene["main"] is False
     ]

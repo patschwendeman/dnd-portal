@@ -1,7 +1,7 @@
 # backend (dnd-portal)
 
 REST-API + PostgreSQL für das DnD Portal. Liefert Szenen mit ihren Wall-/Ground-Bildern und Musik-Playlists an das
-Frontend (`../frontend`). Projektübergreifender Kontext (Vision, Screens, Begriffe, bekannte Probleme) liegt
+Frontend (`../frontend`) und die Mediendateien selbst (Ordner `../media`, unter `/media`). Projektübergreifender Kontext (Vision, Screens, Begriffe, bekannte Probleme) liegt
 eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 
 ## Stack
@@ -15,7 +15,7 @@ psycopg2 · Alembic 1.20 · PostgreSQL 17. Tooling: uv · ruff (Lint + Format) �
 
 ```bash
 # im Monorepo-Root: ganze Anwendung (DB, API, Frontend) – siehe ../docs/architecture.md#lokal-starten
-./script.sh dev                    # Postgres :5432, API :8000 (uvicorn --reload, ./app, ./migrations und ./tests gemountet), Frontend :5173
+./script.sh dev                    # Postgres :5432, API :8000 (uvicorn --reload, ./app, ./migrations und ./tests gemountet, ../media read-only), Frontend :5173
 ./script.sh dev --tools            # zusätzlich pgAdmin :5050
 docker compose -f compose.dev.yaml logs -f api   # API-Logs (Container dnd-dev-api)
 docker compose -f compose.dev.yaml down          # stoppen (-v: DB-Reset); ./script.sh stop stoppt Dev und Prod
@@ -50,12 +50,18 @@ die Test-DB muss daher genau diesen Seed enthalten – nach Seed-Änderungen DB 
 Der `TestClient` läuft als Context Manager (damit der `lifespan` Migrationen und Seeder ausführt) und mit
 `raise_server_exceptions=False`, damit 500er als Response prüfbar sind. Leere Listen werden per `monkeypatch` auf die
 CRUD-Funktion geprüft. Daneben prüfen `test_cors.py` (erlaubte Origins, keine Credentials), `test_config.py`
-(`Settings`, ohne DB) und `test_migrate.py` (Alt-DB-Prüfung über eine Tabellenliste, ohne die Test-DB zu verändern).
+(`Settings`, ohne DB), `test_migrate.py` (Alt-DB-Prüfung über eine Tabellenliste, ohne die Test-DB zu verändern),
+`test_media.py` (Auslieferung unter `/media` inkl. `Range`, 404 und Pfad-Traversal; `source`-Format; alle Seed-Dateien
+in `../media` vorhanden), `test_seed.py` (Seeder inkl. fehlender Datei, in einer zurückgerollten Transaktion) und
+`test_migration_0002.py` (Migration `0001` → `0002` und zurück mit Daten, in einer eigenen temporären Datenbank – braucht
+`CREATE DATABASE`). Der Medienordner der Tests ist ein temporäres Verzeichnis: `tests/conftest.py` setzt `MEDIA_DIR`
+vor dem Import von `app` (Fixture `media_dir`).
 
 Benötigt `backend/.env` (gitignored), angelegt aus `.env.example`: `cp .env.example .env`, Platzhalter ersetzen.
 Schlüssel: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` (Postgres-Container und API), `DB_DRIVER`, `DB_HOST`
 (`db` – nur im Compose-Netz erreichbar), `DB_PORT`, optional `CORS_ORIGINS` (JSON-Liste, Default Dev- und
-Prod-Frontend auf localhost), `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`. Gelesen werden sie von `Settings`
+Prod-Frontend auf localhost), optional `MEDIA_DIR` (Medienordner, Default `/app/media`), `PGADMIN_DEFAULT_EMAIL`,
+`PGADMIN_DEFAULT_PASSWORD`. Gelesen werden sie von `Settings`
 in `app/core/config.py` (Umgebung vor `.env`); fehlende Pflichtwerte brechen den Start mit Validierungsfehler ab.
 Ältere `.env` mit `DRIVERNAME`/`HOST`/`PORT` einmalig umbenennen. Der Service `api` erhält sie per `env_file`, nicht
 über das Image (`.dockerignore` schließt `.env` aus). `import app.main` braucht keine DB; Migrationen und Seeder
@@ -71,14 +77,15 @@ unter `/app/.venv` (im `PATH`), der Prozess läuft als Non-Root-User `dnd`. `CMD
 ## Struktur & Schichten
 
 ```
-app/main.py               App `app`, lifespan (Migrationen + Seeder), CORS, include_router mit Prefix/Tags
+app/main.py               App `app`, lifespan (Migrationen + Seeder), CORS, include_router mit Prefix/Tags,
+                          StaticFiles des Medienordners unter /media
 app/core/config.py        Settings (pydantic-settings) und Instanz `settings`
 app/db/base.py            class Base(DeclarativeBase), MetaData mit Namenskonvention für Constraints
 app/db/session.py         engine, SessionLocal, get_db()
 app/db/migrate.py         run_migrations(): Alt-DB-Prüfung (check_legacy_schema), dann alembic upgrade head
 app/db/seed.py            Seeder; Daten in app/db/data/seed_data.json
-app/models/               SQLAlchemy-Models: scene.py (Scene, scene_track), media.py (WallImage, GroundImage,
-                          Track); __init__.py re-exportiert alle (vollständige Base.metadata)
+app/models/               SQLAlchemy-Models: scene.py (Scene, scene_track), media.py (Media, berechnetes `source`);
+                          __init__.py re-exportiert alle (vollständige Base.metadata)
 app/schemas/              Pydantic-Schemas des API-Vertrags: scene.py (SceneDetail, Image, Track), map.py (MapEntry)
 app/crud/scene.py         Lesezugriffe auf Scene, immer mit Relationen (read_scenes, read_scene, read_scenes_by_main)
 app/services/scene.py     Fachlogik Szenen (get_scenes, get_scene → Scene | None)
@@ -86,7 +93,8 @@ app/services/map.py       Fachlogik Karten (get_maps → list[MapEntry], MapType
 app/api/deps.py           SessionDep
 app/api/routes/*.py       je Ressource ein `router` (scenes, maps) – nur HTTP-Mapping
 tests/conftest.py         Fixtures: TestClient, Seed-Daten und daraus berechnete Erwartungen
-tests/test_*.py           Tests je Router (scenes, maps), CORS, Config, Migrationsstart (migrate)
+tests/test_*.py           Tests je Router (scenes, maps), Medien (media), CORS, Config, Migrationsstart (migrate),
+                          Seeder (seed), Migration 0002 (migration_0002)
 alembic.ini               Alembic-Konfiguration (ohne DB-URL; Dateinamen <revision>_<slug>.py, ruff als post_write_hook)
 migrations/env.py         URL aus settings.database_url, target_metadata = Base.metadata, compare_type=True
 migrations/versions/      Migrationen, nummeriert (0001_initial_schema.py, 0002_…)
@@ -112,7 +120,7 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
   dokumentiert sie per `responses={404: …}`.
   Relationen, die ein Schema braucht, lädt die CRUD-Funktion eager (`joinedload`/`contains_eager`).
 - Models im typisierten 2.0-Stil: `Mapped[...]`/`mapped_column`, Nullbarkeit im Typ spiegelt das Schema (aktuell
-  sind alle Spalten `NOT NULL`, eine nullable Spalte wäre `Mapped[str | None]`); Relationen zwischen Modulen per
+  sind alle Spalten außer `media.size` (`Mapped[int | None]`) `NOT NULL`); Relationen zwischen Modulen per
   `TYPE_CHECKING`-Import und String-Annotation. Abfragen nur mit `select()`,
   `db.scalars()`, `db.get()` (kein `db.query`); bei `joinedload` von Collections `.unique()`; gefiltert wird in SQL.
 - ruff: Zeilenlänge 120, Regelsets `E`, `F`, `W`, `I`, `B`, `UP`, `SIM`; ignoriert nur `B008` (`Depends(...)` als
@@ -124,14 +132,18 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
 ## Wichtig beim Ändern
 
 - **API-Vertrag:** `openapi.json` ist versioniert und Basis der Frontend-Typen; nach Änderungen an Schemas oder
-  Routen neu exportieren (Ablauf: `../docs/architecture.md#api-vertrag--typgenerierung`). Klassen, Tabellen und
-  ORM-Relationen heißen wie die API-Felder (`WallImage`/`wall_image`/`Scene.wall_image`, `GroundImage`/`ground_image`/
-  `Scene.ground_image`, `Track`/`track`/`Scene.tracks`, Zuordnung `scene_track`).
-- **`source`-Pfade** in `seed_data.json` verweisen auf Dateien in `../frontend/public/` (z. B.
-  `/assets/images/ground_screen/main_1.jpg`). Das Backend liefert keine Dateien aus.
-- **Seed:** Listen `wall_images`, `ground_images`, `tracks`, `scenes`; Referenzen (`wall_image_id`, `ground_image_id`,
-  `track_ids`-Liste) sind Autoincrement-IDs in Dateireihenfolge – Einträge nicht umsortieren. Der Seeder befüllt nur leere Tabellen; Änderungen an der JSON
-  erfordern einen DB-Reset (z. B. `docker compose -f compose.dev.yaml down -v` im Root).
+  Routen neu exportieren (Ablauf: `../docs/architecture.md#api-vertrag--typgenerierung`). Alle Mediendateien stehen
+  in einer Tabelle `media` (Model `Media`, `kind` `image` | `audio`); die ORM-Relationen heißen wie die API-Felder
+  (`Scene.wall_image`, `Scene.ground_image`, `Scene.tracks` über `scene_track(scene_id, media_id)`), die API-Schemas
+  `Image` und `Track` bleiben Response-Typen.
+- **Medien:** Dateien liegen in `../media` (im Container `/app/media`, `Settings.media_dir`), `media.storage_key` ist
+  der Pfad relativ dazu (z. B. `images/ground_screen/main_1.jpg`). Die API liefert `source` = `/media/<storage_key>`
+  (berechnet, nicht gespeichert) und die Dateien per `StaticFiles` unter `/media` (inkl. `Range`).
+- **Seed:** Listen `media` (`kind`, `name`, `storage_key`) und `scenes`; Referenzen (`wall_image_id`, `ground_image_id`,
+  `track_ids`-Liste) sind Media-IDs = Autoincrement-IDs in Dateireihenfolge – Einträge nicht umsortieren. Der Seeder
+  ermittelt `content_type` und `size` aus der Datei; fehlt sie, warnt er im Log und legt den Eintrag ohne `size` an.
+  Er befüllt nur leere Tabellen; Änderungen an der JSON erfordern einen DB-Reset (z. B.
+  `docker compose -f compose.dev.yaml down -v` im Root).
 - `Scene.main == true` = Kampfszene (Mainmap), `false` = Nicht-Kampfszene (Sidemap). Alte Namen
   (`battlemap`, `sidemap`, `fight`) nicht wieder einführen; `v1-roguelike` (Tags `archive/*`) ist verworfen.
 - Bekannte Lücken und Altlasten: siehe `../docs/known-issues.md`.

@@ -1,8 +1,8 @@
 # frontend (dnd-portal)
 
 UI des DnD Portals: Admin Screen (Spielleiter), Player Screen (Smartphone), Wall Screen (Atmosphäre) und
-Ground Screen (digitales Spielbrett). Holt Szenen vom Backend (`../backend`) und liefert alle Medien
-(Bilder, Musik, Sounds, Markdown-Notizen) selbst aus `public/` aus. Projektübergreifender Kontext (Vision, Screens
+Ground Screen (digitales Spielbrett). Holt Szenen vom Backend (`../backend`); Szenenbilder und Musik liefert das
+Backend unter `/media` aus, Sounds, Icons und Markdown-Notizen das Frontend selbst aus `public/`. Projektübergreifender Kontext (Vision, Screens
 Soll/Ist, Begriffe, bekannte Probleme) liegt eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 
 Gestaltungsregeln, Tokens und Farbrollen stehen in [DESIGN.md](DESIGN.md). Details dazu (Bausteine, Layout-Konstanten
@@ -46,7 +46,7 @@ API-URL: `src/api/apiClient.ts` nimmt `import.meta.env.VITE_API_URL` (Typ in `sr
 
 `Dockerfile` hat drei Stages: `dev` (Vite-Dev-Server :5173, von `../compose.dev.yaml` per `target: dev` genutzt),
 `build` (`npm ci`, `npm run build`, `ARG VITE_API_URL`) und `prod` (nginx, `nginx.conf`: SPA-Fallback auf
-`index.html`, lange Cache-Dauer nur für gehashte Dateien direkt unter `/assets/`, gzip). Medien aus `public/` landen im
+`index.html`, lange Cache-Dauer nur für gehashte Dateien direkt unter `/assets/`, gzip). Dateien aus `public/` landen im
 Prod-Image.
 
 Node-Version: `.nvmrc` (`18`, von CI und nvm/fnm gelesen) und `Dockerfile` (`node:18-slim`, Stages `dev` und `build`)
@@ -71,7 +71,8 @@ src/context/         ActiveSceneContext
 src/screens/         Screens
 src/components/      UI-Bausteine (TopBar, DocumentReader, MapOverview, GridOverlay, ScreenControlBar, ResourceBarPlayer …)
 src/service/         Datenladen je Screen (getAdminData, getWallScreenData, getGroundScreenData …)
-src/api/             axios-Client (apiClient.ts), getData (apiMethods.ts), loadData; schema.d.ts generiert
+src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData (apiMethods.ts), loadData, mediaUrl (mediaUrl.ts);
+                     schema.d.ts generiert
 src/models/models.ts API-Typen SceneDetail, Image, Track, MapResponse (= MapEntry) aus src/api/schema.d.ts;
                      Map ist Frontend-Modell (sceneId), Umwandlung aus MapResponse im Service
 src/hooks/           useMusicPlayer (bindet MusicPlayer an den Admin Screen: Track/Play-Zustand, Cleanup)
@@ -81,7 +82,8 @@ src/utils/musicPlayer.ts  MusicPlayer: Hintergrundmusik ohne React (ein Audio-El
                      Trackende → nächster Track); Audio-Fabrik und Zufall injizierbar für vitest
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }),
                      styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden)
-public/assets/       images (ground_screen, wall_screen), music, sounds, icons
+public/assets/       sounds, icons; dazu die fest eingebundenen Medien images/ground_screen/mapOverview.jpg (Weltkarte)
+                     und music/side/forest/From_Past_To_Present.mp3 (Standardmusik) – Szenenmedien liegen in ../media
 public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mechanics), deutsch
 ```
 
@@ -114,7 +116,9 @@ jeder Screen lädt die Szene per `scenes/{id}` neu. Kein WebSocket/Polling; Play
 
 ## Wichtig beim Ändern
 
-- Medienpfade (`source`) kommen aus dem Backend-Seed und müssen zu Dateien in `public/` passen.
+- Medienpfade (`source`) kommen vom Backend als API-relativer Pfad (`/media/...`) und werden immer über
+  `mediaUrl(source)` (`src/api/mediaUrl.ts`, gleiche Basis-URL wie `apiClient`) in eine absolute URL umgewandelt –
+  in `WallScreen`, `GroundScreen`, `MapOverview`, `SideMaps`, `Dialogue` und der Playlist im `AdminScreen`.
 - Kacheln (`Map`) tragen die Szenen-ID als `sceneId`: Das Backend liefert in `/maps/*` `id = scene.id`, die Services
   mappen es auf `sceneId`. Aktiv ist die Kachel mit `sceneId === activeSceneId`. `MapOverview` rendert jede Anzahl als
   Raster mit `⌈√n⌉` Spalten (`getGridLayout` in `src/utils/utils.ts`, auch Basis der Wall-Overlay-Breite).

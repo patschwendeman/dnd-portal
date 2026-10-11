@@ -12,7 +12,8 @@
             │ FastAPI        │────────▶│ PostgreSQL   │
             │ backend :8000  │         │ :5432        │
             └────────────────┘         └──────────────┘
- Statische Assets (Bilder, Musik, Sounds, Markdown) liefert das Frontend aus public/ aus:
+ Szenenmedien (Wall-/Ground-Bilder, Musik) liefert das Backend unter /media aus (Ordner media/ im Repo-Root).
+ Übrige statische Assets (Sounds, Icons, Markdown) liefert das Frontend aus public/ aus:
  Dev: Vite-Server (:5173), Production: nginx (:8080) mit dem gebauten public/.
 ```
 
@@ -47,6 +48,7 @@
 | `/scenes/{scene_id}` | `SceneDetail` (200) bzw. 404 `{"detail": "Scene not found"}` |
 | `/maps/main` | `list[MapEntry]`: `{id: scene.id, source: ground_image.source}` je Kampfszene (200, ggf. `[]`) |
 | `/maps/side` | `list[MapEntry]`: `{id: scene.id, source: wall_image.source}` je Nicht-Kampfszene (200, ggf. `[]`) |
+| `/media/{storage_key}` | Mediendatei aus dem Medienordner (`StaticFiles`, nicht in OpenAPI): 200 bzw. 206 bei `Range`-Header (Audio-Seek), 404 bei fehlender Datei oder Pfad außerhalb des Ordners |
 
 Kanonische Pfade sind ohne Slash am Ende (mit Slash antwortet FastAPI mit 307-Redirect). Fehler im Default-Format
 `{"detail": "..."}`.
@@ -61,8 +63,10 @@ Track       { id: int, name: str, source: str }
 MapEntry    { id: int, source: str }                                         id = Szenen-ID
 ```
 
-Alle Felder sind Pflicht und nicht nullable (wie die DB-Spalten). Die Fremdschlüssel (`wall_image_id` …) sind nicht
-Teil der Antwort.
+Alle Felder sind Pflicht und nicht nullable. Die Fremdschlüssel (`wall_image_id` …) sind nicht Teil der Antwort.
+`source` ist der API-relative Pfad der Datei, `/media/<storage_key>` (aus `media.storage_key` berechnet, nicht
+gespeichert), z. B. `/media/images/ground_screen/main_1.jpg`. Das Frontend macht daraus per `mediaUrl(source)`
+(`src/api/mediaUrl.ts`) eine absolute URL auf Basis von `VITE_API_URL` – dieselbe Basis wie der axios-Client.
 
 ### API-Vertrag & Typgenerierung
 
@@ -83,21 +87,34 @@ CI prüft beide Dateien auf Aktualität (Export bzw. Generierung + `git diff --e
 ### Datenmodell
 
 ```
-Scene        → scene        (id, name, description, main: bool, wall_image_id → wall_image, ground_image_id → ground_image (unique))
-WallImage    → wall_image   (id, name, source)   Scene N:1 über Relation Scene.wall_image (z. B. teilen sich alle Kampfszenen ein Wall-Bild; WallImage.scenes ist eine Liste)
-GroundImage  → ground_image (id, name, source)   Scene 1:1 über Relation Scene.ground_image
-Track        → track        (id, name, source)   Scene N:M über Relation Scene.tracks und scene_track(scene_id, track_id; PK aus beiden)
+Scene  → scene  (id, name, description, main: bool, wall_image_id → media, ground_image_id → media (unique))
+              Scene.wall_image: N:1 (z. B. teilen sich alle Kampfszenen ein Wall-Bild), Scene.ground_image: 1:1
+              Scene.tracks: N:M über scene_track(scene_id, media_id; PK aus beiden)
+Media  → media  (id, kind: 'image' | 'audio', name, storage_key (unique), content_type, size (Bytes, nullable))
 ```
 
-Alle Spalten sind `NOT NULL`. Constraint-Namen folgen der Namenskonvention in `app/db/base.py` (z. B. `pk_scene`,
-`fk_scene_wall_image_id_wall_image`, `uq_scene_ground_image_id`).
+Alle Spalten außer `media.size` sind `NOT NULL`. `kind` beschreibt die Dateiart, nicht die Verwendung: Eine Datei ist
+genau ein Datensatz und kann mehrfach genutzt werden (z. B. das Level-Up-Bild als Wall- und Ground-Bild).
+`storage_key` ist der Pfad relativ zum Medienordner (z. B. `images/wall_screen/forest.jpg`); die API bildet daraus
+`source`. Constraint-Namen folgen der Namenskonvention in `app/db/base.py` (z. B. `pk_scene`,
+`fk_scene_wall_image_id_media`, `uq_scene_ground_image_id`, `ck_media_kind`).
 
-`source` ist jeweils ein Pfad-String relativ zum Frontend-Public-Ordner, z. B. `/assets/images/ground_screen/main_1.jpg`.
-Das Backend speichert/liefert **keine Dateien**.
+**Medienordner:** Die Dateien liegen im Ordner `media/` im Repo-Root (in Git; `images/{ground_screen,wall_screen}`,
+`music/{main,side}/…`). Die API liest ihn aus `MEDIA_DIR` (`Settings.media_dir`, Default `/app/media`); die
+Compose-Dateien binden `./media` read-only dorthin ein. FastAPI liefert ihn per `StaticFiles` unter `/media` aus
+(inkl. `Range`-Requests); eine neue Datei in `media/` ist ohne Frontend-Build per Seed-/DB-Eintrag nutzbar. Upload
+gibt es noch nicht.
 
-**Seed-Daten:** 4 Nicht-Kampfszenen (Default/Dorf, Shop, Taverne, Level Up) und 25 Kampfszenen („Fight 1..25“, teils
-mit Tags wie Boss, Loot, Ereignis, Key), 5 Wall-Bilder, 29 Ground-Bilder, 43 Musiktracks.
-IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement).
+**Migrationen:** `0001` legt das ursprüngliche Schema an (`wall_image`, `ground_image`, `track` mit Pfad-Strings
+`source`), `0002` führt diese in `media` zusammen (`/assets/<rest>` → `storage_key` `<rest>`, gleiche Datei = ein
+Datensatz, `size` = NULL) und biegt die Fremdschlüssel um; bestehende Datenbanken laufen ohne Reset weiter.
+
+**Seed-Daten:** Liste `media` (`kind`, `name`, `storage_key`) und `scenes` (Referenzen `wall_image_id`,
+`ground_image_id`, `track_ids` auf Media-IDs). 4 Nicht-Kampfszenen (Default/Dorf, Shop, Taverne, Level Up) und 25
+Kampfszenen („Fight 1..25“, teils mit Tags wie Boss, Loot, Ereignis, Key), 76 Medien (33 Bilder, 43 Musiktracks).
+IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement). Der Seeder ermittelt `content_type` (per
+Dateiendung) und `size` aus der Datei im Medienordner; fehlt sie, schreibt er eine Warnung ins Log und legt den
+Datensatz trotzdem an (`size` = NULL).
 
 ## Frontend (`frontend`)
 
@@ -119,8 +136,10 @@ IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement).
   danach eintreffende Ergebnisse und Fehler werden verworfen. Beim schnellen Szenen- bzw. Tab-Wechsel zählt so nur die
   Antwort zum aktuellen Stand. Die HTTP-Requests selbst werden nicht abgebrochen. Der Retry im Admin Screen erhöht nur
   einen Zähler (`reloadCount`), von dem beide Lade-Effects abhängen.
-- Assets in `public/`: `assets/images/{ground_screen,wall_screen}`, `assets/music/{main,side}/…`,
-  `assets/sounds` (Soundeffekte), `assets/icons`, `story/**` (Markdown-Notizen, deutsch).
+- Assets in `public/`: `assets/sounds` (Soundeffekte), `assets/icons`, `story/**` (Markdown-Notizen, deutsch) sowie die
+  zwei fest eingebundenen Medien `assets/images/ground_screen/mapOverview.jpg` (Weltkarte im Wall Screen) und
+  `assets/music/side/forest/From_Past_To_Present.mp3` (Standardmusik im Admin Screen). Szenenbilder und Musik kommen
+  vom Backend (`/media/...`, siehe Datenmodell).
 
 ## Lokal starten
 
@@ -148,14 +167,14 @@ Skript ermittelt sein Verzeichnis über die Symlink-Kette; Hilfe und Ausgaben ze
 
 **Voraussetzung:** `backend/.env` (gitignored) aus `backend/.env.example` anlegen: `POSTGRES_USER`,
 `POSTGRES_PASSWORD`, `POSTGRES_DB` (Postgres-Container und API), `DB_DRIVER`, `DB_HOST` (`db` = Service-Name im
-Compose-Netz), `DB_PORT`, optional `CORS_ORIGINS`, `PGADMIN_DEFAULT_EMAIL/PASSWORD`. Die API erhält sie per
+Compose-Netz), `DB_PORT`, optional `CORS_ORIGINS`, `MEDIA_DIR`, `PGADMIN_DEFAULT_EMAIL/PASSWORD`. Die API erhält sie per
 `env_file`; `backend/.dockerignore` hält die `.env` aus dem Image. Fehlt ein Pflichtwert, bricht die API beim Start mit
 einem Validierungsfehler ab (Feldname im Log). Ältere `.env` mit `DRIVERNAME`/`HOST`/`PORT` einmalig auf
 `DB_DRIVER`/`DB_HOST`/`DB_PORT` umbenennen.
 
 | Befehl (im Root, ohne Skript) | Wirkung |
 |---|---|
-| `docker compose -f compose.dev.yaml up --build` | `db` (Postgres :5432), `api` (API :8000, uvicorn `--reload`, `backend/app`, `backend/migrations` und `backend/tests` gemountet), `ui` (Vite :5173, `frontend/` gemountet) |
+| `docker compose -f compose.dev.yaml up --build` | `db` (Postgres :5432), `api` (API :8000, uvicorn `--reload`, `backend/app`, `backend/migrations` und `backend/tests` gemountet, `media/` read-only unter `/app/media`), `ui` (Vite :5173, `frontend/` gemountet) |
 | `docker compose -f compose.dev.yaml --profile tools up` | zusätzlich `pgadmin` (:5050) |
 | `docker compose -f compose.dev.yaml up --build db api` | nur Backend (DB und API) |
 | `docker compose -f compose.dev.yaml up --build ui` | nur Frontend (alternativ nativ `npm run dev` in `frontend/`) |
@@ -195,15 +214,16 @@ oben: `backend/.env`.
 
 | Befehl (im Root, ohne Skript; mit Skript: `./script.sh prod` bzw. `dnd prod`) | Wirkung |
 |---|---|
-| `docker compose -f compose.prod.yaml up -d --build --wait` | `db` (Postgres :5432), `api` (API :8000, uvicorn ohne `--reload`, Code im Image), `ui` (nginx :8080 mit dem statischen Build) – alle mit `restart: unless-stopped` |
+| `docker compose -f compose.prod.yaml up -d --build --wait` | `db` (Postgres :5432), `api` (API :8000, uvicorn ohne `--reload`, Code im Image, `media/` read-only unter `/app/media` gemountet), `ui` (nginx :8080 mit dem statischen Build) – alle mit `restart: unless-stopped` |
 | `VITE_API_URL=http://<host>:8000/ docker compose -f compose.prod.yaml up -d --build --wait` | Frontend mit anderer API-URL bauen (Default `http://localhost:8000/`) |
 | `docker compose -f compose.prod.yaml logs -f <service>` | Logs verfolgen |
 | `docker compose -f compose.prod.yaml down` | stoppen; mit `-v` auch DB-Volume löschen (DB-Reset) |
 
 UI unter http://localhost:8080/admin, `/wall` und `/ground` (Fenster im selben Browser auf dem Spieltisch-Rechner);
 Smartphones öffnen den Player Screen über `http://<IP des Rechners>:8080/`. nginx liefert `index.html` auch für
-direkt aufgerufene Unterrouten aus (SPA-Fallback); die Medien aus `public/` stecken im Image, Änderungen daran
-brauchen einen neuen Build (`--build`). pgAdmin ist nicht enthalten.
+direkt aufgerufene Unterrouten aus (SPA-Fallback); die Dateien aus `public/` (Sounds, Icons, Notizen) stecken im
+Image, Änderungen daran brauchen einen neuen Build (`--build`). Szenenmedien in `media/` sind per Bind-Mount
+eingebunden und brauchen keinen Build. pgAdmin ist nicht enthalten.
 Dev- und Prod-Stack nicht gleichzeitig betreiben: API (:8000) und DB (:5432) nutzen dieselben Ports.
 Healthchecks: `db` per `pg_isready`, `api` per Python-Einzeiler gegen `http://localhost:8000/scenes` (das Image hat
 kein curl); `api` startet erst bei gesunder DB, `ui` erst bei gesunder API. `docker ps` zeigt `dnd-prod-api (healthy)`.

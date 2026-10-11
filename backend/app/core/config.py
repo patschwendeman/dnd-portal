@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL
 
@@ -13,6 +15,9 @@ class Settings(BaseSettings):
     postgres_db: str
 
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:8080"]
+
+    # Folder with the scene media (images, music), served under /media; ../media is mounted here by the compose files.
+    media_dir: Path = Path("/app/media")
 
     @property
     def database_url(self) -> URL:

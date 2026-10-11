@@ -8,9 +8,9 @@
 | Szene | Situation, die der Spielleiter aktiviert; bündelt Wall-Bild, Ground-Bild und Musik | Tabelle/Model `Scene` (Backend), API-Schema `SceneDetail` (Backend `app/schemas/`, Frontend-Typ generiert) |
 | Kampfszene | Szene mit taktischem Kampf | `Scene.main == true` → „Mainmap“, Endpoint `/maps/main` |
 | Nicht-Kampfszene | Dorf, Shop, Taverne, Level-Up … | `Scene.main == false` → „Sidemap“, Endpoint `/maps/side` |
-| Wall-Bild | Atmosphäre-Hintergrund der Szene | `WallImage` / `scene.wall_image` |
-| Ground-Bild | Spielbrett/Kampfschauplatz der Szene (Bild oder Video) | `GroundImage` / `scene.ground_image` |
-| Musik (Sound-Element einer Szene) | Playlist von Tracks einer Szene, zufällig abgespielt | `Track`, n:m über `scene_track`; `scene.tracks[]` |
+| Wall-Bild | Atmosphäre-Hintergrund der Szene | `Media` (`kind` `image`) / `scene.wall_image` |
+| Ground-Bild | Spielbrett/Kampfschauplatz der Szene (Bild oder Video) | `Media` (`kind` `image`) / `scene.ground_image` |
+| Musik (Sound-Element einer Szene) | Playlist von Tracks einer Szene, zufällig abgespielt | `Media` (`kind` `audio`), n:m über `scene_track`; `scene.tracks[]` (API-Typ `Track`) |
 | Soundeffekt | Einzelner Sound, den der Admin manuell abspielt (Heilung, Buff, Zauber …) | nur Frontend: `TopBar`, Dateien in `public/assets/sounds/` |
 | Notizen | Markdown-Dateien zu Story, NPCs, Kämpfen, Leveling, Regeln | nur Frontend: `public/story/**.md`, `DocumentReader` |
 | Ressourcen (Spieler) | Aktion, Bonusaktion, Zauberplätze I–IV, Spezial-Ressource (+ WIP: Bewegung) | nur Frontend: `ResourceBarPlayer` (lokaler State) |

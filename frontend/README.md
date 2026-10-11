@@ -1,7 +1,8 @@
 # dnd-portal – Frontend
 
-UI des DnD Portals mit vier Screens für den Spieltisch. Holt Szenen vom Backend ([`../backend`](../backend/)) und
-liefert alle Medien (Bilder, Musik, Sounds, Markdown-Notizen) selbst aus `public/` aus.
+UI des DnD Portals mit vier Screens für den Spieltisch. Holt Szenen vom Backend ([`../backend`](../backend/)); die
+Szenenbilder und die Musik liefert ebenfalls das Backend aus (Ordner [`../media`](../media/)), Sounds, Icons und
+Markdown-Notizen das Frontend selbst aus `public/`.
 
 | Route | Screen | Zweck |
 |---|---|---|
@@ -47,10 +48,11 @@ Bundle ein: lokal per `.env` (Vorlage [`.env.example`](.env.example)), im Docker
 
 ## Medien und Notizen
 
-- `public/assets/` – Bilder (Wall/Ground), Musik, Sounds, Icons
+- `../media/` (Repo-Root) – Szenenbilder (Wall/Ground) und Musik, ausgeliefert vom Backend unter `/media`
+- `public/assets/` – Sounds, Icons sowie die fest eingebundene Weltkarte und Standardmusik
 - `public/story/` – Markdown-Notizen für den Admin Screen (deutsch)
 
-Medienpfade kommen aus dem Backend-Seed und müssen zu den Dateien in `public/` passen.
+Medienpfade (`source`) kommen vom Backend als `/media/...`; das Frontend löst sie per `mediaUrl` gegen `VITE_API_URL` auf.
 
 ## Weiterführend
 

@@ -35,6 +35,9 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
+    # Scene media (images, music), served by the API under /media; read-only, there is no upload yet.
+    volumes:
+      - ./media:/app/media:ro
     # Checked with Python because python:3.11-slim has no curl. ui and `up --wait` wait for it so that
     # Admin/Wall/Ground do not load before the API is ready.
     healthcheck:

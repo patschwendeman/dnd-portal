@@ -3,6 +3,7 @@ import styled from 'styled-components'
 
 import { Label } from './Label'
 import { MapElement } from './MapElement'
+import { mediaUrl } from '../api/mediaUrl'
 import { ActiveSceneContext } from '../context/context'
 import { Map } from '../models/models'
 
@@ -60,7 +61,7 @@ const SideMaps: FunctionComponent<SideMapsProps> = ({ sidemaps , handleSceneSele
                         <SideMapTile key={ maps[mapIndex].sceneId }>
                             <MapElement 
                                 activeSceneId={ activeSceneId }
-                                src={ maps[mapIndex].source } 
+                                src={ maps[mapIndex].source ? mediaUrl(maps[mapIndex].source) : undefined } 
                                 handleSceneSelection={ handleSceneSelection } 
                                 sceneId={ maps[mapIndex].sceneId }
                                 isAdminScreen={ true } 

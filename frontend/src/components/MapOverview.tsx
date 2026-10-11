@@ -2,6 +2,7 @@ import { FunctionComponent, ReactElement, useContext } from 'react'
 import styled from 'styled-components'
 
 import { MapElement } from './MapElement'
+import { mediaUrl } from '../api/mediaUrl'
 import { ActiveSceneContext } from '../context/context'
 import { Map } from '../models/models'
 import { getGridLayout } from '../utils/utils'
@@ -44,7 +45,7 @@ const MapOverview: FunctionComponent<MapOverviewProps> = ({ mainmaps, gap, paddi
             {maps.map((map, itemIndex) => (
                 <MapElement 
                     activeSceneId={ activeSceneId }
-                    src={ map.source } 
+                    src={ map.source ? mediaUrl(map.source) : undefined } 
                     handleSceneSelection={ handleSceneSelection } 
                     key={ map.sceneId }
                     sceneId={ map.sceneId }

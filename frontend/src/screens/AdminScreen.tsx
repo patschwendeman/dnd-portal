@@ -2,6 +2,7 @@ import { useContext, FunctionComponent, ReactElement, useEffect, useState } from
 import styled, { useTheme } from 'styled-components'
 
 import defaultMusic from '../../public/assets/music/side/forest/From_Past_To_Present.mp3'
+import { mediaUrl } from '../api/mediaUrl'
 import { DetailsSideBar } from '../components/DetailsSideBar'
 import { Dialogue } from '../components/Dialogue'
 import { DocumentReader } from '../components/DocumentReader'
@@ -179,7 +180,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
             () => getSceneById(activeSceneId),
             (activeScene: SceneDetail) => {
                 setActiveScene(activeScene)
-                setMusicPlaylist(activeScene.tracks.map((item) => item.source))
+                setMusicPlaylist(activeScene.tracks.map((item) => mediaUrl(item.source)))
                 setActiveSceneFailed(false)
             },
             (err) => {

@@ -1,4 +1,6 @@
-"""Settings: read from the environment (DB_*, POSTGRES_*, CORS_ORIGINS) without backend/.env."""
+"""Settings: read from the environment (DB_*, POSTGRES_*, CORS_ORIGINS, MEDIA_DIR) without backend/.env."""
+
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -57,3 +59,19 @@ def test_missing_required_value_raises_validation_error(env: pytest.MonkeyPatch)
 
     assert error.value.errors()[0]["loc"] == ("db_host",)
     assert error.value.errors()[0]["type"] == "missing"
+
+
+def test_media_dir_defaults_to_app_media(env: pytest.MonkeyPatch) -> None:
+    env.delenv("MEDIA_DIR", raising=False)
+
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+
+    assert settings.media_dir == Path("/app/media")
+
+
+def test_media_dir_is_read_from_environment(env: pytest.MonkeyPatch) -> None:
+    env.setenv("MEDIA_DIR", "/srv/dnd/media")
+
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+
+    assert settings.media_dir == Path("/srv/dnd/media")

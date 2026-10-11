@@ -6,13 +6,13 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
-    from app.models.media import GroundImage, Track, WallImage
+    from app.models.media import Media
 
 scene_track = Table(
     "scene_track",
     Base.metadata,
     Column("scene_id", ForeignKey("scene.id"), primary_key=True),
-    Column("track_id", ForeignKey("track.id"), primary_key=True),
+    Column("media_id", ForeignKey("media.id"), primary_key=True),
 )
 
 
@@ -22,8 +22,8 @@ class Scene(Base):
     name: Mapped[str]
     description: Mapped[str] = mapped_column(Text)
     main: Mapped[bool]
-    wall_image_id: Mapped[int] = mapped_column(ForeignKey("wall_image.id"))
-    wall_image: Mapped["WallImage"] = relationship(back_populates="scenes")
-    ground_image_id: Mapped[int] = mapped_column(ForeignKey("ground_image.id"), unique=True)
-    ground_image: Mapped["GroundImage"] = relationship(back_populates="scene")
-    tracks: Mapped[list["Track"]] = relationship(secondary=scene_track, back_populates="scenes")
+    wall_image_id: Mapped[int] = mapped_column(ForeignKey("media.id"))
+    wall_image: Mapped["Media"] = relationship(foreign_keys=[wall_image_id])
+    ground_image_id: Mapped[int] = mapped_column(ForeignKey("media.id"), unique=True)
+    ground_image: Mapped["Media"] = relationship(foreign_keys=[ground_image_id])
+    tracks: Mapped[list["Media"]] = relationship(secondary=scene_track)

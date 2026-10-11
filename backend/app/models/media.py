@@ -1,33 +1,26 @@
-from typing import TYPE_CHECKING
-
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import BigInteger, CheckConstraint
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
-from app.models.scene import scene_track
 
-if TYPE_CHECKING:
-    from app.models.scene import Scene
+MEDIA_URL_PREFIX = "/media"
 
 
-class WallImage(Base):
-    __tablename__ = "wall_image"
+class Media(Base):
+    """A media file in the media folder; `kind` describes the file, not its use (one file can serve several scenes)."""
+
+    __tablename__ = "media"
+    __table_args__ = (CheckConstraint("kind IN ('image', 'audio')", name="kind"),)
+
     id: Mapped[int] = mapped_column(primary_key=True)
+    kind: Mapped[str]
     name: Mapped[str]
-    source: Mapped[str]
-    scenes: Mapped[list["Scene"]] = relationship(back_populates="wall_image")
+    # Path relative to the media folder, e.g. images/wall_screen/forest.jpg
+    storage_key: Mapped[str] = mapped_column(unique=True)
+    content_type: Mapped[str]
+    size: Mapped[int | None] = mapped_column(BigInteger)
 
-
-class GroundImage(Base):
-    __tablename__ = "ground_image"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    source: Mapped[str]
-    scene: Mapped["Scene | None"] = relationship(back_populates="ground_image")
-
-
-class Track(Base):
-    __tablename__ = "track"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    source: Mapped[str]
-    scenes: Mapped[list["Scene"]] = relationship(secondary=scene_track, back_populates="tracks")
+    @property
+    def source(self) -> str:
+        """API-relative URL of the file (the frontend resolves it against the API base URL)."""
+        return f"{MEDIA_URL_PREFIX}/{self.storage_key}"

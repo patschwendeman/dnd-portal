@@ -3,6 +3,7 @@ import styled from 'styled-components'
 
 import { Label } from './Label'
 import { TextButton } from './TextButton'
+import { mediaUrl } from '../api/mediaUrl'
 import { ActiveSceneContext } from '../context/context'
 import { SceneDetail } from '../models/models'
 import { textStyle } from '../style/tokens'
@@ -95,7 +96,7 @@ const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogu
   return (
     <LayoutContainer $isVisible={isVisible}>
       <DialogueContainer>
-        <DialogueImage src={sceneOption?.wall_image?.source} alt={sceneOption?.name || 'Scene Image'} />
+        <DialogueImage src={sceneOption?.wall_image ? mediaUrl(sceneOption.wall_image.source) : undefined} alt={sceneOption?.name || 'Scene Image'} />
         <TextBlock>
           <Label>Szene wechseln</Label>
           <SceneName>{sceneOption?.name}</SceneName>

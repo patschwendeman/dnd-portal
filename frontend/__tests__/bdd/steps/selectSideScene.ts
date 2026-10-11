@@ -2,7 +2,7 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import { WebDriver } from 'selenium-webdriver'
 
 import {
-  BASE_URL,
+  MEDIA_BASE_URL,
   buildDriver,
   clickElement,
   confirmDialog,
@@ -33,7 +33,7 @@ defineFeature(feature, (test) => {
     const sideScenes = ['forest', 'shop', 'tavern']
     const sideScene = sideScenes[getRandomNumber(0, sideScenes.length - 1)]
 
-    const sideSceneImageSource = `/assets/images/wall_screen/${sideScene}.jpg`
+    const sideSceneImageSource = `${MEDIA_BASE_URL}/images/wall_screen/${sideScene}.jpg`
 
     given('I am on the admin screen', async () => {
       await openScreen(driver, '/admin')
@@ -52,7 +52,7 @@ defineFeature(feature, (test) => {
     })
 
     then('I see the correct wall image', async () => {
-      const expectedSrc = `${BASE_URL}${sideSceneImageSource}`
+      const expectedSrc = sideSceneImageSource
       const imageSrc = await waitForAttribute(driver, '[data-test-id="wallImg"]', 'src', expectedSrc)
       expect(imageSrc).toBe(expectedSrc)
     })

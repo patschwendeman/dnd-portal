@@ -2,7 +2,7 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import { WebDriver } from 'selenium-webdriver'
 
 import {
-  BASE_URL,
+  MEDIA_BASE_URL,
   buildDriver,
   clickElement,
   confirmDialog,
@@ -18,7 +18,7 @@ const feature = loadFeature('__tests__/bdd/features/selectMainScene.feature')
 const MAIN_SCENE_COUNT = 25
 
 const getRandomMainScene = (): string =>
-  `/assets/images/ground_screen/main_${getRandomNumber(1, MAIN_SCENE_COUNT)}.jpg`
+  `${MEDIA_BASE_URL}/images/ground_screen/main_${getRandomNumber(1, MAIN_SCENE_COUNT)}.jpg`
 
 defineFeature(feature, (test) => {
   let driver: WebDriver
@@ -56,7 +56,7 @@ defineFeature(feature, (test) => {
     })
 
     then('I see the correct main map', async () => {
-      const expectedSrc = `${BASE_URL}${mainScene}`
+      const expectedSrc = mainScene
       const imageSrc = await waitForAttribute(driver, '[data-test-id="groundImg"]', 'src', expectedSrc)
       expect(imageSrc).toBe(expectedSrc)
     })
@@ -99,8 +99,8 @@ defineFeature(feature, (test) => {
     and,
   }) => {
     const mainScene = getRandomMainScene()
-    // All main scenes share this wall image (legacy file name kept in the asset path)
-    const mainWallImage = `${BASE_URL}/assets/images/wall_screen/fight.jpg`
+    // All main scenes share this wall image (legacy file name kept in the media path)
+    const mainWallImage = `${MEDIA_BASE_URL}/images/wall_screen/fight.jpg`
 
     given('I am on the admin screen', async () => {
       await openScreen(driver, '/admin')

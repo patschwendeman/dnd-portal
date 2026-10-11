@@ -1,7 +1,7 @@
 # DND-22: Szenenmedien ins Backend verlagern (Tabelle `media`, Ordner `media/`, Auslieferung per API)
 
 **Typ:** refactor
-**Status:** Entwurf
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -109,48 +109,48 @@ Upload im Admin Screen (eigener feat-Task).
 ## Subtasks
 
 ### Vertrag
-- [ ] `Image`/`Track`/`MapEntry`: Feld `source` = `/media/<storage_key>`; sonst unverändert.
-- [ ] Neuer statischer Pfad `GET /media/{storage_key}` (keine OpenAPI-Route nötig).
+- [x] `Image`/`Track`/`MapEntry`: Feld `source` = `/media/<storage_key>`; sonst unverändert.
+- [x] Neuer statischer Pfad `GET /media/{storage_key}` (keine OpenAPI-Route nötig).
 
 ### Backend
-- [ ] `git mv frontend/public/assets/images media/images` und `… /music media/music`; Kopien gemäß E7 in
+- [x] `git mv frontend/public/assets/images media/images` und `… /music media/music`; Kopien gemäß E7 in
       `frontend/public/assets/...` belassen.
-- [ ] `Settings.media_dir` (Default `/app/media`, in `.env.example` dokumentiert).
-- [ ] Modell `Media` in `app/models/media.py` statt `WallImage`/`GroundImage`/`Track`; `Scene` und `scene_track`
+- [x] `Settings.media_dir` (Default `/app/media`, in `.env.example` dokumentiert).
+- [x] Modell `Media` in `app/models/media.py` statt `WallImage`/`GroundImage`/`Track`; `Scene` und `scene_track`
       anpassen; `source` als berechnetes Attribut bzw. im Schema aus `storage_key` bilden.
-- [ ] Alembic-Revision `0002` gemäß E6 (upgrade und downgrade).
-- [ ] `seed_data.json` und `app/db/seed.py` gemäß E8.
-- [ ] `app/main.py`: `StaticFiles` unter `/media` mounten; CORS (nur `GET`) bleibt.
-- [ ] `services/map.py` auf `Media` umstellen.
-- [ ] Compose: Bind-Mount `./media:/app/media:ro` für `api` in `compose.dev.yaml` und `compose.prod.yaml`.
-- [ ] `scripts/export_openapi.py` ausführen.
-- [ ] Tests: Migration `0001`→`0002` mit Daten (Werte bleiben zugeordnet), Seeder inkl. fehlender Datei,
+- [x] Alembic-Revision `0002` gemäß E6 (upgrade und downgrade).
+- [x] `seed_data.json` und `app/db/seed.py` gemäß E8.
+- [x] `app/main.py`: `StaticFiles` unter `/media` mounten; CORS (nur `GET`) bleibt.
+- [x] `services/map.py` auf `Media` umstellen (keine Änderung nötig: nutzt nur `image.source`, das `Media` berechnet).
+- [x] Compose: Bind-Mount `./media:/app/media:ro` für `api` in `compose.dev.yaml` und `compose.prod.yaml`.
+- [x] `scripts/export_openapi.py` ausführen.
+- [x] Tests: Migration `0001`→`0002` mit Daten (Werte bleiben zugeordnet), Seeder inkl. fehlender Datei,
       `source`-Format in `/scenes` und `/maps/*`, Auslieferung `/media/...` inkl. `Range`-Header (206) und 404,
       Pfad-Traversal (`/media/../...`) wird abgewiesen. Testmedien in einem temporären Ordner.
 
 ### Frontend
-- [ ] `src/api/schema.d.ts` neu generieren (`npm run generate:api`).
-- [ ] Helfer `mediaUrl(source)` neben `apiClient` (gleiche Basis-URL); in `WallScreen`, `GroundScreen`,
+- [x] `src/api/schema.d.ts` neu generieren (`npm run generate:api`).
+- [x] Helfer `mediaUrl(source)` neben `apiClient` (gleiche Basis-URL); in `WallScreen`, `GroundScreen`,
       `MapOverview`, `SideMaps`, `Dialogue` und der Playlist im `AdminScreen` verwenden.
-- [ ] Unit-Test für `mediaUrl` (mit und ohne abschließenden Slash in der Basis-URL).
-- [ ] `__tests__/unit/SceneDetailMock.json`, `musicTitle.spec.ts` (Pfadbeispiele) und BDD-Steps
+- [x] Unit-Test für `mediaUrl` (mit und ohne abschließenden Slash in der Basis-URL).
+- [x] `__tests__/unit/SceneDetailMock.json`, `musicTitle.spec.ts` (Pfadbeispiele) und BDD-Steps
       `selectMainScene.ts`/`selectSideScene.ts` auf die neuen URLs anpassen.
 
 ### Doku
-- [ ] `docs/architecture.md`: Assets-Abschnitt, Datenmodell, Ordnerstruktur, Compose/Mounts, „Backend speichert keine Dateien“ korrigieren.
-- [ ] `docs/domain.md`, `backend/CLAUDE.md`, `frontend/CLAUDE.md` wo Asset-Pfade/Tabellen erwähnt sind.
-- [ ] `docs/known-issues.md`: Doppelung aus E7 ergänzen, Eintrag „Szenen nur über seed_data.json pflegbar“ bleibt.
+- [x] `docs/architecture.md`: Assets-Abschnitt, Datenmodell, Ordnerstruktur, Compose/Mounts, „Backend speichert keine Dateien“ korrigieren.
+- [x] `docs/domain.md`, `backend/CLAUDE.md`, `frontend/CLAUDE.md` wo Asset-Pfade/Tabellen erwähnt sind.
+- [x] `docs/known-issues.md`: Doppelung aus E7 ergänzen, Eintrag „Szenen nur über seed_data.json pflegbar“ bleibt.
 
 ## Akzeptanzkriterien (refactor, style, chore)
-- [ ] AK1: Szenenbilder und Musik liegen unter `media/` und nicht mehr in `frontend/public/assets/{images,music}`
+- [x] AK1: Szenenbilder und Musik liegen unter `media/` und nicht mehr in `frontend/public/assets/{images,music}`
       (Ausnahme E7); die DB hat eine Tabelle `media`, die Tabellen `wall_image`, `ground_image`, `track` gibt es nicht mehr.
-- [ ] AK2: Das Backend liefert alle in der DB referenzierten Dateien unter `/media/...` aus (200, Audio mit Range → 206);
+- [x] AK2: Das Backend liefert alle in der DB referenzierten Dateien unter `/media/...` aus (200, Audio mit Range → 206);
       ein neues Bild in `media/` ist ohne Frontend-Build per Seed/DB-Eintrag nutzbar.
-- [ ] AK3: Eine bestehende DB mit Stand `0001` wird beim Start auf `0002` migriert; Szenen zeigen danach dieselben
+- [x] AK3: Eine bestehende DB mit Stand `0001` wird beim Start auf `0002` migriert; Szenen zeigen danach dieselben
       Medien wie vorher.
 - [ ] AK4: Alle Invarianten eingehalten – sichtbares Verhalten in Admin, Wall, Ground und Player unverändert (Dev und Prod).
 - [ ] AK5: Lint (ruff, eslint), Typecheck (mypy strict, tsc), Tests (pytest, Jest, BDD) und Build sind grün.
-- [ ] AK6: Bestehende Tests nur in Pfaden/Mocks angepasst, nicht in ihrer Aussage; neue Tests gemäß Subtasks vorhanden.
+- [x] AK6: Bestehende Tests nur in Pfaden/Mocks angepasst, nicht in ihrer Aussage; neue Tests gemäß Subtasks vorhanden.
 
 ## Teststrategie / Verifikation
 

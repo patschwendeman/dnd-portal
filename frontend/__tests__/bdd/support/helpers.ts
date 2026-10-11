@@ -2,6 +2,8 @@ import { Builder, By, error, until, WebDriver, WebElement } from 'selenium-webdr
 
 // Lives outside steps/ so jest (testMatch: __tests__/bdd/steps/*.ts) does not run it as a test file
 const BASE_URL = 'http://localhost:5173'
+// Scene media are served by the backend (VITE_API_URL default), the frontend renders absolute URLs
+const MEDIA_BASE_URL = 'http://localhost:8000/media'
 
 // Must stay below the jest testTimeout (10 s), otherwise jest aborts before the wait reports its failure
 const WAIT_TIMEOUT = 5000
@@ -61,6 +63,7 @@ const waitForAttribute = async (
 
 export {
   BASE_URL,
+  MEDIA_BASE_URL,
   buildDriver,
   clickElement,
   confirmDialog,

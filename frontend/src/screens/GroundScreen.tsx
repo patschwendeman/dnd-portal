@@ -1,6 +1,7 @@
 import { useContext, FunctionComponent, ReactElement, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
+import { mediaUrl } from '../api/mediaUrl'
 import { GridOverlay } from '../components/GridOverlay'
 import { ScreenControlBar } from '../components/ScreenControlBar'
 import { ActiveSceneContext } from '../context/context'
@@ -77,7 +78,7 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
         let stale = false
 
         const handleGroundScreen = (activeScene: SceneDetail) => {
-            const src = activeScene.ground_image.source
+            const src = mediaUrl(activeScene.ground_image.source)
             setMediaSRC(src)
             setMediaType(determineMediaType(src))
         }

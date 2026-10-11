@@ -3,12 +3,14 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.api.routes import maps, scenes
 from app.core.config import settings
 from app.db.migrate import run_migrations
 from app.db.seed import run_seeder
 from app.db.session import SessionLocal
+from app.models.media import MEDIA_URL_PREFIX
 
 
 @asynccontextmanager
@@ -31,3 +33,6 @@ app.add_middleware(
 
 app.include_router(scenes.router, prefix="/scenes", tags=["scenes"])
 app.include_router(maps.router, prefix="/maps", tags=["maps"])
+# Scene media (images, music) as static files incl. range requests; check_dir=False keeps `import app.main` working
+# without the folder (e.g. when exporting the OpenAPI schema).
+app.mount(MEDIA_URL_PREFIX, StaticFiles(directory=settings.media_dir, check_dir=False), name="media")

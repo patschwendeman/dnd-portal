@@ -1,7 +1,7 @@
 from sqlalchemy import Select, select
 from sqlalchemy.orm import Session, contains_eager, joinedload
 
-from app.models import Scene, Track
+from app.models import Media, Scene
 
 
 def _select_scenes_with_relations() -> Select[Scene]:
@@ -10,7 +10,7 @@ def _select_scenes_with_relations() -> Select[Scene]:
         select(Scene)
         .outerjoin(Scene.tracks)
         .options(joinedload(Scene.wall_image), joinedload(Scene.ground_image), contains_eager(Scene.tracks))
-        .order_by(Scene.id, Track.id)
+        .order_by(Scene.id, Media.id)
     )
 
 

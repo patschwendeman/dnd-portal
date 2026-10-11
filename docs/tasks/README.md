@@ -25,4 +25,4 @@
 | DND-19 | chore | Dev-Compose auf Root-Ebene zusammenführen | Fertig | [DND-19-dev-compose-root.md](DND-19-dev-compose-root.md) |
 | DND-20 | fix | API-Vertrag mit Pydantic-Schemas, 404 statt 500, generierte Frontend-Typen | Fertig | [DND-20-api-contract-schemas.md](DND-20-api-contract-schemas.md) |
 | DND-21 | setup | Alembic-Migrationen und bereinigtes Datenbankschema | Fertig | [DND-21-alembic-schema-cleanup.md](DND-21-alembic-schema-cleanup.md) |
-| DND-22 | refactor | Szenenmedien ins Backend verlagern (Tabelle `media`, Ordner `media/`, Auslieferung per API) | Entwurf | [DND-22-media-to-backend.md](DND-22-media-to-backend.md) |
+| DND-22 | refactor | Szenenmedien ins Backend verlagern (Tabelle `media`, Ordner `media/`, Auslieferung per API) | Im Review | [DND-22-media-to-backend.md](DND-22-media-to-backend.md) |
