@@ -1,7 +1,7 @@
 # DND-19: Dev-Compose auf Root-Ebene zusammenführen
 
 **Typ:** chore
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -272,4 +272,29 @@ Kommentare/Doku-Hinweise 8500650..d460e14 (außerhalb `docs/tasks/`): inhaltlich
 - ruff check, ruff format --check, mypy app: grün
 - pytest: 21 passed
 - Frontend-Lint/Tests: nicht ausgeführt (nichts unter `frontend/` geändert)
+- Backend-CI: nach Push zu prüfen
+
+### Runde 4 – 2026-10-11 (Commit 50cc391)
+**Empfehlung:** Abnahme (CI-Lauf nach Push noch nachzuweisen)
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | `compose.dev.yaml` in Runde 4 unverändert |
+| AK2 | erfüllt | Nur Kommentare/Doku: `backend/CLAUDE.md:23-24`, `compose.prod.yaml:15` (YAML-Kommentar), `frontend/README.md:27-28`, `frontend/CLAUDE.md:24-25`, Plan; Compose-Keys, `script.sh`, App-Code, Tests, CI, `.claude` unverändert |
+| AK3 | lokal erfüllt, CI nach Push | `config -q` (dev, dev `tools`, prod) rc=0 ohne Ausgabe |
+| AK4 | erfüllt | E3-Befehle unverändert, jetzt mit Ortsangabe |
+| AK5 | erfüllt | Keine alten Service-Namen hinzugekommen |
+
+#### Blockierende Befunde
+- keine
+
+#### Hinweise (nicht blockierend)
+- Commit-Body nennt „status“, Status-Zeile im Plan aber unverändert
+- `backend/CLAUDE.md:24`: `--profile tools` bei explizit genanntem `pgadmin` überflüssig, unschädlich
+- Manuell nicht geprüft: Prod-Start mit neuen Namen, `./script.sh stop`, Hot Reload, `up --build ui` allein
+
+#### Checks
+- `config -q` dev / dev `--profile tools` / prod: ok
+- Diff d460e14..50cc391: nur Kommentare, Doku, Plan
+- Commit-Konvention: ok
 - Backend-CI: nach Push zu prüfen
