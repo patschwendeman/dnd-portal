@@ -1,7 +1,7 @@
 # DND-22: Szenenmedien ins Backend verlagern (Tabelle `media`, Ordner `media/`, Auslieferung per API)
 
 **Typ:** refactor
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -148,9 +148,9 @@ Upload im Admin Screen (eigener feat-Task).
       ein neues Bild in `media/` ist ohne Frontend-Build per Seed/DB-Eintrag nutzbar.
 - [x] AK3: Eine bestehende DB mit Stand `0001` wird beim Start auf `0002` migriert; Szenen zeigen danach dieselben
       Medien wie vorher.
-- [ ] AK4: Alle Invarianten eingehalten – sichtbares Verhalten in Admin, Wall, Ground und Player unverändert (Dev und Prod).
+- [x] AK4: Alle Invarianten eingehalten – sichtbares Verhalten in Admin, Wall, Ground und Player unverändert (Dev und Prod).
       Runde 2: manuelle Schritte 1 und 6 erledigt, API-Antworten nach Migration identisch (bis auf neue Media-IDs, E4);
-      offen: Browser-Schritte 2–4 (Dev) und 5 (Prod).
+      Browser-Schritte 2–4 (Dev) und 5 (Prod) erledigt, siehe Review Runde 1.
 - [x] AK5: Lint (ruff, eslint), Typecheck (mypy strict, tsc), Tests (pytest, Jest, BDD) und Build sind grün.
       Runde 2: `npm run test:e2e` gegen migrierten Dev-Stack grün (2 Suites, 4 Tests).
 - [x] AK6: Bestehende Tests nur in Pfaden/Mocks angepasst, nicht in ihrer Aussage; neue Tests gemäß Subtasks vorhanden.
@@ -189,7 +189,7 @@ Upload im Admin Screen (eigener feat-Task).
 **Blockierende Befunde**
 - [x] AK5: `npm run test:e2e` gegen Dev-Stack auf Stand 325141d ausführen (Prod-Stack muss dafür gestoppt werden)
       → grün: 2 Suites, 4 Tests (`selectMainScene`, `selectSideScene`); Vite-Hinweise zu `public/`-Imports vorbestehend (E7)
-- [ ] AK4: Manuelle Schritte 1–6 der Teststrategie (Dev mit Migration, Prod auf :8080 – Prod-DB liegt danach auf `0002`)
+- [x] AK4: Manuelle Schritte 1–6 der Teststrategie (Dev mit Migration, Prod auf :8080 – Prod-DB liegt danach auf `0002`)
       → Schritt 1 erledigt: Dev-DB per Worktree `325141d^` auf `0001` mit Alt-Seed (29 Szenen), dann `./script.sh dev`:
         `alembic_version` = `0002`, Tabellen `media` (33 image, 43 audio), `scene`, `scene_track`; Log ohne Fehler
         (`Application startup complete.`); `/maps/main`, `/maps/side` identisch (`/assets/` → `/media/`), `/scenes` identisch
@@ -198,7 +198,14 @@ Upload im Admin Screen (eigener feat-Task).
       → Schritt 6 erledigt: `media/images/wall_screen/forest.jpg` umbenannt, leere DB: Log
         `Media file images/wall_screen/forest.jpg not found in /app/media; seeding the entry without size`, Start läuft,
         `/scenes` 200; danach zurückbenannt, DB neu geseedet (76 Medien mit `size`)
-      → offen: Browser-Schritte 2–4 (Dev :5173) und 5 (Prod :8080)
+      → Schritte 2–4 (Dev :5173, Hauptsession im Browser): Nicht-Kampfszene „Default“ → Wall `forest.jpg`, Ground
+        Kartenbild; Kampfszene „Fight 3“ → Wall Kartenübersicht (25 Räume, Raum 3 markiert), Ground `main_3.jpg`;
+        Musik spielt über `:8000/media/...` (206), Titel „Secunda“ angezeigt; Seek auf Dateimitte funktioniert (keine
+        Seek-UI vorhanden, per `Audio.currentTime` geprüft); keine 404, keine Konsolenfehler; nicht über die API nur
+        E7-Kopien und Sounds
+      → Schritt 5 (Prod :8080, Prod-DB per `dnd prod` auf `0002` migriert, 29 Szenen): Nicht-Kampfszene „Tavern“ → Wall/Ground
+        `tavern.jpg`; Kampfszene `main_7` → Wall Übersicht, Ground `main_7.jpg`; Musik „Track 05“ über `/media` (206),
+        Seek funktioniert; keine 404, keine Konsolenfehler; Player Screen ohne Szenenmedien, lädt fehlerfrei
 - [ ] Nach dem Push CI prüfen (Backend inkl. `test_migration_0002` mit `CREATE DATABASE`, Frontend) → nach Push zu prüfen
 
 **Hinweise (nicht blockierend)**
@@ -207,3 +214,22 @@ Upload im Admin Screen (eigener feat-Task).
 - Downgrade `0002` → `0001` vergibt Ground-Bildern/Tracks neue IDs, Zuordnung bleibt
 - `media_source()` doppelt in `tests/conftest.py` und `tests/test_maps.py`
 - eslint-Warnung `WallScreen.tsx` (alt-text) vorbestehend
+
+### Runde 2 – 2026-10-11
+**Empfehlung:** Abnahme (offen nur CI-Prüfung nach dem Push, kein Hindernis)
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | Code seit 325141d unverändert (nur Plan-Datei geändert); Prod-API liefert `/media/...`-Quellen |
+| AK2 | erfüllt | Stichproben gegen Prod :8000: `forest.jpg` 200 `image/jpeg`, Track mit Range 206, `/media/../app/main.py` 404 |
+| AK3 | erfüllt | Dev-Migration `0001` → `0002` ohne Fehler, `/maps/*` und `/scenes` gleich bis auf neue Media-IDs (E4); Prod-DB per `dnd prod` auf `0002` migriert (29 Szenen) |
+| AK4 | erfüllt | Manuelle Schritte 1–6 belegt (Runde 1, AK4-Befund); Browser-Schritte Dev/Prod durch Hauptsession, deckungsgleich mit Prod-API-Daten |
+| AK5 | erfüllt | e2e grün (4 Tests); eslint 0 Fehler (1 vorbestehende Warnung), tsc, vitest 60, ruff, mypy strict grün; pytest aus Runde 1 (47 passed), Code unverändert |
+| AK6 | erfüllt | Code unverändert, Beleg aus Runde 1 |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+- CI nach dem Push prüfen (Backend inkl. `test_migration_0002`, Frontend); bei Rot als Nacharbeit behandeln
+- Unverändert aus Runde 1: Root-`CLAUDE.md` ohne `media/`, `backend.yml` `paths` ohne `media/**`, Downgrade vergibt neue IDs, `media_source()` doppelt, eslint-Warnung `WallScreen.tsx` vorbestehend
