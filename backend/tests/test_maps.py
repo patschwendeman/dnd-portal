@@ -50,7 +50,6 @@ def test_read_side_maps_returns_wall_image_per_non_fight_scene(
 
 @pytest.mark.parametrize("maptype", ["main", "side"])
 def test_trailing_slash_redirects_to_path_without_slash(client: TestClient, maptype: str) -> None:
-    # FastAPI's default redirect for a trailing slash (the frontend requests the canonical path without slash).
     response = client.get(f"/maps/{maptype}/", follow_redirects=False)
 
     assert response.status_code == 307

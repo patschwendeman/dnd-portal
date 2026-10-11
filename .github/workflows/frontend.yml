@@ -56,7 +56,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # src/api/schema.d.ts is generated from backend/openapi.json and must match it.
       - name: API types up to date
         run: |
           npm run generate:api

@@ -1,4 +1,4 @@
-"""Write the OpenAPI schema of the app to backend/openapi.json (deterministic: sorted keys, 2-space indent).
+"""Write the OpenAPI schema of the app to backend/openapi.json.
 
 Usage (in backend/): uv run python scripts/export_openapi.py
 Importing app.main connects to no database, but `Settings` needs the DB_*/POSTGRES_* values (backend/.env or
