@@ -214,7 +214,7 @@ startet `uvicorn app.main:app` ohne `--reload`; den Reload setzt nur der Dev-Sta
 | | Backend | Frontend |
 |---|---|---|
 | Lint | `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app` (strict, Pydantic-Plugin; Konfig in `pyproject.toml`) | `npm run lint` (ESLint flat config, einfache Quotes, keine Semikolons) |
-| Unit-Tests | `uv run pytest` – Tests aller Endpoints in `tests/` (Erwartungen aus dem Seed), gegen PostgreSQL (lokal Dev-DB bzw. Dev-Container) | `npm run test:unit` (vitest, nur `utils.spec.ts`) |
+| Unit-Tests | `uv run pytest` – Tests aller Endpoints in `tests/` (Erwartungen aus dem Seed), gegen PostgreSQL (lokal Dev-DB bzw. Dev-Container) | `npm run test:unit` (vitest, `__tests__/unit/*.spec.ts`) |
 | E2E | – | `npm run test:e2e` (jest-cucumber + Selenium/Chrome, braucht laufendes Backend mit Seed-Daten) |
 | CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: parallele Jobs `lint` (ruff check, ruff format --check, mypy, `openapi.json` aktuell) und `test` (pytest gegen Service-Container `postgres:17`) direkt auf dem Runner, uv mit Cache auf `uv.lock`; Job `docker-prod` baut das Image (`--target prod`, ohne Push) | `.github/workflows/frontend.yml` – analog für `frontend/` und `backend/openapi.json`: zuerst Job `build` (`vite build`), danach parallel `typecheck` (`src/api/schema.d.ts` aktuell, `tsc -b`), `lint` und `test` (`npm run test:unit`) mit `needs: build`, Node aus `frontend/.nvmrc` (18) mit npm-Cache, `npm ci`; Job `docker-prod` baut das Production-Image (`--target prod`, ohne Push); kein E2E in CI |
 

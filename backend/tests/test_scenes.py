@@ -62,6 +62,13 @@ def test_removed_details_path_with_id_does_not_exist(client: TestClient) -> None
     assert response.json() == {"detail": "Not Found"}
 
 
+def test_removed_details_path_with_slash_returns_no_scene_list(client: TestClient) -> None:
+    response = client.get("/scenes/details/")
+
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"] == ["path", "scene_id"]
+
+
 def test_removed_details_path_is_rejected_as_invalid_scene_id(client: TestClient) -> None:
     response = client.get("/scenes/details", follow_redirects=False)
 

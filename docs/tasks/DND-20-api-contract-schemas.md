@@ -18,10 +18,10 @@ nicht mehr auseinanderlaufen können. Betrifft Spielleiter (Admin) sowie Wall un
 
 **Reproduktion**
 1. `GET /scenes/999` bzw. `GET /scenes/details/999` bei laufendem Dev-Stack.
-2. `GET /scenes/details` (ohne Slash).
+2. `GET /scenes/details` (ohne Slash) bzw. `GET /scenes/details/` (mit Slash).
 
 **Ist:** (1) `/scenes/999` → 500 (`ValueError` im Service); `/scenes/details/999` → 200 mit der Liste aller Szenen.
-(2) → 422 (`int_parsing`, Route `/scenes/{scene_id}` greift). Bei leerer DB liefert `GET /scenes` 500.
+(2) → 422 (`int_parsing`, Route `/scenes/{scene_id}` greift); mit Slash → 200 mit der Liste aller Szenen. Bei leerer DB liefert `GET /scenes` 500.
 **Soll:** Unbekannte Szene → 404 `{"detail": "Scene not found"}`; Listen liefern immer 200 (ggf. `[]`); es gibt
 keine Pfade mehr, die von einer `{scene_id}`-Route verschluckt werden.
 
@@ -197,6 +197,9 @@ keine Pfade mehr, die von einer `{scene_id}`-Route verschluckt werden.
 
 ### AK7: Regressionstests
 - Backend-Tests bilden alle Reproduktionsschritte ab, schlagen gegen den alten Stand fehl und danach nicht.
+  Schritt 2 deckt `test_removed_details_path_with_slash_returns_no_scene_list` ab (`GET /scenes/details/`: alt 200 mit
+  Liste, neu 307 → 422); `test_removed_details_path_is_rejected_as_invalid_scene_id` hält nur das unveränderte 422 ohne
+  Slash fest (AK3).
 - Backend (ruff, mypy strict, pytest), Frontend (lint, typecheck, unit, build) und CI grün.
 
 ## Teststrategie / Verifikation
@@ -215,3 +218,48 @@ keine Pfade mehr, die von einer `{scene_id}`-Route verschluckt werden.
 - keine
 
 ## Review
+
+### Runde 1 – Review (844e637)
+
+**Empfehlung:** Nacharbeiten. Code sauber, lokale Checks grün; offen sind AK7 (ein Regressionstest auch ohne Fix grün) und AK6 (manueller Screen-Test nicht durchgeführt).
+
+**Akzeptanzkriterien**
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Unbekannte Szene | erfüllt | `backend/app/api/routes/scenes.py:20-25`; Test `test_read_scene_by_unknown_id_returns_404`; Live-Probe `GET /scenes/999` → `404 {"detail":"Scene not found"}` (vorher 500) |
+| AK2 Szenen mit Relationen | erfüllt | `backend/app/schemas/scene.py`; Tracks sortiert per `order_by(Scene.id, Music.id)` + `contains_eager` (`backend/app/crud/scene.py:6-14`); Tests zu Liste, Schemafeldern und Abruf per ID |
+| AK3 Keine verschluckten Pfade | erfüllt | `/scenes/details/1` → 404, `/scenes/details` → 422 `int_parsing`; OpenAPI-Pfade genau `/maps/main`, `/maps/side`, `/scenes`, `/scenes/{scene_id}` |
+| AK4 Leere Listen | erfüllt | Tests für `/scenes` und `/maps/{main,side}` per monkeypatch auf die CRUD-Funktion |
+| AK5 Generierte Typen | erfüllt (CI nach Push prüfen) | `openapi.json`/`schema.d.ts` aktuell; Gegenprobe mit Zusatzfeld lässt beide Diffs fehlschlagen; `models.ts` leitet Typen aus `components['schemas']` ab |
+| AK6 Screens unverändert nutzbar | nicht geprüft | Manueller Test nicht durchgeführt (Prod-Stack belegt 8000/5432); statisch: keine alten Feldnamen/Pfade, Typecheck und Build grün |
+| AK7 Regressionstests + Checks | nicht erfüllt (knapp) | Gegen `844e637^`: 6 neue Tests rot; `test_removed_details_path_is_rejected_as_invalid_scene_id` (`GET /scenes/details` → 422) aber auch am alten Stand grün |
+
+**Blockierende Befunde**
+- [x] AK7: Regressionstest zu Reproduktionsschritt 2 (`GET /scenes/details`) wäre ohne Fix grün – Widerspruch im Plan (AK3 schreibt 422 fest, wie vorher). Entscheidung beim User:
+  - (a) Test ergänzen, der am alten Stand fehlschlägt, z. B. `GET /scenes/details/` liefert keine Szenendaten mehr (vorher 200 mit Liste, jetzt 307 → 422)
+  - (b) AK7 für Schritt 2 im Plan ausdrücklich als nicht anwendbar festhalten
+  - Umgesetzt (Runde 2, Variante a): `test_removed_details_path_with_slash_returns_no_scene_list`; gegen `844e637^` rot
+    (`assert 200 == 422`), jetzt grün
+- [ ] AK6: Manuellen Screen-Test (Kampf-/Nicht-Kampfszene, Wall, Ground, Playlist, Beschreibung, Dialog) durchführen, sobald der Dev-Stack laufen kann
+  - Runde 2: Dev-Stack läuft; `npm run test:e2e` 4/4 grün; `/scenes`, `/scenes/1`, `/maps/main`, `/maps/side` → 200
+    ohne 307, `/docs` → 200. Manueller Browser-Test durch den User steht noch aus
+
+**Hinweise (nicht blockierend)**
+- Abweichungen des Implementers verletzen keine Plan-Entscheidung: Export-Skript setzt `sys.path` und braucht `DB_*`/`POSTGRES_*`-Env (CI per `env`, `.github/workflows/backend.yml:46-55`), aber keine DB-Verbindung; 404 nur mit `description` dokumentiert (reicht für E5); leere Listen per monkeypatch
+- Lockfile: transitive Pakete neu aufgelöst (`@babel/code-frame`, `@babel/helper-validator-identifier`, `js-yaml` neuer; `@babel/highlight`, `chalk@2` entfallen); Tests und Build grün
+- Lint-Warnung `frontend/src/screens/WallScreen.tsx:164` (alt-text) bestand schon, nicht im Diff
+- `test_read_scene_by_id` prüft `/scenes/details/1` statt Plan-ID 999 – gleichwertig
+- `docs/architecture.md` (Qualitätssicherung): „vitest, nur `utils.spec.ts`“ veraltet (7 Spec-Dateien)
+- Für künftige Fix-Pläne: jeder Reproduktionsschritt braucht ein Soll, das sich vom Ist unterscheidet
+
+**Scope / Subtasks / Konventionen**
+- Alle Subtasks erledigt, nichts außerhalb des Scopes (DB-Spalten, Tabellen, Seed-Format, Screen-Verhalten unverändert)
+- Ursache behoben: Services geben `None`/Listen statt `ValueError`, Listen-Fallback und `/details`-Routen entfernt
+- Commit `fix(DND-20): …` nach Konvention, ohne KI-Signatur, auf `development`
+- Doku (architecture, domain, screens, known-issues, beide `CLAUDE.md`) aktualisiert, Stichproben stimmen
+
+**Checks**
+- Backend: ruff check/format, mypy grün; pytest 23 passed (temporäre `postgres:17` auf 55432); Export-Diff leer
+- Frontend: lint 0 Fehler/1 Warnung, typecheck grün, `generate:api`-Diff leer, unit 57/57, build grün
+- Nicht ausgeführt: E2E, AK6; CI erst nach Push
