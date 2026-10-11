@@ -84,7 +84,8 @@ entfallen. Zusätzlich heißen die Services in Dev und Prod gleich: `api` und `u
 - **Verworfene Alternativen:** Prod-Namen `app`/`web` für Dev übernehmen; Namen getrennt lassen.
 - **Begründung:** Gleiche Befehle in beiden Stacks, passend zu den Containernamen `dnd-*-api`/`dnd-*-ui`.
 - **Folge:** Alte Container mit den bisherigen Service-Namen werden zu Orphans; vor dem Wechsel den laufenden Stack mit
-  der alten Konfiguration stoppen (bzw. einmalig `down --remove-orphans`). Hinweis in `CONTRIBUTING.md`.
+  der alten Konfiguration stoppen (bzw. einmalig `down --remove-orphans`). Kein Doku-Hinweis (in Runde 3 gestrichen,
+  Umstellung lokal bereits erledigt).
 
 ## Subtasks
 
@@ -141,6 +142,14 @@ entfallen. Zusätzlich heißen die Services in Dev und Prod gleich: `api` und `u
       Umgesetzt: Kopf nennt einmal „compose files in the repo root“, danach je eine Zeile für `compose.prod.yaml`/`compose.dev.yaml`.
 - [x] Danach keine Erwähnung der alten Service-Namen `react-app`/`web` und der gelöschten Volumes außerhalb
       `docs/tasks/`.
+
+### Runde 4: Restpunkte aus Review Runde 3 (vom User beauftragt)
+- [x] `backend/CLAUDE.md:23-24`: Ortsangabe „im Root“ bei den Befehlen „nur Backend“ ergänzen.
+- [x] Gegenseitige Verweise „(as in the prod stack)“ in `compose.dev.yaml` / „(as in the dev stack)“ in
+      `compose.prod.yaml`: nur einen behalten. Umgesetzt: Verweis in `compose.dev.yaml` bleibt, in `compose.prod.yaml` entfernt.
+- [x] Kommentarspalten in `frontend/README.md` und `frontend/CLAUDE.md` an die Nachbarzeilen angleichen.
+      Umgesetzt: `frontend/README.md` beide Kommentare auf eine Spalte; `frontend/CLAUDE.md` Kommentar als eigene
+      Zeile über dem Befehl (Befehl länger als die Kommentarspalte der Nachbarzeilen, wie die übrigen Kommentarzeilen im Block).
 
 ## Akzeptanzkriterien
 - [x] AK1: `compose.dev.yaml` definiert `db`, `app`, `pgadmin`, `react-app` (seit E4: `api`/`ui`) selbst, ohne `include` und ohne
@@ -217,8 +226,8 @@ entfallen. Zusätzlich heißen die Services in Dev und Prod gleich: `api` und `u
 - keine
 
 #### Hinweise (nicht blockierend)
-- [ ] `script.sh:47`: nur Hilfetext `logs [service] … (db, api, ui)` geändert, Verhalten gleich; gehört inhaltlich zu E4 – Bestätigung durch User, ggf. Invariante präzisieren
-- [ ] Plan-Text: AK1, E1, E2 nennen noch `app`/`react-app`; AK5 steht vor AK4
+- [x] `script.sh:47`: nur Hilfetext `logs [service] … (db, api, ui)` geändert, Verhalten gleich; gehört inhaltlich zu E4 – Bestätigung durch User, ggf. Invariante präzisieren
+- [x] Plan-Text: AK1, E1, E2 nennen noch `app`/`react-app`; AK5 steht vor AK4
 - Kopfzeile bcc9db2 „address review round 1“ wenig aussagekräftig (setzt E4 um)
 - Manuell nicht geprüft: Prod-Start mit neuen Namen, `./script.sh stop`, Hot Reload, `up --build ui` allein
 
@@ -228,4 +237,39 @@ entfallen. Zusätzlich heißen die Services in Dev und Prod gleich: `api` und `u
 - pytest im Container (`run --rm api pytest`): 21 passed
 - ruff check, ruff format --check, mypy app: grün
 - Dev-Stack läuft: `dnd-dev-db` healthy, API :8000 200, UI :5173 200
+- Backend-CI: nach Push zu prüfen
+
+### Runde 3 – 2026-10-11 (Commit d460e14)
+**Empfehlung:** Abnahme (CI-Lauf nach Push noch nachzuweisen)
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | `compose.dev.yaml` in Runde 3 unverändert; kein `include`, kein `version`, Unterordner-Dateien fehlen |
+| AK2 | erfüllt | Runde 3 ändert nur `CONTRIBUTING.md`, `backend/.env.example`, `backend/CLAUDE.md`, `backend/Dockerfile` (Kommentar Z. 1–3), `docs/architecture.md`; Compose, `script.sh`, `frontend/`, App-Code, Tests, CI, `.claude` unverändert; `dnd-dev-db` healthy |
+| AK3 | lokal erfüllt, CI nach Push | `config -q` (dev, dev `tools`, prod) rc=0; ruff, mypy grün; pytest 21 passed |
+| AK4 | erfüllt | Kein `docker-compose`/„Einzelstart“ außerhalb `docs/tasks/`; E3-Befehle in der Doku |
+| AK5 | erfüllt | Grep auf alte Service-Namen ohne Treffer; Orphan-Hinweis und Hinweise auf gelöschte Volumes entfernt |
+
+Kommentare/Doku-Hinweise 8500650..d460e14 (außerhalb `docs/tasks/`): inhaltlich korrekt (Ports, Service-/Containernamen, `env_file`, Targets, `run --rm api pytest` startet DB mit, `up --build ui` ohne Backend); Sprache je Datei passend.
+
+#### Blockierende Befunde
+- keine
+
+#### Hinweise (nicht blockierend)
+- Commit-Body d460e14 nennt „script.sh dev comment“, gemeint ist der Kommentar in `CONTRIBUTING.md`
+- [x] Plan-Text E4 „Folge“ nannte noch den Hinweis in `CONTRIBUTING.md` – angepasst
+- `backend/CLAUDE.md:23-24`: Befehle „nur Backend“ ohne Ortsangabe „im Root“ (in `backend/` schlägt `-f compose.dev.yaml` fehl)
+- `backend/CLAUDE.md:24`: `--profile tools` bei explizit genanntem `pgadmin` überflüssig, aber unschädlich
+- Gegenseitige Verweise `compose.dev.yaml:15` „(as in the prod stack)“ / `compose.prod.yaml:16` „(as in the dev stack)“ – einer reicht
+- E3-Befehle stehen in 7 Dateien (vom Plan so verlangt) – Pflegeaufwand
+- `docs/architecture.md:93` „Eigene Compose-Dateien in `backend/` bzw. `frontend/` gibt es nicht.“ – vertretbar, ggf. streichbar
+- Kosmetisch: Kommentarspalten in `frontend/README.md:27` und `frontend/CLAUDE.md:24` uneinheitlich eingerückt
+- Manuell nicht geprüft: Prod-Start mit neuen Namen, `./script.sh stop`, Hot Reload, `up --build ui` allein
+
+#### Checks
+- `config -q` dev / dev `--profile tools` / prod: ok
+- Diff bcc9db2..d460e14: nur Doku und Kommentare
+- ruff check, ruff format --check, mypy app: grün
+- pytest: 21 passed
+- Frontend-Lint/Tests: nicht ausgeführt (nichts unter `frontend/` geändert)
 - Backend-CI: nach Push zu prüfen
