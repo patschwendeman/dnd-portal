@@ -106,7 +106,7 @@ Die ganze Anwendung läuft in Docker und startet aus dem Root (Details:
 ```bash
 cp backend/.env.example backend/.env    # einmalig, Platzhalter ersetzen (gitignored)
 ./script.sh install                     # einmalig: globaler Befehl `dnd` (danach `dnd dev|prod|stop|logs`)
-./script.sh dev                         # db, api (API :8000), ui (UI :5173), mit Hot-Reload; Ctrl+C beendet
+./script.sh dev                         # db :5432, api :8000, ui :5173, mit Hot-Reload; Ctrl+C beendet
 ./script.sh dev --tools                 # zusätzlich pgAdmin :5050
 ./script.sh stop                        # Dev- und Prod-Stack stoppen
 # ohne Skript:
@@ -120,14 +120,8 @@ docker compose -f compose.dev.yaml run --rm api pytest  # Backend-Tests
 
 - Die Services haben feste Containernamen nach dem Schema `dnd-<umgebung>-<rolle>` (Dev: `dnd-dev-db`, `dnd-dev-api`,
   `dnd-dev-ui`, `dnd-dev-pgadmin`; Prod: `dnd-prod-db`, `dnd-prod-api`, `dnd-prod-ui`).
-- Dev und Prod nutzen dieselben Service-Namen: `db`, `api`, `ui` (Dev zusätzlich `pgadmin`). Bis DND-19 hießen sie
-  `app` und `react-app` (Dev) bzw. `web` (Prod). Läuft noch ein Stack mit den alten Namen, meldet Compose diese
-  Container als Orphans und die Containernamen sind belegt – einmalig `docker compose -f compose.dev.yaml down
-  --remove-orphans` (bzw. `-f compose.prod.yaml`) ausführen, ohne `-v`, damit das DB-Volume bleibt.
-- Der Dev-Stack heißt `dnd-portal-dev` und hat ein eigenes DB-Volume (`dnd-portal-dev_postgres_data`). Die Volumes
-  `dnd-portal_postgres_data` (aus der Zeit vor `compose.dev.yaml`), `backend_postgres_data` und
-  `dnd-portal-backend_postgres_data` (früherer Einzelstart in `backend/` bzw. Einzel-Repo) werden nicht mehr genutzt
-  und nicht automatisch gelöscht (bei Bedarf `docker volume rm <name>`).
+- Dev und Prod nutzen dieselben Service-Namen: `db`, `api`, `ui` (Dev zusätzlich `pgadmin`).
+- Der Dev-Stack heißt `dnd-portal-dev` und hat ein eigenes DB-Volume (`dnd-portal-dev_postgres_data`).
 - Alte Container aus den früheren Einzel-Repos belegen dieselben Ports (5432, 8000, 5050, 5173) – vorher stoppen.
 - Nach Änderungen an `frontend/package.json`: `docker compose -f compose.dev.yaml up --build -V` (erneuert das `node_modules`-Volume).
 

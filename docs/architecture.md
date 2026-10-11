@@ -135,10 +135,7 @@ Container-Namen nach dem Schema `dnd-<umgebung>-<rolle>`:
 | Frontend | `dnd-dev-ui` | `dnd-prod-ui` |
 | pgAdmin | `dnd-dev-pgadmin` | – |
 
-Das DB-Volume des Dev-Stacks heißt `dnd-portal-dev_postgres_data` (der Seeder füllt es beim ersten Start). Die Volumes
-`dnd-portal_postgres_data` (aus der Zeit vor `compose.dev.yaml`) sowie `backend_postgres_data` und
-`dnd-portal-backend_postgres_data` (früherer Einzelstart in `backend/` bzw. Einzel-Repo) werden nicht mehr genutzt und
-nicht automatisch gelöscht (bei Bedarf `docker volume rm <name>`).
+Das DB-Volume des Dev-Stacks heißt `dnd-portal-dev_postgres_data` (der Seeder füllt es beim ersten Start).
 
 UI unter http://localhost:5173 (`/admin`, `/wall`, `/ground`, `/`); das Frontend ruft die API über
 `http://localhost:8000/` auf.

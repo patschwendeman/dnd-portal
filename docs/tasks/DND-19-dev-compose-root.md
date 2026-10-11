@@ -26,7 +26,8 @@ entfallen. Zusätzlich heißen die Services in Dev und Prod gleich: `api` und `u
   anonymes Volume `/app/node_modules`, `CHOKIDAR_USEPOLLING=true`.
 - Die API bekommt dieselben Variablen aus `backend/.env`; `.env` landet weiterhin nicht im Image.
 - `compose.prod.yaml` nur Service-Umbenennung (E4); Containernamen, Ports, Healthchecks, Build und Volume unverändert.
-- `script.sh` (Dateinamen `compose.dev.yaml`/`compose.prod.yaml`), `.claude/launch.json`,
+- `script.sh`: Verhalten und Dateinamen (`compose.dev.yaml`/`compose.prod.yaml`) unverändert, Hilfetext folgt E4.
+- `.claude/launch.json`,
   Dockerfiles (außer Kommentaren), CI-Workflows und App-Code unverändert. `DB_HOST=db` bleibt gültig.
 - `./script.sh dev [--tools]`, `stop`, `prod` verhalten sich wie bisher.
 
@@ -45,13 +46,14 @@ entfallen. Zusätzlich heißen die Services in Dev und Prod gleich: `api` und `u
 - Umbenennung von `compose.dev.yaml`/`compose.prod.yaml` oder Zusammenlegen per Profil.
 - Änderungen an Ports, Containernamen, Healthchecks über das für `env_file` Nötige hinaus.
 - Umbenennung von `db` oder `pgadmin`.
-- Aufräumen alter Docker-Volumes (`backend_postgres_data`, `dnd-portal-backend_postgres_data`,
-  `dnd-portal_postgres_data`) – nur Hinweis in der Doku.
+- Aufräumen alter Docker-Volumes im Repo (Skript o. Ä.) – die Volumes `backend_postgres_data`,
+  `dnd-portal-backend_postgres_data`, `dnd-portal_postgres_data` löscht der User einmalig lokal (nach Runde 2
+  entschieden); die Doku nennt sie nicht mehr.
 
 ## Entscheidungen
 
 ### E1: Eigene Service-Definitionen im Root, Unterordner-Dateien entfallen
-- **Entscheidung:** `compose.dev.yaml` definiert `db`, `app`, `pgadmin`, `react-app` selbst (Pfade relativ zum Root:
+- **Entscheidung:** `compose.dev.yaml` definiert `db`, `app`, `pgadmin`, `react-app` (seit E4: `api`/`ui`) selbst (Pfade relativ zum Root:
   `context: backend`/`frontend`, Volumes `./backend/app`, `./backend/tests`, `./frontend`). Kein `include`.
   Löst DND-3 E1 ab.
 - **Verworfene Alternativen:** `include` beibehalten (zwei Aufbauweisen, zweistufige Interpolation); Unterordner-Dateien
@@ -60,7 +62,7 @@ entfallen. Zusätzlich heißen die Services in Dev und Prod gleich: `api` und `u
   `backend/`/`frontend/` entfällt (vom User akzeptiert); Ersatz siehe E3.
 
 ### E2: Variablen per `env_file` statt Interpolation
-- **Entscheidung:** `db`, `app` und `pgadmin` erhalten `env_file: backend/.env` (wie `compose.prod.yaml`). Die
+- **Entscheidung:** `db`, `app` (seit E4: `api`) und `pgadmin` erhalten `env_file: backend/.env` (wie `compose.prod.yaml`). Die
   `environment`-Blöcke mit `${POSTGRES_*}`/`${PGADMIN_*}` entfallen. Der `db`-Healthcheck nutzt die Container-Variablen
   (`pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}`, wie Prod).
 - **Verworfene Alternativen:** Interpolation per `--env-file backend/.env` in `script.sh` und allen Doku-Befehlen
@@ -125,18 +127,33 @@ entfallen. Zusätzlich heißen die Services in Dev und Prod gleich: `api` und `u
       sonst Grep-Treffer und veraltete Hilfe; Verhalten des Skripts unverändert. Einziger verbleibender Treffer ist
       der beabsichtigte Orphan-Hinweis in `CONTRIBUTING.md` mit den alten Namen.
 
+### Runde 3: Kommentare und Doku nachschärfen (nach Runde 2 vom User beauftragt)
+- [x] `CONTRIBUTING.md`: Orphan-/Migrationshinweis zu den alten Service-Namen streichen; nur „Dev und Prod nutzen
+      dieselben Service-Namen …“ bleibt.
+- [x] `CONTRIBUTING.md` und `docs/architecture.md`: Hinweise auf nicht mehr genutzte Volumes
+      (`dnd-portal_postgres_data`, `backend_postgres_data`, `dnd-portal-backend_postgres_data`) ganz streichen.
+- [x] `backend/CLAUDE.md`: Kommentar `nur Backend (DB + API; pgAdmin: --profile tools up --build db api pgadmin)` →
+      ohne Befehlsfragment; pgAdmin ggf. als eigene vollständige Zeile `up --build db api pgadmin`.
+- [x] `backend/.env.example`: `Container "db"` → Service `db`; pgAdmin-Kommentar auf Deutsch.
+- [x] `CONTRIBUTING.md`: `./script.sh dev  # db, api (API :8000), ui (UI :5173) …` → ohne Doppelung
+      (`db :5432, api :8000, ui :5173 …`).
+- [x] `backend/Dockerfile`: `Dev stack (../compose.dev.yaml)` → einheitlich mit Zeile 1 bzw. `frontend/Dockerfile`.
+      Umgesetzt: Kopf nennt einmal „compose files in the repo root“, danach je eine Zeile für `compose.prod.yaml`/`compose.dev.yaml`.
+- [x] Danach keine Erwähnung der alten Service-Namen `react-app`/`web` und der gelöschten Volumes außerhalb
+      `docs/tasks/`.
+
 ## Akzeptanzkriterien
-- [x] AK1: `compose.dev.yaml` definiert `db`, `app`, `pgadmin`, `react-app` selbst, ohne `include` und ohne
+- [x] AK1: `compose.dev.yaml` definiert `db`, `app`, `pgadmin`, `react-app` (seit E4: `api`/`ui`) selbst, ohne `include` und ohne
       `version`; `backend/docker-compose.yml` und `frontend/docker-compose.yml` existieren nicht mehr.
 - [x] AK2: Alle Invarianten eingehalten – `config`-Vergleich vorher/nachher zeigt nur die in den Subtasks genannten
       Unterschiede; bestehendes Volume `dnd-portal-dev_postgres_data` wird weiter genutzt (kein Re-Seed).
 - [x] AK3: `docker compose -f compose.dev.yaml config -q`, `--profile tools config -q` und
       `-f compose.prod.yaml config -q` ohne Fehler und ohne Warnung; Backend-Checks (ruff, mypy, pytest im Container)
       und CI so grün wie vorher.
-- [x] AK5: Dev und Prod nutzen die Service-Namen `db`, `api`, `ui` (Dev plus `pgadmin`); `config`-Vergleich zu
-      754d573 zeigt nur die Umbenennung; Doku nennt keine alten Service-Namen mehr (außer `docs/tasks/`).
 - [x] AK4: Keine Verweise mehr auf `docker-compose.yml` oder den Einzelstart in Unterordnern (außer `docs/tasks/`);
       Doku nennt die Ersatzbefehle aus E3.
+- [x] AK5: Dev und Prod nutzen die Service-Namen `db`, `api`, `ui` (Dev plus `pgadmin`); `config`-Vergleich zu
+      754d573 zeigt nur die Umbenennung; Doku nennt keine alten Service-Namen mehr (außer `docs/tasks/`).
 
 ## Teststrategie / Verifikation
 
@@ -184,3 +201,31 @@ entfallen. Zusätzlich heißen die Services in Dev und Prod gleich: `api` und `u
 - ruff check, ruff format --check, mypy app: grün
 - Backend-CI: nach Push zu prüfen
 - Frontend-Lint/Tests: nicht ausgeführt (nur Dockerfile-Kommentar/Doku geändert); `dnd-dev-ui` baut und läuft, `:5173` 200
+
+### Runde 2 – 2026-10-11 (Commit bcc9db2)
+**Empfehlung:** Abnahme (CI-Lauf nach Push noch nachzuweisen; script.sh-Abweichung vom User zu bestätigen)
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt (Wortlaut veraltet) | Kein `include`, kein `version`, Unterordner-Dateien fehlen; `config --services` → `db`, `api`, `ui` (+ `pgadmin` mit `tools`); AK-Text nennt noch `app`/`react-app` |
+| AK2 | erfüllt | Containernamen `dnd-dev-{db,api,ui,pgadmin}`/`dnd-prod-{db,api,ui}`, Ports, Volumes, Healthchecks, Targets laut `config`-Diff unverändert; `dnd-dev-db` an `dnd-portal-dev_postgres_data`, „Skipping initialization“, `GET /scenes` 200 mit bestehenden Szenen |
+| AK3 | lokal erfüllt, CI nach Push | `config -q` (dev, dev `tools`, prod) rc=0 ohne Ausgabe; pytest 21 passed; ruff, mypy grün |
+| AK4 | erfüllt | Kein `docker-compose.yml`-Verweis außerhalb `docs/tasks/`; E3-Befehle mit neuen Namen in der Doku |
+| AK5 | erfüllt | `config`-Diff gegen 754d573: Dev nur `app`→`api`, `react-app`→`ui`; Prod nur `app`→`api`, `web`→`ui`, `depends_on`; Plan-Grep trifft nur den Orphan-Hinweis `CONTRIBUTING.md:124`; Dev-Container mit Labels `api`/`ui`, keine Orphans |
+
+#### Blockierende Befunde
+- keine
+
+#### Hinweise (nicht blockierend)
+- [ ] `script.sh:47`: nur Hilfetext `logs [service] … (db, api, ui)` geändert, Verhalten gleich; gehört inhaltlich zu E4 – Bestätigung durch User, ggf. Invariante präzisieren
+- [ ] Plan-Text: AK1, E1, E2 nennen noch `app`/`react-app`; AK5 steht vor AK4
+- Kopfzeile bcc9db2 „address review round 1“ wenig aussagekräftig (setzt E4 um)
+- Manuell nicht geprüft: Prod-Start mit neuen Namen, `./script.sh stop`, Hot Reload, `up --build ui` allein
+
+#### Checks
+- `config -q` dev / dev `--profile tools` / prod: ok
+- `config`-Diff gegen 754d573: nur Service-Namen
+- pytest im Container (`run --rm api pytest`): 21 passed
+- ruff check, ruff format --check, mypy app: grün
+- Dev-Stack läuft: `dnd-dev-db` healthy, API :8000 200, UI :5173 200
+- Backend-CI: nach Push zu prüfen

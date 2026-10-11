@@ -20,7 +20,8 @@ psycopg2 · PostgreSQL 17. Tooling: uv · ruff (Lint + Format) · mypy · pytest
 docker compose -f compose.dev.yaml logs -f api   # API-Logs (Container dnd-dev-api)
 docker compose -f compose.dev.yaml down          # stoppen (-v: DB-Reset); ./script.sh stop stoppt Dev und Prod
 
-docker compose -f compose.dev.yaml up --build db api   # nur Backend (DB + API; pgAdmin: --profile tools up --build db api pgadmin)
+docker compose -f compose.dev.yaml up --build db api   # nur Backend (DB + API)
+docker compose -f compose.dev.yaml --profile tools up --build db api pgadmin   # nur Backend mit pgAdmin
 
 # Production-Stack am Spieltisch (im Root): API ohne Reload und ohne Code-Mount (Container dnd-prod-api)
 ./script.sh prod                   # bzw. dnd prod (nach einmaligem ./script.sh install) oder docker compose -f compose.prod.yaml up -d --build --wait
