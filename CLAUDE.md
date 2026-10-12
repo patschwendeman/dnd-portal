@@ -7,13 +7,13 @@ unterstützt den Spielleiter und steigert durch digitale Elemente (Bilder, Karte
 
 | Ordner | Inhalt | Stack |
 |---|---|---|
-| [frontend](frontend/) | UI aller Screens (Admin, Player, Wall, Ground), Markdown-Notizen, statische Assets: Sounds, Icons und die E7-Kopien `mapOverview.jpg`, `From_Past_To_Present.mp3` | React 18, Vite, TypeScript, styled-components |
+| [frontend](frontend/) | UI aller Screens (Admin, Player, Wall, Ground), Markdown-Notizen, statische Assets: Sounds, Icons und Kopien der fest eingebundenen Medien `mapOverview.jpg`, `From_Past_To_Present.mp3` | React 18, Vite, TypeScript, styled-components |
 | [backend](backend/) | REST-API und Datenbank (Szenen, Medien in Tabelle `media`); liefert `media/` unter `/media` aus | Python 3.11, FastAPI, SQLAlchemy, PostgreSQL |
 | [media](media/) | Szenenmedien: Wall-/Ground-Bilder (`images/`), Musik (`music/`); vom Backend ausgeliefert, per Compose read-only eingebunden | – |
 
 Entstanden aus den früheren Einzel-Repos `dnd-portal-frontend` und `dnd-portal-backend` (Historie per
-`git filter-repo` übernommen). Deren Branches `test` und `v1-roguelike` liegen als Tags
-`archive/{backend,frontend}-{test,v1-roguelike}` vor. CI: `.github/workflows/{backend,frontend}.yml`.
+`git filter-repo` übernommen); deren alte Branches: [CONTRIBUTING.md](CONTRIBUTING.md#archiv).
+CI: `.github/workflows/{backend,frontend}.yml`.
 
 ## Dokumentation
 

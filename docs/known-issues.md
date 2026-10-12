@@ -1,6 +1,6 @@
 # Bekannte Lücken, Bugs & Altlasten
 
-Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-10-10. Punkte mit „(ungeprüft)“ wurden aus dem Code abgeleitet, aber nicht zur Laufzeit verifiziert.
+Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-10-10, Alembic-Migrationen und Medien im Backend am 2026-10-11. Punkte mit „(ungeprüft)“ wurden aus dem Code abgeleitet, aber nicht zur Laufzeit verifiziert.
 
 ## Lücken gegenüber der Vision
 
@@ -8,7 +8,7 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - Keine NPC-, Charakter- oder Kampfdaten im Datenmodell – nur Markdown-Notizen.
 - Soundeffekte und Notizen sind nicht mit Szenen verknüpft (nur Frontend-Dateien).
 - Keine gebietsspezifische Übersichtskarte auf dem Wall Screen; Weltkarte ist ein fest eingebundenes Bild.
-- Doppelte Mediendateien (seit DND-22): `mapOverview.jpg` (Weltkarte im Wall Screen) und `From_Past_To_Present.mp3`
+- Doppelte Mediendateien: `mapOverview.jpg` (Weltkarte im Wall Screen) und `From_Past_To_Present.mp3`
   (Standardmusik im Admin Screen) liegen zusätzlich zu `media/` als Kopie in `frontend/public/assets/...`, weil sie fest
   im Frontend eingebunden sind und an keiner Szene hängen. Ablösen gehört zur Weltkarten-/Upload-Thematik.
 - Grid-Einstellungen gelten global und werden nicht gespeichert.
@@ -18,7 +18,7 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 
 ### Bugs & Daten
 
-- Seed: Ground „Level_up“ zeigt auf den `wall_screen`-Ordner; doppelte/unpassende Musiknamen; Beschreibungen großteils Copy-Paste.
+- Seed: doppelte/unpassende Musiknamen; Beschreibungen großteils Copy-Paste.
 
 ## Frontend
 

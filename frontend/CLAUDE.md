@@ -18,15 +18,6 @@ Tests: vitest (Unit), jest-cucumber + selenium-webdriver (BDD/E2E).
 ## Befehle
 
 ```bash
-# im Monorepo-Root: ganze Anwendung in Docker (Frontend mit Hot-Reload, ./ gemountet)
-./script.sh dev              # Frontend :5173, API :8000, DB :5432 (bzw. docker compose -f compose.dev.yaml up --build)
-                             # einmalig ./script.sh install → danach dnd dev|prod|stop|logs aus jedem Ordner
-# im Root: nur Frontend in Docker (Stage dev)
-docker compose -f compose.dev.yaml up --build ui
-# Production-Image (nginx, statischer Build) – am Spieltisch per ./script.sh prod bzw. dnd prod (compose.prod.yaml);
-# ui startet erst, wenn die API healthy ist (Healthcheck), Tabs öffnen sich erst danach
-docker build --target prod [--build-arg VITE_API_URL=http://<host>:8000/] .
-
 npm run dev          # Vite-Dev-Server auf 0.0.0.0:5173 (nativ, ohne Docker)
 npm run build        # tsc -b && vite build
 npm run typecheck    # tsc -b (nur Typprüfung)
@@ -35,6 +26,10 @@ npm run test:unit    # vitest (__tests__/unit)
 npm run test:e2e     # jest-cucumber + Selenium/Chrome; braucht laufendes Backend auf :8000
 npm run generate:api # API-Typen src/api/schema.d.ts aus ../backend/openapi.json erzeugen (openapi-typescript)
 ```
+
+Start der ganzen Anwendung bzw. nur des Frontends in Docker (`./script.sh`, `dnd`, Compose) und Production-Stack am
+Spieltisch: [../docs/architecture.md](../docs/architecture.md#lokal-starten) (Abschnitte „Lokal starten“ und
+„Am Spieltisch (Production)“).
 
 E2E-Struktur: `__tests__/bdd/features/*.feature` (Szenarien), `__tests__/bdd/steps/*.ts` (Steps, von jest per
 `testMatch` ausgeführt), `__tests__/bdd/support/helpers.ts` (gemeinsame Helper: Driver, Basis-URL, explizite Waits –
@@ -51,8 +46,8 @@ Prod-Image.
 
 Node-Version: `.nvmrc` (`18`, von CI und nvm/fnm gelesen) und `Dockerfile` (`node:18-slim`, Stages `dev` und `build`)
 synchron halten.
-Im Container liegt `node_modules` in einem eigenen Volume; nach Änderungen an `package.json` mit
-`docker compose -f compose.dev.yaml up --build -V` (im Root) neu aufbauen.
+Im Container liegt `node_modules` in einem eigenen Volume; nach Änderungen an `package.json` neu aufbauen (Befehl in
+[../docs/architecture.md](../docs/architecture.md#lokal-starten)).
 
 ## Routen
 
@@ -129,9 +124,5 @@ jeder Screen lädt die Szene per `scenes/{id}` neu. Kein WebSocket/Polling; Play
 
 ## CI
 
-`../.github/workflows/frontend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter
-`frontend/` oder an `backend/openapi.json` vier Jobs direkt auf dem Runner (Node aus `.nvmrc`, npm-Cache, `npm ci`): zuerst `build` (`npx vite build`),
-danach parallel `typecheck` (erst `npm run generate:api` + `git diff --exit-code src/api/schema.d.ts`, dann
-`npm run typecheck`, also `tsc -b`), `lint` (`npm run lint`) und `test`
-(`npm run test:unit`), alle mit `needs: build` – bricht der Build, laufen sie nicht. Unabhängig davon baut
-`docker-prod` das Production-Image (`docker build --target prod`, ohne Push). E2E läuft nicht in CI.
+`../.github/workflows/frontend.yml`: Build, Typecheck (inkl. Prüfung, dass `src/api/schema.d.ts` aktuell ist), Lint,
+Unit-Tests und Production-Image; kein E2E. Details: [../docs/architecture.md](../docs/architecture.md#qualitätssicherung).

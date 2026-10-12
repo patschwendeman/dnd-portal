@@ -98,50 +98,10 @@ git config core.hooksPath .githooks
 Merge-, Revert- und `fixup!`/`squash!`-Nachrichten lässt der Hook durch. Die Attribution von Claude Code ist in
 `.claude/settings.json` abgeschaltet.
 
-## Lokale Entwicklung
+## Lokale Entwicklung & CI
 
-Die ganze Anwendung läuft in Docker und startet aus dem Root (Details:
-[docs/architecture.md](docs/architecture.md#lokal-starten)):
-
-```bash
-cp backend/.env.example backend/.env    # einmalig, Platzhalter ersetzen (gitignored)
-./script.sh install                     # einmalig: globaler Befehl `dnd` (danach `dnd dev|prod|stop|logs`)
-./script.sh dev                         # db :5432, api :8000, ui :5173, mit Hot-Reload; Ctrl+C beendet
-./script.sh dev --tools                 # zusätzlich pgAdmin :5050
-./script.sh stop                        # Dev- und Prod-Stack stoppen
-# ohne Skript:
-docker compose -f compose.dev.yaml up --build
-docker compose -f compose.dev.yaml logs -f <service>
-docker compose -f compose.dev.yaml down # -v setzt zusätzlich die DB zurück
-docker compose -f compose.dev.yaml up --build db api    # nur Backend
-docker compose -f compose.dev.yaml up --build ui        # nur Frontend (oder nativ: npm run dev in frontend/)
-docker compose -f compose.dev.yaml run --rm api pytest  # Backend-Tests
-```
-
-- Die Services haben feste Containernamen nach dem Schema `dnd-<umgebung>-<rolle>` (Dev: `dnd-dev-db`, `dnd-dev-api`,
-  `dnd-dev-ui`, `dnd-dev-pgadmin`; Prod: `dnd-prod-db`, `dnd-prod-api`, `dnd-prod-ui`).
-- Dev und Prod nutzen dieselben Service-Namen: `db`, `api`, `ui` (Dev zusätzlich `pgadmin`).
-- Der Dev-Stack heißt `dnd-portal-dev` und hat ein eigenes DB-Volume (`dnd-portal-dev_postgres_data`).
-- Alte Container aus den früheren Einzel-Repos belegen dieselben Ports (5432, 8000, 5050, 5173) – vorher stoppen.
-- Nach Änderungen an `frontend/package.json`: `docker compose -f compose.dev.yaml up --build -V` (erneuert das `node_modules`-Volume).
-
-## CI
-
-`.github/workflows/backend.yml` und `.github/workflows/frontend.yml` laufen bei Pushes auf `main` und `development`,
-jeweils nur bei Änderungen im zugehörigen Ordner (bzw. an der Workflow-Datei selbst). Die Jobs laufen direkt
-auf dem Runner (`ubuntu-latest`):
-
-- **Frontend** (in `frontend/`): vier Jobs – Node aus `frontend/.nvmrc` über `actions/setup-node` mit npm-Cache, `npm ci`. Zuerst läuft
-  `build` (`npx vite build`), danach parallel `typecheck` (`npm run typecheck`, also `tsc -b`), `lint`
-  (`npm run lint`) und `test` (`npm run test:unit`), alle mit `needs: build`; bricht der Build, laufen sie nicht.
-- **Backend** (in `backend/`): zwei parallele Jobs `lint` und `test` – uv über `astral-sh/setup-uv` mit Cache auf
-  `uv.lock`, `uv sync --frozen`, dann `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app` bzw.
-  `uv run pytest` gegen einen Service-Container `postgres:17`.
-- **Production-Images:** In beiden Workflows baut zusätzlich ein Job `docker-prod` das Image für `compose.prod.yaml`
-  (ohne Push; jeweils mit `--target prod`).
-
-Schlägt ein Job fehl (Build, Typecheck, Lint, Test oder Image-Build), ist der Workflow rot. E2E-Tests laufen
-nicht in CI.
+Setup, Start-Skript, Compose, `.env`-Schlüssel und CI: [docs/architecture.md](docs/architecture.md#lokal-starten)
+(CI: Abschnitt [Qualitätssicherung](docs/architecture.md#qualitätssicherung)).
 
 ## Archiv
 

@@ -57,28 +57,10 @@ Für Zugriff über das LAN (Smartphones der Spieler) die Adresse des Spieltisch-
 z. B. `["http://localhost:5173","http://localhost:8080","http://192.168.x.y:8080"]`, und das Frontend mit passender
 `VITE_API_URL` bauen. Fehlende Pflichtwerte brechen den Start mit einem Validierungsfehler ab.
 
-## Befehle
+## Seed
 
-In `backend/`, sofern nicht anders angegeben:
-
-| Befehl | Zweck |
-|---|---|
-| `uv sync` | `.venv` mit Laufzeit- und Dev-Abhängigkeiten anlegen |
-| `uv run ruff check` | Lint (`--fix` behebt u. a. Import-Sortierung) |
-| `uv run ruff format` | Formatierung (CI: `--check`) |
-| `uv run mypy app` | Typprüfung (strict) |
-| `DB_HOST=localhost uv run pytest` | Tests gegen die DB des laufenden Dev-Stacks |
-| `docker compose -f compose.dev.yaml run --rm api pytest` | Tests im Dev-Container (im Root, startet bei Bedarf die DB mit) |
-| `DB_HOST=localhost uv run alembic revision --autogenerate --rev-id <nnnn> -m "<beschreibung>"` | neue Migration aus den Models erzeugen |
-| `DB_HOST=localhost uv run alembic upgrade head` | Migrationen auf die DB anwenden |
-| `uv run python scripts/export_openapi.py` | API-Vertrag nach `openapi.json` schreiben (nach Schema-/Routenänderungen) |
-
-## Migrationen & Seed
-
-Das Schema entsteht ausschließlich über Alembic ([`migrations/`](migrations/)). Beim App-Start führt der `lifespan`
-`alembic upgrade head` aus und danach den Seeder, der die Tabellen aus
-[`app/db/data/seed_data.json`](app/db/data/seed_data.json) befüllt – **nur wenn sie leer sind**. Änderungen an der
-Seed-Datei wirken daher erst nach einem DB-Reset (im Root):
+Beim Start befüllt der Seeder die Tabellen aus [`app/db/data/seed_data.json`](app/db/data/seed_data.json) – **nur
+wenn sie leer sind**. Änderungen an der Seed-Datei wirken daher erst nach einem DB-Reset (im Root):
 
 ```bash
 docker compose -f compose.dev.yaml down -v    # bzw. -f compose.prod.yaml; löscht das DB-Volume
@@ -89,7 +71,7 @@ abgelehnt; auch dann hilft `down -v`.
 
 ## Weiterführend
 
-- [CLAUDE.md](CLAUDE.md) – Entwickler-Referenz: Stack, Struktur, Konventionen, Migrationsablauf, CI
-- [../docs/architecture.md](../docs/architecture.md) – Zusammenspiel mit dem Frontend, API, Datenmodell, Setup
+- [CLAUDE.md](CLAUDE.md) – Entwickler-Referenz: Stack, Lint-/Test-Befehle, Tests, Struktur, Konventionen, Seed, Migrationen
+- [../docs/architecture.md](../docs/architecture.md) – Zusammenspiel mit dem Frontend, API, Datenmodell, Setup (Compose, `script.sh`), CI
 - [../docs/known-issues.md](../docs/known-issues.md) – bekannte Lücken und Altlasten
 - [../CONTRIBUTING.md](../CONTRIBUTING.md) – Branches, Commits, Tasks

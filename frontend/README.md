@@ -46,17 +46,9 @@ Bundle ein: lokal per `.env` (Vorlage [`.env.example`](.env.example)), im Docker
 | `npm run test:unit` | Unit-Tests (vitest) |
 | `npm run test:e2e` | BDD/E2E (jest-cucumber + Selenium/Chrome); braucht laufendes Backend mit Seed-Daten, läuft nicht in CI |
 
-## Medien und Notizen
-
-- `../media/` (Repo-Root) – Szenenbilder (Wall/Ground) und Musik, ausgeliefert vom Backend unter `/media`
-- `public/assets/` – Sounds, Icons sowie die fest eingebundene Weltkarte und Standardmusik
-- `public/story/` – Markdown-Notizen für den Admin Screen (deutsch)
-
-Medienpfade (`source`) kommen vom Backend als `/media/...`; das Frontend löst sie per `mediaUrl` gegen `VITE_API_URL` auf.
-
 ## Weiterführend
 
-- [CLAUDE.md](CLAUDE.md) – Entwickler-Referenz: Stack, Struktur, Datenfluss, Konventionen, CI
+- [CLAUDE.md](CLAUDE.md) – Entwickler-Referenz: Stack, Struktur, Datenfluss, Konfiguration, Konventionen
 - [DESIGN.md](DESIGN.md) – Style Guide
-- [../docs/](../docs/) – Vision, Screens, Architektur, bekannte Probleme
+- [../docs/](../docs/) – Vision, Screens, Architektur (Start, Production, CI), bekannte Probleme
 - [../CONTRIBUTING.md](../CONTRIBUTING.md) – Branches, Commits, Tasks

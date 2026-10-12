@@ -13,21 +13,11 @@ psycopg2 · Alembic 1.20 · PostgreSQL 17. Tooling: uv · ruff (Lint + Format) �
 
 ## Befehle
 
+Starten der Anwendung (`./script.sh dev|prod`, Compose-Befehle, Container-Namen, Healthchecks):
+`../docs/architecture.md#lokal-starten` und `#am-spieltisch-production`. Lint/Typen/Tests lokal (in `backend/`, uv
+installiert Python 3.11 bei Bedarf selbst):
+
 ```bash
-# im Monorepo-Root: ganze Anwendung (DB, API, Frontend) – siehe ../docs/architecture.md#lokal-starten
-./script.sh dev                    # Postgres :5432, API :8000 (uvicorn --reload, ./app, ./migrations und ./tests gemountet, ../media read-only), Frontend :5173
-./script.sh dev --tools            # zusätzlich pgAdmin :5050
-docker compose -f compose.dev.yaml logs -f api   # API-Logs (Container dnd-dev-api)
-docker compose -f compose.dev.yaml down          # stoppen (-v: DB-Reset); ./script.sh stop stoppt Dev und Prod
-
-docker compose -f compose.dev.yaml up --build db api   # im Root: nur Backend (DB + API)
-docker compose -f compose.dev.yaml --profile tools up --build db api pgadmin   # im Root: nur Backend mit pgAdmin
-
-# Production-Stack am Spieltisch (im Root): API ohne Reload und ohne Code-Mount (Container dnd-prod-api)
-./script.sh prod                   # bzw. dnd prod (nach einmaligem ./script.sh install) oder docker compose -f compose.prod.yaml up -d --build --wait
-# Healthcheck in compose.prod.yaml: GET /scenes per Python (kein curl im Image); dnd prod wartet per --wait auf healthy
-
-# Lint/Typen/Tests lokal (in backend/, uv installiert Python 3.11 bei Bedarf selbst)
 uv sync                            # .venv mit Laufzeit- und Dev-Abhängigkeiten (Dev-Stack muss nicht laufen)
 uv run ruff check                  # Lint (--fix behebt Import-Sortierung u. a.)
 uv run ruff format                 # Formatierung (CI: --check)
@@ -35,8 +25,8 @@ uv run mypy app                    # Typprüfung (strict, Pydantic-Plugin)
 DB_HOST=localhost uv run pytest    # Tests gegen die DB des laufenden Dev-Stacks (Port 5432); DB_HOST aus .env (db) überschreiben
 uv run python scripts/export_openapi.py   # API-Vertrag nach openapi.json schreiben (nach jeder Schema-/Routenänderung)
 
-# Tests im Dev-Container (DB `db` aus dem Compose-Netz, Image mit Dev-Gruppe)
-docker compose -f compose.dev.yaml run --rm api pytest      # im Root (startet bei Bedarf die DB mit)
+# Tests im Dev-Container (im Root; DB `db` aus dem Compose-Netz, Image mit Dev-Gruppe)
+docker compose -f compose.dev.yaml run --rm api pytest
 docker compose -f compose.dev.yaml run --rm --no-deps api sh -c 'ruff check && ruff format --check && mypy app'
 # Nach Änderungen an pyproject.toml/uv.lock das Image neu bauen (--build bzw. ./script.sh dev).
 ```
@@ -57,15 +47,10 @@ in `../media` vorhanden), `test_seed.py` (Seeder inkl. fehlender Datei, in einer
 `CREATE DATABASE`). Der Medienordner der Tests ist ein temporäres Verzeichnis: `tests/conftest.py` setzt `MEDIA_DIR`
 vor dem Import von `app` (Fixture `media_dir`).
 
-Benötigt `backend/.env` (gitignored), angelegt aus `.env.example`: `cp .env.example .env`, Platzhalter ersetzen.
-Schlüssel: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` (Postgres-Container und API), `DB_DRIVER`, `DB_HOST`
-(`db` – nur im Compose-Netz erreichbar), `DB_PORT`, optional `CORS_ORIGINS` (JSON-Liste, Default Dev- und
-Prod-Frontend auf localhost), optional `MEDIA_DIR` (Medienordner, Default `/app/media`), `PGADMIN_DEFAULT_EMAIL`,
-`PGADMIN_DEFAULT_PASSWORD`. Gelesen werden sie von `Settings`
-in `app/core/config.py` (Umgebung vor `.env`); fehlende Pflichtwerte brechen den Start mit Validierungsfehler ab.
-Ältere `.env` mit `DRIVERNAME`/`HOST`/`PORT` einmalig umbenennen. Der Service `api` erhält sie per `env_file`, nicht
-über das Image (`.dockerignore` schließt `.env` aus). `import app.main` braucht keine DB; Migrationen und Seeder
-laufen erst beim App-Start (`lifespan`).
+Konfiguration: `backend/.env` aus `.env.example`, Schlüssel siehe [README.md](README.md#konfiguration). Gelesen von
+`Settings` in `app/core/config.py` (Umgebung vor `.env`); der Service `api` erhält die Datei per `env_file`, nicht über
+das Image (`.dockerignore` schließt `.env` aus). `import app.main` braucht keine DB; Migrationen und Seeder laufen erst
+beim App-Start (`lifespan`).
 
 `Dockerfile`: Multi-Stage mit uv (Version gepinnt über `ghcr.io/astral-sh/uv`): `base` → `dev` (inkl. Dev-Gruppe,
 von `../compose.dev.yaml` per `target: dev` gebaut) → `prod` (letzte Stage, `uv sync --frozen --no-dev`; von
@@ -160,7 +145,7 @@ Ablauf für Schemaänderungen (Dev-Stack läuft, Befehle in `backend/`):
 
 1. Model in `app/models/` ändern.
 2. `DB_HOST=localhost uv run alembic revision --autogenerate --rev-id <nnnn> -m "<beschreibung>"` (nächste Nummer,
-   z. B. `0002`; die DB muss auf `head` stehen). Die Datei wird per ruff formatiert.
+   z. B. `0003`; die DB muss auf `head` stehen). Die Datei wird per ruff formatiert.
 3. Migration prüfen und anpassen (Autogenerate erkennt z. B. Umbenennungen nicht); `upgrade` und `downgrade`
    vollständig.
 4. `DB_HOST=localhost uv run alembic upgrade head`, `… alembic check` (keine Abweichung), `… alembic downgrade -1` und
@@ -175,11 +160,5 @@ DB_HOST=localhost uv run alembic check       # Modelle ↔ Migrationen ohne Drif
 
 ## CI
 
-`../.github/workflows/backend.yml` (Root des Monorepos): bei Push auf `main`/`development` mit Änderungen unter
-`backend/` drei parallele Jobs: `lint` und `test` direkt auf dem Runner (`astral-sh/setup-uv` mit Cache auf `uv.lock`,
-`uv sync --frozen`) – `lint`: `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app`, danach
-`scripts/export_openapi.py` + `git diff --exit-code openapi.json` (Settings-Werte per `env`, keine DB); `test`:
-vor `uv run pytest` gegen einen Service-Container `postgres:17` (Env wie `.env.example`, `DB_HOST=localhost`)
-`alembic upgrade head`, `alembic check`, `alembic downgrade base` und erneut `alembic upgrade head` (Rundlauf beweist
-`downgrade`). Der Job
-`docker-prod` baut das Prod-Image (`docker build --target prod`, ohne Push).
+`../.github/workflows/backend.yml`: Jobs `lint` (ruff, mypy, `openapi.json` aktuell), `test` (Alembic-Rundlauf, pytest
+gegen `postgres:17`) und `docker-prod` (Image-Build) – Details: `../docs/architecture.md#qualitätssicherung`.
