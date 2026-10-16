@@ -3,6 +3,8 @@ name: squash-commits
 description: Fasst einen Commit-Bereich auf development zu einem Commit zusammen und schlägt eine Nachricht mit Stichpunkten vor. Nur auf ausdrücklichen Aufruf /squash-commits <von> <bis> [Nachricht].
 argument-hint: <von-Commit> <bis-Commit> [Commit-Nachricht]
 disable-model-invocation: true
+model: sonnet
+effort: low
 ---
 
 # Commits squashen

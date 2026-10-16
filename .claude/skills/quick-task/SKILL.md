@@ -3,6 +3,8 @@ name: quick-task
 description: Setzt eine kleine, eindeutige Änderung per Kurzweg direkt auf development um – ohne Plan, ohne Review-Subagent, aber mit Kriterien-Prüfung, Checks und Commit nach Konvention. Nur auf ausdrücklichen Aufruf /quick-task <Beschreibung>.
 argument-hint: <Beschreibung der Änderung>
 disable-model-invocation: true
+model: sonnet
+effort: medium
 ---
 
 # Quick-Task (Kurzweg)

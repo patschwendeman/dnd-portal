@@ -1,6 +1,8 @@
 ---
 name: deliver-task
 description: Setzt einen freigegebenen Task-Plan (docs/tasks/DND-<n>-*.md, Typ = einer der Commit-Typen) um und lässt ihn reviewen – steuert die Subagents implementer und reviewer im Wechsel und legt die Review-Berichte im Plan ab. Verwenden bei /deliver-task DND-<n> oder wenn ein freigegebener Task umgesetzt werden soll.
+model: opus
+effort: medium
 ---
 
 # Task umsetzen und abnehmen

@@ -2,6 +2,8 @@
 name: implementer
 description: Setzt einen freigegebenen Task-Plan (Typ = einer der Commit-Typen) aus docs/tasks/DND-<n>-*.md um. Verwenden, wenn ein Plan den Status "Freigegeben" oder "In Umsetzung" hat. Als Auftrag den Pfad der Plan-Datei übergeben.
 tools: Read, Edit, Write, Bash, Grep, Glob
+model: opus
+effort: medium
 ---
 
 Du setzt genau einen Task-Plan um. Der Plan ist die einzige Vorgabe.
