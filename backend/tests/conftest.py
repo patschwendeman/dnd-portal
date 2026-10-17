@@ -74,3 +74,41 @@ def expected_scene_details(seed: dict[str, Any]) -> list[dict[str, Any]]:
         }
         for scene in with_ids(seed["scenes"])
     ]
+
+
+@pytest.fixture(scope="session")
+def expected_adventures(seed: dict[str, Any]) -> list[dict[str, Any]]:
+    """Adventures in the `AdventureSummary` schema."""
+    return [
+        {"id": adventure["id"], "name": adventure["name"], "description": adventure["description"]}
+        for adventure in with_ids(seed["adventures"])
+    ]
+
+
+@pytest.fixture(scope="session")
+def expected_adventure_details(seed: dict[str, Any]) -> list[dict[str, Any]]:
+    """Adventures in the `AdventureDetail` schema as seeded: no active scene, players (sorted by ID) with avatar."""
+    media = with_ids(seed["media"])
+    players = with_ids(seed["players"])
+    return [
+        {
+            "id": adventure["id"],
+            "name": adventure["name"],
+            "description": adventure["description"],
+            "global_level": adventure["global_level"],
+            "active_scene_id": None,
+            "players": [
+                {
+                    "id": player["id"],
+                    "player_name": player["player_name"],
+                    "character_name": player["character_name"],
+                    "race": player["race"],
+                    "character_class": player["character_class"],
+                    "avatar": image(media[player["avatar_media_id"] - 1]) if player["avatar_media_id"] else None,
+                }
+                for player in players
+                if player["adventure_id"] == adventure["id"]
+            ],
+        }
+        for adventure in with_ids(seed["adventures"])
+    ]

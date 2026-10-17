@@ -1,4 +1,5 @@
-"""Seeder: media entries with content type and size from the media folder; missing files only log a warning.
+"""Seeder: adventures, players, media entries with content type and size from the media folder (missing files only log
+a warning) and scenes.
 
 The seeding test runs in a transaction on the shared test DB that is rolled back afterwards.
 """
@@ -14,7 +15,7 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from app.db.seed import build_media, seed_data
-from app.models import Media, Scene
+from app.models import Adventure, Media, Player, Scene
 
 WALL_KEY = "seed-test/wall.jpg"
 GROUND_KEY = "seed-test/ground.png"
@@ -33,7 +34,7 @@ def seed_media_dir(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def db(client: TestClient) -> Iterator[Session]:
-    """Session in an outer transaction (commits of the seeder become savepoints) with empty media/scene tables.
+    """Session in an outer transaction (commits of the seeder become savepoints) with empty seed tables.
 
     TRUNCATE ... RESTART IDENTITY is transactional in PostgreSQL: the rollback restores data and sequences.
     """
@@ -42,7 +43,7 @@ def db(client: TestClient) -> Iterator[Session]:
     with engine.connect() as connection:
         transaction = connection.begin()
         session = Session(bind=connection, join_transaction_mode="create_savepoint")
-        session.execute(text("TRUNCATE scene_track, scene, media RESTART IDENTITY"))
+        session.execute(text("TRUNCATE player, adventure, scene_track, scene, media RESTART IDENTITY"))
         try:
             yield session
         finally:
@@ -71,10 +72,11 @@ def test_build_media_for_missing_file_warns_and_keeps_entry(
     assert MISSING_KEY in caplog.text
 
 
-def test_seed_data_creates_media_and_scenes_with_references(
+def test_seed_data_creates_adventure_media_scenes_and_players_with_references(
     db: Session, seed_media_dir: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
     data: dict[str, Any] = {
+        "adventures": [{"name": "Adventure", "description": "Test", "global_level": 3}],
         "media": [
             {"kind": "image", "name": "Wall", "storage_key": WALL_KEY},
             {"kind": "image", "name": "Ground", "storage_key": GROUND_KEY},
@@ -83,6 +85,7 @@ def test_seed_data_creates_media_and_scenes_with_references(
         ],
         "scenes": [
             {
+                "adventure_id": 1,
                 "name": "Scene",
                 "description": "Test",
                 "main": True,
@@ -90,6 +93,24 @@ def test_seed_data_creates_media_and_scenes_with_references(
                 "ground_image_id": 2,
                 "track_ids": [3, 4],
             }
+        ],
+        "players": [
+            {
+                "adventure_id": 1,
+                "player_name": "Player",
+                "character_name": "Hero",
+                "race": "Elf",
+                "character_class": "Bard",
+                "avatar_media_id": 2,
+            },
+            {
+                "adventure_id": 1,
+                "player_name": "Other",
+                "character_name": "Sidekick",
+                "race": "Zwerg",
+                "character_class": "Kleriker",
+                "avatar_media_id": None,
+            },
         ],
     }
     with caplog.at_level(logging.WARNING, logger="app.db.seed"):
@@ -107,14 +128,39 @@ def test_seed_data_creates_media_and_scenes_with_references(
     assert scene.ground_image.storage_key == GROUND_KEY
     assert sorted(track.storage_key for track in scene.tracks) == [MISSING_KEY, TRACK_KEY]
     assert MISSING_KEY in caplog.text
+    adventure = db.scalars(select(Adventure)).one()
+    assert (adventure.name, adventure.description, adventure.global_level) == ("Adventure", "Test", 3)
+    assert adventure.active_scene_id is None
+    assert [s.id for s in adventure.scenes] == [scene.id]
+    assert [
+        (p.player_name, p.character_name, p.race, p.character_class, p.avatar.storage_key if p.avatar else None)
+        for p in db.scalars(select(Player).order_by(Player.id))
+    ] == [("Player", "Hero", "Elf", "Bard", GROUND_KEY), ("Other", "Sidekick", "Zwerg", "Kleriker", None)]
+
+
+def seed_with(adventure: str, media_key: str, player: str) -> dict[str, Any]:
+    return {
+        "adventures": [{"name": adventure, "description": None, "global_level": 1}],
+        "media": [{"kind": "image", "name": "Wall", "storage_key": media_key}],
+        "scenes": [],
+        "players": [
+            {
+                "adventure_id": 1,
+                "player_name": player,
+                "character_name": "Hero",
+                "race": "Mensch",
+                "character_class": "Magier",
+                "avatar_media_id": None,
+            }
+        ],
+    }
 
 
 def test_seed_data_does_not_touch_filled_tables(db: Session, seed_media_dir: Path) -> None:
-    media = [{"kind": "image", "name": "Wall", "storage_key": WALL_KEY}]
-    seed_data(db, {"media": media, "scenes": []}, seed_media_dir)
+    seed_data(db, seed_with("First", WALL_KEY, "Player"), seed_media_dir)
 
-    seed_data(
-        db, {"media": [{"kind": "image", "name": "Other", "storage_key": GROUND_KEY}], "scenes": []}, seed_media_dir
-    )
+    seed_data(db, seed_with("Second", GROUND_KEY, "Other"), seed_media_dir)
 
     assert [item.storage_key for item in db.scalars(select(Media))] == [WALL_KEY]
+    assert [item.name for item in db.scalars(select(Adventure))] == ["First"]
+    assert [item.player_name for item in db.scalars(select(Player))] == ["Player"]

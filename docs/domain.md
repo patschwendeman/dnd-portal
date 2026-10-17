@@ -2,8 +2,12 @@
 
 | Begriff (fachlich) | Bedeutung | Im Code |
 |---|---|---|
+| Abenteuer | Oberste Ebene: eine Kampagne bzw. ein Abenteuer mit eigenen Szenen und Spielern | Tabelle/Model `Adventure` (Backend), API `/adventures`, Schemas `AdventureSummary`/`AdventureDetail`; Szenen und Spieler gehören je zu genau einem Abenteuer (`adventure_id`); im Frontend noch nicht genutzt (DND-24) |
 | Spielleiter / Admin | Erzählt die Geschichte, spielt alle NPCs, steuert die App | Route `/admin`, `AdminScreen` |
 | Spieler | Spielt einen Charakter, nutzt den Player Screen | Route `/` (`PlayerScreen`); geparkt: `/spells` (Branch `feature/spells-screen`) |
+| Spieler / Charakter (Datenmodell) | Eine Person mit ihrem Charakter in einem Abenteuer; in einem anderen Abenteuer hat dieselbe Person einen eigenen Eintrag | Tabelle/Model `Player`: `player_name`, `character_name`, `race`, `character_class` (Freitext; `class` ist in Python reserviert), optional `avatar` (`Media`); API-Schema `Player` in `AdventureDetail.players` |
+| Globales Level | Charakterlevel, das vorerst für alle Spieler eines Abenteuers gilt (1–20) | `Adventure.global_level` (Default 1) |
+| Aktive Szene | Szene, die der Spielleiter gerade aktiviert hat und die Wall und Ground zeigen | Ist im Frontend: `activeSceneId` in `localStorage` und `ActiveSceneContext`; persistent im Abenteuer: `Adventure.active_scene_id` (`PATCH /adventures/{id}`, nur Szenen desselben Abenteuers), vom Frontend erst ab DND-24 genutzt |
 | NPC | Nicht-Spieler-Charakter, freundlich oder feindlich, vom Spielleiter gespielt | kein eigenes Datenmodell; Infos nur in Markdown-Notizen |
 | Szene | Situation, die der Spielleiter aktiviert; bündelt Wall-Bild, Ground-Bild und Musik | Tabelle/Model `Scene` (Backend), API-Schema `SceneDetail` (Backend `app/schemas/`, Frontend-Typ generiert) |
 | Kampfszene | Szene mit taktischem Kampf | `Scene.main == true` → „Mainmap“, Endpoint `/maps/main` |

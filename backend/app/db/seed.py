@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.base import Base
-from app.models import Media, Scene
+from app.models import Adventure, Media, Player, Scene
 
 SEED_DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "seed_data.json")
 DEFAULT_CONTENT_TYPE = "application/octet-stream"
@@ -51,6 +51,11 @@ def build_media(item: dict[str, Any], media_dir: Path) -> Media:
 
 
 def seed_data(db: Session, data: dict[str, Any], media_dir: Path) -> None:
+    # Order follows the references: scenes and players point to adventures and media.
+    if is_empty(db, Adventure):
+        db.add_all([Adventure(**item) for item in data["adventures"]])
+        db.commit()
+
     if is_empty(db, Media):
         db.add_all([build_media(item, media_dir) for item in data["media"]])
         db.commit()
@@ -62,6 +67,10 @@ def seed_data(db: Session, data: dict[str, Any], media_dir: Path) -> None:
             scene = Scene(**scene_data)
             scene.tracks = list(db.scalars(select(Media).where(Media.id.in_(track_ids))))
             db.add(scene)
+        db.commit()
+
+    if is_empty(db, Player):
+        db.add_all([Player(**item) for item in data["players"]])
         db.commit()
 
 

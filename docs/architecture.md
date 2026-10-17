@@ -40,15 +40,25 @@
   (einmalig `docker compose -f compose.dev.yaml down -v` bzw. `… compose.prod.yaml down -v`). Ablauf für
   Schemaänderungen: `backend/CLAUDE.md`, Abschnitt „Migrationen“. `import app.main` allein baut keine DB-Verbindung auf.
 
-### Endpoints (alle GET, keine Auth)
+### Endpoints (GET, nur Abenteuer zusätzlich PATCH; keine Auth)
 
 | Pfad | Liefert |
 |---|---|
-| `/scenes` | `list[SceneDetail]`: alle Szenen nach ID (200, ggf. `[]`) |
+| `/adventures` | `list[AdventureSummary]`: alle Abenteuer nach ID (200, ggf. `[]`) |
+| `/adventures/{adventure_id}` | `AdventureDetail` inkl. Spieler (200) bzw. 404 `{"detail": "Adventure not found"}` |
+| `PATCH /adventures/{adventure_id}` | Body `AdventureUpdate`, Antwort `AdventureDetail` (200); 404 wie oben; 422 `{"detail": "Scene does not belong to adventure"}`, wenn `active_scene_id` nicht existiert oder zu einem anderen Abenteuer gehört (nichts wird geändert), 422 im FastAPI-Standardformat bei `global_level` außerhalb 1–20 |
+| `/adventures/{adventure_id}/scenes` | `list[SceneDetail]`: Szenen des Abenteuers nach ID (200, ggf. `[]`); 404 wie oben |
+| `/adventures/{adventure_id}/maps/main` | `list[MapEntry]` der Kampfszenen des Abenteuers (wie `/maps/main`); 404 wie oben |
+| `/adventures/{adventure_id}/maps/side` | `list[MapEntry]` der Nicht-Kampfszenen des Abenteuers (wie `/maps/side`); 404 wie oben |
+| `/scenes` | `list[SceneDetail]`: alle Szenen aller Abenteuer nach ID (200, ggf. `[]`) |
 | `/scenes/{scene_id}` | `SceneDetail` (200) bzw. 404 `{"detail": "Scene not found"}` |
 | `/maps/main` | `list[MapEntry]`: `{id: scene.id, source: ground_image.source}` je Kampfszene (200, ggf. `[]`) |
 | `/maps/side` | `list[MapEntry]`: `{id: scene.id, source: wall_image.source}` je Nicht-Kampfszene (200, ggf. `[]`) |
 | `/media/{storage_key}` | Mediendatei aus dem Medienordner (`StaticFiles`, nicht in OpenAPI): 200 bzw. 206 bei `Range`-Header (Audio-Seek), 404 bei fehlender Datei oder Pfad außerhalb des Ordners |
+
+`/scenes` und `/maps/*` gelten global über alle Abenteuer; das Frontend nutzt bisher nur sie (die Umstellung auf die
+Pfade je Abenteuer folgt in DND-24). `/scenes/{scene_id}` bleibt der Einstieg für Wall und Ground, weil die Szenen-ID
+global eindeutig ist.
 
 Kanonische Pfade sind ohne Slash am Ende (mit Slash antwortet FastAPI mit 307-Redirect). Fehler im Default-Format
 `{"detail": "..."}`.
@@ -61,9 +71,19 @@ SceneDetail { id: int, name: str, description: str, main: bool,
 Image       { id: int, name: str, source: str }
 Track       { id: int, name: str, source: str }
 MapEntry    { id: int, source: str }                                         id = Szenen-ID
+
+AdventureSummary { id: int, name: str, description: str | null }
+AdventureDetail  { id: int, name: str, description: str | null, global_level: int,
+                   active_scene_id: int | null, players: list[Player] }       players nach ID sortiert
+Player           { id: int, player_name: str, character_name: str, race: str,
+                   character_class: str, avatar: Image | null }
+AdventureUpdate  { active_scene_id?: int | null, global_level?: int (1–20) }  Request-Body von PATCH
 ```
 
-Alle Felder sind Pflicht und nicht nullable. Die Fremdschlüssel (`wall_image_id` …) sind nicht Teil der Antwort.
+Alle Felder sind Pflicht; nullable sind nur `description` und `active_scene_id` des Abenteuers sowie `avatar` des
+Spielers. Die Fremdschlüssel (`wall_image_id`, `adventure_id` …) sind nicht Teil der Antwort, `SceneDetail` enthält
+kein `adventure_id`. Bei `AdventureUpdate` ändert `PATCH` nur die gesetzten Felder; `"active_scene_id": null` leert
+die aktive Szene, `"global_level": null` wird abgelehnt (422).
 `source` ist der API-relative Pfad der Datei, `/media/<storage_key>` (aus `media.storage_key` berechnet, nicht
 gespeichert), z. B. `/media/images/ground_screen/main_1.jpg`. Das Frontend macht daraus per `mediaUrl(source)`
 (`src/api/mediaUrl.ts`) eine absolute URL auf Basis von `VITE_API_URL` – dieselbe Basis wie der axios-Client.
@@ -87,17 +107,31 @@ CI prüft beide Dateien auf Aktualität (Export bzw. Generierung + `git diff --e
 ### Datenmodell
 
 ```
-Scene  → scene  (id, name, description, main: bool, wall_image_id → media, ground_image_id → media (unique))
+Adventure → adventure (id, name, description (Text, nullable), global_level (1–20, Default 1),
+                       active_scene_id → scene (nullable, ON DELETE SET NULL))
+              Adventure.scenes: 1:N, Adventure.players: 1:N (beide nach ID), Adventure.active_scene: N:1
+Player    → player    (id, adventure_id → adventure, player_name, character_name, race, character_class,
+                       avatar_media_id → media (nullable))
+              Player.avatar: N:1
+Scene     → scene     (id, adventure_id → adventure, name, description, main: bool, wall_image_id → media,
+                       ground_image_id → media (unique))
               Scene.wall_image: N:1 (z. B. teilen sich alle Kampfszenen ein Wall-Bild), Scene.ground_image: 1:1
               Scene.tracks: N:M über scene_track(scene_id, media_id; PK aus beiden)
-Media  → media  (id, kind: 'image' | 'audio', name, storage_key (unique), content_type, size (Bytes, nullable))
+Media     → media     (id, kind: 'image' | 'audio', name, storage_key (unique), content_type, size (Bytes, nullable))
 ```
 
-Alle Spalten außer `media.size` sind `NOT NULL`. `kind` beschreibt die Dateiart, nicht die Verwendung: Eine Datei ist
+Ein Abenteuer bündelt Szenen und Spieler (je 1:N); `media` ist global. Ein Spieler-Datensatz steht für „diese Person
+mit diesem Charakter in diesem Abenteuer“ – in einem anderen Abenteuer bekommt dieselbe Person einen eigenen
+Datensatz. `race` und `character_class` sind Freitext (`character_class`, weil `class` in Python ein Schlüsselwort
+ist). Die aktive Szene und das globale Level stehen persistent im Abenteuer; dass `active_scene_id` zu einer Szene
+desselben Abenteuers gehört, prüft der Service (nicht die DB). Wegen der zirkulären Fremdschlüssel `adventure` ↔ `scene`
+legt die Migration den FK `active_scene_id` zuletzt an (im Model `use_alter=True`, Relation mit `post_update=True`).
+
+Nullable sind nur `media.size`, `adventure.description`, `adventure.active_scene_id` und `player.avatar_media_id`. `kind` beschreibt die Dateiart, nicht die Verwendung: Eine Datei ist
 genau ein Datensatz und kann mehrfach genutzt werden (z. B. das Level-Up-Bild als Wall- und Ground-Bild).
 `storage_key` ist der Pfad relativ zum Medienordner (z. B. `images/wall_screen/forest.jpg`); die API bildet daraus
 `source`. Constraint-Namen folgen der Namenskonvention in `app/db/base.py` (z. B. `pk_scene`,
-`fk_scene_wall_image_id_media`, `uq_scene_ground_image_id`, `ck_media_kind`).
+`fk_scene_wall_image_id_media`, `uq_scene_ground_image_id`, `ck_media_kind`, `ck_adventure_global_level`).
 
 **Medienordner:** Die Dateien liegen im Ordner `media/` im Repo-Root (in Git; `images/{ground_screen,wall_screen}`,
 `music/{main,side}/…`). Die API liest ihn aus `MEDIA_DIR` (`Settings.media_dir`, Default `/app/media`); die
@@ -107,10 +141,17 @@ gibt es noch nicht.
 
 **Migrationen:** `0001` legt das ursprüngliche Schema an (`wall_image`, `ground_image`, `track` mit Pfad-Strings
 `source`), `0002` führt diese in `media` zusammen (`/assets/<rest>` → `storage_key` `<rest>`, gleiche Datei = ein
-Datensatz, `size` = NULL) und biegt die Fremdschlüssel um; bestehende Datenbanken laufen ohne Reset weiter.
+Datensatz, `size` = NULL) und biegt die Fremdschlüssel um. `0003` legt `adventure` und `player` an und ergänzt
+`scene.adventure_id`: Enthält `scene` Zeilen, legt sie das Abenteuer aus dem Seed an („Erstes Abenteuer“,
+`global_level` 1, keine aktive Szene) und weist ihm alle Szenen zu; auf einer leeren DB legt sie kein Abenteuer an
+(das macht der Seeder). Die Spieler ergänzt der Seeder, weil `player` danach leer ist. `downgrade` entfernt Tabellen,
+Spalte und Fremdschlüssel, die Szenen bleiben erhalten. Bestehende Datenbanken laufen jeweils ohne Reset weiter.
 
-**Seed-Daten:** Liste `media` (`kind`, `name`, `storage_key`) und `scenes` (Referenzen `wall_image_id`,
-`ground_image_id`, `track_ids` auf Media-IDs). 4 Nicht-Kampfszenen (Default/Dorf, Shop, Taverne, Level Up) und 25
+**Seed-Daten:** Listen `adventures` (`name`, `description`, `global_level`), `media` (`kind`, `name`, `storage_key`),
+`scenes` (Referenz `adventure_id` sowie `wall_image_id`, `ground_image_id`, `track_ids` auf Media-IDs) und `players`
+(`adventure_id`, `player_name`, `character_name`, `race`, `character_class`, `avatar_media_id`). Reihenfolge im
+Seeder: `adventure` → `media` → `scene` → `player`, `active_scene_id` bleibt leer. Ein Abenteuer („Erstes Abenteuer“)
+mit allen Szenen und vier Platzhalter-Spielern („Spieler 1..4“, ohne Avatar). 4 Nicht-Kampfszenen (Default/Dorf, Shop, Taverne, Level Up) und 25
 Kampfszenen („Fight 1..25“, teils mit Tags wie Boss, Loot, Ereignis, Key), 76 Medien (33 Bilder, 43 Musiktracks).
 IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement). Der Seeder ermittelt `content_type` (per
 Dateiendung) und `size` aus der Datei im Medienordner; fehlt sie, schreibt er eine Warnung ins Log und legt den
@@ -205,7 +246,8 @@ eingesetzt); ohne Variable gilt `http://localhost:8000/`. Lokal per `frontend/.e
 im Production-Image per Build-Argument. Eine andere URL erfordert einen neuen Build.
 
 **LAN/CORS:** Die API erlaubt per CORS nur die Origins aus `CORS_ORIGINS` (`backend/.env`, JSON-Liste; Default
-`["http://localhost:5173","http://localhost:8080"]` = Dev- und Prod-Frontend), nur `GET`, ohne Credentials. Wird das
+`["http://localhost:5173","http://localhost:8080"]` = Dev- und Prod-Frontend), nur `GET` und `PATCH` (Preflight für
+JSON-Body), ohne Credentials. Wird das
 Frontend über das LAN geöffnet (z. B. `http://192.168.x.y:8080`), muss dieser Origin in `CORS_ORIGINS` stehen und das
 Frontend mit `VITE_API_URL=http://192.168.x.y:8000/` gebaut sein. Der Player Screen ruft die API nicht auf.
 

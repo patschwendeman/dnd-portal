@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.api.routes import maps, scenes
+from app.api.routes import adventures, maps, scenes
 from app.core.config import settings
 from app.db.migrate import run_migrations
 from app.db.seed import run_seeder
@@ -27,10 +27,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
     allow_credentials=False,
-    allow_methods=["GET"],
+    allow_methods=["GET", "PATCH"],
     allow_headers=["*"],
 )
 
+app.include_router(adventures.router, prefix="/adventures", tags=["adventures"])
 app.include_router(scenes.router, prefix="/scenes", tags=["scenes"])
 app.include_router(maps.router, prefix="/maps", tags=["maps"])
 # check_dir=False keeps `import app.main` working without the media folder (e.g. when exporting the OpenAPI schema).

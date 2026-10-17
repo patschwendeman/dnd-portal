@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.adventure import Adventure
     from app.models.media import Media
 
 scene_track = Table(
@@ -19,6 +20,8 @@ scene_track = Table(
 class Scene(Base):
     __tablename__ = "scene"
     id: Mapped[int] = mapped_column(primary_key=True)
+    adventure_id: Mapped[int] = mapped_column(ForeignKey("adventure.id"))
+    adventure: Mapped["Adventure"] = relationship(back_populates="scenes", foreign_keys=[adventure_id])
     name: Mapped[str]
     description: Mapped[str] = mapped_column(Text)
     main: Mapped[bool]

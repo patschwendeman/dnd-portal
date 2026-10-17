@@ -2,11 +2,18 @@
 
 REST-API und PostgreSQL-Datenbank des DnD Portals (FastAPI, SQLAlchemy, Alembic). Liefert dem Frontend
 ([`../frontend`](../frontend/)) die Szenen mit ihren Wall-/Ground-Bildern und Musik-Tracks sowie die Mediendateien
-selbst (Ordner [`../media`](../media/)). Die API ist rein lesend.
+selbst (Ordner [`../media`](../media/)). Abenteuer bündeln Szenen und Spieler; einzig schreibend ist das Setzen
+von aktiver Szene und globalem Level eines Abenteuers (`PATCH`).
 
 | Endpoint | Zweck |
 |---|---|
-| `GET /scenes` | alle Szenen mit Wall-/Ground-Bild und Tracks |
+| `GET /adventures` | alle Abenteuer (ID, Name, Beschreibung) |
+| `GET /adventures/{adventure_id}` | ein Abenteuer mit globalem Level, aktiver Szene und Spielern (404, wenn unbekannt) |
+| `PATCH /adventures/{adventure_id}` | aktive Szene (`active_scene_id`, nur Szenen des Abenteuers, `null` leert sie) und/oder `global_level` (1–20) setzen; 404 bzw. 422 |
+| `GET /adventures/{adventure_id}/scenes` | Szenen des Abenteuers (wie `/scenes`) |
+| `GET /adventures/{adventure_id}/maps/main` | Kartenübersicht der Kampfszenen des Abenteuers |
+| `GET /adventures/{adventure_id}/maps/side` | Kartenübersicht der Nicht-Kampfszenen des Abenteuers |
+| `GET /scenes` | alle Szenen (aller Abenteuer) mit Wall-/Ground-Bild und Tracks |
 | `GET /scenes/{scene_id}` | eine Szene (404, wenn unbekannt) |
 | `GET /maps/main` | Kartenübersicht der Kampfszenen (`main: true`): Szenen-ID und Ground-Bild |
 | `GET /maps/side` | Kartenübersicht der Nicht-Kampfszenen (`main: false`): Szenen-ID und Wall-Bild |

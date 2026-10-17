@@ -72,7 +72,7 @@ def test_trailing_slash_followed_returns_same_maps(client: TestClient, maptype: 
 def test_read_maps_returns_empty_list_without_matching_scenes(
     client: TestClient, monkeypatch: pytest.MonkeyPatch, maptype: str
 ) -> None:
-    monkeypatch.setattr(scene_crud, "read_scenes_by_main", lambda _db, _main: [])
+    monkeypatch.setattr(scene_crud, "read_scenes_by_main", lambda _db, _main, _adventure_id=None: [])
 
     response = client.get(f"/maps/{maptype}")
 

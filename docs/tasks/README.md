@@ -26,3 +26,4 @@
 | DND-20 | fix | API-Vertrag mit Pydantic-Schemas, 404 statt 500, generierte Frontend-Typen | Fertig | [DND-20-api-contract-schemas.md](DND-20-api-contract-schemas.md) |
 | DND-21 | setup | Alembic-Migrationen und bereinigtes Datenbankschema | Fertig | [DND-21-alembic-schema-cleanup.md](DND-21-alembic-schema-cleanup.md) |
 | DND-22 | refactor | Szenenmedien ins Backend verlagern (Tabelle `media`, Ordner `media/`, Auslieferung per API) | Fertig | [DND-22-media-to-backend.md](DND-22-media-to-backend.md) |
+| DND-23 | feat | Abenteuer und Spieler im Backend (Datenmodell, Migration, Adventure-API) | Im Review | [DND-23-adventure-backend.md](DND-23-adventure-backend.md) |
