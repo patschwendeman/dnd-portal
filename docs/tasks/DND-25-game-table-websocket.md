@@ -311,3 +311,52 @@ und gestartet. Container und Image entfernt, Dev-DB wieder auf
 - Frontend: `typecheck` grün, `schema.d.ts` aktuell; `lint` 0 Fehler, 1 bekannte Warnung; `test:unit` 129 passed;
   `build`, `docker build --target prod`, `nginx -t` grün.
 - E2E: `npm run test:e2e` **rot** (1 von 4); mit `--runInBand` 4/4 grün.
+
+### Runde 2 – 2026-10-18
+
+**Empfehlung:** Abnahme. Blocker aus Runde 1 behoben (`npm run test:e2e` 3/3 Läufe grün), H1 und H4 umgesetzt, H1 live
+nachgeprüft. Alle acht AK weiter erfüllt, keine Regression, keine neuen Blocker.
+
+Geprüft: Nacharbeits-Commit `1654d4c` (Diff vollständig) auf Basis von `997246d`, alle Checks erneut. H1 live per
+Selenium (headless Chrome) gegen den Dev-Stack; Abenteuer 9002 per SQL angelegt und wieder gelöscht. Dev-DB danach
+wieder `{"active_adventure_id":1,"active_scene_id":null,"theme":"dark"}`, Arbeitsbaum sauber.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Wall auf anderem Gerät folgt live | erfüllt | Proxy, WS-Client und Backend unverändert (`git diff 997246d 1654d4c` nur `adventure.ts`, `adventure.spec.ts`, `package.json`, Doku); Beleg aus Runde 1 |
+| AK2 Abenteuer wechseln | erfüllt | Einschränkung H1 weg: Admin mit vor 9002 geladener Liste offen, `PATCH /table {"active_adventure_id":9002}` bleibt nach 4 s und nach Reload bestehen; `test_ws.py::test_switching_the_adventure_pushes_its_stored_scene` grün |
+| AK3 Theme für Spieltisch-Screens | erfüllt | Code unverändert, Beleg aus Runde 1 |
+| AK4 Neustart und Reload | erfüllt | Code unverändert, Beleg aus Runde 1 |
+| AK5 Verbindungsabbruch | erfüllt | Code unverändert; `heartbeat.spec.ts`, `gameTableConnection.spec.ts` grün |
+| AK6 Speichern schlägt fehl | erfüllt | Code unverändert, Beleg aus Runde 1 |
+| AK7 Zwei Admins | erfüllt | Admin mit veralteter Liste überschreibt fremde Wahl nicht mehr; `AdminScreen.tsx:284-287`, `adventure.ts:10-13` |
+| AK8 Fremde Herkunft abgewiesen | erfüllt | Backend unverändert; `test_ws.py::test_origin_check` grün |
+
+**Blockierende Befunde**
+- keine
+
+**Prüfung der Nacharbeiten**
+- **Blocker E2E:** `frontend/package.json:14` → `jest --runInBand`, Begründung in `package.json:6` (`"//"`) und
+  `frontend/CLAUDE.md:26-27`; 3/3 Läufe grün (je 2 Suites, 4 Tests), Specs nacheinander. Der `"//"`-Schlüssel ist die
+  von npm dokumentierte Kommentar-Konvention, gültiges JSON; `npm pkg get '//'`, `npm ci --dry-run`, `typecheck`,
+  `lint`, `build` ohne Beanstandung.
+- **H1:** `selectDefaultAdventureId` gibt jede gesetzte `activeId` zurück, Fallback nur bei `null`
+  (`frontend/src/utils/adventure.ts:10-13`); Unit-Test inkl. leerer Liste (`adventure.spec.ts:16-19`). Gegenprobe
+  live: bei `null` setzt der Admin weiterhin das erste Abenteuer (E3 erfüllt).
+- **H4:** Notiz in `docs/architecture.md:206-208`, passt zum Code.
+
+**Hinweise (nicht blockierend)**
+- **H13 – Zeilenumbruch `architecture.md:208-209`:** Absatz nach der Ergänzung unsauber umbrochen; kosmetisch.
+- **H14 – Admin mit veralteter Liste:** neu angelegtes, aktives Abenteuer erscheint dort erst nach Reload in der
+  Auswahl; Folge des H1-Fixes, entspricht E5. Anzeige im Detail nicht geprüft.
+- **H15 – Plan-Datei im Commit:** Bericht Runde 1 mit `1654d4c` committet, Blocker dort abgehakt; in Ordnung.
+- **Weiterhin offen aus Runde 1:** H6 (`getAdventure` toter Code), H9 (`isDarkTheme` auf allen Routen), H10 (E2E
+  ändert geteilten Dev-Zustand, `active_scene_id` danach 3), H12 (Lint-Warnung `alt`).
+- **Konventionen:** ein Commit auf `development`, `feat(DND-25): address review round 1`, Body Stichpunkte, keine
+  KI-Signatur, nichts außerhalb des Scopes.
+
+**Checks**
+- Backend: `ruff check` grün, `ruff format --check` 62 Dateien, `mypy app` ohne Befund, `pytest` 125 passed.
+- Frontend: `typecheck` grün, `lint` 0 Fehler / 1 bekannte Warnung, `test:unit` 129 passed, `build` grün,
+  `npm ci --dry-run` ok.
+- E2E: `npm run test:e2e` 3/3 Läufe grün; Dev-DB danach auf aktive Szene `null` zurückgesetzt.
