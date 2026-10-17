@@ -133,8 +133,21 @@ Szenenbild.
 | Eigenschaft | Wert |
 |---|---|
 | Aufbau | Grid `OUTER_COLUMN_WIDTH 1fr OUTER_COLUMN_WIDTH`: Abenteuer-Auswahl links, Sound-Gruppen mittig, Settings rechts |
-| Abenteuer-Auswahl | natives `select` (zugänglicher Name „Abenteuer“), Höhe `size.control.md`, Innenabstand `0 space.3`, `text.md` `bold`, Fläche `secondary`, Text `text.color`, ohne Rahmen, `radius.md`; Fokus als Outline `borderWidth.thick` in `primary` (`:focus-visible`); ohne Abenteuer deaktiviert |
+| Abenteuer-Auswahl | [Auswahlliste](#auswahlliste) `AdventureSelect` (zugänglicher Name „Abenteuer“), Button mit `text.md` `bold`; langer Name einzeilig mit Ellipse innerhalb der Außenspalte |
 | Gruppen | mit senkrechter Trennlinie ([1.4](../../DESIGN.md#14-regeln) Rahmen). Abstände nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“ |
+
+## Auswahlliste
+
+Button mit aufklappender Liste nach dem ARIA-Muster „Listbox“ statt nativem `select`, dessen Menü das Betriebssystem
+zeichnet. Bisher nur die Abenteuer-Auswahl ([src/components/AdventureSelect.tsx](../../src/components/AdventureSelect.tsx)).
+
+| Eigenschaft | Wert |
+|---|---|
+| Button | Höhe `size.control.md`, Innenabstand `0 space.3`, Fläche `secondary`, Text `text.color`, ohne Rahmen, `radius.md`; Fokus als Outline `borderWidth.thick` in `primary` (`:focus-visible`); ohne Einträge deaktiviert. `aria-haspopup="listbox"`, `aria-expanded` |
+| Chevron | rechts im Button, SVG-`polygon` (`viewBox 0 0 20 20`), `size.icon`, `fill` `text.color`; geöffnet um 180° gedreht |
+| Liste | direkt unter dem Button (`position: absolute`, `top: calc(100% + space.1)`, `left: 0`), mindestens so breit wie der Button; Fläche `secondary`, Rand `borderWidth.thin` in `border`, `radius.lg`, Innenabstand `space.1`, `gap` `space.1`, ohne `box-shadow`; höchstens `ADVENTURE_LIST_MAX_HEIGHT` hoch, darüber scrollt sie; Ebene `layer.popover` |
+| Eintrag | wie [Navigationseintrag](#navigationseintrag), `text.sm` `medium`, `radius.md`. Gewählt: Fläche `primary`, Text `onPrimary`. Hover und Fokus: Fläche `background`. `role="option"`, `aria-selected` |
+| Bedienung | Klick auf den Button öffnet und schließt. Am Button öffnen Enter, Leertaste und Pfeil runter/hoch, der Fokus steht dann auf dem gewählten Eintrag. In der Liste bewegen Pfeile (ohne Umlauf) und Pos1/Ende; Enter/Leertaste wählen und schließen; Esc schließt und setzt den Fokus zurück auf den Button; Tab und Klick außerhalb schließen. Den gewählten Eintrag erneut zu wählen schließt nur |
 
 ## Bottom-Bar
 

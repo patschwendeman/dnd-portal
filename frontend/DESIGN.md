@@ -84,6 +84,7 @@ Element.
 | `layer.grid` | Raster-Ebene auf dem Ground |
 | `layer.panel` | Overlay-Panel auf der Wall |
 | `layer.controls` | Hover-Fläche mit Steuerleiste |
+| `layer.popover` | aufklappende Liste über dem Inhalt, z. B. Abenteuer-Auswahl im Admin |
 | `layer.dialog` | Dialog mit Abdunklung |
 
 ### 1.3 Layout-Konstanten

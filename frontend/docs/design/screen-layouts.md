@@ -11,6 +11,7 @@ Regel: [1.3](../../DESIGN.md#13-layout-konstanten).
 |---|---|---|
 | 200px · 400px | linke und rechte Spalte im Admin (`LEFT_COLUMN_WIDTH`, `RIGHT_COLUMN_WIDTH`) | `AdminScreen` |
 | 240px | Außenspalten der Top-Bar (`OUTER_COLUMN_WIDTH`) | `TopBar` |
+| 320px | maximale Höhe der Abenteuer-Liste (`ADVENTURE_LIST_MAX_HEIGHT`) | `AdventureSelect` |
 | 880px · 68ch | maximale Breite einer Notizseite, maximale Zeilenlänge (`PAGE_MAX_WIDTH`, `LINE_MAX_WIDTH`) | `DocumentReader` |
 | 96px | Label-Spalte der Szenen-Details (`LABEL_COLUMN_WIDTH`), Kachelbreite der Nicht-Kampfszenen (`TILE_WIDTH`) | `DetailsSideBar`, `SideMaps` |
 | 1440px | maximale Breite des Wall-Panels (`OVERLAY_PANEL_MAX_WIDTH`), siehe [Breite des Overlay-Panels](#breite-des-overlay-panels) | `WallScreen` |

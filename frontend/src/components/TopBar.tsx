@@ -2,8 +2,8 @@ import { Fragment, FunctionComponent, ReactElement } from 'react'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
+import { AdventureSelect } from './AdventureSelect'
 import { AdventureSummary } from '../models/models'
-import { textStyle } from '../style/tokens'
 import { playAtmoSounds } from '../utils/utils'
 
 import buffIcon from '/assets/icons/buff.svg'
@@ -37,30 +37,6 @@ const Bar = styled.div`
     padding: 0 ${(props) => props.theme.space[5]};
     background-color: ${(props) => props.theme.colors.background};
     border-bottom: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.secondary};
-`
-
-const AdventureSelect = styled.select`
-    justify-self: start;
-    max-width: 100%;
-    height: ${(props) => props.theme.size.control.md};
-    padding: 0 ${(props) => props.theme.space[3]};
-    ${textStyle('md')}
-    font-family: inherit;
-    font-weight: ${(props) => props.theme.fontWeight.bold};
-    background-color: ${(props) => props.theme.colors.secondary};
-    color: ${(props) => props.theme.colors.text.color};
-    border: none;
-    border-radius: ${(props) => props.theme.radius.md};
-    cursor: pointer;
-
-    &:disabled {
-        cursor: default;
-    }
-
-    &:focus-visible {
-        outline: ${(props) => props.theme.borderWidth.thick} solid ${(props) => props.theme.colors.primary};
-        outline-offset: ${(props) => props.theme.borderWidth.thick};
-    }
 `
 
 const Sounds = styled.div`
@@ -200,16 +176,10 @@ const TopBar: FunctionComponent<TopBarProps> = ({
   return (
     <Bar>
       <AdventureSelect
-        data-test-id='adventure-select'
-        aria-label='Abenteuer'
-        value={activeAdventureId ?? ''}
-        disabled={adventures.length === 0}
-        onChange={(event) => onSelectAdventure(Number(event.target.value))}
-      >
-        {adventures.map((adventure) => (
-          <option key={adventure.id} value={adventure.id}>{adventure.name}</option>
-        ))}
-      </AdventureSelect>
+        adventures={adventures}
+        activeAdventureId={activeAdventureId}
+        onSelectAdventure={onSelectAdventure}
+      />
       <Sounds>
         {atmoGroups.map((atmos, groupIndex) => (
           <Fragment key={groupIndex}>

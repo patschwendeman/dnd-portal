@@ -80,6 +80,31 @@ Abschließend entfallen die globalen Listen-Endpoints im Backend.
   die Typen neu generiert.
 - **Begründung:** Ab diesem Task nutzt das Frontend sie nicht mehr. Es bleibt nur ein Weg zu den Szenen.
 
+### E7: Abenteuer-Auswahl als eigene Listbox statt nativem `select` (Nacharbeit nach Runde 2)
+- **Entscheidung:** Das native `select` aus E2 wird durch eine eigene Komponente `AdventureSelect`
+  (`src/components/AdventureSelect.tsx`) ersetzt: ein Button und eine aufklappende Liste nach dem ARIA-Muster „Listbox“.
+  Datenfluss, Position in der TopBar und Verhalten aus E2 bleiben gleich.
+  - **Button:** wie bisher (Höhe `size.control.md`, Innenabstand `0 space.3`, `text.md` `bold`, Fläche `secondary`,
+    `radius.md`, Fokus-Outline), zusätzlich rechts ein Chevron (SVG-`polygon`, `viewBox 0 0 20 20`, `size.icon`, `fill`
+    `text.color`; geöffnet nach oben gedreht). Langer Name: einzeilig mit Ellipse innerhalb der Außenspalte.
+    `aria-haspopup="listbox"`, `aria-expanded`, zugänglicher Name „Abenteuer“. Ohne Abenteuer deaktiviert.
+  - **Liste:** direkt unter dem Button (`position: absolute`, `top: calc(100% + space.1)`, `left: 0`, mindestens so
+    breit wie der Button), Fläche `secondary`, Rand `borderWidth.thin` in `border` (Abgrenzung zu Karten darunter),
+    `radius.lg`, Innenabstand `space.1`, Einträge mit `gap` `space.1`. Maximale Höhe als Layout-Konstante
+    `ADVENTURE_LIST_MAX_HEIGHT`, darüber scrollt die Liste. Kein `box-shadow`.
+  - **Einträge:** wie Navigationseinträge (Höhe `size.control.md`, `0 space.3`, linksbündig, `text.sm` `medium`,
+    `radius.md`). Gewähltes Abenteuer: Fläche `primary`, Text `onPrimary`. Hover und Tastatur-Fokus: Fläche
+    `background`. `role="option"`, `aria-selected`.
+  - **Ebene:** neuer Token `layer.popover` (zwischen `controls` und `dialog`), damit die Liste über dem Admin-Inhalt liegt.
+  - **Bedienung:** Klick auf den Button öffnet/schließt. Tastatur am Button: Enter, Leertaste, Pfeil runter/hoch öffnen
+    (Fokus auf dem gewählten Eintrag). In der Liste: Pfeile, Pos1/Ende bewegen; Enter/Leertaste wählen und schließen;
+    Esc schließt und gibt den Fokus an den Button zurück; Tab und Klick außerhalb schließen. Das bereits gewählte Abenteuer
+    erneut zu wählen schließt nur (kein `onSelectAdventure`).
+- **Verworfene Alternativen:** `appearance: base-select` (nur aktuelle Chromium-Browser); MUI `Select` (eigenes Styling,
+  MUI nur für `Box`/`Slider`).
+- **Begründung:** Das Menü des nativen `select` zeichnet das Betriebssystem. Position und Farben sind per CSS nicht
+  steuerbar. Eine eigene Komponente sieht in jedem Browser gleich aus und folgt Tokens und Farbrollen.
+
 ## Subtasks
 
 ### Vertrag
@@ -121,6 +146,18 @@ Abschließend entfallen die globalen Listen-Endpoints im Backend.
 - [x] `docs/domain.md`, `frontend/CLAUDE.md`, `backend/README.md`, `backend/CLAUDE.md` wo Endpoints oder State erwähnt sind;
       `docs/known-issues.md` prüfen.
 
+### Nacharbeit: Abenteuer-Auswahl (E7)
+- [x] `src/components/AdventureSelect.tsx` gemäß E7; `TopBar.tsx` nutzt sie (Props unverändert), natives
+      `AdventureSelect`-Styled-`select` entfernen. `data-test-id='adventure-select'` am Button, Einträge
+      `adventure-option-<id>`.
+- [x] Tastaturlogik (nächster Index für Pfeile/Pos1/Ende, Start-Index beim Öffnen) als reine Funktion in `src/utils/`
+      mit Unit-Test.
+- [x] `src/style/tokens.ts`: `layer.popover`.
+- [x] Doku: `frontend/DESIGN.md` (Ebenen-Tabelle `layer.popover`), `frontend/docs/design/components.md` (Top-Bar-Zeile
+      „Abenteuer-Auswahl“ und neuer Baustein „Auswahlliste“), `frontend/docs/design/screen-layouts.md`
+      (`ADVENTURE_LIST_MAX_HEIGHT`), `docs/screens.md` falls dort „Dropdown/select“ beschrieben ist.
+- [x] BDD-Steps/Helpers prüfen, falls sie das `select` ansprechen.
+
 ## Akzeptanzkriterien
 
 ### AK1: Abenteuer wird automatisch gewählt
@@ -156,12 +193,20 @@ Abschließend entfallen die globalen Listen-Endpoints im Backend.
 - **When** `GET /scenes` oder `GET /maps/main` aufgerufen wird
 - **Then** gibt es diese Endpoints nicht mehr. `GET /scenes/{id}` funktioniert weiter, und `dnd prod` meldet die API als healthy.
 
+### AK7: Abenteuer-Auswahl passt zum Design
+- **Given** der Admin Screen mit mindestens zwei Abenteuern, in beiden Themes (Dark, Tavern)
+- **When** der Spielleiter die Abenteuer-Auswahl öffnet
+- **Then** erscheint die Liste direkt unter dem Button (nicht darüber), in Fläche `secondary` mit Rand, das gewählte
+  Abenteuer in `primary`/`onPrimary`, und sie liegt über Notizen und Karten.
+- **And** Auswahl per Maus und per Tastatur (Pfeile, Enter, Esc) funktioniert, Klick außerhalb schließt, und der
+  Wechsel verhält sich wie in AK4.
+
 ## Teststrategie / Verifikation
 
 **Automatisch**
 - Backend: `uv run pytest`, `ruff`, `mypy`, `openapi.json` aktuell.
 - Frontend: `npm run typecheck` (`schema.d.ts` aktuell), `npm run lint`, `npm run test:unit` (neue Tests für ID-Parsing,
-  Default-Abenteuer-Auswahl, Fehleraufbereitung beim Speichern), `npm run build`.
+  Default-Abenteuer-Auswahl, Fehleraufbereitung beim Speichern, Tastaturlogik der Abenteuer-Auswahl), `npm run build`.
 - E2E: `npm run test:e2e` gegen laufendes Backend mit Seed (bestehende Features laufen weiter).
 
 **Manuell** (`dnd dev`, Admin, Wall und Ground als Fenster)
@@ -172,6 +217,8 @@ Abschließend entfallen die globalen Listen-Endpoints im Backend.
 4. Zweites Abenteuer per SQL anlegen (Name und eine Szene mit `adventure_id` 2), Wechsel hin und zurück (AK4).
 5. API stoppen, Szene aktivieren → Hinweisleiste. API starten, „Erneut versuchen“ → gespeichert (AK5).
 6. `dnd prod` → API healthy (AK6).
+7. Zweites Abenteuer per SQL anlegen, Abenteuer-Auswahl in Chrome und Safari öffnen, in beiden Themes, per Maus und
+   Tastatur bedienen; Screenshot der geöffneten Liste (AK7).
 
 ## Offene Fragen
 - keine
@@ -220,3 +267,43 @@ gelöscht, `active_scene_id` von Abenteuer 1 danach auf `null` zurückgesetzt.
 - Frontend: typecheck, lint (0 Fehler, 1 alte Warnung), test:unit 89 grün, build grün, `schema.d.ts` aktuell
 - E2E: 4 Tests grün gegen Dev-Stack
 - Konventionen: ein Commit, Schema und Typ passen, keine KI-Signatur, Branch `development`; alle Subtasks erledigt
+
+### Runde 2 – 2026-10-17
+
+**Empfehlung:** Abnahme. Keine blockierenden Befunde; H1 behoben.
+
+Geprüft: Commit `a1d3b77` (Nacharbeit H1) auf `development`, Diff vollständig, alle Checks; H1 und Retry-Fall per
+Selenium gegen den Dev-Stack (Requests per CDP blockiert). Temporäres Abenteuer 9002 per SQL angelegt und wieder
+gelöscht, `active_scene_id` von Abenteuer 1 danach auf `null` zurückgesetzt.
+
+Logik: `select()` in `handleAdventureSelection` (`AdminScreen.tsx:290`) setzt die übernommene ID vor jeder Auswahl
+zurück; `claim()` (`AdminScreen.tsx:218`, `utils/sceneAdoption.ts:17-23`) liefert nur beim ersten erfolgreichen Laden
+je Auswahl `true`. Retry in derselben Auswahl liefert weiter `false`.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Abenteuer wird automatisch gewählt | erfüllt | Frisches Profil → `activeAdventureId: "1"`; E2E grün; Code unverändert |
+| AK2 Aktive Szene übersteht Reload | erfüllt | Ohne `localStorage` übernimmt der Admin 9 aus der API, Ground `main_5.jpg` |
+| AK3 Wall und Ground folgen live | erfüllt | Ground wechselt ohne Reload 9 → leer → 9 → 7; Wall nicht separat geprüft, `App.tsx` unverändert |
+| AK4 Abenteuer wechseln | erfüllt, auch im Fehlerfall | Laden von B blockiert → zurück zu A: Szene 9 wieder aktiv. Schnelles A→B→A (mit/ohne Blockade): Szene 9 aktiv. Normalfall nur per Unit-Test `sceneAdoption.spec.ts:20-27` |
+| AK5 Speichern schlägt fehl | erfüllt | PATCH blockiert → lokal 7, Leiste, API 9; Retry → API 7 |
+| AK6 Globale Listen-Endpoints entfernt | erfüllt | Backend unverändert, pytest 83 passed, `openapi.json` aktuell |
+
+Retry innerhalb derselben Auswahl: lokal 7 gewählt (PATCH fehlgeschlagen, API 9), danach „Erneut versuchen“ in der
+Ladefehler-Leiste → `activeSceneId` bleibt `"7"` (`sceneAdoption.spec.ts:14-18`).
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+- **H8 – Nur die Util ist automatisch getestet:** Dass `AdminScreen` `select()` vor `setActiveAdventureId` aufruft,
+  deckt kein automatischer Test ab, nur die manuelle Prüfung.
+- **H9 – Mehrere Admin-Fenster (Vermutung):** Ändert ein zweites Admin-Fenster `activeAdventureId` per
+  `storage`-Event, läuft kein `select()`. Kein vorgesehenes Setup.
+- H2–H7 aus Runde 1 gelten unverändert; H3 erneut bestätigt.
+
+**Checks**
+- Backend: ruff check/format, mypy (30 Dateien), pytest 83 passed (vor und nach E2E), `openapi.json` aktuell
+- Frontend: typecheck, lint (0 Fehler, 1 alte Warnung), test:unit 93 grün (neu `sceneAdoption.spec.ts`, 4 Tests), build grün
+- E2E: 4 Tests grün
+- Konventionen: ein Commit `feat(DND-24): address review round 1`, keine KI-Signatur, Branch `development`; Scope eingehalten

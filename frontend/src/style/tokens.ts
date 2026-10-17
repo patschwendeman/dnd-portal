@@ -75,6 +75,7 @@ const layer = {
   grid: 10,
   panel: 20,
   controls: 30,
+  popover: 35,
   dialog: 40,
 }
 

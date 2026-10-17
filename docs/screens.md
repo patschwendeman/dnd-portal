@@ -24,9 +24,10 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 ### Ist
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Top-Bar, Hauptbereich, Bottom-Bar. Im Hauptbereich
   links die Notizen-Navigation, in der Mitte die Notizen, rechts die Karten „Aktive Szene“ und „Kampfszenen“.
-- **Abenteuer-Auswahl:** Links in der Top-Bar ein Dropdown mit allen Abenteuern. Ohne gespeichertes oder bei einem
-  unbekannten Abenteuer wird automatisch das erste gewählt (mit nur einem Abenteuer also ohne Zutun); ohne Abenteuer ist
-  das Dropdown leer und deaktiviert, es werden keine Szenen geladen. Gezeigt werden nur die Szenen des gewählten
+- **Abenteuer-Auswahl:** Links in der Top-Bar eine Auswahlliste (Button mit aufklappender Liste, per Maus und Tastatur
+  bedienbar) mit allen Abenteuern. Ohne gespeichertes oder bei einem unbekannten Abenteuer wird automatisch das erste
+  gewählt (mit nur einem Abenteuer also ohne Zutun); ohne Abenteuer ist die Auswahl leer und deaktiviert, es werden
+  keine Szenen geladen. Gezeigt werden nur die Szenen des gewählten
   Abenteuers. Beim Wechsel ist zunächst keine Szene aktiv, dann wird die im Abenteuer gespeicherte übernommen (bzw.
   bleibt keine aktiv).
 - **Szenenauswahl:** Karte „Kampfszenen“ mit Anzahl und quadratisch angeordnetem Kachelraster aller Kampfszenen des
