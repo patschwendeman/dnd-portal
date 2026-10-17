@@ -177,3 +177,46 @@ Abschließend entfallen die globalen Listen-Endpoints im Backend.
 - keine
 
 ## Review
+
+### Runde 1 – 2026-10-17
+
+**Empfehlung:** Abnahme. Keine blockierenden Befunde; H1 und H2 vorher ansehen.
+
+Geprüft: Commit `192bd16` auf `development`, Diff vollständig, alle Checks; AK1–AK5 zusätzlich per Selenium im
+Browser gegen den Dev-Stack (Admin, Wall, Ground als Tabs). Temporäres Abenteuer 9002 per SQL angelegt und wieder
+gelöscht, `active_scene_id` von Abenteuer 1 danach auf `null` zurückgesetzt.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Abenteuer wird automatisch gewählt | erfüllt | Leerer `localStorage` → „Erstes Abenteuer“ gewählt, `activeAdventureId: "1"`, 25 Kampf- und 4 Nicht-Kampfszenen; `AdminScreen.tsx:178-198`, `utils/adventure.ts:5-13`, `TopBar.tsx:202-212` |
+| AK2 Aktive Szene übersteht Reload | erfüllt | main_3 aktiviert → API `active_scene_id: 7`; nach Reload bzw. `localStorage.clear()` wieder `"7"`, Wall/Ground korrekt; `AdminScreen.tsx:211-222, 245-250` (Musik nur im Code geprüft) |
+| AK3 Wall und Ground folgen live | erfüllt | Wechsel ohne Reload; `App.tsx:50-58` |
+| AK4 Abenteuer wechseln | erfüllt (Normalfall) | A → B: „Keine Szene aktiv“, Wall/Ground ohne Bild; zurück zu A: Szene 9 wieder aktiv; `AdminScreen.tsx:285-292`. Fehlerfall: H1 |
+| AK5 Speichern schlägt fehl | erfüllt (PATCH-Fehler) | PATCH blockiert → lokal aktiv, Leiste „Aktive Szene konnte nicht gespeichert werden“; Retry → API auf 9; `AdminScreen.tsx:264-283, 326-330`, `api/saveData.ts`. API komplett weg: H2 |
+| AK6 Globale Listen-Endpoints entfernt | erfüllt | `GET /scenes` und `/maps/main` → 404, `/scenes/1` → 200; `test_scenes.py:64-68`; Healthcheck `compose.prod.yaml:44` im Dev-Container 200. `dnd prod` nicht gestartet |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+- **H1 – Fehler beim Abenteuerwechsel:** Laden von B schlägt fehl, Rückwechsel zu A → gespeicherte Szene von A wird
+  nicht übernommen („Keine Szene aktiv“, API weiter 9). Ursache: `adoptedAdventureId.current` bleibt auf A
+  (`AdminScreen.tsx:218`); vermutlich auch bei schnellem A→B→A. Korrektur: `adoptedAdventureId.current = null` in
+  `handleAdventureSelection` (`AdminScreen.tsx:285-292`).
+- **H2 – API komplett nicht erreichbar:** Wall/Ground behalten das zuletzt geladene Bild, obwohl `activeSceneId`
+  wechselt. Folgt aus der Architektur im Plan; manueller Schritt 5 würde es zeigen.
+- **H3 – E2E-Tests verändern die Dev-DB:** `active_scene_id` bleibt nach `test:e2e` gesetzt, danach 2 pytest-Fehler
+  (`test_read_adventure_returns_detail_with_players`, `test_patch_returns_detail_with_players`). In
+  `docs/known-issues.md` dokumentiert, CI nicht betroffen. Folgetask: Reset in den E2E-Steps (`afterAll`).
+- **H4 – Lint-Warnung** (`alt` fehlt) in `WallScreen.tsx:194`, bestand schon vorher.
+- **H5 – Kein eigener Plan-Commit:** Plan erstmals im Feat-Commit committet (wie bei DND-23).
+- **H6 – Doku über Subtasks hinaus:** `frontend/DESIGN.md`, `docs/design/components.md`, `screen-layouts.md`
+  angepasst; gehört zum Scope „Tests und Doku“.
+- **H7 – Reload:** Admin setzt `activeSceneId` erst aus `localStorage`, dann aus der API; bei Abweichung springen
+  Wall/Ground einmal um. Erwartet (E3).
+
+**Checks**
+- Backend: ruff, ruff format, mypy (30 Dateien), pytest 83 passed (Seed-Stand), `openapi.json` aktuell
+- Frontend: typecheck, lint (0 Fehler, 1 alte Warnung), test:unit 89 grün, build grün, `schema.d.ts` aktuell
+- E2E: 4 Tests grün gegen Dev-Stack
+- Konventionen: ein Commit, Schema und Typ passen, keine KI-Signatur, Branch `development`; alle Subtasks erledigt

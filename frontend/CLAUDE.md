@@ -75,7 +75,8 @@ src/models/models.ts API-Typen AdventureSummary, AdventureDetail, SceneDetail, I
 src/hooks/           useMusicPlayer (bindet MusicPlayer an den Admin Screen: Track/Play-Zustand, Cleanup)
 src/utils/utils.ts   Zufallstrack (getRandomTrack), Musiktitel, Soundeffekte (playAtmoSounds), filterSceneByKey,
                      getGridLayout
-src/utils/storedId.ts parseStoredId (ID aus localStorage, sonst null); src/utils/adventure.ts selectDefaultAdventureId
+src/utils/storedId.ts parseStoredId (ID aus localStorage, sonst null); src/utils/adventure.ts selectDefaultAdventureId;
+                     src/utils/sceneAdoption.ts (gespeicherte Szene einmal je Abenteuerauswahl übernehmen)
 src/utils/musicPlayer.ts  MusicPlayer: Hintergrundmusik ohne React (ein Audio-Element, Playlist, aktueller Track,
                      Trackende → nächster Track); Audio-Fabrik und Zufall injizierbar für vitest
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }),

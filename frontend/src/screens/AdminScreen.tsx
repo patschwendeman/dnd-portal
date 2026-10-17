@@ -26,6 +26,7 @@ import { GlobalStyle } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 import { selectDefaultAdventureId } from '../utils/adventure'
 import { loadLatest } from '../utils/loadSafely'
+import { createSceneAdoption, SceneAdoption } from '../utils/sceneAdoption'
 import { filterSceneByKey, getMusicTitle } from '../utils/utils'
 
 import { ReactSVG } from 'react-svg'
@@ -153,9 +154,8 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
     const [failedSave, setFailedSave] = useState<{ adventureId: number, sceneId: number } | null>(null)
     const latestSave = useRef<number>(0)
 
-    // The adventure whose stored active scene was taken over. It is taken over once per selection, so a retry after
-    // a load error does not overwrite a scene that was selected locally in the meantime.
-    const adoptedAdventureId = useRef<number | null>(null)
+    // Decides when the stored active scene of the loaded adventure is taken over (once per selection)
+    const sceneAdoption = useRef<SceneAdoption>(createSceneAdoption())
 
     // Scenes are only loaded for an adventure that exists, so a stale ID from localStorage triggers no failing request
     const loadedAdventureId = adventures?.some((adventure) => adventure.id === activeAdventureId)
@@ -215,8 +215,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
                 setSidemaps(sidemaps)
                 setScenesDetails(scenesDetails)
                 setAdminDataFailed(false)
-                if (adoptedAdventureId.current !== loadedAdventureId) {
-                    adoptedAdventureId.current = loadedAdventureId
+                if (sceneAdoption.current.claim(loadedAdventureId)) {
                     setActiveSceneId(adventure.active_scene_id)
                 }
             },
@@ -288,6 +287,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
         }
         // Cleared first, so Wall and Ground never briefly show a scene of the previous adventure
         setActiveSceneId(null)
+        sceneAdoption.current.select()
         setActiveAdventureId(adventureId)
     }
 
