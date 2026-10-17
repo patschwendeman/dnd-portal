@@ -41,6 +41,7 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `text.color` auf `secondary` | Karten, Dialog, inaktive Buttons | 4,5 | 15,9 | 6,5 | ✓ beide |
 | `text.color` auf `dark` | Bottom-Bar, Steuerleiste | 4,5 | 18,8 | 9,8 | ✓ beide |
 | `onPrimary` auf `primary` | aktive Buttons (auch in der Steuerleiste von Wall und Ground) und Navigation, Confirm (14px) | 4,5 | 6,1 | 4,7 | ✓ beide |
+| `onPrimary` auf `primary` | Fokus-Outline des gewählten Eintrags der Auswahlliste | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `background` | Links in den Notizen (16px) | 4,5 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `secondary` | aktive Kachel im Admin (Outline) | 3,0 | 5,6 | 3,3 | ✓ beide |
 | `primary` auf `background` | aktive Kachel auf der Wall (Outline) | 3,0 | 6,1 | 4,7 | ✓ beide |

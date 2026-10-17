@@ -94,7 +94,9 @@ Abschließend entfallen die globalen Listen-Endpoints im Backend.
     `ADVENTURE_LIST_MAX_HEIGHT`, darüber scrollt die Liste. Kein `box-shadow`.
   - **Einträge:** wie Navigationseinträge (Höhe `size.control.md`, `0 space.3`, linksbündig, `text.sm` `medium`,
     `radius.md`). Gewähltes Abenteuer: Fläche `primary`, Text `onPrimary`. Hover und Tastatur-Fokus: Fläche
-    `background`. `role="option"`, `aria-selected`.
+    `background`. Gewähltes Abenteuer mit Tastatur-Fokus (`:focus-visible`, Nacharbeit H10): bleibt `primary`, dazu
+    Outline `borderWidth.thick` in `onPrimary`, nach innen versetzt (`outline-offset` = −`borderWidth.thick`), damit
+    sie nicht vom Scrollbereich abgeschnitten wird. `role="option"`, `aria-selected`.
   - **Ebene:** neuer Token `layer.popover` (zwischen `controls` und `dialog`), damit die Liste über dem Admin-Inhalt liegt.
   - **Bedienung:** Klick auf den Button öffnet/schließt. Tastatur am Button: Enter, Leertaste, Pfeil runter/hoch öffnen
     (Fokus auf dem gewählten Eintrag). In der Liste: Pfeile, Pos1/Ende bewegen; Enter/Leertaste wählen und schließen;
@@ -158,6 +160,12 @@ Abschließend entfallen die globalen Listen-Endpoints im Backend.
       (`ADVENTURE_LIST_MAX_HEIGHT`), `docs/screens.md` falls dort „Dropdown/select“ beschrieben ist.
 - [x] BDD-Steps/Helpers prüfen, falls sie das `select` ansprechen.
 
+### Nacharbeit: sichtbarer Fokus (H10 aus Review-Runde 3)
+- [x] `AdventureSelect.tsx`: Fokus-Indikator für den gewählten Eintrag gemäß E7 („Gewähltes Abenteuer mit
+      Tastatur-Fokus“); Maus-Klick zeigt keine Outline (`:focus-visible`).
+- [x] Doku: Baustein „Auswahlliste“ in `frontend/docs/design/components.md` ergänzen; Kontrast `onPrimary` auf `primary`
+      ist über die Textfarbe bereits abgedeckt, in `contrast.md` nur ergänzen, falls dort Fokus-Indikatoren gelistet sind.
+
 ## Akzeptanzkriterien
 
 ### AK1: Abenteuer wird automatisch gewählt
@@ -198,6 +206,7 @@ Abschließend entfallen die globalen Listen-Endpoints im Backend.
 - **When** der Spielleiter die Abenteuer-Auswahl öffnet
 - **Then** erscheint die Liste direkt unter dem Button (nicht darüber), in Fläche `secondary` mit Rand, das gewählte
   Abenteuer in `primary`/`onPrimary`, und sie liegt über Notizen und Karten.
+- **And** der Tastatur-Fokus ist auf jedem Eintrag sichtbar, auch auf dem gewählten.
 - **And** Auswahl per Maus und per Tastatur (Pfeile, Enter, Esc) funktioniert, Klick außerhalb schließt, und der
   Wechsel verhält sich wie in AK4.
 
@@ -307,3 +316,52 @@ Ladefehler-Leiste → `activeSceneId` bleibt `"7"` (`sceneAdoption.spec.ts:14-18
 - Frontend: typecheck, lint (0 Fehler, 1 alte Warnung), test:unit 93 grün (neu `sceneAdoption.spec.ts`, 4 Tests), build grün
 - E2E: 4 Tests grün
 - Konventionen: ein Commit `feat(DND-24): address review round 1`, keine KI-Signatur, Branch `development`; Scope eingehalten
+
+### Runde 3 – 2026-10-17
+
+**Empfehlung:** Abnahme. Keine blockierenden Befunde; AK7 in Chrome in beiden Themes erfüllt, AK1–AK6 nicht regressiert.
+
+Geprüft: Commit `a872a68` (Nacharbeit E7) auf `development`, Diff vollständig, alle Checks. AK7 per Selenium in Chrome
+gegen den Dev-Stack (Dark und Tavern, 1600×1000) mit Screenshots der geöffneten Liste. Temporäre Abenteuer 9002 und
+9003 (68 Zeichen langer Name) per SQL angelegt und wieder gelöscht, `active_scene_id` von Abenteuer 1 danach auf `null`
+zurückgesetzt.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Abenteuer wird automatisch gewählt | erfüllt | Ohne `localStorage` → `activeAdventureId: "1"`, Button zeigt „Erstes Abenteuer“; E2E grün; `AdminScreen.tsx` unverändert |
+| AK2 Aktive Szene übersteht Reload | erfüllt | Nach `localStorage.clear()` und Reload übernimmt der Admin Szene 25 aus der API |
+| AK3 Wall und Ground folgen live | erfüllt | `App.tsx` und Screens unverändert, E2E grün |
+| AK4 Abenteuer wechseln | erfüllt | Per Tastatur zu 9002 → `activeSceneId: null`; per Maus zurück zu 1 → Szene 25 aktiv |
+| AK5 Speichern schlägt fehl | erfüllt | Speicherpfad unverändert |
+| AK6 Globale Listen-Endpoints entfernt | erfüllt | Kein Backend-Diff, pytest 83 passed |
+| AK7 Abenteuer-Auswahl passt zum Design | erfüllt (Chrome, Dark und Tavern) | Siehe unten |
+
+AK7 im Einzelnen:
+- Position: Liste 4px (`space.1`) unter dem Button, gleiches `left`.
+- Fläche/Rand: Dark `secondary` mit `border`, Tavern ebenso; `radius` 12px, kein `box-shadow`, `max-height` 320px.
+- Gewählter Eintrag `primary`/`onPrimary`, Hover `background` (beide Themes).
+- Ebene: `z-index` 35 (`layer.popover`), Liste liegt über Notizen und Navigation (`elementFromPoint`, Screenshot).
+- Maus: Button öffnet/schließt, Eintrag wählt, Klick außerhalb schließt.
+- Tastatur: Pfeil runter/Enter/Leertaste öffnen mit Fokus auf gewähltem Eintrag; Pfeile/Pos1/Ende ohne Umlauf;
+  Enter wählt und gibt Fokus an den Button; Esc und Tab schließen. Erneute Wahl des aktiven Abenteuers schließt nur.
+- ARIA (`aria-haspopup`, `aria-expanded`, `aria-label`) korrekt, Chevron gedreht, langer Name im Button mit Ellipse.
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+- **H10 – Fokus auf dem gewählten Eintrag unsichtbar:** Bleibt `primary`, `outline: none` (`AdventureSelect.tsx:93-100`);
+  beim Öffnen und nach Pos1 ist der Fokus nicht erkennbar. E7 regelt den Fall „gewählt und fokussiert“ nicht.
+  Fokusindikator (z. B. Outline wie am Button) wäre eine Verbesserung.
+- **H11 – Listenbreite ohne Obergrenze:** Mit 68 Zeichen 510px breit, reicht bis in die Notizen. Optional `max-width` mit Ellipse.
+- **H12 – `ADVENTURE_LIST_MAX_HEIGHT` = 320px:** Plan nennt keinen Wert; dokumentiert, unkritisch.
+- **H13 – „Dropdown“ in `docs/architecture.md:29` und `docs/domain.md:5`:** Nicht im Subtask, kein Widerspruch zum Code; optional angleichen.
+- **H14 – Safari nicht geprüft:** Manueller Schritt 7 nennt Safari, AK7 nennt keinen Browser.
+- **H15 – Komponente ohne automatischen Test:** Nur die Index-Funktionen (`listbox.spec.ts`) sind getestet.
+- H2–H9 gelten unverändert; H3 erneut bestätigt (nach E2E `active_scene_id` = 25, zurückgesetzt).
+
+**Checks**
+- Backend: pytest 83 passed; kein Backend-Diff
+- Frontend: typecheck, lint (0 Fehler, 1 alte Warnung), test:unit 102 grün (neu `listbox.spec.ts`), build grün
+- E2E: 4 Tests grün
+- Konventionen: ein Commit `feat(DND-24): replace adventure select with custom listbox`, keine KI-Signatur, Branch `development`; Scope eingehalten
