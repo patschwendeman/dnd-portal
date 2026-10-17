@@ -27,4 +27,4 @@
 | DND-21 | setup | Alembic-Migrationen und bereinigtes Datenbankschema | Fertig | [DND-21-alembic-schema-cleanup.md](DND-21-alembic-schema-cleanup.md) |
 | DND-22 | refactor | Szenenmedien ins Backend verlagern (Tabelle `media`, Ordner `media/`, Auslieferung per API) | Fertig | [DND-22-media-to-backend.md](DND-22-media-to-backend.md) |
 | DND-23 | feat | Abenteuer und Spieler im Backend (Datenmodell, Migration, Adventure-API) | Fertig | [DND-23-adventure-backend.md](DND-23-adventure-backend.md) |
-| DND-24 | feat | Abenteuer im Frontend (Auswahl im Admin, aktive Szene persistent) | Im Review | [DND-24-adventure-frontend.md](DND-24-adventure-frontend.md) |
+| DND-24 | feat | Abenteuer im Frontend (Auswahl im Admin, aktive Szene persistent) | Fertig | [DND-24-adventure-frontend.md](DND-24-adventure-frontend.md) |

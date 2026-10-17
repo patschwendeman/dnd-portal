@@ -1,7 +1,7 @@
 # DND-24: Abenteuer im Frontend (Auswahl im Admin, aktive Szene persistent)
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -421,3 +421,48 @@ AK7 im Einzelnen:
 - E2E: 4 Tests grün
 - Backend: kein Diff, nicht erneut ausgeführt
 - Konventionen: ein Commit `feat(DND-24): show focus on selected adventure option`, keine KI-Signatur, Branch `development`; Scope eingehalten
+
+### Runde 5 – 2026-10-17
+
+**Empfehlung:** Abnahme. Keine blockierenden Befunde; H16 behoben: Mit Tastatur-Fokus zeigt jeder Eintrag in Dark und
+Tavern eine innere Outline (gewählt `onPrimary`, sonst `primary`), Maus und Hover ohne Outline. AK1–AK7 nicht regressiert.
+
+Geprüft: Commit `eb776ec` (Nacharbeit H16) auf `development`, Diff vollständig (`AdventureSelect.tsx`, `components.md`,
+`contrast.md`, Plan), alle Frontend-Checks und E2E. AK7 per Selenium in Chrome headless (1600×1000) gegen den Dev-Stack,
+Dark und Tavern, getrennte Sitzungen für Tastatur und Maus. Temporäre Abenteuer 9002–9012 per SQL angelegt
+(Scroll-Fall mit 12 Einträgen) und wieder gelöscht, `active_scene_id` von Abenteuer 1 danach auf `null`.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Abenteuer wird automatisch gewählt | erfüllt | Nach `localStorage.clear()` → `activeAdventureId: "1"`; E2E grün |
+| AK2 Aktive Szene übersteht Reload | erfüllt | Nach `localStorage.clear()` und Reload übernimmt der Admin Szene 26 aus der API |
+| AK3 Wall und Ground folgen live | erfüllt | `App.tsx` und Screens unverändert, E2E grün |
+| AK4 Abenteuer wechseln | erfüllt | Per Tastatur zu 9002 → `activeSceneId: null`; per Maus zurück zu 1 → `"26"` (beide Themes) |
+| AK5 Speichern schlägt fehl | erfüllt | Speicherpfad unverändert (Diff nur `Option`-Styling) |
+| AK6 Globale Listen-Endpoints entfernt | erfüllt | Kein Backend-Diff seit Runde 3 |
+| AK7 Abenteuer-Auswahl passt zum Design | erfüllt (Chrome, Dark und Tavern) | Siehe unten |
+
+AK7 im Einzelnen (`AdventureSelect.tsx:101-108`):
+- Gewählter Eintrag mit Tastatur-Fokus: Outline `2px` in `onPrimary`, `outline-offset: -2px`, Fläche `primary`.
+- Nicht gewählter Eintrag mit Tastatur-Fokus (9002, 9012): Fläche `background`, Outline `2px` in `primary`, Offset −2px.
+- Hover ohne Outline, auch während ein anderer Eintrag den Tastatur-Fokus hat; reine Maus-Sitzung ohne `:focus-visible`.
+- Nicht abgeschnitten: 9012 am unteren Rand der scrollenden Liste, Outline auf allen vier Seiten vollständig.
+- Kontrast nachgerechnet: `primary` auf `background` 6,10 (Dark) / 4,72 (Tavern), passt zu `contrast.md:46`.
+- Übrige Bedienung (Pfeile, Pos1/Ende, Enter, Klick außerhalb, Ebene) unverändert; Doku `components.md:149` passt zu E7.
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+- **H18 – Messartefakt:** Ein erster Lauf mit sichtbaren Chrome-Fenstern war unzuverlässig (Konkurrenz um OS-Fokus);
+  verbindlich ist der Headless-Lauf.
+- **H19 – Regel-Reihenfolge trägt die Outline:** `&:focus { outline: none }` (Z. 93-95) und `&:focus-visible`
+  (Z. 103-107) haben gleiche Spezifität; die Outline erscheint nur, weil `:focus-visible` später steht.
+- H2–H9, H11–H15 und H17 gelten unverändert; H3 erneut bestätigt (nach E2E `active_scene_id` = 26, zurückgesetzt);
+  H14: Safari nicht geprüft.
+
+**Checks**
+- Frontend: typecheck, lint (0 Fehler, 1 alte Warnung), test:unit 102 grün, build grün
+- E2E: 4 Tests grün
+- Backend: kein Diff, nicht erneut ausgeführt
+- Konventionen: ein Commit `feat(DND-24): show focus outline on all adventure options`, keine KI-Signatur, Branch `development`; Scope eingehalten
