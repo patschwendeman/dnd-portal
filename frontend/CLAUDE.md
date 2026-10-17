@@ -23,7 +23,8 @@ npm run build        # tsc -b && vite build
 npm run typecheck    # tsc -b (nur Typprüfung)
 npm run lint         # ESLint (eslint.config.js)
 npm run test:unit    # vitest (__tests__/unit)
-npm run test:e2e     # jest-cucumber + Selenium/Chrome; braucht laufendes Backend auf :8000 (über den Vite-Proxy)
+npm run test:e2e     # jest-cucumber + Selenium/Chrome; braucht laufendes Backend auf :8000 (über den Vite-Proxy);
+                     # sequenziell (--runInBand), weil alle Specs den einen Spieltisch-Zustand des Servers ändern
 npm run generate:api # API-Typen src/api/schema.d.ts aus ../backend/openapi.json erzeugen (openapi-typescript)
 ```
 

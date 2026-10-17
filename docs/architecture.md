@@ -203,8 +203,9 @@ Datensatz, `size` = NULL) und biegt die Fremdschlüssel um. `0003` legt `adventu
 `global_level` 1, keine aktive Szene) und weist ihm alle Szenen zu; auf einer leeren DB legt sie kein Abenteuer an
 (das macht der Seeder). Die Spieler ergänzt der Seeder, weil `player` danach leer ist. `downgrade` entfernt Tabellen,
 Spalte und Fremdschlüssel, die Szenen bleiben erhalten. `0004` legt `game_table` an und fügt die eine Zeile ein:
-aktives Abenteuer = kleinste Abenteuer-ID (auf einer leeren DB NULL, weil der Seeder erst danach läuft; dann aktiviert
-der Admin das erste Abenteuer), Theme `dark`; `downgrade` entfernt die Tabelle. Bestehende Datenbanken laufen jeweils
+aktives Abenteuer = kleinste Abenteuer-ID (auf einer leeren DB NULL, weil der Seeder erst danach läuft; dann ist kein
+Abenteuer aktiv und Wall und Ground bleiben leer, bis ein Admin geöffnet wird und das erste Abenteuer aktiviert), Theme
+`dark`; `downgrade` entfernt die Tabelle. Bestehende Datenbanken laufen jeweils
 ohne Reset weiter.
 
 **Seed-Daten:** Listen `adventures` (`name`, `description`, `global_level`), `media` (`kind`, `name`, `storage_key`),

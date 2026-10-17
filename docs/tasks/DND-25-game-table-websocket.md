@@ -252,3 +252,62 @@ folgen in DND-27.
 - keine
 
 ## Review
+
+### Runde 1 – 2026-10-18
+
+**Empfehlung:** Nacharbeiten. Ein blockierender Befund (`npm run test:e2e` rot); alle acht AK erfüllt. H1 in derselben
+Runde mit erledigen.
+
+Geprüft: Commit `997246d` auf `development`, Diff vollständig, alle Checks; AK live per Selenium. Prod-Image
+(`docker build --target prod`, nginx) als temporärer Container `dnd-review-ui` auf `:8080` im Netz des Dev-Stacks;
+Admin über `http://localhost:8080`, Wall, Ground, Player und zweiter Admin über `http://192.168.178.104:8080` (anderer
+Origin, eigener `localStorage`). Abenteuer 9002 per SQL angelegt und wieder gelöscht, `dnd-dev-api` einmal gestoppt
+und gestartet. Container und Image entfernt, Dev-DB wieder auf
+`{"active_adventure_id":1,"active_scene_id":null,"theme":"dark"}`, pytest danach 125 grün.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Wall auf anderem Gerät folgt live | erfüllt | Admin auf `localhost:8080`, Wall auf `192.168.178.104:8080/wall`; Szenenwechsel nach 25–52 ms ohne Reload; Medien über `/api/media/...`, Range → 206; `nginx.conf:33-49`, `wsUrl.ts:3-11`. Einschränkung: Prod-Image im Dev-Netz statt `dnd prod` |
+| AK2 Abenteuer wechseln | erfüllt (Code und Tests; live teilweise, siehe H1) | Snapshot mit Abenteuer und Szene in einer Nachricht (`services/game_table.py:12-21`), keine lokale Vorwegnahme; `test_ws.py::test_switching_the_adventure_pushes_its_stored_scene` grün. Live 9002 → 1 korrekt; Gegentest durch H1 verfälscht |
+| AK3 Theme für Spieltisch-Screens | erfüllt | Wall, Ground, Admin-Bar wechseln auf Tavern, Player bleibt; nach Reload bleibt Tavern; zweiter Admin wirkt ebenso |
+| AK4 Neustart und Reload | erfüllt | Nach `docker stop`/`start dnd-dev-api` gleicher Stand; neues Browserprofil auf `/wall` zeigt dieselbe Szene und dasselbe Theme |
+| AK5 Verbindungsabbruch | erfüllt | Admin zeigt sofort „Verbindung zum Server getrennt“, Wall/Ground behalten Bild ohne `role=alert`; Leiste verschwindet ~2,7 s nach Start. 35-s-Fall nur per Unit-Test (`heartbeat.spec.ts`, `gameTableConnection.spec.ts`) |
+| AK6 Speichern schlägt fehl | erfüllt | PATCH per CDP blockiert → Leiste „Änderung konnte nicht gespeichert werden“, Wall unverändert, Kachel nicht aktiv; „Erneut versuchen“ wiederholt den letzten Zugriff; `AdminScreen.tsx` `runSave`/`retrySaving` |
+| AK7 Zwei Admins | erfüllt | Kachel im Admin 2 nach 8–21 ms `data-active="true"`; Einschränkung H1 |
+| AK8 Fremde Herkunft abgewiesen | erfüllt | `Origin: http://evil.example` → HTTP 403 auf `:8000` und über Vite-Proxy `:5173`; ohne Origin / `localhost:5173` / gleicher Host angenommen; `realtime/origin.py:17-31`, `test_ws.py::test_origin_check` |
+
+**Blockierende Befunde**
+- [x] **E2E-Suite rot:** `npm run test:e2e` gegen den Dev-Stack 3/3 Läufe rot (1 failed, 3 passed), `selectSideScene`
+  an „I click the Confirm button“ bzw. „I see the correct wall image“. Ursache: jest führt `selectMainScene.ts` und
+  `selectSideScene.ts` parallel aus; beide schreiben jetzt in denselben Server-Zustand. Gegenprobe: `--runInBand`
+  3/3 grün. Vorschlag: `--runInBand` im Skript `test:e2e` oder `maxWorkers: 1` in der jest-Config, mit Kommentar.
+
+**Hinweise (nicht blockierend)**
+- **H1 – Auto-Auswahl weicht von E3 ab:** Der Effekt mit `selectDefaultAdventureId(adventures, activeAdventureId)` in
+  `AdminScreen.tsx` schreibt auch, wenn das gesetzte Abenteuer nicht in der zuvor geladenen Liste steht. Ein vor dem
+  Anlegen eines neuen Abenteuers geöffneter Admin setzt dessen Auswahl per `PATCH /table` auf 1 zurück (live
+  beobachtet). Widerspricht E5/AK7; betrifft manuellen Prüfschritt 3. Vorschlag: nur bei `activeAdventureId === null`
+  schreiben.
+- **H2 – Dev-Container neu erstellt, DB auf 0004:** erwartet.
+- **H3 – `data-active` an `MapElement`:** kleines Test-Attribut, in Ordnung (E2E wartet auf den Push).
+- **H4 – `active_adventure_id` NULL auf leerer DB:** passt zu E1; Wall/Ground bleiben leer, bis ein Admin geöffnet
+  wurde. Kurze Notiz in `architecture.md` wäre gut.
+- **H5 – Fixtures in `conftest.py`, TRUNCATE um `game_table`:** sinnvoll.
+- **H6 – `getAdventure`:** in `src/` ungenutzt, nur noch in `__tests__/unit/apiErrors.spec.ts:72`; toter Code.
+- **H7 – `frontend/README.md`, `DESIGN.md`:** Korrektur gehört zum Scope Doku.
+- **H8 – `connected=true` beim ersten Versuch:** passt zu E6 (`connection.ts:79-91`).
+- **H9 – `isDarkTheme` auf allen Routen:** `App.tsx:21-23` schreibt ihn auch auf `/admin`, `/wall`; harmlos, sauberer
+  wäre eine eigene Player-Komponente unter `/`.
+- **H10 – E2E verändert den geteilten Zustand:** alle offenen Dev-Fenster sehen die E2E-Szenen; steht in
+  `known-issues.md`.
+- **H11 – Kein eigener Plan-Commit:** wie bei DND-23/24.
+- **H12 – Lint-Warnung `alt` in `WallScreen.tsx:194`:** bestand vorher.
+- **Konventionen:** Commit-Schema, Body, keine KI-Signatur, ein Commit, Branch `development` – passt. Subtasks
+  abgehakt und belegt, nichts außerhalb des Scopes.
+
+**Checks**
+- Backend: `ruff check`, `ruff format --check`, `mypy app` grün; `alembic check` ohne Abweichung; `pytest` 125
+  passed; `openapi.json` aktuell.
+- Frontend: `typecheck` grün, `schema.d.ts` aktuell; `lint` 0 Fehler, 1 bekannte Warnung; `test:unit` 129 passed;
+  `build`, `docker build --target prod`, `nginx -t` grün.
+- E2E: `npm run test:e2e` **rot** (1 von 4); mit `--runInBand` 4/4 grün.

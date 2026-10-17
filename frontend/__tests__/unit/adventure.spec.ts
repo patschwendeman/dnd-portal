@@ -9,20 +9,20 @@ const adventures: AdventureSummary[] = [
 ]
 
 describe('selectDefaultAdventureId', () => {
-  it('keeps a stored adventure that exists', () => {
+  it('keeps an active adventure that is in the list', () => {
     expect(selectDefaultAdventureId(adventures, 8)).toBe(8)
   })
 
-  it('falls back to the first adventure for an unknown stored ID', () => {
-    expect(selectDefaultAdventureId(adventures, 42)).toBe(3)
+  it('keeps an active adventure that is missing from the loaded list', () => {
+    expect(selectDefaultAdventureId(adventures, 42)).toBe(42)
+    expect(selectDefaultAdventureId([], 3)).toBe(3)
   })
 
-  it('selects the first adventure without a stored ID', () => {
+  it('selects the first adventure without an active adventure', () => {
     expect(selectDefaultAdventureId(adventures, null)).toBe(3)
   })
 
-  it('selects no adventure for an empty list', () => {
+  it('selects no adventure for an empty list without an active adventure', () => {
     expect(selectDefaultAdventureId([], null)).toBeNull()
-    expect(selectDefaultAdventureId([], 3)).toBeNull()
   })
 })
