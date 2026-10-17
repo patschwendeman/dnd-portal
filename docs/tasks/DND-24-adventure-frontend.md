@@ -96,7 +96,9 @@ Abschließend entfallen die globalen Listen-Endpoints im Backend.
     `radius.md`). Gewähltes Abenteuer: Fläche `primary`, Text `onPrimary`. Hover und Tastatur-Fokus: Fläche
     `background`. Gewähltes Abenteuer mit Tastatur-Fokus (`:focus-visible`, Nacharbeit H10): bleibt `primary`, dazu
     Outline `borderWidth.thick` in `onPrimary`, nach innen versetzt (`outline-offset` = −`borderWidth.thick`), damit
-    sie nicht vom Scrollbereich abgeschnitten wird. `role="option"`, `aria-selected`.
+    sie nicht vom Scrollbereich abgeschnitten wird. Nicht gewählter Eintrag mit Tastatur-Fokus (Nacharbeit H16):
+    Fläche `background` wie bisher, dazu dieselbe innere Outline in `primary`; Hover bleibt ohne Outline.
+    `role="option"`, `aria-selected`.
   - **Ebene:** neuer Token `layer.popover` (zwischen `controls` und `dialog`), damit die Liste über dem Admin-Inhalt liegt.
   - **Bedienung:** Klick auf den Button öffnet/schließt. Tastatur am Button: Enter, Leertaste, Pfeil runter/hoch öffnen
     (Fokus auf dem gewählten Eintrag). In der Liste: Pfeile, Pos1/Ende bewegen; Enter/Leertaste wählen und schließen;
@@ -165,6 +167,12 @@ Abschließend entfallen die globalen Listen-Endpoints im Backend.
       Tastatur-Fokus“); Maus-Klick zeigt keine Outline (`:focus-visible`).
 - [x] Doku: Baustein „Auswahlliste“ in `frontend/docs/design/components.md` ergänzen; Kontrast `onPrimary` auf `primary`
       ist über die Textfarbe bereits abgedeckt, in `contrast.md` nur ergänzen, falls dort Fokus-Indikatoren gelistet sind.
+
+### Nacharbeit: Fokus-Kontrast nicht gewählter Einträge (H16 aus Review-Runde 4)
+- [x] `AdventureSelect.tsx`: Outline bei `:focus-visible` auch auf nicht gewählten Einträgen gemäß E7 (in `primary`,
+      nach innen versetzt); Maus und Hover ohne Outline.
+- [x] Doku: Baustein „Auswahlliste“ in `frontend/docs/design/components.md` und Zeile in
+      `frontend/docs/design/contrast.md` (`primary` auf `background`, Ziel 3,0) ergänzen.
 
 ## Akzeptanzkriterien
 
@@ -365,3 +373,51 @@ AK7 im Einzelnen:
 - Frontend: typecheck, lint (0 Fehler, 1 alte Warnung), test:unit 102 grün (neu `listbox.spec.ts`), build grün
 - E2E: 4 Tests grün
 - Konventionen: ein Commit `feat(DND-24): replace adventure select with custom listbox`, keine KI-Signatur, Branch `development`; Scope eingehalten
+
+### Runde 4 – 2026-10-17
+
+**Empfehlung:** Abnahme. Keine blockierenden Befunde; H10 behoben, Fokus auf dem gewählten Eintrag in Dark und Tavern
+sichtbar. AK1–AK7 nicht regressiert. H16 vor Abnahme durch den User bewerten.
+
+Geprüft: Commit `d7faaa8` (Nacharbeit H10) auf `development`, Diff vollständig (`AdventureSelect.tsx`, `components.md`,
+`contrast.md`, Plan), alle Frontend-Checks und E2E. AK7 per Selenium in Chrome gegen den Dev-Stack (Dark und Tavern,
+1600×1000). Temporäre Abenteuer 9002–9012 per SQL angelegt (Scroll-Fall mit 12 Einträgen) und wieder gelöscht,
+`active_scene_id` von Abenteuer 1 danach auf `null` zurückgesetzt.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Abenteuer wird automatisch gewählt | erfüllt | Nach `localStorage.clear()` → `activeAdventureId: "1"`; E2E grün; `AdminScreen.tsx` unverändert |
+| AK2 Aktive Szene übersteht Reload | erfüllt | Nach Wechsel zu 9002 und zurück übernimmt der Admin Szene 8 aus der API |
+| AK3 Wall und Ground folgen live | erfüllt | `App.tsx` und Screens unverändert, E2E grün |
+| AK4 Abenteuer wechseln | erfüllt | Per Tastatur zu 9002 → `activeSceneId: null`; zurück zu 1 → `"8"` (beide Themes) |
+| AK5 Speichern schlägt fehl | erfüllt | Speicherpfad unverändert |
+| AK6 Globale Listen-Endpoints entfernt | erfüllt | Kein Backend-Diff seit Runde 3 |
+| AK7 Abenteuer-Auswahl passt zum Design | erfüllt (Chrome, Dark und Tavern) | Siehe unten; nicht gewählte Einträge: H16 |
+
+AK7 im Einzelnen:
+- Gewählter Eintrag mit Tastatur-Fokus (Pfeil, Pos1, Ende): `:focus-visible`, Outline `2px` in `onPrimary`,
+  `outline-offset: -2px`, Fläche bleibt `primary` (`AdventureSelect.tsx:101-108`); klarer innerer Ring im Screenshot.
+- Nicht gewählter Eintrag mit Tastatur-Fokus: Fläche `background`, keine Outline; erkennbar, aber kontrastarm (H16).
+- Reine Maus-Sitzung: keine Outline, auch wenn der gewählte Eintrag unten in der gescrollten Liste steht.
+- Nicht abgeschnitten: gewählter Eintrag am unteren Rand der scrollenden Liste, Outline auf allen vier Seiten vollständig.
+- `contrast.md`: `onPrimary` auf `primary` nachgerechnet 6,10 (Dark) / 4,72 (Tavern), Ziel 3,0 passt zu DESIGN.md 2.6.
+- Position, Fläche, Rand, Ebene und übrige Bedienung unverändert wie in Runde 3.
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+- **H16 – Fokus auf nicht gewählten Einträgen kontrastarm:** Nur Flächenwechsel `secondary` → `background`
+  (1,09:1 Dark, 1,42:1 Tavern), unter „Bedienelemente und Grafik: 3:1“ (DESIGN.md 2.6); Hover und Fokus sehen gleich aus.
+  So in E7 festgelegt, daher AK7 erfüllt. Möglicher Folgeschritt: Outline bei `:focus-visible` auch dort, in `primary`
+  (5,6 / 3,3 auf `secondary`).
+- **H17 – Outline beim Öffnen per Maus nach vorheriger Tastaturbedienung:** Chrome-Heuristik für per Script
+  verschobenen Fokus; in reiner Maus-Sitzung keine Outline. Unkritisch.
+- H2–H9 und H11–H15 gelten unverändert; H3 erneut bestätigt (nach E2E `active_scene_id` = 8, zurückgesetzt); H14:
+  Safari nicht geprüft.
+
+**Checks**
+- Frontend: typecheck, lint (0 Fehler, 1 alte Warnung), test:unit 102 grün, build grün
+- E2E: 4 Tests grün
+- Backend: kein Diff, nicht erneut ausgeführt
+- Konventionen: ein Commit `feat(DND-24): show focus on selected adventure option`, keine KI-Signatur, Branch `development`; Scope eingehalten

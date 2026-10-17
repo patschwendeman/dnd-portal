@@ -98,14 +98,13 @@ const Option = styled.div<{ $isSelected: boolean }>`
         background-color: ${(props) => (props.$isSelected ? props.theme.colors.primary : props.theme.colors.background)};
     }
 
-    /* The selected entry keeps its primary fill, so keyboard focus needs an outline there. Inset, because the
-       scrolling list would clip an outer outline. */
-    ${(props) => props.$isSelected && `
-        &:focus-visible {
-            outline: ${props.theme.borderWidth.thick} solid ${props.theme.colors.onPrimary};
-            outline-offset: -${props.theme.borderWidth.thick};
-        }
-    `}
+    /* Keyboard focus shows an outline on every entry: the background fill alone is too faint, and the selected
+       entry keeps its primary fill. Inset, because the scrolling list would clip an outer outline. */
+    &:focus-visible {
+        outline: ${(props) => props.theme.borderWidth.thick} solid
+            ${(props) => (props.$isSelected ? props.theme.colors.onPrimary : props.theme.colors.primary)};
+        outline-offset: -${(props) => props.theme.borderWidth.thick};
+    }
 `
 
 interface AdventureSelectProps {

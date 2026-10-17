@@ -43,6 +43,7 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `onPrimary` auf `primary` | aktive Buttons (auch in der Steuerleiste von Wall und Ground) und Navigation, Confirm (14px) | 4,5 | 6,1 | 4,7 | ✓ beide |
 | `onPrimary` auf `primary` | Fokus-Outline des gewählten Eintrags der Auswahlliste | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `background` | Links in den Notizen (16px) | 4,5 | 6,1 | 4,7 | ✓ beide |
+| `primary` auf `background` | Fokus-Outline nicht gewählter Einträge der Auswahlliste | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `secondary` | aktive Kachel im Admin (Outline) | 3,0 | 5,6 | 3,3 | ✓ beide |
 | `primary` auf `background` | aktive Kachel auf der Wall (Outline) | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `border` auf `background` | Rand der Notizseiten | 3,0 | **1,5** | 4,3 | bewusst ✗ Dark |
