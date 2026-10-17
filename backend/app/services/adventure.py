@@ -21,25 +21,18 @@ def get_adventure(db: Session, adventure_id: int) -> Adventure | None:
 
 
 def get_scenes(db: Session, adventure_id: int) -> list[Scene] | None:
-    """Scenes of the adventure; `None` if the adventure does not exist."""
     if not adventure_crud.adventure_exists(db, adventure_id):
         return None
     return scene_crud.read_scenes(db, adventure_id)
 
 
 def get_maps(db: Session, adventure_id: int, map_type: MapType) -> list[MapEntry] | None:
-    """Map tiles of the adventure; `None` if the adventure does not exist."""
     if not adventure_crud.adventure_exists(db, adventure_id):
         return None
     return map_service.get_maps(db, map_type, adventure_id)
 
 
 def update_adventure(db: Session, adventure_id: int, update: AdventureUpdate) -> Adventure | None:
-    """Changes only the fields set in `update`; `None` if the adventure does not exist.
-
-    Raises SceneNotInAdventureError (nothing is changed) if `active_scene_id` is not a scene of this adventure;
-    `null` clears the active scene.
-    """
     adventure = adventure_crud.read_adventure(db, adventure_id)
     if adventure is None:
         return None

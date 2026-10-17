@@ -11,7 +11,6 @@ def read_adventures(db: Session) -> list[Adventure]:
 
 
 def read_adventure(db: Session, adventure_id: int) -> Adventure | None:
-    """Adventure with its players (ordered by ID, see Adventure.players) and their avatars."""
     statement = (
         select(Adventure)
         .options(selectinload(Adventure.players).joinedload(Player.avatar))

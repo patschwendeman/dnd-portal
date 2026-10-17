@@ -9,7 +9,6 @@ MapType = Literal["main", "side"]
 
 
 def get_maps(db: Session, map_type: MapType, adventure_id: int | None = None) -> list[MapEntry]:
-    """Map tiles of all adventures, or only of one."""
     if map_type not in ("main", "side"):
         raise ValueError("Maptype must be either 'main' or 'side'")
 

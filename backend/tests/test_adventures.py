@@ -163,7 +163,6 @@ def test_scenes_are_filtered_by_adventure(
         other_adventure["side_scene_id"],
     ]
     assert other.json()[0]["ground_image"]["source"] == "/media/adventure-test/ground_main.jpg"
-    # The global list still contains all scenes.
     assert len(client.get("/scenes").json()) == len(expected_scene_details) + 2
 
 
@@ -247,7 +246,6 @@ def test_patch_rejects_scene_of_other_adventure(
     assert response.status_code == 422
     assert response.json() == SCENE_NOT_IN_ADVENTURE
     assert client.get("/adventures/1").json() == before
-    # The scene is valid for its own adventure.
     own = client.patch(
         f"/adventures/{other_adventure['id']}", json={"active_scene_id": other_adventure["main_scene_id"]}
     )
