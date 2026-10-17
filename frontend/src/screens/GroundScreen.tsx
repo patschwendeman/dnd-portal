@@ -77,6 +77,13 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
     useEffect(() => {
         let stale = false
 
+        // Without an active scene the ground shows only the background
+        if (activeSceneId === null) {
+            setMediaSRC('')
+            setMediaType(null)
+            return
+        }
+
         const handleGroundScreen = (activeScene: SceneDetail) => {
             const src = mediaUrl(activeScene.ground_image.source)
             setMediaSRC(src)

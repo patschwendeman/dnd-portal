@@ -5,9 +5,9 @@
  ┌──────────┐  ┌──────────┐  ┌──────────┐                            ┌──────────┐
  │ /admin   │  │ /wall    │  │ /ground  │                            │ /        │ × n
  └────┬─────┘  └────┬─────┘  └────┬─────┘                            └──────────┘
-      │  localStorage + "storage"-Event (activeSceneId, isDarkTheme)                (keine Anbindung)
+      │  localStorage + "storage"-Event (activeAdventureId, activeSceneId, isDarkTheme)  (keine Anbindung)
       └─────────────┴─────────────┘
-                    │ HTTP GET (axios, http://localhost:8000)
+                    │ HTTP GET, PATCH aktive Szene (axios, http://localhost:8000)
             ┌───────▼────────┐         ┌──────────────┐
             │ FastAPI        │────────▶│ PostgreSQL   │
             │ backend :8000  │         │ :5432        │
@@ -20,8 +20,20 @@
 ## Synchronisation
 
 - Es gibt **keine** WebSockets, SSE oder Polling.
-- Der Admin setzt `activeSceneId`; `App.tsx` schreibt es in `localStorage`. Andere Fenster desselben Browsers erhalten
-  das `storage`-Event, aktualisieren ihren Context und laden die Szene neu vom Backend.
+- `App.tsx` hält `activeAdventureId` und `activeSceneId` (beide `number | null`) und schreibt sie in `localStorage`
+  (`null` entfernt den Schlüssel; fehlender oder ungültiger Wert = `null`, kein Fallback auf Szene 1). Andere Fenster
+  desselben Browsers erhalten das `storage`-Event, aktualisieren ihren Context und laden neu vom Backend: Wall die
+  Kampfszenen des Abenteuers und die Szene, Ground die Szene. Ohne aktive Szene zeigen Wall und Ground nur die
+  Hintergrundfarbe und stellen keinen Request.
+- Abenteuer: Der Admin lädt `GET /adventures` und behält ein gespeichertes `activeAdventureId`, sofern es existiert,
+  sonst wählt er das erste der Liste (leere Liste: kein Abenteuer, keine Szenen). Die Auswahl im Dropdown der Top-Bar
+  setzt zuerst `activeSceneId` auf `null`, dann `activeAdventureId`.
+- Aktive Szene persistent: Beim Start und nach jedem Abenteuerwechsel übernimmt der Admin `active_scene_id` aus
+  `GET /adventures/{id}` (einmal je Auswahl, ein Retry nach Ladefehler überschreibt sie nicht). Bestätigt der Spielleiter
+  eine Szene, wird sie sofort lokal aktiv; parallel speichert `PATCH /adventures/{id}` `{"active_scene_id": <id>}`.
+  Schlägt das fehl, zeigt der Admin die Hinweisleiste „Aktive Szene konnte nicht gespeichert werden“, „Erneut
+  versuchen“ wiederholt das Speichern (keine automatischen Wiederholungen). Wall und Ground fragen die aktive Szene nie
+  bei der API ab, sie folgen nur dem `localStorage`.
 - Funktioniert nur für Fenster **desselben Browser-Profils auf demselben Rechner und Origin** – passend zum Setup
   „ein Rechner, mehrere Monitore“. Player-Screens auf Smartphones sind nicht angebunden.
 
@@ -48,17 +60,14 @@
 | `/adventures/{adventure_id}` | `AdventureDetail` inkl. Spieler (200) bzw. 404 `{"detail": "Adventure not found"}` |
 | `PATCH /adventures/{adventure_id}` | Body `AdventureUpdate`, Antwort `AdventureDetail` (200); 404 wie oben; 422 `{"detail": "Scene does not belong to adventure"}`, wenn `active_scene_id` nicht existiert oder zu einem anderen Abenteuer gehört (nichts wird geändert), 422 im FastAPI-Standardformat bei `global_level` außerhalb 1–20 |
 | `/adventures/{adventure_id}/scenes` | `list[SceneDetail]`: Szenen des Abenteuers nach ID (200, ggf. `[]`); 404 wie oben |
-| `/adventures/{adventure_id}/maps/main` | `list[MapEntry]` der Kampfszenen des Abenteuers (wie `/maps/main`); 404 wie oben |
-| `/adventures/{adventure_id}/maps/side` | `list[MapEntry]` der Nicht-Kampfszenen des Abenteuers (wie `/maps/side`); 404 wie oben |
-| `/scenes` | `list[SceneDetail]`: alle Szenen aller Abenteuer nach ID (200, ggf. `[]`) |
+| `/adventures/{adventure_id}/maps/main` | `list[MapEntry]`: `{id: scene.id, source: ground_image.source}` je Kampfszene des Abenteuers (200, ggf. `[]`); 404 wie oben |
+| `/adventures/{adventure_id}/maps/side` | `list[MapEntry]`: `{id: scene.id, source: wall_image.source}` je Nicht-Kampfszene des Abenteuers (200, ggf. `[]`); 404 wie oben |
 | `/scenes/{scene_id}` | `SceneDetail` (200) bzw. 404 `{"detail": "Scene not found"}` |
-| `/maps/main` | `list[MapEntry]`: `{id: scene.id, source: ground_image.source}` je Kampfszene (200, ggf. `[]`) |
-| `/maps/side` | `list[MapEntry]`: `{id: scene.id, source: wall_image.source}` je Nicht-Kampfszene (200, ggf. `[]`) |
 | `/media/{storage_key}` | Mediendatei aus dem Medienordner (`StaticFiles`, nicht in OpenAPI): 200 bzw. 206 bei `Range`-Header (Audio-Seek), 404 bei fehlender Datei oder Pfad außerhalb des Ordners |
 
-`/scenes` und `/maps/*` gelten global über alle Abenteuer; das Frontend nutzt bisher nur sie (die Umstellung auf die
-Pfade je Abenteuer folgt in DND-24). `/scenes/{scene_id}` bleibt der Einstieg für Wall und Ground, weil die Szenen-ID
-global eindeutig ist.
+Globale Listen (`GET /scenes`, `GET /maps/main|side`) gibt es seit DND-24 nicht mehr: Szenen und Karten gibt es nur je
+Abenteuer. `/scenes/{scene_id}` bleibt der Einstieg für Wall, Ground und die Karte „Aktive Szene“ im Admin, weil die
+Szenen-ID global eindeutig ist.
 
 Kanonische Pfade sind ohne Slash am Ende (mit Slash antwortet FastAPI mit 307-Redirect). Fehler im Default-Format
 `{"detail": "..."}`.
@@ -161,8 +170,11 @@ Datensatz trotzdem an (`size` = NULL).
 
 - React 18, Vite 5, TypeScript 5 (strict), react-router-dom 6, styled-components 6 (Haupt-Styling, zwei Themes),
   MUI nur für `Box`/`Slider`, axios, react-markdown, react-svg.
-- State: React-State + ein Context (`ActiveSceneContext`) + `localStorage`. Kein Store-Framework. Die aktive Kachel in
-  den Kartenübersichten ergibt sich aus `activeSceneId` (Kachel-ID = Szenen-ID, im Frontend `Map.sceneId`).
+- State: React-State + zwei Contexts (`ActiveAdventureContext`, `ActiveSceneContext`, `src/context/context.ts`) +
+  `localStorage` (siehe [Synchronisation](#synchronisation)). Kein Store-Framework. Die aktive Kachel in den
+  Kartenübersichten ergibt sich aus `activeSceneId` (Kachel-ID = Szenen-ID, im Frontend `Map.sceneId`); ist sie
+  `null`, ist keine Kachel hervorgehoben. Gespeicherte IDs parst `parseStoredId` (`src/utils/storedId.ts`), die Wahl
+  des Default-Abenteuers trifft `selectDefaultAdventureId` (`src/utils/adventure.ts`).
 - Struktur: `src/app` (Routing, globaler State), `src/screens` (Screens), `src/components`, `src/service` (Datenladen je Screen),
   `src/api` (axios-Client, Base-URL aus `VITE_API_URL`, Default `http://localhost:8000/`, Timeout 5000 ms), `src/models`, `src/utils` (Audio/Musik, Filter, Grid-Layout `getGridLayout`,
   Fehlerbehandlung `loadSafely`), `src/hooks` (`useMusicPlayer`), `src/style` (Themes), `src/context`.
@@ -176,7 +188,10 @@ Datensatz trotzdem an (`size` = NULL).
   `src/utils/loadSafely.ts`, aufgebaut auf `loadSafely`): Der Cleanup des Effects markiert die Anfrage als veraltet,
   danach eintreffende Ergebnisse und Fehler werden verworfen. Beim schnellen Szenen- bzw. Tab-Wechsel zählt so nur die
   Antwort zum aktuellen Stand. Die HTTP-Requests selbst werden nicht abgebrochen. Der Retry im Admin Screen erhöht nur
-  einen Zähler (`reloadCount`), von dem beide Lade-Effects abhängen.
+  einen Zähler (`reloadCount`), von dem alle Lade-Effects (Abenteuerliste, Daten des Abenteuers, aktive Szene) abhängen.
+- Fehlerbehandlung beim Speichern: `patchData` (`src/api/apiMethods.ts`) reicht Fehler weiter, `saveData`
+  (`src/api/saveData.ts`) wirft einen `SaveError` mit derselben Aufbereitung wie `loadData` („Saving … failed: backend
+  not reachable“ bzw. „HTTP 422“). Der Admin wertet nur das Ergebnis des jüngsten Speicherns aus.
 - Assets in `public/`: `assets/sounds` (Soundeffekte), `assets/icons`, `story/**` (Markdown-Notizen, deutsch) sowie die
   zwei fest eingebundenen Medien `assets/images/ground_screen/mapOverview.jpg` (Weltkarte im Wall Screen) und
   `assets/music/side/forest/From_Past_To_Present.mp3` (Standardmusik im Admin Screen). Szenenbilder und Musik kommen
@@ -271,7 +286,7 @@ direkt aufgerufene Unterrouten aus (SPA-Fallback); die Dateien aus `public/` (So
 Image, Änderungen daran brauchen einen neuen Build (`--build`). Szenenmedien in `media/` sind per Bind-Mount
 eingebunden und brauchen keinen Build. pgAdmin ist nicht enthalten.
 Dev- und Prod-Stack nicht gleichzeitig betreiben: API (:8000) und DB (:5432) nutzen dieselben Ports.
-Healthchecks: `db` per `pg_isready`, `api` per Python-Einzeiler gegen `http://localhost:8000/scenes` (das Image hat
+Healthchecks: `db` per `pg_isready`, `api` per Python-Einzeiler gegen `http://localhost:8000/adventures` (das Image hat
 kein curl); `api` startet erst bei gesunder DB, `ui` erst bei gesunder API. `docker ps` zeigt `dnd-prod-api (healthy)`.
 
 Frontend-Image: `frontend/Dockerfile` mit Stages `dev` (Vite-Dev-Server, von `compose.dev.yaml` per

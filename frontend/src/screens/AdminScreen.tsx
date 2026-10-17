@@ -1,4 +1,4 @@
-import { useContext, FunctionComponent, ReactElement, useEffect, useState } from 'react'
+import { useContext, FunctionComponent, ReactElement, useEffect, useRef, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import defaultMusic from '../../public/assets/music/side/forest/From_Past_To_Present.mp3'
@@ -11,12 +11,20 @@ import { Label } from '../components/Label'
 import { MapOverview } from '../components/MapOverview'
 import { SideMaps } from '../components/SideMaps'
 import { TopBar } from '../components/TopBar'
-import { ActiveSceneContext } from '../context/context'
+import { ActiveAdventureContext, ActiveSceneContext } from '../context/context'
 import { useMusicPlayer } from '../hooks/useMusicPlayer'
-import { Map, SceneDetail } from '../models/models'
-import { getAdminData, getSceneById, handleDialogue } from '../service/adminScreen'
+import { AdventureSummary, Map, SceneDetail } from '../models/models'
+import {
+    getAdminData,
+    getAdventure,
+    getAdventures,
+    getSceneById,
+    handleDialogue,
+    saveActiveScene,
+} from '../service/adminScreen'
 import { GlobalStyle } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
+import { selectDefaultAdventureId } from '../utils/adventure'
 import { loadLatest } from '../utils/loadSafely'
 import { filterSceneByKey, getMusicTitle } from '../utils/utils'
 
@@ -29,10 +37,11 @@ const LEFT_COLUMN_WIDTH = '200px'
 const RIGHT_COLUMN_WIDTH = '400px'
 
 const LOAD_ERROR_MESSAGE = 'Backend nicht erreichbar'
+const SAVE_ERROR_MESSAGE = 'Aktive Szene konnte nicht gespeichert werden'
 
-const Screen = styled.div<{ $hasLoadError: boolean }>`
+const Screen = styled.div<{ $hasErrorBar: boolean }>`
     display: grid;
-    grid-template-rows: ${(props) => props.theme.size.bar.md} ${(props) => (props.$hasLoadError ? 'auto ' : '')}1fr ${(props) => props.theme.size.bar.lg};
+    grid-template-rows: ${(props) => props.theme.size.bar.md} ${(props) => (props.$hasErrorBar ? 'auto ' : '')}1fr ${(props) => props.theme.size.bar.lg};
     position: fixed;
     inset: 0;
     background-color: ${(props) => props.theme.colors.background};
@@ -123,7 +132,9 @@ interface AdminScreenProps {
 const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): ReactElement => {
     const theme = useTheme()
 
+    const { activeAdventureId, setActiveAdventureId } = useContext(ActiveAdventureContext)
     const { activeSceneId, setActiveSceneId } = useContext(ActiveSceneContext)
+    const [adventures, setAdventures] = useState<AdventureSummary[]>()
     const [scenesDetails, setScenesDetails] = useState<SceneDetail[]>([])
     const [activeScene, setActiveScene] = useState<SceneDetail>()
 
@@ -133,9 +144,23 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
     const [mainmaps, setMainmaps] = useState<Map[]>([])
     const [sidemaps, setSidemaps] = useState<Map[]>([])
 
+    const [adventuresFailed, setAdventuresFailed] = useState<boolean>(false)
     const [adminDataFailed, setAdminDataFailed] = useState<boolean>(false)
     const [activeSceneFailed, setActiveSceneFailed] = useState<boolean>(false)
-    const hasLoadError = adminDataFailed || activeSceneFailed
+    const hasLoadError = adventuresFailed || adminDataFailed || activeSceneFailed
+
+    // The last save that failed, kept so "Erneut versuchen" can repeat it
+    const [failedSave, setFailedSave] = useState<{ adventureId: number, sceneId: number } | null>(null)
+    const latestSave = useRef<number>(0)
+
+    // The adventure whose stored active scene was taken over. It is taken over once per selection, so a retry after
+    // a load error does not overwrite a scene that was selected locally in the meantime.
+    const adoptedAdventureId = useRef<number | null>(null)
+
+    // Scenes are only loaded for an adventure that exists, so a stale ID from localStorage triggers no failing request
+    const loadedAdventureId = adventures?.some((adventure) => adventure.id === activeAdventureId)
+        ? activeAdventureId
+        : null
 
     // Until the active scene is loaded, the default track is the playlist
     const music = useMusicPlayer([defaultMusic])
@@ -143,7 +168,7 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
     // Stable across renders (useCallback in useMusicPlayer), so it does not retrigger the scene effect
     const { setPlaylist: setMusicPlaylist } = music
 
-    // Retry bumps this counter; both load effects depend on it
+    // Retry bumps this counter; all load effects depend on it
     const [reloadCount, setReloadCount] = useState<number>(0)
 
     const retryLoading = () => {
@@ -154,12 +179,46 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
         let stale = false
 
         loadLatest(
-            getAdminData,
-            ([sidemaps, mainmaps, scenesDetails]) => {
+            getAdventures,
+            (adventures) => {
+                setAdventures(adventures)
+                setActiveAdventureId((storedId) => selectDefaultAdventureId(adventures, storedId))
+                setAdventuresFailed(false)
+            },
+            (err) => {
+                console.error('Error fetching adventures:', err)
+                setAdventuresFailed(true)
+            },
+            () => stale
+        )
+
+        return () => {
+            stale = true
+        }
+    }, [reloadCount, setActiveAdventureId])
+
+    useEffect(() => {
+        let stale = false
+
+        if (loadedAdventureId === null) {
+            setMainmaps([])
+            setSidemaps([])
+            setScenesDetails([])
+            setAdminDataFailed(false)
+            return
+        }
+
+        loadLatest(
+            () => Promise.all([getAdventure(loadedAdventureId), getAdminData(loadedAdventureId)]),
+            ([adventure, [sidemaps, mainmaps, scenesDetails]]) => {
                 setMainmaps(mainmaps)
                 setSidemaps(sidemaps)
                 setScenesDetails(scenesDetails)
                 setAdminDataFailed(false)
+                if (adoptedAdventureId.current !== loadedAdventureId) {
+                    adoptedAdventureId.current = loadedAdventureId
+                    setActiveSceneId(adventure.active_scene_id)
+                }
             },
             (err) => {
                 console.error('Error fetching admin data:', err)
@@ -171,10 +230,17 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
         return () => {
             stale = true
         }
-    }, [reloadCount])
+    }, [loadedAdventureId, reloadCount, setActiveSceneId])
 
     useEffect(() => {
         let stale = false
+
+        if (activeSceneId === null) {
+            setActiveScene(undefined)
+            setMusicPlaylist([defaultMusic])
+            setActiveSceneFailed(false)
+            return
+        }
 
         loadLatest(
             () => getSceneById(activeSceneId),
@@ -195,6 +261,36 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
         }
     }, [activeSceneId, reloadCount, setMusicPlaylist])
 
+    // The scene is already active locally; only the latest save may report its result, so an older failure cannot
+    // hide a newer success (or the other way round)
+    const saveScene = (adventureId: number, sceneId: number) => {
+        const request = ++latestSave.current
+        loadLatest(
+            () => saveActiveScene(adventureId, sceneId),
+            () => setFailedSave(null),
+            (err) => {
+                console.error('Error saving active scene:', err)
+                setFailedSave({ adventureId, sceneId })
+            },
+            () => request !== latestSave.current
+        )
+    }
+
+    const retrySaving = () => {
+        if (failedSave) {
+            saveScene(failedSave.adventureId, failedSave.sceneId)
+        }
+    }
+
+    const handleAdventureSelection = (adventureId: number) => {
+        if (adventureId === activeAdventureId) {
+            return
+        }
+        // Cleared first, so Wall and Ground never briefly show a scene of the previous adventure
+        setActiveSceneId(null)
+        setActiveAdventureId(adventureId)
+    }
+
     const handleSceneSelection = (sceneId: number) => {
         const scene = filterSceneByKey('id', sceneId, scenesDetails)
         if (!scene) {
@@ -206,6 +302,9 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
 
     const handleDialogueOption = (option: boolean, sceneOption: SceneDetail | undefined) => {
         handleDialogue(option, sceneOption, setActiveSceneId, setDialogueVisibility)
+        if (option && sceneOption && loadedAdventureId !== null) {
+            saveScene(loadedAdventureId, sceneOption.id)
+        }
     }
 
     return(
@@ -217,9 +316,19 @@ const AdminScreen: FunctionComponent<AdminScreenProps> = ({ toggleTheme }): Reac
                 isVisible={dialogueVisibility}
                 setDialogueVisibility={setDialogueVisibility}
             />
-            <Screen $hasLoadError={hasLoadError}>
-                <TopBar toggleTheme={toggleTheme} />
-                {hasLoadError && <ErrorBar message={LOAD_ERROR_MESSAGE} onRetry={retryLoading} />}
+            <Screen $hasErrorBar={hasLoadError || failedSave !== null}>
+                <TopBar
+                    toggleTheme={toggleTheme}
+                    adventures={adventures ?? []}
+                    activeAdventureId={activeAdventureId}
+                    onSelectAdventure={handleAdventureSelection}
+                />
+                {(hasLoadError || failedSave !== null) && (
+                    <div>
+                        {hasLoadError && <ErrorBar message={LOAD_ERROR_MESSAGE} onRetry={retryLoading} />}
+                        {failedSave !== null && <ErrorBar message={SAVE_ERROR_MESSAGE} onRetry={retrySaving} />}
+                    </div>
+                )}
                 <Main>
                     <DocumentReader />
                     <SidebarRight>

@@ -5,9 +5,9 @@ import { mediaUrl } from '../api/mediaUrl'
 import { Label } from '../components/Label'
 import { MapOverview } from '../components/MapOverview'
 import { CONTROL_BAR_CLEARANCE, ScreenControlBar } from '../components/ScreenControlBar'
-import { ActiveSceneContext } from '../context/context'
+import { ActiveAdventureContext, ActiveSceneContext } from '../context/context'
 import { Map, SceneDetail } from '../models/models'
-import { getWallScreenData } from '../service/WallScreen'
+import { getWallMainmaps, getWallScene } from '../service/WallScreen'
 import { GlobalStyle } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 import { loadLatest } from '../utils/loadSafely'
@@ -92,6 +92,7 @@ const BackgroundImage = styled.img`
 `
 const WallScreen: FunctionComponent = (): ReactElement => {
     const theme = useTheme()
+    const { activeAdventureId } = useContext(ActiveAdventureContext)
     const { activeSceneId } = useContext(ActiveSceneContext)
     const [activeScene, setActiveScene] = useState<SceneDetail>()
     const [mainmaps, setMainmaps] = useState<Map[]>([])
@@ -120,9 +121,17 @@ const WallScreen: FunctionComponent = (): ReactElement => {
     useEffect(() => {
         let stale = false
 
-        const handleWallScreenData = (activeScene: SceneDetail, mainmaps: Map[]) => {
+        // Without an active scene the wall shows only the background, no image and no panel
+        if (activeSceneId === null) {
+            setActiveScene(undefined)
+            setIsActiveMainMap(false)
+            setMainMapsVisibility(false)
+            setWorldMapVisibility(false)
+            return
+        }
+
+        const handleWallScene = (activeScene: SceneDetail) => {
             setActiveScene(activeScene)
-            setMainmaps(mainmaps)
             setWorldMapVisibility(false)
             if(activeScene.main === true) {
                 setIsActiveMainMap(true)
@@ -136,9 +145,9 @@ const WallScreen: FunctionComponent = (): ReactElement => {
 
         // Players see no error: the screen keeps the last loaded scene, the next scene change loads again.
         loadLatest(
-            () => getWallScreenData(activeSceneId),
-            ([activeScene, mainmaps]) => handleWallScreenData(activeScene, mainmaps),
-            (err) => console.error('Error fetching wall data:', err),
+            () => getWallScene(activeSceneId),
+            handleWallScene,
+            (err) => console.error('Error fetching wall scene:', err),
             () => stale
         )
 
@@ -147,10 +156,30 @@ const WallScreen: FunctionComponent = (): ReactElement => {
         }
     }, [activeSceneId])
 
+    useEffect(() => {
+        let stale = false
+
+        if (activeAdventureId === null) {
+            setMainmaps([])
+            return
+        }
+
+        loadLatest(
+            () => getWallMainmaps(activeAdventureId),
+            setMainmaps,
+            (err) => console.error('Error fetching wall main maps:', err),
+            () => stale
+        )
+
+        return () => {
+            stale = true
+        }
+    }, [activeAdventureId])
+
     return(
         <Screen>
             <GlobalStyle />
-            <BackgroundImage data-test-id='wallImg' src={activeScene ? mediaUrl(activeScene.wall_image.source) : undefined} alt='' /> 
+            {activeScene && <BackgroundImage data-test-id='wallImg' src={mediaUrl(activeScene.wall_image.source)} alt='' />}
             <OverlayPanel $isVisible={mainMapsVisibility} $columns={columns} $rows={rows}>
                 <PanelHeader>
                     <PanelTitle>Kampfschauplätze</PanelTitle>

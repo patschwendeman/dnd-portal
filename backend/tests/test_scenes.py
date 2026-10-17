@@ -1,41 +1,25 @@
-"""Tests for /scenes: list and single scene in the `SceneDetail` schema, 404 for unknown IDs."""
+"""Tests for /scenes/{id}: single scene in the `SceneDetail` schema, 404 for unknown IDs, no global list."""
 
 from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
 
-from app.crud import scene as scene_crud
-
 SCENE_FIELDS = {"id", "name", "description", "main", "wall_image", "ground_image", "tracks"}
 MEDIA_FIELDS = {"id", "name", "source"}
 
 
-def test_read_scenes_returns_all_scenes_with_relations_ordered_by_id(
+def test_read_scene_contains_only_schema_fields(
     client: TestClient, expected_scene_details: list[dict[str, Any]]
 ) -> None:
-    response = client.get("/scenes")
+    for expected in expected_scene_details:
+        scene = client.get(f"/scenes/{expected['id']}").json()
 
-    assert response.status_code == 200
-    assert response.json() == expected_scene_details
-
-
-def test_read_scenes_contains_only_schema_fields(client: TestClient) -> None:
-    for scene in client.get("/scenes").json():
         assert set(scene) == SCENE_FIELDS
         assert set(scene["wall_image"]) == MEDIA_FIELDS
         assert set(scene["ground_image"]) == MEDIA_FIELDS
         assert all(set(track) == MEDIA_FIELDS for track in scene["tracks"])
         assert [track["id"] for track in scene["tracks"]] == sorted(track["id"] for track in scene["tracks"])
-
-
-def test_read_scenes_returns_empty_list_without_scenes(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(scene_crud, "read_scenes", lambda _db: [])
-
-    response = client.get("/scenes")
-
-    assert response.status_code == 200
-    assert response.json() == []
 
 
 def test_read_scene_by_id_returns_scene_with_relations(
@@ -75,3 +59,10 @@ def test_removed_details_path_is_rejected_as_invalid_scene_id(client: TestClient
     assert response.status_code == 422
     assert response.json()["detail"][0]["type"] == "int_parsing"
     assert response.json()["detail"][0]["loc"] == ["path", "scene_id"]
+
+
+@pytest.mark.parametrize("path", ["/scenes", "/scenes/", "/maps/main", "/maps/side"])
+def test_removed_global_list_endpoints_do_not_exist(client: TestClient, path: str) -> None:
+    response = client.get(path)
+
+    assert response.status_code in (404, 405)

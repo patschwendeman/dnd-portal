@@ -12,7 +12,7 @@ export class LoadError extends Error {
   }
 }
 
-const describeFailure = (error: unknown): string => {
+export const describeFailure = (error: unknown): string => {
   if (isAxiosError(error)) {
     if (error.response) {
       return `HTTP ${error.response.status}`

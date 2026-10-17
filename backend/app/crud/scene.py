@@ -14,10 +14,8 @@ def _select_scenes_with_relations() -> Select[Scene]:
     )
 
 
-def read_scenes(db: Session, adventure_id: int | None = None) -> list[Scene]:
-    statement = _select_scenes_with_relations()
-    if adventure_id is not None:
-        statement = statement.where(Scene.adventure_id == adventure_id)
+def read_scenes(db: Session, adventure_id: int) -> list[Scene]:
+    statement = _select_scenes_with_relations().where(Scene.adventure_id == adventure_id)
     return list(db.scalars(statement).unique())
 
 
@@ -26,15 +24,13 @@ def read_scene(db: Session, scene_id: int) -> Scene | None:
     return db.scalars(statement).unique().one_or_none()
 
 
-def read_scenes_by_main(db: Session, main: bool, adventure_id: int | None = None) -> list[Scene]:
+def read_scenes_by_main(db: Session, main: bool, adventure_id: int) -> list[Scene]:
     statement = (
         select(Scene)
         .options(joinedload(Scene.wall_image), joinedload(Scene.ground_image))
-        .where(Scene.main == main)
+        .where(Scene.main == main, Scene.adventure_id == adventure_id)
         .order_by(Scene.id)
     )
-    if adventure_id is not None:
-        statement = statement.where(Scene.adventure_id == adventure_id)
     return list(db.scalars(statement))
 
 

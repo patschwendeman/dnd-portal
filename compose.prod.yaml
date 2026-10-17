@@ -41,7 +41,7 @@ services:
     # Checked with Python because python:3.11-slim has no curl. ui and `up --wait` wait for it so that
     # Admin/Wall/Ground do not load before the API is ready.
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/scenes', timeout=3)"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/adventures', timeout=3)"]
       interval: 3s
       timeout: 5s
       retries: 20

@@ -1,0 +1,81 @@
+import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+import { apiClient } from '../../src/api/apiClient'
+import { patchData } from '../../src/api/apiMethods'
+import { SaveError } from '../../src/api/saveData'
+import { saveActiveScene } from '../../src/service/adminScreen'
+
+vi.mock('../../src/api/apiClient', () => ({
+  apiClient: { get: vi.fn(), patch: vi.fn() },
+}))
+
+const patch = vi.mocked(apiClient.patch)
+
+const networkError = () => new AxiosError('Network Error', AxiosError.ERR_NETWORK)
+const timeoutError = () => new AxiosError('timeout of 5000ms exceeded', AxiosError.ECONNABORTED)
+const httpError = (status: number) =>
+  new AxiosError(
+    `Request failed with status code ${status}`,
+    AxiosError.ERR_BAD_RESPONSE,
+    undefined,
+    undefined,
+    { status, statusText: '', data: {}, headers: {}, config: {} as InternalAxiosRequestConfig } as AxiosResponse
+  )
+
+const failure = (promise: Promise<unknown>) => promise.then(() => undefined, (err: Error) => err)
+
+beforeEach(() => {
+  patch.mockReset()
+})
+
+describe('patchData', () => {
+  it('sends the body to the path and resolves with the response data', async () => {
+    patch.mockResolvedValue({ data: { id: 1 } })
+    await expect(patchData('adventures/1', { a: 1 })).resolves.toEqual({ id: 1 })
+    expect(patch).toHaveBeenCalledWith('adventures/1', { a: 1 })
+  })
+
+  it('rejects on a network error', async () => {
+    patch.mockRejectedValue(networkError())
+    await expect(patchData('adventures/1', {})).rejects.toBeInstanceOf(Error)
+  })
+})
+
+describe('saveActiveScene', () => {
+  it('patches the active scene of the adventure', async () => {
+    // Request and response follow the API contract, whose fields are snake_case
+    // eslint-disable-next-line camelcase
+    const body = { active_scene_id: 5 }
+    patch.mockResolvedValue({ data: { id: 2, ...body } })
+    await expect(saveActiveScene(2, 5)).resolves.toEqual({ id: 2, ...body })
+    expect(patch).toHaveBeenCalledWith('adventures/2', body)
+  })
+
+  it('reports an unreachable backend as SaveError', async () => {
+    patch.mockRejectedValue(networkError())
+    const error = await failure(saveActiveScene(1, 5))
+    expect(error).toBeInstanceOf(SaveError)
+    expect(error?.message).toMatch(/^Saving active scene of adventure 1 failed: backend not reachable$/)
+  })
+
+  it('reports a timeout', async () => {
+    patch.mockRejectedValue(timeoutError())
+    const error = await failure(saveActiveScene(1, 5))
+    expect(error?.message).toMatch(/timeout/i)
+  })
+
+  it.each([422, 404, 500])('reports HTTP %i with its status', async (status) => {
+    patch.mockRejectedValue(httpError(status))
+    const error = await failure(saveActiveScene(1, 5))
+    expect(error).toBeInstanceOf(SaveError)
+    expect(error?.message).toMatch(new RegExp(`HTTP ${status}`))
+  })
+
+  it('keeps the original error', async () => {
+    const original = httpError(500)
+    patch.mockRejectedValue(original)
+    const error = await failure(saveActiveScene(1, 5))
+    expect((error as SaveError).original).toBe(original)
+  })
+})

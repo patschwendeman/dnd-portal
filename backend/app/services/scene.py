@@ -4,9 +4,5 @@ from app.crud import scene as scene_crud
 from app.models import Scene
 
 
-def get_scenes(db: Session) -> list[Scene]:
-    return scene_crud.read_scenes(db)
-
-
 def get_scene(db: Session, scene_id: int) -> Scene | None:
     return scene_crud.read_scene(db, scene_id)

@@ -12,7 +12,7 @@ import { textStyle } from '../style/tokens'
 interface DialogueProps {
   isVisible: boolean;
   sceneOption: SceneDetail | undefined;
-  handleDialogueOption: (option: boolean, sceneOption: SceneDetail | undefined, setActiveSceneId: React.Dispatch<React.SetStateAction<number>>, setDialogueVisibility: React.Dispatch<React.SetStateAction<boolean>>) => void;
+  handleDialogueOption: (option: boolean, sceneOption: SceneDetail | undefined, setActiveSceneId: React.Dispatch<React.SetStateAction<number | null>>, setDialogueVisibility: React.Dispatch<React.SetStateAction<boolean>>) => void;
   setDialogueVisibility: React.Dispatch<React.SetStateAction<boolean>>;
 }
 

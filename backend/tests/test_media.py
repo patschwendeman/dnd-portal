@@ -75,7 +75,7 @@ def test_path_traversal_out_of_the_media_folder_is_rejected(client: TestClient, 
 def test_scene_sources_point_to_media_paths(client: TestClient, seed: dict[str, Any]) -> None:
     storage_keys = {item["storage_key"] for item in seed["media"]}
 
-    for scene in client.get("/scenes").json():
+    for scene in client.get("/adventures/1/scenes").json():
         for item in (scene["wall_image"], scene["ground_image"], *scene["tracks"]):
             assert item["source"].startswith("/media/")
             assert item["source"].removeprefix("/media/") in storage_keys
@@ -85,7 +85,7 @@ def test_scene_sources_point_to_media_paths(client: TestClient, seed: dict[str, 
 def test_map_sources_point_to_media_paths(client: TestClient, seed: dict[str, Any], maptype: str) -> None:
     storage_keys = {item["storage_key"] for item in seed["media"]}
 
-    for entry in client.get(f"/maps/{maptype}").json():
+    for entry in client.get(f"/adventures/1/maps/{maptype}").json():
         assert entry["source"].removeprefix("/media/") in storage_keys
         assert entry["source"].startswith("/media/")
 

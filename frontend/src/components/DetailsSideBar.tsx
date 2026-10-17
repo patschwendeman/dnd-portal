@@ -67,8 +67,14 @@ const DetailsSideBar: FunctionComponent<DetailsSideBarProps> = ({ activeScene })
         <Details>
             <DetailHeader>
                 <Label>Aktive Szene</Label>
-                <SceneName>{activeScene?.name}</SceneName>
-                <SceneDescription>{activeScene?.description}</SceneDescription>
+                {activeScene ? (
+                    <>
+                        <SceneName>{activeScene.name}</SceneName>
+                        <SceneDescription>{activeScene.description}</SceneDescription>
+                    </>
+                ) : (
+                    <SceneDescription data-test-id='no-active-scene'>Keine Szene aktiv</SceneDescription>
+                )}
             </DetailHeader>
             <DetailRows>
                 <DetailContent>

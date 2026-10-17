@@ -24,22 +24,31 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 ### Ist
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Top-Bar, Hauptbereich, Bottom-Bar. Im Hauptbereich
   links die Notizen-Navigation, in der Mitte die Notizen, rechts die Karten „Aktive Szene“ und „Kampfszenen“.
-- **Szenenauswahl:** Karte „Kampfszenen“ mit Anzahl und quadratisch angeordnetem Kachelraster aller Kampfszenen,
-  Bottom-Bar mittig mit den Nicht-Kampfszenen („Szenen“). Die aktive Kachel ist hervorgehoben. Klick öffnet einen
+- **Abenteuer-Auswahl:** Links in der Top-Bar ein Dropdown mit allen Abenteuern. Ohne gespeichertes oder bei einem
+  unbekannten Abenteuer wird automatisch das erste gewählt (mit nur einem Abenteuer also ohne Zutun); ohne Abenteuer ist
+  das Dropdown leer und deaktiviert, es werden keine Szenen geladen. Gezeigt werden nur die Szenen des gewählten
+  Abenteuers. Beim Wechsel ist zunächst keine Szene aktiv, dann wird die im Abenteuer gespeicherte übernommen (bzw.
+  bleibt keine aktiv).
+- **Szenenauswahl:** Karte „Kampfszenen“ mit Anzahl und quadratisch angeordnetem Kachelraster aller Kampfszenen des
+  Abenteuers, Bottom-Bar mittig mit den Nicht-Kampfszenen („Szenen“). Die aktive Kachel ist hervorgehoben. Klick öffnet einen
   Bestätigungsdialog „Szene wechseln“ mit Wall-Bild, Name und Beschreibung; „Confirm“ aktiviert die Szene → alle
   Screens wechseln, „Decline“ bricht ab.
-- **Szenen-Details:** Karte „Aktive Szene“ mit Name und Beschreibung; „Enemies“ und „Loot“ sind nur Platzhalter („–“).
+- **Aktive Szene gespeichert:** Die aktivierte Szene wird im Abenteuer gespeichert und beim Öffnen bzw. Neuladen des
+  Admin wieder übernommen – auch nach geleertem `localStorage` oder in einem anderen Browser. Schlägt das Speichern
+  fehl, wechseln Wall und Ground trotzdem, und unter der Top-Bar erscheint die Hinweisleiste „Aktive Szene konnte nicht
+  gespeichert werden“; „Erneut versuchen“ speichert erneut, bei Erfolg verschwindet sie.
+- **Szenen-Details:** Karte „Aktive Szene“ mit Name und Beschreibung, ohne aktive Szene der Hinweis „Keine Szene
+  aktiv“; „Enemies“ und „Loot“ sind nur Platzhalter („–“).
 - **Notizen:** Bereich „Notizen“ mit Tabs Main, Fight, Side, Leveling, Mechaniken (Markdown aus
   `public/story/`); Inhaltsverzeichnis-Links, Bilder öffnen in neuem Tab. Tab „Side“ ist leer (Ordner fehlt).
 - **Musik:** Bottom-Bar links Play/Pause, daneben „Musik“ und der Titel des laufenden Tracks. Spielt zufällige
   Tracks aus der Playlist der aktiven Szene; nach einem Trackende folgt ein anderer Track (bei nur einem derselbe von
   vorne), die Musik stoppt nur durch Pause. Beim Szenenwechsel wechselt sofort der Track – lief die Musik, spielt er
-  direkt weiter, sonst bleibt sie pausiert. Vor dem Laden der ersten Szene läuft ein Standard-Track. Blockiert der
+  direkt weiter, sonst bleibt sie pausiert. Vor dem Laden der ersten Szene und ohne aktive Szene läuft ein Standard-Track. Blockiert der
   Browser das Abspielen (Autoplay-Sperre), bleibt der Button auf Play.
-- **Sounds:** Top-Bar mit Titel „DnD Portal“ und Buttons für Soundeffekte in Gruppen (Heilung/Trank, Buff, Zauber,
-  Debuff, Lock).
+- **Sounds:** Top-Bar mittig mit Buttons für Soundeffekte in Gruppen (Heilung/Trank, Buff, Zauber, Debuff, Lock).
 - Theme-Umschalter (Settings-Icon rechts in der Top-Bar).
-- **Ladefehler:** Lassen sich Szenen nicht laden (Backend nicht erreichbar, Timeout, HTTP-Fehler), erscheint unter der
+- **Ladefehler:** Lassen sich Abenteuer oder Szenen nicht laden (Backend nicht erreichbar, Timeout, HTTP-Fehler), erscheint unter der
   Top-Bar die Hinweisleiste „Backend nicht erreichbar“ mit Button „Erneut versuchen“; bei Erfolg verschwindet sie.
   Keine automatischen Wiederholungen. Kann eine Notizdatei nicht geladen werden, zeigt der Notizbereich „Notizen
   konnten nicht geladen werden“; ein Tab-Wechsel lädt erneut.
@@ -88,10 +97,12 @@ Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets.
 
 ### Ist
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Vollbild-Hintergrund = Wall-Bild der aktiven Szene,
-  unverzerrt und randlos.
+  unverzerrt und randlos. Ohne aktive Szene nur die Hintergrundfarbe des Themes, ohne Bild und ohne Panel; die
+  Steuerleiste funktioniert weiter.
 - Overlay-Panel oben mittig, umschaltbar über eine Steuerleiste, die beim Hover am unteren Rand erscheint (BATTLE /
   WORLD / OFF):
-  - **BATTLE:** „Kampfschauplätze“ mit Anzahl („25 Räume“) und den Kacheln aller Kampfszenen im quadratischen Raster,
+  - **BATTLE:** „Kampfschauplätze“ mit Anzahl („25 Räume“) und den Kacheln aller Kampfszenen des im Admin gewählten
+    Abenteuers im quadratischen Raster,
     nummeriert mit Raumnummer 1–n; bei Kampfszenen automatisch sichtbar.
   - **WORLD:** „Weltkarte“ mit einer fest eingebundenen Weltkarte (nicht aus dem Backend).
   - **OFF:** Overlay ausgeblendet.
@@ -108,7 +119,8 @@ Die Oberfläche der Welt als **digitales Spielbrett**. Bei einer Kampfszene wird
 optional mit **Grid** als Layout für taktische Kämpfe.
 
 ### Ist
-- Vollbild = Ground-Bild der aktiven Szene; Bild oder Video (läuft automatisch, in Schleife, stumm).
+- Vollbild = Ground-Bild der aktiven Szene; Bild oder Video (läuft automatisch, in Schleife, stumm). Ohne aktive
+  Szene nur die Hintergrundfarbe des Themes.
 - Grid über eine Steuerleiste beim Hover (wie auf der Wall): „Raster“ BLACK / WHITE / OFF und „Zelle“ mit Slider für
   die Zellgröße samt angezeigtem Wert. Standard: kein Grid. Einstellungen gelten für alle Szenen und werden nicht
   gespeichert.

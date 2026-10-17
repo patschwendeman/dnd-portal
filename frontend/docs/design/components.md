@@ -132,7 +132,8 @@ Szenenbild.
 
 | Eigenschaft | Wert |
 |---|---|
-| Aufbau | Grid `OUTER_COLUMN_WIDTH 1fr OUTER_COLUMN_WIDTH`: Titel links, Sound-Gruppen mittig, Settings rechts |
+| Aufbau | Grid `OUTER_COLUMN_WIDTH 1fr OUTER_COLUMN_WIDTH`: Abenteuer-Auswahl links, Sound-Gruppen mittig, Settings rechts |
+| Abenteuer-Auswahl | natives `select` (zugänglicher Name „Abenteuer“), Höhe `size.control.md`, Innenabstand `0 space.3`, `text.md` `bold`, Fläche `secondary`, Text `text.color`, ohne Rahmen, `radius.md`; Fokus als Outline `borderWidth.thick` in `primary` (`:focus-visible`); ohne Abenteuer deaktiviert |
 | Gruppen | mit senkrechter Trennlinie ([1.4](../../DESIGN.md#14-regeln) Rahmen). Abstände nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“ |
 
 ## Bottom-Bar
@@ -147,7 +148,8 @@ Nur im Admin.
 ## Hinweisleiste
 
 Nur im Admin, Komponente `ErrorBar` ([src/components/ErrorBar.tsx](../../src/components/ErrorBar.tsx)). Erscheint nur bei
-einem Ladefehler, sonst ist sie nicht vorhanden (kein reservierter Platz).
+einem Ladefehler oder einem fehlgeschlagenen Speichern der aktiven Szene, sonst ist sie nicht vorhanden (kein
+reservierter Platz). Bei beiden Fehlern stehen zwei Leisten untereinander in derselben Zeile.
 
 | Eigenschaft | Wert |
 |---|---|

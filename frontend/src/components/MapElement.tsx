@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { textStyle } from '../style/tokens'
 
 interface MapElementProps {
-    activeSceneId: number,
+    activeSceneId: number | null,
     src?: string,
     handleSceneSelection?(sceneId: number): void, 
     sceneId: number,

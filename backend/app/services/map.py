@@ -8,7 +8,7 @@ from app.schemas import MapEntry
 MapType = Literal["main", "side"]
 
 
-def get_maps(db: Session, map_type: MapType, adventure_id: int | None = None) -> list[MapEntry]:
+def get_maps(db: Session, map_type: MapType, adventure_id: int) -> list[MapEntry]:
     if map_type not in ("main", "side"):
         raise ValueError("Maptype must be either 'main' or 'side'")
 

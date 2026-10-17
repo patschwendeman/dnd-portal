@@ -23,4 +23,8 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 ## Frontend
 
 - `DocumentReader` sucht in `public/story/noneFight/` (existiert nicht) → Tab „Side“ leer.
+- E2E-Tests (`npm run test:e2e`) aktivieren Szenen im Admin und speichern sie damit per `PATCH` dauerhaft in der
+  Dev-DB (`adventure.active_scene_id`). Danach schlagen die Backend-Tests fehl, die den Seed-Stand (keine aktive Szene)
+  erwarten, bis die aktive Szene wieder geleert wird (z. B. `PATCH /adventures/1` mit `{"active_scene_id": null}`) oder
+  die DB zurückgesetzt ist.
 - `ResourceBarPlayer`: `spellData[].max` weicht von `SpellMax` ab (Stufe II: 4 vs. 3); Spezial startet bei 1 statt 3.

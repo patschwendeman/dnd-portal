@@ -1,9 +1,11 @@
 import { loadData } from '../api/loadData'
-import { Map, MapResponse } from '../models/models'
+import { Map, MapResponse, SceneDetail } from '../models/models'
 
-export const getWallScreenData = async (id: number) => {
-  const sceneDetail = await loadData('scene detail', `scenes/${id}`)
-  const mainmaps = await loadData('main maps', 'maps/main')
-  const toMap = ({ id, source }: MapResponse): Map => ({ sceneId: id, source })
-  return [sceneDetail, mainmaps.map(toMap)]
+export const getWallScene = async (sceneId: number): Promise<SceneDetail> => {
+  return loadData('scene detail', `scenes/${sceneId}`)
+}
+
+export const getWallMainmaps = async (adventureId: number): Promise<Map[]> => {
+  const mainmaps: MapResponse[] = await loadData('main maps', `adventures/${adventureId}/maps/main`)
+  return mainmaps.map(({ id, source }): Map => ({ sceneId: id, source }))
 }

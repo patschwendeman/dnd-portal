@@ -3,9 +3,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { apiClient } from '../../src/api/apiClient'
 import { getData } from '../../src/api/apiMethods'
-import { getAdminData, getSceneById } from '../../src/service/adminScreen'
+import { getAdminData, getAdventure, getAdventures, getSceneById } from '../../src/service/adminScreen'
 import { getGroundScreenData } from '../../src/service/groundScreen'
-import { getWallScreenData } from '../../src/service/WallScreen'
+import { getWallMainmaps, getWallScene } from '../../src/service/WallScreen'
 
 vi.mock('../../src/api/apiClient', () => ({
   apiClient: { get: vi.fn() },
@@ -50,12 +50,29 @@ describe('getData', () => {
   })
 })
 
+describe('service paths', () => {
+  it('loads scenes and maps of the adventure, not the global lists', async () => {
+    get.mockResolvedValue({ data: [] })
+    await getAdminData(7)
+    await getWallMainmaps(7)
+    expect(get.mock.calls.map(([path]) => path)).toEqual([
+      'adventures/7/maps/side',
+      'adventures/7/maps/main',
+      'adventures/7/scenes',
+      'adventures/7/maps/main',
+    ])
+  })
+})
+
 describe('services', () => {
   const services: [string, () => Promise<unknown>][] = [
     ['getGroundScreenData', () => getGroundScreenData(1)],
     ['getSceneById', () => getSceneById(1)],
-    ['getAdminData', () => getAdminData()],
-    ['getWallScreenData', () => getWallScreenData(1)],
+    ['getAdventures', () => getAdventures()],
+    ['getAdventure', () => getAdventure(1)],
+    ['getAdminData', () => getAdminData(1)],
+    ['getWallScene', () => getWallScene(1)],
+    ['getWallMainmaps', () => getWallMainmaps(1)],
   ]
 
   it.each(services)('%s reports an unreachable backend, not "not found"', async (_, load) => {

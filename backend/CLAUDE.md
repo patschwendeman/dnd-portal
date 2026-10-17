@@ -78,16 +78,17 @@ app/models/               SQLAlchemy-Models: adventure.py (Adventure), player.py
 app/schemas/              Pydantic-Schemas des API-Vertrags: adventure.py (AdventureSummary, AdventureDetail, Player,
                           AdventureUpdate), scene.py (SceneDetail, Image, Track), map.py (MapEntry)
 app/crud/adventure.py     Abenteuer lesen (mit Spielern und Avatar), Existenzprüfung, Update
-app/crud/scene.py         Lesezugriffe auf Scene, immer mit Relationen (read_scenes, read_scene, read_scenes_by_main;
-                          optional gefiltert nach adventure_id), read_scene_adventure_id
+app/crud/scene.py         Lesezugriffe auf Scene, immer mit Relationen (read_scenes und read_scenes_by_main je
+                          adventure_id, read_scene), read_scene_adventure_id
 app/services/adventure.py Fachlogik Abenteuer (Liste, Detail, Szenen/Karten je Abenteuer → None bei unbekannter ID,
                           update_adventure inkl. Prüfung der aktiven Szene → SceneNotInAdventureError)
-app/services/scene.py     Fachlogik Szenen (get_scenes, get_scene → Scene | None)
-app/services/map.py       Fachlogik Karten (get_maps → list[MapEntry], MapType; optional je Abenteuer)
+app/services/scene.py     Fachlogik Szenen (get_scene → Scene | None)
+app/services/map.py       Fachlogik Karten (get_maps je Abenteuer → list[MapEntry], MapType)
 app/api/deps.py           SessionDep
-app/api/routes/*.py       je Ressource ein `router` (adventures, scenes, maps) – nur HTTP-Mapping
+app/api/routes/*.py       je Ressource ein `router` (adventures inkl. Szenen/Karten je Abenteuer, scenes nur
+                          Einzelszene) – nur HTTP-Mapping
 tests/conftest.py         Fixtures: TestClient, Seed-Daten und daraus berechnete Erwartungen
-tests/test_*.py           Tests je Router (adventures, scenes, maps), Medien (media), CORS, Config, Migrationsstart
+tests/test_*.py           Tests je Router (adventures inkl. Karten, scenes), Medien (media), CORS, Config, Migrationsstart
                           (migrate), Seeder (seed), Migrationen 0002 und 0003 (migration_0002, migration_0003)
 alembic.ini               Alembic-Konfiguration (ohne DB-URL; Dateinamen <revision>_<slug>.py, ruff als post_write_hook)
 migrations/env.py         URL aus settings.database_url, target_metadata = Base.metadata, compare_type=True
@@ -108,8 +109,9 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
 - Konfiguration nur über `from app.core.config import settings` – kein `os.environ`. Neue Werte als Feld in
   `Settings` und in `.env.example` ergänzen.
 - Antworten sind Pydantic-Schemas in `app/schemas/` (`ConfigDict(from_attributes=True)`). Geben Route/Service
-  ORM-Objekte zurück, steht das Schema als `response_model` im Decorator (`/scenes*`: Services liefern `Scene` bzw.
-  `None`); sonst reicht die Rückgabe-Annotation (`/maps/*` liefert `list[MapEntry]`). Kein `response_model=None`.
+  ORM-Objekte zurück, steht das Schema als `response_model` im Decorator (`/scenes/{id}`, `/adventures*`: Services
+  liefern ORM-Objekte bzw. `None`); sonst reicht die Rückgabe-Annotation (`/adventures/{id}/maps/*` liefert
+  `list[MapEntry]`). Kein `response_model=None`.
   „Nicht gefunden“ meldet der Service mit `None`, die Route wirft `HTTPException(404, "Scene not found")` und
   dokumentiert sie per `responses={404: …}`. Fachliche Ablehnungen meldet der Service per Exception
   (`SceneNotInAdventureError`), die Route übersetzt sie in 422.

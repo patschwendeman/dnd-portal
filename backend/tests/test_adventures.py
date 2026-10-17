@@ -1,4 +1,5 @@
-"""Tests for /adventures: list, detail with players, scenes and maps per adventure, PATCH, 404 for unknown IDs.
+"""Tests for /adventures: list, detail with players, scenes and maps per adventure (incl. trailing-slash redirects),
+PATCH, 404 for unknown IDs.
 
 Tests that change data use the fixture `db`: the API runs on a session in an outer transaction that is rolled back
 afterwards (commits become savepoints), so the shared test DB keeps the seed state. The persistence test commits for
@@ -12,6 +13,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.crud import scene as scene_crud
 from app.models import Adventure, Media, Scene
 
 ADVENTURE_FIELDS = {"id", "name", "description", "global_level", "active_scene_id", "players"}
@@ -19,6 +21,34 @@ PLAYER_FIELDS = {"id", "player_name", "character_name", "race", "character_class
 NOT_FOUND = {"detail": "Adventure not found"}
 SCENE_NOT_IN_ADVENTURE = {"detail": "Scene does not belong to adventure"}
 SUB_PATHS = ["", "/scenes", "/maps/main", "/maps/side"]
+SCENE_FIELDS = {"id", "name", "description", "main", "wall_image", "ground_image", "tracks"}
+MEDIA_FIELDS = {"id", "name", "source"}
+
+
+def media_source(item: dict[str, Any]) -> str:
+    return f"/media/{item['storage_key']}"
+
+
+@pytest.fixture(scope="module")
+def expected_main_maps(seed: dict[str, Any]) -> list[dict[str, Any]]:
+    """Kampfszenen (main: true) with their ground image."""
+    media = seed["media"]
+    return [
+        {"id": scene_id, "source": media_source(media[scene["ground_image_id"] - 1])}
+        for scene_id, scene in enumerate(seed["scenes"], start=1)
+        if scene["main"] is True
+    ]
+
+
+@pytest.fixture(scope="module")
+def expected_side_maps(seed: dict[str, Any]) -> list[dict[str, Any]]:
+    """Nicht-Kampfszenen (main: false) with their wall image."""
+    media = seed["media"]
+    return [
+        {"id": scene_id, "source": media_source(media[scene["wall_image_id"] - 1])}
+        for scene_id, scene in enumerate(seed["scenes"], start=1)
+        if scene["main"] is False
+    ]
 
 
 @pytest.fixture
@@ -136,19 +166,78 @@ def test_unknown_adventure_returns_404(
     assert response.json() == NOT_FOUND
 
 
-def test_scenes_of_adventure_equal_global_scenes_with_one_adventure(client: TestClient) -> None:
+def test_scenes_of_adventure_return_all_seeded_scenes_with_relations(
+    client: TestClient, expected_scene_details: list[dict[str, Any]]
+) -> None:
     response = client.get("/adventures/1/scenes")
 
     assert response.status_code == 200
-    assert response.json() == client.get("/scenes").json()
+    assert response.json() == expected_scene_details
+
+
+def test_scenes_of_adventure_contain_only_schema_fields(client: TestClient) -> None:
+    for scene in client.get("/adventures/1/scenes").json():
+        assert set(scene) == SCENE_FIELDS
+        assert set(scene["wall_image"]) == MEDIA_FIELDS
+        assert set(scene["ground_image"]) == MEDIA_FIELDS
+        assert all(set(track) == MEDIA_FIELDS for track in scene["tracks"])
+
+
+def test_scenes_of_adventure_return_empty_list_without_scenes(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(scene_crud, "read_scenes", lambda _db, _adventure_id: [])
+
+    response = client.get("/adventures/1/scenes")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_main_maps_of_adventure_return_ground_image_per_fight_scene(
+    client: TestClient, expected_main_maps: list[dict[str, Any]]
+) -> None:
+    response = client.get("/adventures/1/maps/main")
+
+    assert response.status_code == 200
+    assert response.json() == expected_main_maps
+
+
+def test_side_maps_of_adventure_return_wall_image_per_non_fight_scene(
+    client: TestClient, expected_side_maps: list[dict[str, Any]]
+) -> None:
+    response = client.get("/adventures/1/maps/side")
+
+    assert response.status_code == 200
+    assert response.json() == expected_side_maps
 
 
 @pytest.mark.parametrize("map_type", ["main", "side"])
-def test_maps_of_adventure_equal_global_maps_with_one_adventure(client: TestClient, map_type: str) -> None:
+def test_maps_trailing_slash_redirects_to_path_without_slash(client: TestClient, map_type: str) -> None:
+    response = client.get(f"/adventures/1/maps/{map_type}/", follow_redirects=False)
+
+    assert response.status_code == 307
+    assert response.headers["location"] == f"http://testserver/adventures/1/maps/{map_type}"
+
+
+@pytest.mark.parametrize("map_type", ["main", "side"])
+def test_maps_trailing_slash_followed_returns_same_maps(client: TestClient, map_type: str) -> None:
+    response = client.get(f"/adventures/1/maps/{map_type}/")
+
+    assert response.status_code == 200
+    assert response.json() == client.get(f"/adventures/1/maps/{map_type}").json()
+
+
+@pytest.mark.parametrize("map_type", ["main", "side"])
+def test_maps_of_adventure_return_empty_list_without_matching_scenes(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch, map_type: str
+) -> None:
+    monkeypatch.setattr(scene_crud, "read_scenes_by_main", lambda _db, _main, _adventure_id: [])
+
     response = client.get(f"/adventures/1/maps/{map_type}")
 
     assert response.status_code == 200
-    assert response.json() == client.get(f"/maps/{map_type}").json()
+    assert response.json() == []
 
 
 def test_scenes_are_filtered_by_adventure(
@@ -163,7 +252,6 @@ def test_scenes_are_filtered_by_adventure(
         other_adventure["side_scene_id"],
     ]
     assert other.json()[0]["ground_image"]["source"] == "/media/adventure-test/ground_main.jpg"
-    assert len(client.get("/scenes").json()) == len(expected_scene_details) + 2
 
 
 def test_maps_are_filtered_by_adventure(client: TestClient, other_adventure: dict[str, int]) -> None:

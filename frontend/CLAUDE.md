@@ -61,18 +61,21 @@ Im Container liegt `node_modules` in einem eigenen Volume; nach Änderungen an `
 ## Struktur & Datenfluss
 
 ```
-src/app/App.tsx      Routing, Theme, globaler State (activeSceneId, isDarkTheme) + localStorage-Sync
-src/context/         ActiveSceneContext
+src/app/App.tsx      Routing, Theme, globaler State (activeAdventureId, activeSceneId, isDarkTheme) + localStorage-Sync
+src/context/         ActiveAdventureContext, ActiveSceneContext (IDs number | null)
 src/screens/         Screens
 src/components/      UI-Bausteine (TopBar, DocumentReader, MapOverview, GridOverlay, ScreenControlBar, ResourceBarPlayer …)
-src/service/         Datenladen je Screen (getAdminData, getWallScreenData, getGroundScreenData …)
-src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData (apiMethods.ts), loadData, mediaUrl (mediaUrl.ts);
-                     schema.d.ts generiert
-src/models/models.ts API-Typen SceneDetail, Image, Track, MapResponse (= MapEntry) aus src/api/schema.d.ts;
+src/service/         Datenladen je Screen (getAdventures, getAdventure, getAdminData, saveActiveScene, getWallScene,
+                     getWallMainmaps, getGroundScreenData …)
+src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData/patchData (apiMethods.ts), loadData, saveData,
+                     mediaUrl (mediaUrl.ts); schema.d.ts generiert
+src/models/models.ts API-Typen AdventureSummary, AdventureDetail, SceneDetail, Image, Track, MapResponse (= MapEntry)
+                     aus src/api/schema.d.ts;
                      Map ist Frontend-Modell (sceneId), Umwandlung aus MapResponse im Service
 src/hooks/           useMusicPlayer (bindet MusicPlayer an den Admin Screen: Track/Play-Zustand, Cleanup)
 src/utils/utils.ts   Zufallstrack (getRandomTrack), Musiktitel, Soundeffekte (playAtmoSounds), filterSceneByKey,
                      getGridLayout
+src/utils/storedId.ts parseStoredId (ID aus localStorage, sonst null); src/utils/adventure.ts selectDefaultAdventureId
 src/utils/musicPlayer.ts  MusicPlayer: Hintergrundmusik ohne React (ein Audio-Element, Playlist, aktueller Track,
                      Trackende → nächster Track); Audio-Fabrik und Zufall injizierbar für vitest
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }),
@@ -82,9 +85,12 @@ public/assets/       sounds, icons; dazu die fest eingebundenen Medien images/gr
 public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mechanics), deutsch
 ```
 
-Datenfluss: Screen → `src/service/*` → `getData()` → Backend. Szenenwechsel: Admin setzt `activeSceneId` über den
-Context → `App.tsx` schreibt `localStorage` → andere Fenster desselben Browsers erhalten das `storage`-Event →
-jeder Screen lädt die Szene per `scenes/{id}` neu. Kein WebSocket/Polling; Player-Screens sind nicht angebunden.
+Datenfluss: Screen → `src/service/*` → `getData()` → Backend. Admin und Wall laden Szenen und Karten nur über
+`adventures/{id}/...` des gewählten Abenteuers (`activeAdventureId`). Szenenwechsel: Admin setzt `activeSceneId` über den
+Context und speichert sie per `PATCH adventures/{id}` → `App.tsx` schreibt `localStorage` → andere Fenster desselben
+Browsers erhalten das `storage`-Event → jeder Screen lädt die Szene per `scenes/{id}` neu (ohne aktive Szene kein
+Request, nur Hintergrund). Beim Start und Abenteuerwechsel übernimmt der Admin die gespeicherte `active_scene_id`.
+Kein WebSocket/Polling; Player-Screens sind nicht angebunden. Details: `../docs/architecture.md#synchronisation`.
 
 ## Konventionen (durch ESLint erzwungen bzw. im Code üblich)
 
@@ -114,7 +120,7 @@ jeder Screen lädt die Szene per `scenes/{id}` neu. Kein WebSocket/Polling; Play
 - Medienpfade (`source`) kommen vom Backend als API-relativer Pfad (`/media/...`) und werden immer über
   `mediaUrl(source)` (`src/api/mediaUrl.ts`, gleiche Basis-URL wie `apiClient`) in eine absolute URL umgewandelt –
   in `WallScreen`, `GroundScreen`, `MapOverview`, `SideMaps`, `Dialogue` und der Playlist im `AdminScreen`.
-- Kacheln (`Map`) tragen die Szenen-ID als `sceneId`: Das Backend liefert in `/maps/*` `id = scene.id`, die Services
+- Kacheln (`Map`) tragen die Szenen-ID als `sceneId`: Das Backend liefert in `adventures/{id}/maps/*` `id = scene.id`, die Services
   mappen es auf `sceneId`. Aktiv ist die Kachel mit `sceneId === activeSceneId`. `MapOverview` rendert jede Anzahl als
   Raster mit `⌈√n⌉` Spalten (`getGridLayout` in `src/utils/utils.ts`, auch Basis der Wall-Overlay-Breite).
 - `DocumentReader` sammelt Markdown per `import.meta.glob` aus `public/story/**` – neue Notizen dort ablegen.

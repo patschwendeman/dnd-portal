@@ -17,7 +17,7 @@ def default_origins() -> None:
 
 
 def test_preflight_from_allowed_origin_is_allowed_without_credentials(client: TestClient) -> None:
-    response = client.options("/scenes", headers={"Origin": ALLOWED_ORIGIN, "Access-Control-Request-Method": "GET"})
+    response = client.options("/adventures", headers={"Origin": ALLOWED_ORIGIN, "Access-Control-Request-Method": "GET"})
 
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == ALLOWED_ORIGIN
@@ -25,7 +25,7 @@ def test_preflight_from_allowed_origin_is_allowed_without_credentials(client: Te
 
 
 def test_get_from_allowed_origin_is_allowed_without_credentials(client: TestClient) -> None:
-    response = client.get("/scenes", headers={"Origin": ALLOWED_ORIGIN})
+    response = client.get("/adventures", headers={"Origin": ALLOWED_ORIGIN})
 
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == ALLOWED_ORIGIN
@@ -33,14 +33,14 @@ def test_get_from_allowed_origin_is_allowed_without_credentials(client: TestClie
 
 
 def test_preflight_from_foreign_origin_is_rejected(client: TestClient) -> None:
-    response = client.options("/scenes", headers={"Origin": FOREIGN_ORIGIN, "Access-Control-Request-Method": "GET"})
+    response = client.options("/adventures", headers={"Origin": FOREIGN_ORIGIN, "Access-Control-Request-Method": "GET"})
 
     assert response.status_code == 400
     assert "access-control-allow-origin" not in response.headers
 
 
 def test_get_from_foreign_origin_has_no_allow_origin_header(client: TestClient) -> None:
-    response = client.get("/scenes", headers={"Origin": FOREIGN_ORIGIN})
+    response = client.get("/adventures", headers={"Origin": FOREIGN_ORIGIN})
 
     assert "access-control-allow-origin" not in response.headers
 
