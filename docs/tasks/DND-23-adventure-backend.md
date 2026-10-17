@@ -1,7 +1,7 @@
 # DND-23: Abenteuer und Spieler im Backend (Datenmodell, Migration, Adventure-API)
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -202,3 +202,29 @@ bestehenden Endpoints. Das spätere Session-Management mit WebSockets baut darau
 - keine
 
 ## Review
+
+### Runde 1 – 2026-10-17
+**Empfehlung:** Abnahme
+
+Geprüft: Commit `010e30d`. Alle Akzeptanzkriterien erfüllt, alle Checks grün. Nicht geprüft: manueller Browser-Test (Teststrategie „Manuell“, Schritt 3).
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | `GET /adventures`, `GET /adventures/1` (4 Spieler, `global_level` 1, `active_scene_id` null); `test_adventures.py` |
+| AK2 | erfüllt | Fixture `other_adventure`; Filter- und 404-Tests; `/adventures/1/scenes` == `/scenes` (29 Szenen) |
+| AK3 | erfüllt | PATCH setzt/löscht `active_scene_id`, bleibt nach Neustart erhalten; `test_patch_persists_active_scene_across_sessions` |
+| AK4 | erfüllt | Fremde/unbekannte Szene und `global_level` 0/21/null → 422, nichts geschrieben; Prüfung vor dem Schreiben (`services/adventure.py`) |
+| AK5 | erfüllt | DB auf `0002` mit Seed → `0003`: 29 Szenen in Abenteuer 1, 4 Spieler ergänzt; `test_migration_0003.py` |
+| AK6 | erfüllt | Frontend nur `schema.d.ts` geändert; `generate:api` ohne Diff, Typecheck und Unit-Tests grün; globale Endpoints unverändert |
+
+**Blockierende Befunde**
+- keine
+
+**Nicht blockierend**
+- `AdventureUpdate.global_level` ohne Default im JSON-Schema (`json_schema_extra`), damit TS-Typ `global_level?: number` wie in E6; explizites `null` → 422 (dokumentiert, getestet).
+- Spielerspalten und `adventure.name` als `String` statt `Text` (Wortlaut E3); in PostgreSQL gleichwertig, passt zu `scene.name`.
+- `test_maps.py`-Monkeypatch-Signatur und `test_seed.py`-TRUNCATE angepasst; nichts abgeschwächt.
+- Plan im Umsetzungs-Commit statt separatem Freigabe-Commit.
+- `docs/architecture.md`, Abschnitt Antwortformat: „Alle Felder sind Pflicht“ gilt nicht für den Request-Body `AdventureUpdate` (zwei Sätze später korrigiert).
+
+**Checks:** ruff check/format, mypy, pytest 81 passed (2×), `alembic check` ohne Drift, Rundlauf down/up, OpenAPI-Export ohne Diff, Frontend `generate:api`/typecheck/test:unit (60/60) grün.
