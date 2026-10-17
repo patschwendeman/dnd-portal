@@ -194,6 +194,7 @@ Die ganze Anwendung läuft lokal in Docker und wird aus dem Root gestartet, am e
 | `dev [--tools]` | Docker sicherstellen, Prod-Stack stoppen, Dev-Stack im Vordergrund starten (`--tools`: mit pgAdmin); Ctrl+C beendet |
 | `prod` | Docker sicherstellen, Dev-Stack stoppen, Prod-Stack im Hintergrund starten (`up -d --build --wait --wait-timeout 180`: wartet, bis DB und API healthy sind und nginx läuft; sonst Fehlermeldung, Exit ≠ 0, keine Tabs), dann `/admin`, `/wall`, `/ground` im Browser öffnen, Smartphone-URL (`http://<IP von en0>:8080/`) ausgeben; `VITE_API_URL` aus der Umgebung wird durchgereicht |
 | `stop` | beide Stacks stoppen (`down` ohne `-v`, DB-Volumes bleiben) |
+| `reset` | nach Rückfrage (`y`) den Dev-Stack stoppen und sein DB-Volume löschen (`down -v`, inkl. Profil `tools`); beim nächsten `dev` entstehen Schema und Seed neu. Der Prod-Stack bleibt unberührt |
 | `logs [service]` | Logs des Prod-Stacks verfolgen |
 | `install` | globalen Befehl `dnd` anlegen: Symlink `dnd` → `<repo>/script.sh` im ersten beschreibbaren Verzeichnis aus `/opt/homebrew/bin`, `/usr/local/bin`, das im `PATH` liegt; ein fremder `dnd` wird nicht überschrieben |
 | `uninstall` | Symlink `dnd` entfernen, nur wenn er auf dieses Skript zeigt |
@@ -202,7 +203,7 @@ Die ganze Anwendung läuft lokal in Docker und wird aus dem Root gestartet, am e
 „Docker sicherstellen“: Antwortet `docker info` nicht, startet das Skript Docker Desktop (`open -a Docker`) und wartet
 bis zu 120 s.
 
-Einmalig `./script.sh install`, danach funktionieren alle Befehle aus jedem Ordner als `dnd prod|dev|stop|logs` (das
+Einmalig `./script.sh install`, danach funktionieren alle Befehle aus jedem Ordner als `dnd prod|dev|stop|reset|logs` (das
 Skript ermittelt sein Verzeichnis über die Symlink-Kette; Hilfe und Ausgaben zeigen den aufgerufenen Namen).
 `./script.sh <befehl>` funktioniert weiterhin ohne Installation.
 

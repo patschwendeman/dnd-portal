@@ -44,6 +44,7 @@ Usage: $PROG <command>
   dev [--tools]    Dev-Stack starten (Vite :5173, API :8000 mit Reload, DB :5432; --tools: pgAdmin :5050)
   prod             Prod-Stack starten (UI :8080, API :8000, DB :5432), auf healthy warten, Admin/Wall/Ground öffnen
   stop             Dev- und Prod-Stack stoppen (ohne Volumes zu löschen)
+  reset            Dev-Stack stoppen und sein DB-Volume löschen (nach Rückfrage; Neuaufbau beim nächsten '$PROG dev')
   logs [service]   Logs des Prod-Stacks verfolgen (db, api, ui)
   install          globalen Befehl '$INSTALL_NAME' anlegen (Symlink in /opt/homebrew/bin bzw. /usr/local/bin)
   uninstall        globalen Befehl '$INSTALL_NAME' entfernen
@@ -120,6 +121,16 @@ cmd_stop() {
   stop_dev
 }
 
+cmd_reset() {
+  read -r -p "Dev-Stack stoppen und das DB-Volume löschen (alle Daten gehen verloren)? [y/N] " answer
+  case "$answer" in
+    y | Y) ;;
+    *) echo "Abgebrochen."; exit 1 ;;
+  esac
+  ensure_docker
+  docker compose -f "$DEV_FILE" --profile tools down -v
+}
+
 cmd_logs() {
   docker compose -f "$PROD_FILE" logs -f "$@"
 }
@@ -150,7 +161,7 @@ cmd_install() {
     fi
     ln -s "$SCRIPT_PATH" "$link"
     echo "Installiert: $link -> $SCRIPT_PATH"
-    echo "Ab jetzt aus jedem Ordner: $INSTALL_NAME prod | dev | stop | logs"
+    echo "Ab jetzt aus jedem Ordner: $INSTALL_NAME prod | dev | stop | reset | logs"
     return
   done
   echo "Fehler: kein beschreibbares Verzeichnis im PATH gefunden ($INSTALL_DIRS)." >&2
@@ -178,6 +189,7 @@ case "${1:-}" in
   dev) shift; [ "$#" -le 1 ] || usage; cmd_dev "$@" ;;
   prod) shift; [ "$#" -eq 0 ] || usage; cmd_prod ;;
   stop) shift; [ "$#" -eq 0 ] || usage; cmd_stop ;;
+  reset) shift; [ "$#" -eq 0 ] || usage; cmd_reset ;;
   logs) shift; cmd_logs "$@" ;;
   install) shift; [ "$#" -eq 0 ] || usage; cmd_install ;;
   uninstall) shift; [ "$#" -eq 0 ] || usage; cmd_uninstall ;;
