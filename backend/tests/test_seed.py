@@ -43,7 +43,7 @@ def db(client: TestClient) -> Iterator[Session]:
     with engine.connect() as connection:
         transaction = connection.begin()
         session = Session(bind=connection, join_transaction_mode="create_savepoint")
-        session.execute(text("TRUNCATE player, adventure, scene_track, scene, media RESTART IDENTITY"))
+        session.execute(text("TRUNCATE game_table, player, adventure, scene_track, scene, media RESTART IDENTITY"))
         try:
             yield session
         finally:

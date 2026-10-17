@@ -1,9 +1,10 @@
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 
 from app.api.deps import SessionDep
 from app.models import Adventure, Scene
+from app.realtime.push import push_state
 from app.schemas import AdventureDetail, AdventureSummary, AdventureUpdate, MapEntry, SceneDetail
 from app.services import adventure as adventure_service
 from app.services.map import MapType
@@ -36,13 +37,17 @@ def read_adventure(adventure_id: int, db: SessionDep) -> Adventure:
 
 
 @router.patch("/{adventure_id}", response_model=AdventureDetail, responses=UPDATE_RESPONSES)
-def update_adventure(adventure_id: int, update: AdventureUpdate, db: SessionDep) -> Adventure:
+def update_adventure(
+    adventure_id: int, update: AdventureUpdate, db: SessionDep, background_tasks: BackgroundTasks
+) -> Adventure:
     try:
         adventure = adventure_service.update_adventure(db, adventure_id, update)
     except adventure_service.SceneNotInAdventureError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     if adventure is None:
         raise _not_found()
+    # Always pushed, also for an adventure that is not active: the snapshot is cheap.
+    background_tasks.add_task(push_state)
     return adventure
 
 

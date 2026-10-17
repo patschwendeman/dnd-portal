@@ -110,6 +110,74 @@
         "title": "AdventureUpdate",
         "type": "object"
       },
+      "GameTableState": {
+        "description": "State of the game table shared by Admin, Wall and Ground; `active_scene_id` belongs to the active adventure.",
+        "properties": {
+          "active_adventure_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Adventure Id"
+          },
+          "active_scene_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Scene Id"
+          },
+          "theme": {
+            "enum": [
+              "dark",
+              "tavern"
+            ],
+            "title": "Theme",
+            "type": "string"
+          }
+        },
+        "required": [
+          "active_adventure_id",
+          "active_scene_id",
+          "theme"
+        ],
+        "title": "GameTableState",
+        "type": "object"
+      },
+      "GameTableUpdate": {
+        "description": "Partial update: only the fields set in the request are changed (`active_adventure_id: null` clears it).",
+        "properties": {
+          "active_adventure_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Adventure Id"
+          },
+          "theme": {
+            "enum": [
+              "dark",
+              "tavern"
+            ],
+            "title": "Theme",
+            "type": "string"
+          }
+        },
+        "title": "GameTableUpdate",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -630,6 +698,59 @@
         "summary": "Read Scene",
         "tags": [
           "scenes"
+        ]
+      }
+    },
+    "/table": {
+      "get": {
+        "operationId": "read_table_table_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameTableState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Read Table",
+        "tags": [
+          "table"
+        ]
+      },
+      "patch": {
+        "operationId": "update_table_table_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GameTableUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameTableState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Adventure not found, or validation error"
+          }
+        },
+        "summary": "Update Table",
+        "tags": [
+          "table"
         ]
       }
     }

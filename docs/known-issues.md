@@ -1,6 +1,6 @@
 # Bekannte Lücken, Bugs & Altlasten
 
-Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-10-10, Alembic-Migrationen und Medien im Backend am 2026-10-11. Punkte mit „(ungeprüft)“ wurden aus dem Code abgeleitet, aber nicht zur Laufzeit verifiziert.
+Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-10-10, Alembic-Migrationen und Medien im Backend am 2026-10-11, Spieltisch per WebSocket am 2026-10-18. Punkte mit „(ungeprüft)“ wurden aus dem Code abgeleitet, aber nicht zur Laufzeit verifiziert.
 
 ## Lücken gegenüber der Vision
 
@@ -11,10 +11,20 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - Doppelte Mediendateien: `mapOverview.jpg` (Weltkarte im Wall Screen) und `From_Past_To_Present.mp3`
   (Standardmusik im Admin Screen) liegen zusätzlich zu `media/` als Kopie in `frontend/public/assets/...`, weil sie fest
   im Frontend eingebunden sind und an keiner Szene hängen. Ablösen gehört zur Weltkarten-/Upload-Thematik.
-- Grid-Einstellungen gelten global und werden nicht gespeichert.
+- Grid-Einstellungen gelten global und werden nicht gespeichert; Wall-Overlay und Grid lassen sich nicht aus dem Admin
+  steuern und werden nicht zwischen Geräten synchronisiert.
+- Player Screens verbinden sich noch nicht mit dem Spieltisch (kein WebSocket, Theme nur lokal; geplant: DND-27).
+- Musik und Soundeffekte laufen weiterhin im Admin (Rechner des Spielleiters), nicht auf der Wall (geplant: DND-26).
+- Der Admin zeigt nicht an, welche Screens verbunden sind (der Server kennt sie).
 - Szenen lassen sich nur über `seed_data.json` pflegen (keine schreibenden Endpoints, Seeder aktualisiert bestehende DB nicht).
 
 ## Backend
+
+### Einschränkungen
+
+- Der WebSocket-Verbindungsmanager hält die Verbindungen im Speicher des API-Prozesses: uvicorn muss mit **einem**
+  Worker laufen (so in beiden Compose-Stacks). Mehrere Worker würden Pushes nur an einen Teil der Screens senden.
+- Ein Server ist ein Spieltisch: keine parallelen Sessions, keine Authentifizierung.
 
 ### Bugs & Daten
 
@@ -24,7 +34,7 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 
 - `DocumentReader` sucht in `public/story/noneFight/` (existiert nicht) → Tab „Side“ leer.
 - E2E-Tests (`npm run test:e2e`) aktivieren Szenen im Admin und speichern sie damit per `PATCH` dauerhaft in der
-  Dev-DB (`adventure.active_scene_id`). Danach schlagen die Backend-Tests fehl, die den Seed-Stand (keine aktive Szene)
+  Dev-DB (`adventure.active_scene_id`); Admin, Wall und Ground der Dev-Umgebung zeigen danach diese Szene. Danach schlagen die Backend-Tests fehl, die den Seed-Stand (keine aktive Szene)
   erwarten, bis die aktive Szene wieder geleert wird (z. B. `PATCH /adventures/1` mit `{"active_scene_id": null}`) oder
   die DB zurückgesetzt ist.
 - `ResourceBarPlayer`: `spellData[].max` weicht von `SpellMax` ab (Stufe II: 4 vs. 3); Spezial startet bei 1 statt 3.

@@ -9,6 +9,10 @@ export type SceneDetail = Schemas['SceneDetail']
 export type Image = Schemas['Image']
 export type Track = Schemas['Track']
 
+// State of the game table, pushed by the server over the WebSocket /ws (and returned by GET/PATCH /table)
+export type GameTableState = Schemas['GameTableState']
+export type Theme = GameTableState['theme']
+
 // Response of /adventures/{id}/maps/main and /adventures/{id}/maps/side: the backend sends the scene id as id
 export type MapResponse = Schemas['MapEntry']
 

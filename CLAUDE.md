@@ -43,9 +43,11 @@ Teil-spezifischer Kontext (Befehle, Struktur, Konventionen): `frontend/CLAUDE.md
   bewusst auslösbar per `/quick-task`). Im Zweifel: Plan.
 - **Soll vs. Ist:** Die Docs trennen Vision („Soll“) und aktuellen Code-Stand („Ist“). Nicht annehmen, dass ein
   beschriebenes Soll-Feature bereits existiert – im Zweifel im Code prüfen.
-- **Setup am Spieltisch:** Ein Rechner mit mehreren Monitoren; Admin, Wall und Ground laufen als Fenster im selben
-  Browser. Die Synchronisation zwischen diesen Screens läuft über `localStorage` (siehe architecture.md).
-  Die Player-Screens laufen auf den Smartphones der Spieler und sind nicht synchronisiert.
+- **Setup am Spieltisch:** Ein Rechner mit mehreren Monitoren; Admin, Wall und Ground laufen meist als Fenster im
+  selben Browser, Wall und Ground können aber auch in anderen Browsern bzw. auf anderen Geräten im LAN laufen. Der
+  Server ist die einzige Quelle des Spieltisch-Zustands (Abenteuer, aktive Szene, Theme) und pusht ihn per WebSocket
+  an diese Screens (siehe architecture.md, „Synchronisation“); `localStorage` dient dafür nicht mehr.
+  Die Player-Screens laufen auf den Smartphones der Spieler und sind noch nicht angebunden.
 - **Begriffe:** „Kampfszene“ = `main: true` / Mainmap, „Nicht-Kampfszene“ = `main: false` / Sidemap.
   Ältere Bezeichnungen `battlemap`/`sidemap`/`fight` tauchen noch in Asset-Pfaden und Tests auf.
 - **Sprache:** Docs auf Deutsch, Code-Bezeichner englisch. UI-Texte im Player Screen und die Markdown-Notizen sind deutsch.

@@ -25,19 +25,25 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Top-Bar, Hauptbereich, Bottom-Bar. Im Hauptbereich
   links die Notizen-Navigation, in der Mitte die Notizen, rechts die Karten „Aktive Szene“ und „Kampfszenen“.
 - **Abenteuer-Auswahl:** Links in der Top-Bar eine Auswahlliste (Button mit aufklappender Liste, per Maus und Tastatur
-  bedienbar) mit allen Abenteuern. Ohne gespeichertes oder bei einem unbekannten Abenteuer wird automatisch das erste
-  gewählt (mit nur einem Abenteuer also ohne Zutun); ohne Abenteuer ist die Auswahl leer und deaktiviert, es werden
-  keine Szenen geladen. Gezeigt werden nur die Szenen des gewählten
-  Abenteuers. Beim Wechsel ist zunächst keine Szene aktiv, dann wird die im Abenteuer gespeicherte übernommen (bzw.
-  bleibt keine aktiv).
+  bedienbar) mit allen Abenteuern. Ist auf dem Spieltisch (Server) kein Abenteuer aktiv, wird automatisch das erste
+  aktiviert (mit nur einem Abenteuer also ohne Zutun); ohne Abenteuer ist die Auswahl leer und deaktiviert, es werden
+  keine Szenen geladen. Gezeigt werden nur die Szenen des aktiven Abenteuers. Ein Wechsel wird gespeichert und gilt für
+  alle Spieltisch-Screens; Admin, Wall und Ground zeigen danach direkt die im neuen Abenteuer gespeicherte Szene (bzw.
+  keine), nie kurz die eines anderen Abenteuers.
 - **Szenenauswahl:** Karte „Kampfszenen“ mit Anzahl und quadratisch angeordnetem Kachelraster aller Kampfszenen des
   Abenteuers, Bottom-Bar mittig mit den Nicht-Kampfszenen („Szenen“). Die aktive Kachel ist hervorgehoben. Klick öffnet einen
-  Bestätigungsdialog „Szene wechseln“ mit Wall-Bild, Name und Beschreibung; „Confirm“ aktiviert die Szene → alle
-  Screens wechseln, „Decline“ bricht ab.
-- **Aktive Szene gespeichert:** Die aktivierte Szene wird im Abenteuer gespeichert und beim Öffnen bzw. Neuladen des
-  Admin wieder übernommen – auch nach geleertem `localStorage` oder in einem anderen Browser. Schlägt das Speichern
-  fehl, wechseln Wall und Ground trotzdem, und unter der Top-Bar erscheint die Hinweisleiste „Aktive Szene konnte nicht
-  gespeichert werden“; „Erneut versuchen“ speichert erneut, bei Erfolg verschwindet sie.
+  Bestätigungsdialog „Szene wechseln“ mit Wall-Bild, Name und Beschreibung; „Confirm“ speichert die Szene, und alle
+  verbundenen Screens (auch andere Admin-Fenster) wechseln, sobald der Server den neuen Stand schickt; „Decline“ bricht
+  ab.
+- **Zustand auf dem Server:** Abenteuer, aktive Szene und Theme stehen auf dem Server und gelten für alle
+  Spieltisch-Screens, auch in anderen Browsern oder auf anderen Geräten; sie überstehen Reloads und Neustarts der API.
+  Mehrere Admin-Fenster dürfen gleichzeitig schreiben, der letzte Schreibzugriff gewinnt.
+- **Speicherfehler:** Schlägt das Speichern von Szene, Abenteuer oder Theme fehl, ändert sich auf keinem Screen etwas,
+  und unter der Top-Bar erscheint die Hinweisleiste „Änderung konnte nicht gespeichert werden“; „Erneut versuchen“
+  wiederholt den zuletzt fehlgeschlagenen Schreibzugriff, bei Erfolg verschwindet sie.
+- **Verbindung:** Bricht die Verbindung zum Server ab (spätestens nach etwa 35 s ohne Nachricht erkannt), zeigt der
+  Admin die Hinweisleiste „Verbindung zum Server getrennt“ und behält den letzten Stand; er verbindet sich selbst neu
+  (1 s, 2 s, 4 s … höchstens 10 s), „Erneut versuchen“ verbindet sofort. Danach verschwindet die Leiste.
 - **Szenen-Details:** Karte „Aktive Szene“ mit Name und Beschreibung, ohne aktive Szene der Hinweis „Keine Szene
   aktiv“; „Enemies“ und „Loot“ sind nur Platzhalter („–“).
 - **Notizen:** Bereich „Notizen“ mit Tabs Main, Fight, Side, Leveling, Mechaniken (Markdown aus
@@ -48,7 +54,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   direkt weiter, sonst bleibt sie pausiert. Vor dem Laden der ersten Szene und ohne aktive Szene läuft ein Standard-Track. Blockiert der
   Browser das Abspielen (Autoplay-Sperre), bleibt der Button auf Play.
 - **Sounds:** Top-Bar mittig mit Buttons für Soundeffekte in Gruppen (Heilung/Trank, Buff, Zauber, Debuff, Lock).
-- Theme-Umschalter (Settings-Icon rechts in der Top-Bar).
+- Theme-Umschalter (Settings-Icon rechts in der Top-Bar): schaltet das Theme global für Admin, Wall und Ground um
+  (nicht für den Player Screen).
 - **Ladefehler:** Lassen sich Abenteuer oder Szenen nicht laden (Backend nicht erreichbar, Timeout, HTTP-Fehler), erscheint unter der
   Top-Bar die Hinweisleiste „Backend nicht erreichbar“ mit Button „Erneut versuchen“; bei Erfolg verschwindet sie.
   Keine automatischen Wiederholungen. Kann eine Notizdatei nicht geladen werden, zeigt der Notizbereich „Notizen
@@ -77,7 +84,8 @@ Zähler 0, Icon deaktiviert → nächste Runde: erneut tippen → wieder aktiv.
   Maximum.
 - **Spezial:** 3 Plätze, Startwert 1; Verhalten wie Zauberplätze.
 - **Bewegung (WIP):** fester Wert 9.5, nicht interaktiv.
-- Layout: oben links der Theme-Button, darunter eine Karte mit Aktion · Bonusaktion · Bewegung · Spezial und darunter
+- Layout: oben links der Theme-Button (wirkt nur lokal auf diesem Gerät, gespeichert im `localStorage`; unabhängig vom
+  Theme des Spieltischs), darunter eine Karte mit Aktion · Bonusaktion · Bewegung · Spezial und darunter
   „Zauberplätze“ mit I–IV. Die Ressourcen sind per Tastatur bedienbar (Bewegung nicht).
 - Im Hochformat verdeckt ein Hinweis „Bitte das Handy quer halten“ den Screen.
 - Werte nur lokal: nicht gespeichert, nicht mit Admin verbunden, Reload setzt zurück; nicht pro Charakter
@@ -98,8 +106,11 @@ Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets.
 
 ### Ist
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Vollbild-Hintergrund = Wall-Bild der aktiven Szene,
-  unverzerrt und randlos. Ohne aktive Szene nur die Hintergrundfarbe des Themes, ohne Bild und ohne Panel; die
-  Steuerleiste funktioniert weiter.
+  unverzerrt und randlos. Ohne aktive Szene (auch bis der Server den ersten Stand geschickt hat) nur die
+  Hintergrundfarbe des Themes, ohne Bild und ohne Panel; die Steuerleiste funktioniert weiter.
+- Folgt dem Spieltisch per WebSocket (aktive Szene, Abenteuer, Theme) und kann damit auch in einem anderen Browser oder
+  auf einem anderen Gerät laufen (`http://<IP>:8080/wall`). Nach einem Verbindungsabbruch behält sie das Bild ohne
+  Hinweis und verbindet sich selbst neu.
 - Overlay-Panel oben mittig, umschaltbar über eine Steuerleiste, die beim Hover am unteren Rand erscheint (BATTLE /
   WORLD / OFF):
   - **BATTLE:** „Kampfschauplätze“ mit Anzahl („25 Räume“) und den Kacheln aller Kampfszenen des im Admin gewählten
@@ -125,4 +136,6 @@ optional mit **Grid** als Layout für taktische Kämpfe.
 - Grid über eine Steuerleiste beim Hover (wie auf der Wall): „Raster“ BLACK / WHITE / OFF und „Zelle“ mit Slider für
   die Zellgröße samt angezeigtem Wert. Standard: kein Grid. Einstellungen gelten für alle Szenen und werden nicht
   gespeichert.
+- Verbindung wie auf der Wall: folgt dem Spieltisch per WebSocket, auch auf einem anderen Gerät; nach einem Abbruch
+  kein Hinweis, letzter Stand bleibt, Reconnect automatisch.
 - **Ladefehler:** wie auf der Wall – kein Hinweis, letzter Stand bleibt, der nächste Szenenwechsel lädt erneut.

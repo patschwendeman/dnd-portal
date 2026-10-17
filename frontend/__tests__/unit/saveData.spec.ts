@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { apiClient } from '../../src/api/apiClient'
 import { patchData } from '../../src/api/apiMethods'
 import { SaveError } from '../../src/api/saveData'
-import { saveActiveScene } from '../../src/service/adminScreen'
+import { saveActiveAdventure, saveActiveScene, saveTheme } from '../../src/service/adminScreen'
 
 vi.mock('../../src/api/apiClient', () => ({
   apiClient: { get: vi.fn(), patch: vi.fn() },
@@ -77,5 +77,28 @@ describe('saveActiveScene', () => {
     patch.mockRejectedValue(original)
     const error = await failure(saveActiveScene(1, 5))
     expect((error as SaveError).original).toBe(original)
+  })
+})
+
+describe('game table writes', () => {
+  it('patches the active adventure of the game table', async () => {
+    // eslint-disable-next-line camelcase
+    patch.mockResolvedValue({ data: { active_adventure_id: 2 } })
+    await saveActiveAdventure(2)
+    // eslint-disable-next-line camelcase
+    expect(patch).toHaveBeenCalledWith('table', { active_adventure_id: 2 })
+  })
+
+  it('patches the theme of the game table', async () => {
+    patch.mockResolvedValue({ data: { theme: 'tavern' } })
+    await saveTheme('tavern')
+    expect(patch).toHaveBeenCalledWith('table', { theme: 'tavern' })
+  })
+
+  it('reports a failure as SaveError', async () => {
+    patch.mockRejectedValue(networkError())
+    const error = await failure(saveTheme('dark'))
+    expect(error).toBeInstanceOf(SaveError)
+    expect(error?.message).toMatch(/^Saving theme failed: backend not reachable$/)
   })
 })

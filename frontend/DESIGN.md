@@ -212,10 +212,11 @@ Wechselt mit dem Theme.
 - Components verwenden nur **Farbrollen** aus `theme.colors`, nie Farbwerte direkt (kein `#…`, `white`, `black`).
 - Jede Rolle gibt es in **jedem** Theme. Ein Theme ist nur ein anderer Satz Werte für dieselben Rollen.
 - Eine neue Farbe ist immer eine neue Rolle und wird in **allen** Themes angelegt.
-- Der Theme-Wechsel läuft über den Settings-Button im Admin und wird über `localStorage` (`isDarkTheme`) an Wall und
-  Ground übertragen. Der Schlüssel heißt trotz des dunklen Tavern-Themes weiter so, damit gespeicherte Einstellungen
-  gültig bleiben ([Synchronisation](../docs/architecture.md#synchronisation)). Ausnahme: Der Player Screen hat einen
-  eigenen Theme-Button, die Einstellung gilt nur auf dem jeweiligen Gerät.
+- Der Theme-Wechsel läuft über den Settings-Button im Admin: Er speichert das Theme (`dark` | `tavern`) auf dem
+  Server, der es per WebSocket an Admin, Wall und Ground pusht ([Synchronisation](../docs/architecture.md#synchronisation)).
+  Ausnahme: Der Player Screen hat einen eigenen Theme-Button, die Einstellung gilt nur auf dem jeweiligen Gerät
+  (`localStorage` `isDarkTheme`; der Schlüssel heißt trotz des dunklen Tavern-Themes weiter so, damit gespeicherte
+  Einstellungen gültig bleiben).
 
 ### 2.2 Rollen
 

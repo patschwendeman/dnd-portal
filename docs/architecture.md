@@ -1,41 +1,74 @@
 # Architektur
 
 ```
- Rechner Spielleiter (ein Browser, mehrere Fenster/Monitore)          Smartphones
+ Spieltisch-Screens (beliebige Browser/Geräte im LAN)                 Smartphones
  ┌──────────┐  ┌──────────┐  ┌──────────┐                            ┌──────────┐
  │ /admin   │  │ /wall    │  │ /ground  │                            │ /        │ × n
  └────┬─────┘  └────┬─────┘  └────┬─────┘                            └──────────┘
-      │  localStorage + "storage"-Event (activeAdventureId, activeSceneId, isDarkTheme)  (keine Anbindung)
+      │ HTTP GET/PATCH (axios, /api/...) │                           (noch keine Anbindung)
+      │ WebSocket /ws?screen=… (Snapshots, Ping)
       └─────────────┴─────────────┘
-                    │ HTTP GET, PATCH aktive Szene (axios, http://localhost:8000)
+                    │ gleicher Origin: Vite-Proxy (Dev :5173) bzw. nginx (Prod :8080)
+                    │ /api/… → API (Präfix entfernt), /ws → API
             ┌───────▼────────┐         ┌──────────────┐
             │ FastAPI        │────────▶│ PostgreSQL   │
             │ backend :8000  │         │ :5432        │
             └────────────────┘         └──────────────┘
- Szenenmedien (Wall-/Ground-Bilder, Musik) liefert das Backend unter /media aus (Ordner media/ im Repo-Root).
+ Szenenmedien (Wall-/Ground-Bilder, Musik) liefert das Backend unter /media aus (Ordner media/ im Repo-Root),
+ das Frontend lädt sie über den Proxy (/api/media/...).
  Übrige statische Assets (Sounds, Icons, Markdown) liefert das Frontend aus public/ aus:
  Dev: Vite-Server (:5173), Production: nginx (:8080) mit dem gebauten public/.
 ```
 
 ## Synchronisation
 
-- Es gibt **keine** WebSockets, SSE oder Polling.
-- `App.tsx` hält `activeAdventureId` und `activeSceneId` (beide `number | null`) und schreibt sie in `localStorage`
-  (`null` entfernt den Schlüssel; fehlender oder ungültiger Wert = `null`, kein Fallback auf Szene 1). Andere Fenster
-  desselben Browsers erhalten das `storage`-Event, aktualisieren ihren Context und laden neu vom Backend: Wall die
-  Kampfszenen des Abenteuers und die Szene, Ground die Szene. Ohne aktive Szene zeigen Wall und Ground nur die
-  Hintergrundfarbe und stellen keinen Request.
-- Abenteuer: Der Admin lädt `GET /adventures` und behält ein gespeichertes `activeAdventureId`, sofern es existiert,
-  sonst wählt er das erste der Liste (leere Liste: kein Abenteuer, keine Szenen). Die Auswahl im Dropdown der Top-Bar
-  setzt zuerst `activeSceneId` auf `null`, dann `activeAdventureId`.
-- Aktive Szene persistent: Beim Start und nach jedem Abenteuerwechsel übernimmt der Admin `active_scene_id` aus
-  `GET /adventures/{id}` (einmal je Auswahl, ein Retry nach Ladefehler überschreibt sie nicht). Bestätigt der Spielleiter
-  eine Szene, wird sie sofort lokal aktiv; parallel speichert `PATCH /adventures/{id}` `{"active_scene_id": <id>}`.
-  Schlägt das fehl, zeigt der Admin die Hinweisleiste „Aktive Szene konnte nicht gespeichert werden“, „Erneut
-  versuchen“ wiederholt das Speichern (keine automatischen Wiederholungen). Wall und Ground fragen die aktive Szene nie
-  bei der API ab, sie folgen nur dem `localStorage`.
-- Funktioniert nur für Fenster **desselben Browser-Profils auf demselben Rechner und Origin** – passend zum Setup
-  „ein Rechner, mehrere Monitore“. Player-Screens auf Smartphones sind nicht angebunden.
+- **Der Server ist die einzige Quelle** des Spieltisch-Zustands: aktives Abenteuer, dessen aktive Szene und Theme
+  (Tabelle `game_table`, die aktive Szene steht in `adventure.active_scene_id`). Ein Server ist ein Spieltisch (eine
+  globale Session, kein Beitreten).
+- Admin, Wall und Ground verbinden sich beim Laden per WebSocket mit `/ws?screen=admin|wall|ground`
+  (`GameTableProvider`/`useGameTable`, `src/realtime/`). Der Server schickt direkt nach dem Verbinden und nach **jeder**
+  erfolgreichen Änderung per `PATCH /table` oder `PATCH /adventures/{id}` einen vollständigen Snapshot an alle
+  Verbindungen (auch an andere Admins; der letzte Schreibzugriff gewinnt, keine Sperren). Der Provider speist daraus
+  `ActiveAdventureContext`, `ActiveSceneContext` (nur lesend) und das Theme. Die Screens laden daraufhin neu vom
+  Backend: Wall die Kampfszenen des Abenteuers und die Szene, Ground die Szene. Ohne aktive Szene zeigen Wall und Ground
+  nur die Hintergrundfarbe und stellen keinen Request. Bis zum ersten Snapshot gilt „kein Abenteuer, keine Szene,
+  Theme `dark`“.
+- Schreiben nur per REST, **ohne lokale Vorwegnahme**: Der Admin wechselt das Abenteuer per `PATCH /table
+  {"active_adventure_id": <id>}`, die Szene per `PATCH /adventures/{id} {"active_scene_id": <id>}` und das Theme per
+  `PATCH /table {"theme": …}`. Admin, Wall und Ground wechseln erst mit dem Push; ein Abenteuerwechsel liefert direkt
+  die gespeicherte Szene des neuen Abenteuers, nie die eines anderen. Ist im Snapshot kein Abenteuer gesetzt, aktiviert
+  der Admin das erste der Liste (`selectDefaultAdventureId`) per `PATCH /table`. Schlägt ein Schreibzugriff fehl,
+  zeigt der Admin „Änderung konnte nicht gespeichert werden“; „Erneut versuchen“ wiederholt den zuletzt
+  fehlgeschlagenen Schreibzugriff (nur das Ergebnis des jüngsten zählt, keine automatischen Wiederholungen).
+- **Heartbeat:** Der Server sendet jeder Verbindung alle 15 s `{"type": "ping"}` (`PING_INTERVAL_SECONDS`,
+  `app/realtime/manager.py`); zusätzlich bleiben die Protokoll-Pings von uvicorn aktiv. Empfängt ein Client 35 s lang
+  keine Nachricht, schließt er die Verbindung und verbindet sich neu.
+- **Reconnect:** Nach jedem Abbruch verbinden sich die Screens selbst neu, mit Backoff 1 s, 2 s, 4 s … höchstens 10 s
+  (nach erfolgreichem Verbinden zurückgesetzt). Währenddessen behalten alle Screens den letzten Stand. Nur der Admin
+  zeigt die Leiste „Verbindung zum Server getrennt“, deren „Erneut versuchen“ sofort neu verbindet.
+- **Ein Worker:** Der Verbindungsmanager hält die offenen Verbindungen im Speicher des API-Prozesses; uvicorn läuft
+  deshalb mit genau einem Worker (Default, so in beiden Compose-Stacks).
+- Das Theme des **Player Screens** ist lokal (`localStorage` `isDarkTheme`, nur dieses Gerät); Player-Screens verbinden
+  sich noch nicht.
+
+### WebSocket `/ws`
+
+`GET /ws?screen=<admin|wall|ground|player>` (WebSocket, nicht in OpenAPI). Nachrichten nur Server → Client, JSON im
+Format `{type, payload}`:
+
+| Nachricht | Wann |
+|---|---|
+| `{"type": "state", "payload": GameTableState}` | direkt nach dem Verbinden und nach jeder erfolgreichen Änderung per `PATCH /table` oder `PATCH /adventures/{id}` (auch für nicht aktive Abenteuer) |
+| `{"type": "ping"}` | alle 15 s (Heartbeat) |
+
+Eingehende Nachrichten ignoriert der Server, er liest sie nur, um das Trennen zu erkennen. Ein fehlender oder
+unbekannter `screen` wird mit Close-Code 1008 abgewiesen. **Origin-Prüfung** (CORS greift bei WebSockets nicht): Der
+Server nimmt die Verbindung nur an, wenn der `Origin`-Header fehlt (kein Browser), in `CORS_ORIGINS` steht oder Host
+und Port des `Origin` dem `Host`-Header entsprechen (gleicher Origin über den Proxy); sonst lehnt er den Handshake ab
+(HTTP 403). Der Push läuft als async `BackgroundTask` der Schreib-Route nach dem Commit mit eigener DB-Session; das
+Lesen und Senden der Snapshots ist serialisiert, damit jeder Client sie in Lesereihenfolge erhält. Schlägt das Senden
+fehl (oder dauert länger als 5 s), entfernt der Manager die Verbindung, der Client verbindet sich neu. Unbekannte
+Nachrichtentypen ignoriert der Client (`parseServerMessage`, `src/realtime/messages.ts`).
 
 ## Backend (`backend`)
 
@@ -52,7 +85,7 @@
   (einmalig `docker compose -f compose.dev.yaml down -v` bzw. `… compose.prod.yaml down -v`). Ablauf für
   Schemaänderungen: `backend/CLAUDE.md`, Abschnitt „Migrationen“. `import app.main` allein baut keine DB-Verbindung auf.
 
-### Endpoints (GET, nur Abenteuer zusätzlich PATCH; keine Auth)
+### Endpoints (GET, Abenteuer und Spieltisch zusätzlich PATCH; keine Auth)
 
 | Pfad | Liefert |
 |---|---|
@@ -63,6 +96,9 @@
 | `/adventures/{adventure_id}/maps/main` | `list[MapEntry]`: `{id: scene.id, source: ground_image.source}` je Kampfszene des Abenteuers (200, ggf. `[]`); 404 wie oben |
 | `/adventures/{adventure_id}/maps/side` | `list[MapEntry]`: `{id: scene.id, source: wall_image.source}` je Nicht-Kampfszene des Abenteuers (200, ggf. `[]`); 404 wie oben |
 | `/scenes/{scene_id}` | `SceneDetail` (200) bzw. 404 `{"detail": "Scene not found"}` |
+| `/table` | `GameTableState`: Zustand des Spieltischs (200) |
+| `PATCH /table` | Body `GameTableUpdate`, Antwort `GameTableState` (200); 422 `{"detail": "Adventure not found"}` bei unbekanntem Abenteuer (nichts wird geändert), 422 im FastAPI-Standardformat bei ungültigem `theme` |
+| `/ws` | WebSocket des Spieltischs (nicht in OpenAPI), siehe [WebSocket `/ws`](#websocket-ws) |
 | `/media/{storage_key}` | Mediendatei aus dem Medienordner (`StaticFiles`, nicht in OpenAPI): 200 bzw. 206 bei `Range`-Header (Audio-Seek), 404 bei fehlender Datei oder Pfad außerhalb des Ordners |
 
 Globale Listen (`GET /scenes`, `GET /maps/main|side`) gibt es seit DND-24 nicht mehr: Szenen und Karten gibt es nur je
@@ -87,15 +123,21 @@ AdventureDetail  { id: int, name: str, description: str | null, global_level: in
 Player           { id: int, player_name: str, character_name: str, race: str,
                    character_class: str, avatar: Image | null }
 AdventureUpdate  { active_scene_id?: int | null, global_level?: int (1–20) }  Request-Body von PATCH
+
+GameTableState   { active_adventure_id: int | null, active_scene_id: int | null, theme: "dark" | "tavern" }
+                   active_scene_id = active_scene_id des aktiven Abenteuers (null ohne Abenteuer)
+GameTableUpdate  { active_adventure_id?: int | null, theme?: "dark" | "tavern" }  Request-Body von PATCH /table
 ```
 
 Alle Felder sind Pflicht; nullable sind nur `description` und `active_scene_id` des Abenteuers sowie `avatar` des
 Spielers. Die Fremdschlüssel (`wall_image_id`, `adventure_id` …) sind nicht Teil der Antwort, `SceneDetail` enthält
 kein `adventure_id`. Bei `AdventureUpdate` ändert `PATCH` nur die gesetzten Felder; `"active_scene_id": null` leert
-die aktive Szene, `"global_level": null` wird abgelehnt (422).
+die aktive Szene, `"global_level": null` wird abgelehnt (422). Ebenso ändert `PATCH /table` nur die gesetzten Felder;
+`"active_adventure_id": null` leert das aktive Abenteuer, `"theme": null` wird abgelehnt (422).
 `source` ist der API-relative Pfad der Datei, `/media/<storage_key>` (aus `media.storage_key` berechnet, nicht
 gespeichert), z. B. `/media/images/ground_screen/main_1.jpg`. Das Frontend macht daraus per `mediaUrl(source)`
-(`src/api/mediaUrl.ts`) eine absolute URL auf Basis von `VITE_API_URL` – dieselbe Basis wie der axios-Client.
+(`src/api/mediaUrl.ts`) eine URL auf Basis von `VITE_API_URL` – dieselbe Basis wie der axios-Client (Default `/api/`,
+also z. B. `/api/media/images/ground_screen/main_1.jpg` über den Proxy).
 
 ### API-Vertrag & Typgenerierung
 
@@ -103,7 +145,8 @@ gespeichert), z. B. `/media/images/ground_screen/main_1.jpg`. Das Frontend macht
 `backend/scripts/export_openapi.py` schreibt `app.openapi()` deterministisch dorthin (ohne DB-Verbindung, die
 `Settings`-Werte aus `.env` bzw. Umgebung reichen). Das Frontend erzeugt daraus per `openapi-typescript`
 `frontend/src/api/schema.d.ts` (versioniert, von ESLint ausgenommen); `src/models/models.ts` leitet `SceneDetail`,
-`Image`, `Track` und `MapResponse` (= `MapEntry`) davon ab.
+`Image`, `Track`, `MapResponse` (= `MapEntry`), `GameTableState` und `Theme` davon ab. Das Nachrichtenformat des
+WebSockets `/ws` ist nicht Teil der OpenAPI, es steht oben unter [WebSocket `/ws`](#websocket-ws).
 
 Ablauf bei einer Vertragsänderung:
 1. Backend ändern (Schema in `app/schemas/`, Route, Tests).
@@ -127,6 +170,9 @@ Scene     → scene     (id, adventure_id → adventure, name, description, main
               Scene.wall_image: N:1 (z. B. teilen sich alle Kampfszenen ein Wall-Bild), Scene.ground_image: 1:1
               Scene.tracks: N:M über scene_track(scene_id, media_id; PK aus beiden)
 Media     → media     (id, kind: 'image' | 'audio', name, storage_key (unique), content_type, size (Bytes, nullable))
+GameTable → game_table (id (CHECK id = 1), active_adventure_id → adventure (nullable, ON DELETE SET NULL),
+                        theme (Text, Default 'dark', CHECK theme IN ('dark', 'tavern')))
+              GameTable.active_adventure: N:1; genau eine Zeile (ein Server = ein Spieltisch)
 ```
 
 Ein Abenteuer bündelt Szenen und Spieler (je 1:N); `media` ist global. Ein Spieler-Datensatz steht für „diese Person
@@ -136,11 +182,13 @@ ist). Die aktive Szene und das globale Level stehen persistent im Abenteuer; das
 desselben Abenteuers gehört, prüft der Service (nicht die DB). Wegen der zirkulären Fremdschlüssel `adventure` ↔ `scene`
 legt die Migration den FK `active_scene_id` zuletzt an (im Model `use_alter=True`, Relation mit `post_update=True`).
 
-Nullable sind nur `media.size`, `adventure.description`, `adventure.active_scene_id` und `player.avatar_media_id`. `kind` beschreibt die Dateiart, nicht die Verwendung: Eine Datei ist
+Nullable sind nur `media.size`, `adventure.description`, `adventure.active_scene_id`, `player.avatar_media_id` und
+`game_table.active_adventure_id`. `kind` beschreibt die Dateiart, nicht die Verwendung: Eine Datei ist
 genau ein Datensatz und kann mehrfach genutzt werden (z. B. das Level-Up-Bild als Wall- und Ground-Bild).
 `storage_key` ist der Pfad relativ zum Medienordner (z. B. `images/wall_screen/forest.jpg`); die API bildet daraus
 `source`. Constraint-Namen folgen der Namenskonvention in `app/db/base.py` (z. B. `pk_scene`,
-`fk_scene_wall_image_id_media`, `uq_scene_ground_image_id`, `ck_media_kind`, `ck_adventure_global_level`).
+`fk_scene_wall_image_id_media`, `uq_scene_ground_image_id`, `ck_media_kind`, `ck_adventure_global_level`,
+`ck_game_table_single_row`, `ck_game_table_theme`).
 
 **Medienordner:** Die Dateien liegen im Ordner `media/` im Repo-Root (in Git; `images/{ground_screen,wall_screen}`,
 `music/{main,side}/…`). Die API liest ihn aus `MEDIA_DIR` (`Settings.media_dir`, Default `/app/media`); die
@@ -154,7 +202,10 @@ Datensatz, `size` = NULL) und biegt die Fremdschlüssel um. `0003` legt `adventu
 `scene.adventure_id`: Enthält `scene` Zeilen, legt sie das Abenteuer aus dem Seed an („Erstes Abenteuer“,
 `global_level` 1, keine aktive Szene) und weist ihm alle Szenen zu; auf einer leeren DB legt sie kein Abenteuer an
 (das macht der Seeder). Die Spieler ergänzt der Seeder, weil `player` danach leer ist. `downgrade` entfernt Tabellen,
-Spalte und Fremdschlüssel, die Szenen bleiben erhalten. Bestehende Datenbanken laufen jeweils ohne Reset weiter.
+Spalte und Fremdschlüssel, die Szenen bleiben erhalten. `0004` legt `game_table` an und fügt die eine Zeile ein:
+aktives Abenteuer = kleinste Abenteuer-ID (auf einer leeren DB NULL, weil der Seeder erst danach läuft; dann aktiviert
+der Admin das erste Abenteuer), Theme `dark`; `downgrade` entfernt die Tabelle. Bestehende Datenbanken laufen jeweils
+ohne Reset weiter.
 
 **Seed-Daten:** Listen `adventures` (`name`, `description`, `global_level`), `media` (`kind`, `name`, `storage_key`),
 `scenes` (Referenz `adventure_id` sowie `wall_image_id`, `ground_image_id`, `track_ids` auf Media-IDs) und `players`
@@ -170,14 +221,18 @@ Datensatz trotzdem an (`size` = NULL).
 
 - React 18, Vite 5, TypeScript 5 (strict), react-router-dom 6, styled-components 6 (Haupt-Styling, zwei Themes),
   MUI nur für `Box`/`Slider`, axios, react-markdown, react-svg.
-- State: React-State + zwei Contexts (`ActiveAdventureContext`, `ActiveSceneContext`, `src/context/context.ts`) +
-  `localStorage` (siehe [Synchronisation](#synchronisation)). Kein Store-Framework. Die aktive Kachel in den
-  Kartenübersichten ergibt sich aus `activeSceneId` (Kachel-ID = Szenen-ID, im Frontend `Map.sceneId`); ist sie
-  `null`, ist keine Kachel hervorgehoben. Gespeicherte IDs parst `parseStoredId` (`src/utils/storedId.ts`), die Wahl
-  des Default-Abenteuers trifft `selectDefaultAdventureId` (`src/utils/adventure.ts`).
-- Struktur: `src/app` (Routing, globaler State), `src/screens` (Screens), `src/components`, `src/service` (Datenladen je Screen),
-  `src/api` (axios-Client, Base-URL aus `VITE_API_URL`, Default `http://localhost:8000/`, Timeout 5000 ms), `src/models`, `src/utils` (Audio/Musik, Filter, Grid-Layout `getGridLayout`,
-  Fehlerbehandlung `loadSafely`), `src/hooks` (`useMusicPlayer`), `src/style` (Themes), `src/context`.
+- State: React-State + drei Contexts (`ActiveAdventureContext`, `ActiveSceneContext`, `GameTableContext` mit Theme,
+  Verbindungsstatus und `reconnectNow`; `src/context/context.ts`), gespeist vom `GameTableProvider` aus dem
+  WebSocket-Snapshot (siehe [Synchronisation](#synchronisation)). Kein Store-Framework. Die aktive Kachel in den
+  Kartenübersichten ergibt sich aus `activeSceneId` (Kachel-ID = Szenen-ID, im Frontend `Map.sceneId`, Attribut
+  `data-active`); ist sie `null`, ist keine Kachel hervorgehoben. Die Wahl des Default-Abenteuers trifft
+  `selectDefaultAdventureId` (`src/utils/adventure.ts`).
+- Struktur: `src/app` (Routing, lokales Player-Theme), `src/realtime` (WebSocket-Client: `GameTableProvider`,
+  `useGameTable`, Verbindung mit Reconnect `connection.ts`, `messages.ts`, `backoff.ts`, `heartbeat.ts`),
+  `src/screens` (Screens), `src/components`, `src/service` (Datenladen und Schreibzugriffe je Screen),
+  `src/api` (axios-Client, Base-URL aus `VITE_API_URL`, Default `/api/`, Timeout 5000 ms; `wsUrl` leitet daraus die
+  WebSocket-URL ab), `src/models`, `src/utils` (Audio/Musik, Filter, Grid-Layout `getGridLayout`,
+  Fehlerbehandlung `loadSafely`), `src/hooks` (`useMusicPlayer`), `src/style` (Themes, `appTheme`), `src/context`.
 - Fehlerbehandlung beim Datenladen: `getData` reicht Fehler weiter. Die Services laden über `loadData`
   (`src/api/loadData.ts`) und werfen einen `LoadError`, dessen Meldung Netzwerkfehler/Timeout („backend not
   reachable“), HTTP-Status („HTTP 500“) und leere Antwort („… not found“) unterscheidet. Die Screens fangen genau
@@ -191,7 +246,8 @@ Datensatz trotzdem an (`size` = NULL).
   einen Zähler (`reloadCount`), von dem alle Lade-Effects (Abenteuerliste, Daten des Abenteuers, aktive Szene) abhängen.
 - Fehlerbehandlung beim Speichern: `patchData` (`src/api/apiMethods.ts`) reicht Fehler weiter, `saveData`
   (`src/api/saveData.ts`) wirft einen `SaveError` mit derselben Aufbereitung wie `loadData` („Saving … failed: backend
-  not reachable“ bzw. „HTTP 422“). Der Admin wertet nur das Ergebnis des jüngsten Speicherns aus.
+  not reachable“ bzw. „HTTP 422“). Der Admin wertet nur das Ergebnis des jüngsten Speicherns aus (Szene, Abenteuer
+  und Theme gemeinsam).
 - Assets in `public/`: `assets/sounds` (Soundeffekte), `assets/icons`, `story/**` (Markdown-Notizen, deutsch) sowie die
   zwei fest eingebundenen Medien `assets/images/ground_screen/mapOverview.jpg` (Weltkarte im Wall Screen) und
   `assets/music/side/forest/From_Past_To_Present.mp3` (Standardmusik im Admin Screen). Szenenbilder und Musik kommen
@@ -253,19 +309,23 @@ Nach Änderungen an `frontend/package.json`: `docker compose -f compose.dev.yaml
 `node_modules`-Volume). Alte Container aus den früheren Einzel-Repos belegen dieselben Ports (5432, 8000, 5050, 5173) –
 vorher stoppen.
 
-UI unter http://localhost:5173 (`/admin`, `/wall`, `/ground`, `/`); das Frontend ruft die API über
-`http://localhost:8000/` auf.
+UI unter http://localhost:5173 (`/admin`, `/wall`, `/ground`, `/`); das Frontend ruft die API über den Proxy des
+Vite-Dev-Servers auf (`/api/…` → API ohne Präfix, `/ws` → API, `server.proxy` in `frontend/vite.config.ts`). Ziel aus
+`API_PROXY_TARGET` (Default `http://localhost:8000`, im Dev-Compose `http://api:8000`).
 Node-Version: `frontend/.nvmrc` (CI) und `frontend/Dockerfile` (`node:18-slim`, Stages `dev` und `build`) synchron halten.
 
 **API-URL:** Das Frontend liest die Base-URL der API aus `VITE_API_URL` (Build-Zeit, von Vite ins Bundle
-eingesetzt); ohne Variable gilt `http://localhost:8000/`. Lokal per `frontend/.env` (Vorlage `frontend/.env.example`),
-im Production-Image per Build-Argument. Eine andere URL erfordert einen neuen Build.
+eingesetzt); ohne Variable gilt `/api/` (relativ, über den Proxy desselben Origins). Die WebSocket-URL leitet `wsUrl`
+(`src/api/wsUrl.ts`) daraus ab: Endet der Pfad der Basis auf `/api/`, ist es `ws(s)://<host>/ws`, sonst `<basis>ws`
+(z. B. `ws://localhost:8000/ws`). Lokal per `frontend/.env` (Vorlage `frontend/.env.example`), im Production-Image
+per Build-Argument. Eine andere URL erfordert einen neuen Build.
 
-**LAN/CORS:** Die API erlaubt per CORS nur die Origins aus `CORS_ORIGINS` (`backend/.env`, JSON-Liste; Default
-`["http://localhost:5173","http://localhost:8080"]` = Dev- und Prod-Frontend), nur `GET` und `PATCH` (Preflight für
-JSON-Body), ohne Credentials. Wird das
-Frontend über das LAN geöffnet (z. B. `http://192.168.x.y:8080`), muss dieser Origin in `CORS_ORIGINS` stehen und das
-Frontend mit `VITE_API_URL=http://192.168.x.y:8000/` gebaut sein. Der Player Screen ruft die API nicht auf.
+**LAN/CORS:** Über den Proxy laufen Frontend, API und WebSocket unter demselben Origin; andere Geräte öffnen nur
+`http://<IP>:8080` (bzw. `:5173` in Dev), ohne besonderen Build und ohne CORS-Eintrag. Für direkte Zugriffe auf Port
+8000 erlaubt die API per CORS weiterhin die Origins aus `CORS_ORIGINS` (`backend/.env`, JSON-Liste; Default
+`["http://localhost:5173","http://localhost:8080"]`), nur `GET` und `PATCH` (Preflight für JSON-Body), ohne
+Credentials. Der WebSocket prüft den Origin selbst (siehe [WebSocket `/ws`](#websocket-ws)). Der Player Screen ruft die
+API nicht auf.
 
 ### Am Spieltisch (Production)
 
@@ -276,13 +336,16 @@ oben: `backend/.env`.
 | Befehl (im Root, ohne Skript; mit Skript: `./script.sh prod` bzw. `dnd prod`) | Wirkung |
 |---|---|
 | `docker compose -f compose.prod.yaml up -d --build --wait` | `db` (Postgres :5432), `api` (API :8000, uvicorn ohne `--reload`, Code im Image, `media/` read-only unter `/app/media` gemountet), `ui` (nginx :8080 mit dem statischen Build) – alle mit `restart: unless-stopped` |
-| `VITE_API_URL=http://<host>:8000/ docker compose -f compose.prod.yaml up -d --build --wait` | Frontend mit anderer API-URL bauen (Default `http://localhost:8000/`) |
+| `VITE_API_URL=http://<host>:8000/ docker compose -f compose.prod.yaml up -d --build --wait` | Frontend mit anderer API-URL bauen (Default `/api/` über nginx; eine absolute URL umgeht den Proxy und braucht den Frontend-Origin in `CORS_ORIGINS`) |
 | `docker compose -f compose.prod.yaml logs -f <service>` | Logs verfolgen |
 | `docker compose -f compose.prod.yaml down` | stoppen; mit `-v` auch DB-Volume löschen (DB-Reset) |
 
-UI unter http://localhost:8080/admin, `/wall` und `/ground` (Fenster im selben Browser auf dem Spieltisch-Rechner);
-Smartphones öffnen den Player Screen über `http://<IP des Rechners>:8080/`. nginx liefert `index.html` auch für
-direkt aufgerufene Unterrouten aus (SPA-Fallback); die Dateien aus `public/` (Sounds, Icons, Notizen) stecken im
+UI unter http://localhost:8080/admin, `/wall` und `/ground`; Wall und Ground können auch in anderen Browsern oder auf
+anderen Geräten laufen (`http://<IP des Rechners>:8080/wall`). Smartphones öffnen den Player Screen über
+`http://<IP des Rechners>:8080/`. nginx (`frontend/nginx.conf`) leitet `/api/` an die API weiter (Präfix entfernt,
+`Range` für Medien funktioniert) und `/ws` als WebSocket (`Upgrade`/`Connection`, `proxy_read_timeout` 120 s), beide
+mit dem ursprünglichen `Host`-Header; Port 8000 bleibt für direkte Zugriffe veröffentlicht. nginx liefert `index.html`
+auch für direkt aufgerufene Unterrouten aus (SPA-Fallback); die Dateien aus `public/` (Sounds, Icons, Notizen) stecken im
 Image, Änderungen daran brauchen einen neuen Build (`--build`). Szenenmedien in `media/` sind per Bind-Mount
 eingebunden und brauchen keinen Build. pgAdmin ist nicht enthalten.
 Dev- und Prod-Stack nicht gleichzeitig betreiben: API (:8000) und DB (:5432) nutzen dieselben Ports.

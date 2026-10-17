@@ -2,8 +2,10 @@ import { Builder, By, error, until, WebDriver, WebElement } from 'selenium-webdr
 
 // Lives outside steps/ so jest (testMatch: __tests__/bdd/steps/*.ts) does not run it as a test file
 const BASE_URL = 'http://localhost:5173'
-// Scene media are served by the backend (VITE_API_URL default), the frontend renders absolute URLs
-const MEDIA_BASE_URL = 'http://localhost:8000/media'
+// Scene media are served by the backend through the proxy of the frontend (VITE_API_URL default /api/). Tiles carry
+// the path as rendered (data-test-id), the src property of an image is resolved against the page.
+const MEDIA_PATH = '/api/media'
+const MEDIA_BASE_URL = `${BASE_URL}${MEDIA_PATH}`
 
 // Must stay below the jest testTimeout (10 s), otherwise jest aborts before the wait reports its failure
 const WAIT_TIMEOUT = 5000
@@ -30,11 +32,14 @@ const clickElement = async (driver: WebDriver, selector: string): Promise<WebEle
   return element
 }
 
-// The dialog is hidden in the same render that sets the active scene, so once the button is hidden the scene id
-// is already written to localStorage and other screens load the new scene
-const confirmDialog = async (driver: WebDriver): Promise<void> => {
-  const confirmButton = await clickElement(driver, '[data-test-id="confirm-button"]')
-  await driver.wait(until.elementIsNotVisible(confirmButton), WAIT_TIMEOUT)
+// The Admin marks the tile as active only with the push of the server, so afterwards the scene is saved and other
+// screens receive it when they connect
+const confirmDialog = async (driver: WebDriver, tileSelector: string): Promise<void> => {
+  await clickElement(driver, '[data-test-id="confirm-button"]')
+  await driver.wait(async () => {
+    const tiles = await driver.findElements(By.css(tileSelector))
+    return tiles.length > 0 && (await tiles[0].getAttribute('data-active')) === 'true'
+  }, WAIT_TIMEOUT)
 }
 
 // Returns the last seen value instead of throwing on timeout, so the step's expect shows expected vs. actual
@@ -64,6 +69,7 @@ const waitForAttribute = async (
 export {
   BASE_URL,
   MEDIA_BASE_URL,
+  MEDIA_PATH,
   buildDriver,
   clickElement,
   confirmDialog,

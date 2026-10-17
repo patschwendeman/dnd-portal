@@ -1,12 +1,11 @@
 """Tests for /adventures: list, detail with players, scenes and maps per adventure (incl. trailing-slash redirects),
 PATCH, 404 for unknown IDs.
 
-Tests that change data use the fixture `db`: the API runs on a session in an outer transaction that is rolled back
-afterwards (commits become savepoints), so the shared test DB keeps the seed state. The persistence test commits for
-real and restores the seed state itself.
+Tests that change data use the fixture `db` (tests/conftest.py): the API runs on a session in an outer transaction
+that is rolled back afterwards (commits become savepoints), so the shared test DB keeps the seed state. The persistence
+test commits for real and restores the seed state itself.
 """
 
-from collections.abc import Iterator
 from typing import Any
 
 import pytest
@@ -14,7 +13,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.crud import scene as scene_crud
-from app.models import Adventure, Media, Scene
+from app.models import Adventure
 
 ADVENTURE_FIELDS = {"id", "name", "description", "global_level", "active_scene_id", "players"}
 PLAYER_FIELDS = {"id", "player_name", "character_name", "race", "character_class", "avatar"}
@@ -49,55 +48,6 @@ def expected_side_maps(seed: dict[str, Any]) -> list[dict[str, Any]]:
         for scene_id, scene in enumerate(seed["scenes"], start=1)
         if scene["main"] is False
     ]
-
-
-@pytest.fixture
-def db(client: TestClient) -> Iterator[Session]:
-    from app.db.session import engine, get_db
-    from app.main import app
-
-    with engine.connect() as connection:
-        transaction = connection.begin()
-        session = Session(bind=connection, join_transaction_mode="create_savepoint", autoflush=False)
-        app.dependency_overrides[get_db] = lambda: session
-        try:
-            yield session
-        finally:
-            app.dependency_overrides.pop(get_db, None)
-            session.close()
-            transaction.rollback()
-
-
-@pytest.fixture
-def other_adventure(db: Session) -> dict[str, int]:
-    """A second adventure with one Kampfszene and one Nicht-Kampfszene (inside the rolled-back transaction)."""
-    adventure = Adventure(name="Zweites Abenteuer", description=None)
-    media = [
-        Media(kind="image", name=name, storage_key=f"adventure-test/{name}.jpg", content_type="image/jpeg")
-        for name in ("wall", "ground_main", "ground_side")
-    ]
-    db.add_all([adventure, *media])
-    db.flush()
-    wall, ground_main, ground_side = media
-    main_scene = Scene(
-        adventure_id=adventure.id,
-        name="Other fight",
-        description="Elsewhere",
-        main=True,
-        wall_image_id=wall.id,
-        ground_image_id=ground_main.id,
-    )
-    side_scene = Scene(
-        adventure_id=adventure.id,
-        name="Other village",
-        description="Elsewhere",
-        main=False,
-        wall_image_id=wall.id,
-        ground_image_id=ground_side.id,
-    )
-    db.add_all([main_scene, side_scene])
-    db.commit()
-    return {"id": adventure.id, "main_scene_id": main_scene.id, "side_scene_id": side_scene.id}
 
 
 def unknown_adventure_id(expected_adventures: list[dict[str, Any]]) -> int:

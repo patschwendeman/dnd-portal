@@ -1,9 +1,11 @@
 # dnd-portal – Backend
 
-REST-API und PostgreSQL-Datenbank des DnD Portals (FastAPI, SQLAlchemy, Alembic). Liefert dem Frontend
+REST-API, WebSocket und PostgreSQL-Datenbank des DnD Portals (FastAPI, SQLAlchemy, Alembic). Liefert dem Frontend
 ([`../frontend`](../frontend/)) die Szenen mit ihren Wall-/Ground-Bildern und Musik-Tracks sowie die Mediendateien
-selbst (Ordner [`../media`](../media/)). Abenteuer bündeln Szenen und Spieler; einzig schreibend ist das Setzen
-von aktiver Szene und globalem Level eines Abenteuers (`PATCH`).
+selbst (Ordner [`../media`](../media/)). Abenteuer bündeln Szenen und Spieler. Der Server ist die einzige Quelle des
+Spieltisch-Zustands (aktives Abenteuer, aktive Szene, Theme) und pusht ihn per WebSocket an Admin, Wall und Ground.
+Schreibend sind nur das Setzen von aktiver Szene und globalem Level eines Abenteuers sowie von aktivem Abenteuer und
+Theme des Spieltischs (`PATCH`).
 
 | Endpoint | Zweck |
 |---|---|
@@ -14,9 +16,14 @@ von aktiver Szene und globalem Level eines Abenteuers (`PATCH`).
 | `GET /adventures/{adventure_id}/maps/main` | Kartenübersicht der Kampfszenen (`main: true`) des Abenteuers: Szenen-ID und Ground-Bild |
 | `GET /adventures/{adventure_id}/maps/side` | Kartenübersicht der Nicht-Kampfszenen (`main: false`) des Abenteuers: Szenen-ID und Wall-Bild |
 | `GET /scenes/{scene_id}` | eine Szene (404, wenn unbekannt) |
+| `GET /table` | Spieltisch-Zustand: aktives Abenteuer, dessen aktive Szene, Theme (`dark` \| `tavern`) |
+| `PATCH /table` | aktives Abenteuer (`active_adventure_id`, `null` leert es) und/oder `theme` setzen; 422 bei unbekanntem Abenteuer |
+| `WS /ws?screen=admin\|wall\|ground\|player` | WebSocket: Snapshot des Spieltischs beim Verbinden und nach jeder Änderung, alle 15 s ein Ping; Origin-Prüfung (nicht in OpenAPI) |
 | `GET /media/...` | Mediendateien (Bilder, Musik) aus `../media`, inkl. `Range` |
 
-Der API-Vertrag liegt versioniert in [`openapi.json`](openapi.json); daraus erzeugt das Frontend seine Typen.
+Der API-Vertrag liegt versioniert in [`openapi.json`](openapi.json); daraus erzeugt das Frontend seine Typen. Das
+Nachrichtenformat des WebSockets beschreibt [architecture.md](../docs/architecture.md#websocket-ws). uvicorn läuft mit
+einem Worker (der Verbindungsmanager liegt im Prozess).
 
 ## Starten
 
@@ -53,13 +60,15 @@ Umgebungsvariablen haben Vorrang vor `.env`.
 | `DB_DRIVER` | SQLAlchemy-Treiber, `postgresql+psycopg2` |
 | `DB_HOST` | `db` (Service-Name im Compose-Netz); für API, Tests oder Alembic außerhalb von Docker `localhost` |
 | `DB_PORT` | `5432` |
-| `CORS_ORIGINS` | optional, JSON-Liste; Default `["http://localhost:5173","http://localhost:8080"]` (Dev- und Prod-Frontend) |
+| `CORS_ORIGINS` | optional, JSON-Liste; Default `["http://localhost:5173","http://localhost:8080"]` (Dev- und Prod-Frontend); gilt auch für die Origin-Prüfung des WebSockets |
 | `MEDIA_DIR` | optional, Medienordner; Default `/app/media` (Container), lokal `../media` |
 | `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD` | Login für pgAdmin (`http://localhost:5050`, nur mit `--tools`) |
 
-Für Zugriff über das LAN (Smartphones der Spieler) die Adresse des Spieltisch-Rechners in `CORS_ORIGINS` ergänzen,
-z. B. `["http://localhost:5173","http://localhost:8080","http://192.168.x.y:8080"]`, und das Frontend mit passender
-`VITE_API_URL` bauen. Fehlende Pflichtwerte brechen den Start mit einem Validierungsfehler ab.
+Für Zugriff über das LAN ist nichts zu konfigurieren: Das Frontend erreicht API und WebSocket über den Proxy desselben
+Origins (`/api/`, `/ws`; nginx bzw. Vite), andere Geräte öffnen nur `http://<IP>:8080`. Der WebSocket nimmt
+Verbindungen ohne `Origin`, aus `CORS_ORIGINS` oder mit gleichem Host und Port wie der `Host`-Header an. Nur wer die API
+direkt (Port 8000) aus einem anderen Origin aufruft, muss diesen in `CORS_ORIGINS` ergänzen. Fehlende Pflichtwerte
+brechen den Start mit einem Validierungsfehler ab.
 
 ## Seed
 

@@ -20,4 +20,8 @@ describe('buildMediaUrl', () => {
       'http://example.com/api/media/images/ground_screen/main_1.jpg'
     )
   })
+
+  it('should keep a relative base, so media load through the proxy of the frontend', () => {
+    expect(buildMediaUrl('/api/', '/media/images/wall_screen/forest.jpg')).toBe('/api/media/images/wall_screen/forest.jpg')
+  })
 })

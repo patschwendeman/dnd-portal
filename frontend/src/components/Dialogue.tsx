@@ -1,10 +1,9 @@
-import { FunctionComponent, ReactElement, useContext } from 'react'
+import { FunctionComponent, ReactElement } from 'react'
 import styled from 'styled-components'
 
 import { Label } from './Label'
 import { TextButton } from './TextButton'
 import { mediaUrl } from '../api/mediaUrl'
-import { ActiveSceneContext } from '../context/context'
 import { SceneDetail } from '../models/models'
 import { textStyle } from '../style/tokens'
 
@@ -12,8 +11,7 @@ import { textStyle } from '../style/tokens'
 interface DialogueProps {
   isVisible: boolean;
   sceneOption: SceneDetail | undefined;
-  handleDialogueOption: (option: boolean, sceneOption: SceneDetail | undefined, setActiveSceneId: React.Dispatch<React.SetStateAction<number | null>>, setDialogueVisibility: React.Dispatch<React.SetStateAction<boolean>>) => void;
-  setDialogueVisibility: React.Dispatch<React.SetStateAction<boolean>>;
+  handleDialogueOption: (option: boolean, sceneOption: SceneDetail | undefined) => void;
 }
 
 const DIALOG_WIDTH = '600px'
@@ -78,19 +76,17 @@ const DialogueImage = styled.img`
     object-fit: cover;
 `
 
-const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogueOption, isVisible, setDialogueVisibility }): ReactElement => {
-  const { setActiveSceneId } = useContext(ActiveSceneContext)
-
+const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogueOption, isVisible }): ReactElement => {
   const handleConfirm = () => {
     if (!sceneOption) {
       
       throw new Error('Scene option is undefined')
     }
-    handleDialogueOption(true, sceneOption, setActiveSceneId, setDialogueVisibility)
+    handleDialogueOption(true, sceneOption)
   }
 
   const handleDecline = () => {
-    handleDialogueOption(false, sceneOption, setActiveSceneId, setDialogueVisibility)
+    handleDialogueOption(false, sceneOption)
   }
 
   return (

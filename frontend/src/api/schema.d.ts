@@ -107,6 +107,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/table": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Table */
+        get: operations["read_table_table_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Table */
+        patch: operations["update_table_table_patch"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -144,6 +162,34 @@ export interface components {
             active_scene_id?: number | null;
             /** Global Level */
             global_level?: number;
+        };
+        /**
+         * GameTableState
+         * @description State of the game table shared by Admin, Wall and Ground; `active_scene_id` belongs to the active adventure.
+         */
+        GameTableState: {
+            /** Active Adventure Id */
+            active_adventure_id: number | null;
+            /** Active Scene Id */
+            active_scene_id: number | null;
+            /**
+             * Theme
+             * @enum {string}
+             */
+            theme: "dark" | "tavern";
+        };
+        /**
+         * GameTableUpdate
+         * @description Partial update: only the fields set in the request are changed (`active_adventure_id: null` clears it).
+         */
+        GameTableUpdate: {
+            /** Active Adventure Id */
+            active_adventure_id?: number | null;
+            /**
+             * Theme
+             * @enum {string}
+             */
+            theme?: "dark" | "tavern";
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -479,6 +525,57 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
+            };
+        };
+    };
+    read_table_table_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameTableState"];
+                };
+            };
+        };
+    };
+    update_table_table_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GameTableUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GameTableState"];
+                };
+            };
+            /** @description Adventure not found, or validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

@@ -23,7 +23,7 @@ npm run build        # tsc -b && vite build
 npm run typecheck    # tsc -b (nur Typprüfung)
 npm run lint         # ESLint (eslint.config.js)
 npm run test:unit    # vitest (__tests__/unit)
-npm run test:e2e     # jest-cucumber + Selenium/Chrome; braucht laufendes Backend auf :8000
+npm run test:e2e     # jest-cucumber + Selenium/Chrome; braucht laufendes Backend auf :8000 (über den Vite-Proxy)
 npm run generate:api # API-Typen src/api/schema.d.ts aus ../backend/openapi.json erzeugen (openapi-typescript)
 ```
 
@@ -36,11 +36,15 @@ E2E-Struktur: `__tests__/bdd/features/*.feature` (Szenarien), `__tests__/bdd/ste
 liegt bewusst außerhalb von `steps/`). Die Tests erwarten die Seed-Daten (25 Kampfszenen).
 
 API-URL: `src/api/apiClient.ts` nimmt `import.meta.env.VITE_API_URL` (Typ in `src/vite-env.d.ts`), Default
-`http://localhost:8000/`. Die Variable wirkt zur Build-Zeit (Vite setzt sie ins Bundle ein): lokal per `.env`
-(gitignored, Vorlage `.env.example`), im Docker-Build per `--build-arg VITE_API_URL=…`.
+`/api/` (relativ: der Vite-Dev-Server bzw. nginx leiten `/api/` ohne Präfix und `/ws` an die API weiter, gleicher
+Origin für alle Geräte). Proxy-Ziel in Dev: `API_PROXY_TARGET` (Default `http://localhost:8000`, im Dev-Compose
+`http://api:8000`, `vite.config.ts`). Die Variable wirkt zur Build-Zeit (Vite setzt sie ins Bundle ein): lokal per
+`.env` (gitignored, Vorlage `.env.example`), im Docker-Build per `--build-arg VITE_API_URL=…`. Die WebSocket-URL
+leitet `wsUrl` (`src/api/wsUrl.ts`) aus derselben Basis ab.
 
 `Dockerfile` hat drei Stages: `dev` (Vite-Dev-Server :5173, von `../compose.dev.yaml` per `target: dev` genutzt),
-`build` (`npm ci`, `npm run build`, `ARG VITE_API_URL`) und `prod` (nginx, `nginx.conf`: SPA-Fallback auf
+`build` (`npm ci`, `npm run build`, `ARG VITE_API_URL`) und `prod` (nginx, `nginx.conf`: Proxy `/api/` und `/ws` zur
+API, SPA-Fallback auf
 `index.html`, lange Cache-Dauer nur für gehashte Dateien direkt unter `/assets/`, gzip). Dateien aus `public/` landen im
 Prod-Image.
 
@@ -61,25 +65,28 @@ Im Container liegt `node_modules` in einem eigenen Volume; nach Änderungen an `
 ## Struktur & Datenfluss
 
 ```
-src/app/App.tsx      Routing, Theme, globaler State (activeAdventureId, activeSceneId, isDarkTheme) + localStorage-Sync
-src/context/         ActiveAdventureContext, ActiveSceneContext (IDs number | null)
+src/app/App.tsx      Routing; Admin, Wall, Ground je im GameTableProvider; lokales Theme des Player Screens (localStorage)
+src/realtime/        WebSocket-Client des Spieltischs: GameTableProvider (ThemeProvider + Contexts aus dem Snapshot),
+                     useGameTable(screen) → { state, connected, reconnectNow }, connection.ts (Reconnect, Heartbeat),
+                     messages.ts (parseServerMessage), backoff.ts (reconnectDelay), heartbeat.ts (Watchdog 35 s)
+src/context/         ActiveAdventureContext, ActiveSceneContext (IDs number | null, nur lesend), GameTableContext
+                     (hasState, theme, connected, reconnectNow)
 src/screens/         Screens
 src/components/      UI-Bausteine (TopBar, DocumentReader, MapOverview, GridOverlay, ScreenControlBar, ResourceBarPlayer …)
-src/service/         Datenladen je Screen (getAdventures, getAdventure, getAdminData, saveActiveScene, getWallScene,
-                     getWallMainmaps, getGroundScreenData …)
+src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
+                     saveActiveScene, saveActiveAdventure, saveTheme, getWallScene, getWallMainmaps, getGroundScreenData …)
 src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData/patchData (apiMethods.ts), loadData, saveData,
-                     mediaUrl (mediaUrl.ts); schema.d.ts generiert
-src/models/models.ts API-Typen AdventureSummary, AdventureDetail, SceneDetail, Image, Track, MapResponse (= MapEntry)
-                     aus src/api/schema.d.ts;
+                     mediaUrl (mediaUrl.ts), wsUrl (wsUrl.ts); schema.d.ts generiert
+src/models/models.ts API-Typen AdventureSummary, AdventureDetail, SceneDetail, Image, Track, MapResponse (= MapEntry),
+                     GameTableState, Theme aus src/api/schema.d.ts;
                      Map ist Frontend-Modell (sceneId), Umwandlung aus MapResponse im Service
 src/hooks/           useMusicPlayer (bindet MusicPlayer an den Admin Screen: Track/Play-Zustand, Cleanup)
 src/utils/utils.ts   Zufallstrack (getRandomTrack), Musiktitel, Soundeffekte (playAtmoSounds), filterSceneByKey,
                      getGridLayout
-src/utils/storedId.ts parseStoredId (ID aus localStorage, sonst null); src/utils/adventure.ts selectDefaultAdventureId;
-                     src/utils/sceneAdoption.ts (gespeicherte Szene einmal je Abenteuerauswahl übernehmen)
+src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
 src/utils/musicPlayer.ts  MusicPlayer: Hintergrundmusik ohne React (ein Audio-Element, Playlist, aktueller Track,
                      Trackende → nächster Track); Audio-Fabrik und Zufall injizierbar für vitest
-src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }),
+src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }), appTheme(theme),
                      styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden)
 public/assets/       sounds, icons; dazu die fest eingebundenen Medien images/ground_screen/mapOverview.jpg (Weltkarte)
                      und music/side/forest/From_Past_To_Present.mp3 (Standardmusik) – Szenenmedien liegen in ../media
@@ -87,11 +94,12 @@ public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mec
 ```
 
 Datenfluss: Screen → `src/service/*` → `getData()` → Backend. Admin und Wall laden Szenen und Karten nur über
-`adventures/{id}/...` des gewählten Abenteuers (`activeAdventureId`). Szenenwechsel: Admin setzt `activeSceneId` über den
-Context und speichert sie per `PATCH adventures/{id}` → `App.tsx` schreibt `localStorage` → andere Fenster desselben
-Browsers erhalten das `storage`-Event → jeder Screen lädt die Szene per `scenes/{id}` neu (ohne aktive Szene kein
-Request, nur Hintergrund). Beim Start und Abenteuerwechsel übernimmt der Admin die gespeicherte `active_scene_id`.
-Kein WebSocket/Polling; Player-Screens sind nicht angebunden. Details: `../docs/architecture.md#synchronisation`.
+`adventures/{id}/...` des aktiven Abenteuers (`activeAdventureId`). Der Spieltisch-Zustand (aktives Abenteuer, aktive
+Szene, Theme) kommt nur vom Server: `GameTableProvider` verbindet sich per WebSocket (`/ws?screen=…`) und speist die
+Contexts aus jedem Snapshot. Szenen-, Abenteuer- und Theme-Wechsel schreibt der Admin per REST (`PATCH adventures/{id}`
+bzw. `PATCH table`) **ohne lokale Vorwegnahme**; der Server pusht danach den neuen Stand an alle Screens, die die Szene
+per `scenes/{id}` neu laden (ohne aktive Szene kein Request, nur Hintergrund). Nur der Admin zeigt Speicher- und
+Verbindungsfehler. Player-Screens sind nicht angebunden. Details: `../docs/architecture.md#synchronisation`.
 
 ## Konventionen (durch ESLint erzwungen bzw. im Code üblich)
 

@@ -29,8 +29,9 @@ RUN npm ci
 
 COPY . .
 
-# Base URL of the API, inlined into the bundle by Vite; a different URL requires a rebuild.
-ARG VITE_API_URL=http://localhost:8000/
+# Base URL of the API, inlined into the bundle by Vite; a different URL requires a rebuild. The default is relative:
+# nginx proxies /api/ to the API (nginx.conf).
+ARG VITE_API_URL=/api/
 ENV VITE_API_URL=$VITE_API_URL
 
 RUN npm run build

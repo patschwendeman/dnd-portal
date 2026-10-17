@@ -77,7 +77,7 @@ const MapElement: FunctionComponent<MapElementProps> = ({ activeSceneId, src, ha
     const isActive = sceneId === activeSceneId
 
     return (
-        <MapContainer data-test-id={src} $isActive={isActive} $isAdminScreen={isAdminScreen} onClick={handleClick}>
+        <MapContainer data-test-id={src} data-active={isActive} $isActive={isActive} $isAdminScreen={isAdminScreen} onClick={handleClick}>
             <MapOverlay $isAdminScreen={isAdminScreen}>
                 <NumberIcon>
                     {number}

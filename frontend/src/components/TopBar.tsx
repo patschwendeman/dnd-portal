@@ -94,14 +94,15 @@ const ThemeToggleButton = styled.button`
 `
 
 interface TopBarProps {
-  toggleTheme: () => void
+  // Switches the theme of the game table (Admin, Wall and Ground)
+  onToggleTheme: () => void
   adventures: AdventureSummary[]
   activeAdventureId: number | null
   onSelectAdventure: (adventureId: number) => void
 }
 
 const TopBar: FunctionComponent<TopBarProps> = ({
-  toggleTheme,
+  onToggleTheme,
   adventures,
   activeAdventureId,
   onSelectAdventure,
@@ -199,7 +200,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           </Fragment>
         ))}
       </Sounds>
-      <ThemeToggleButton onClick={toggleTheme}>
+      <ThemeToggleButton onClick={onToggleTheme}>
         <ReactSVG
           src={settingsIcon}
           beforeInjection={(svg) => {

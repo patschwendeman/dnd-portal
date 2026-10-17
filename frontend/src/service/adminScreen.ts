@@ -1,6 +1,6 @@
 import { loadData } from '../api/loadData'
 import { saveData } from '../api/saveData'
-import { AdventureDetail, AdventureSummary, Map, MapResponse, SceneDetail } from '../models/models'
+import { AdventureDetail, AdventureSummary, GameTableState, Map, MapResponse, Theme } from '../models/models'
 
 export const getAdventures = async (): Promise<AdventureSummary[]> => {
   return loadData('adventures', 'adventures')
@@ -22,23 +22,18 @@ export const getSceneById = async (id: number) => {
   return loadData(`scene detail by id ${id}`, `scenes/${id}`)
 }
 
+// Request bodies follow the API contract (AdventureUpdate, GameTableUpdate), whose fields are snake_case
+
 export const saveActiveScene = async (adventureId: number, sceneId: number): Promise<AdventureDetail> => {
-  // The request body follows the API contract (AdventureUpdate), whose fields are snake_case
   // eslint-disable-next-line camelcase
   return saveData(`active scene of adventure ${adventureId}`, `adventures/${adventureId}`, { active_scene_id: sceneId })
 }
 
-export const handleDialogue = (
-  option: boolean,
-  sceneOption: SceneDetail | undefined,
-  setActiveSceneId: React.Dispatch<React.SetStateAction<number | null>>,
-  setDialogueVisibility: React.Dispatch<React.SetStateAction<boolean>>
-) => {
-  if (option === true) {
-    if (!sceneOption) {
-      throw new Error('Scene option not found')
-    }
-    setActiveSceneId(sceneOption.id)
-  }
-  setDialogueVisibility(false)
+export const saveActiveAdventure = async (adventureId: number): Promise<GameTableState> => {
+  // eslint-disable-next-line camelcase
+  return saveData('active adventure', 'table', { active_adventure_id: adventureId })
+}
+
+export const saveTheme = async (theme: Theme): Promise<GameTableState> => {
+  return saveData('theme', 'table', { theme })
 }

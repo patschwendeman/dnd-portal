@@ -11,8 +11,9 @@ Markdown-Notizen das Frontend selbst aus `public/`.
 | `/ground` | Ground | Digitales Spielbrett: Kampfschauplatz, optional mit Grid |
 | `/` | Player | Smartphone der Spieler: Ressourcen des Charakters |
 
-Admin, Wall und Ground laufen als Fenster im selben Browser und synchronisieren sich über `localStorage`;
-der Player Screen ist nicht angebunden.
+Admin, Wall und Ground folgen dem Spieltisch-Zustand des Servers (aktives Abenteuer, aktive Szene, Theme), den er per
+WebSocket pusht; sie können daher auch in verschiedenen Browsern bzw. auf verschiedenen Geräten laufen. Der Player
+Screen ist noch nicht angebunden.
 
 ## Starten
 
@@ -31,8 +32,9 @@ npm ci && npm run dev                              # nativ, Node 18 (siehe .nvmr
 
 ## Konfiguration
 
-`VITE_API_URL` legt die Backend-URL fest (Default `http://localhost:8000/`). Vite setzt den Wert zur Build-Zeit ins
-Bundle ein: lokal per `.env` (Vorlage [`.env.example`](.env.example)), im Docker-Build per
+`VITE_API_URL` legt die Backend-URL fest (Default `/api/`: der Vite-Dev-Server bzw. nginx leiten `/api/` und `/ws` an
+das Backend weiter, Ziel in Dev per `API_PROXY_TARGET`, Default `http://localhost:8000`). Vite setzt den Wert zur
+Build-Zeit ins Bundle ein: lokal per `.env` (Vorlage [`.env.example`](.env.example)), im Docker-Build per
 `--build-arg VITE_API_URL=…`.
 
 ## Skripte

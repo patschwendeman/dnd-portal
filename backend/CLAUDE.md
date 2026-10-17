@@ -1,7 +1,8 @@
 # backend (dnd-portal)
 
-REST-API + PostgreSQL für das DnD Portal. Liefert Abenteuer (mit Spielern, aktiver Szene und globalem Level) und
-Szenen mit ihren Wall-/Ground-Bildern und Musik-Playlists an das Frontend (`../frontend`) und die Mediendateien selbst (Ordner `../media`, unter `/media`). Projektübergreifender Kontext (Vision, Screens, Begriffe, bekannte Probleme) liegt
+REST-API, WebSocket und PostgreSQL für das DnD Portal. Liefert Abenteuer (mit Spielern, aktiver Szene und globalem Level) und
+Szenen mit ihren Wall-/Ground-Bildern und Musik-Playlists an das Frontend (`../frontend`), hält den Spieltisch-Zustand
+(aktives Abenteuer, aktive Szene, Theme) und pusht ihn per WebSocket (`/ws`) an Admin, Wall und Ground und die Mediendateien selbst (Ordner `../media`, unter `/media`). Projektübergreifender Kontext (Vision, Screens, Begriffe, bekannte Probleme) liegt
 eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 
 ## Stack
@@ -43,12 +44,17 @@ CRUD-Funktion geprüft. Daneben prüfen `test_cors.py` (erlaubte Origins und Met
 (`Settings`, ohne DB), `test_migrate.py` (Alt-DB-Prüfung über eine Tabellenliste, ohne die Test-DB zu verändern),
 `test_media.py` (Auslieferung unter `/media` inkl. `Range`, 404 und Pfad-Traversal; `source`-Format; alle Seed-Dateien
 in `../media` vorhanden), `test_seed.py` (Seeder inkl. Abenteuer, Spieler und fehlender Datei, in einer zurückgerollten
-Transaktion) sowie `test_migration_0002.py` und `test_migration_0003.py` (Migration `0001` → `0002` bzw. `0002` →
-`0003` und zurück mit Daten, in einer eigenen temporären Datenbank – braucht `CREATE DATABASE`).
-Schreibende Tests (`PATCH` in `test_adventures.py`) laufen über die Fixture `db`: Sie ersetzt `get_db` per
-`app.dependency_overrides` durch eine Session in einer äußeren, danach zurückgerollten Transaktion (Commits werden
-Savepoints), sodass die Test-DB den Seed-Stand behält; dort legt `other_adventure` ein zweites Abenteuer mit eigenen
-Szenen an (Filter je Abenteuer, fremde Szene bei `PATCH`). Der Medienordner der Tests ist ein temporäres Verzeichnis:
+Transaktion) sowie `test_migration_0002.py`, `test_migration_0003.py` und `test_migration_0004.py` (Migration `0001` →
+`0002`, `0002` → `0003` bzw. `0003` → `0004` und zurück mit Daten, in einer eigenen temporären Datenbank – braucht
+`CREATE DATABASE`). `test_table.py` prüft `GET`/`PATCH /table`, `test_ws.py` den WebSocket `/ws` per
+`TestClient.websocket_connect` (Snapshot, Push nach `PATCH`, `screen`- und Origin-Prüfung, Ping mit per `monkeypatch`
+verkürztem `PING_INTERVAL_SECONDS`, Entfernen getrennter Verbindungen); Nachrichten werden mit Timeout gelesen, damit
+ein fehlender Push den Test scheitern lässt statt ihn zu blockieren.
+Schreibende Tests (`PATCH` in `test_adventures.py`, `test_table.py`, `test_ws.py`) laufen über die Fixture `db`
+(`tests/conftest.py`): Sie ersetzt `get_db` per `app.dependency_overrides` und die Session des WebSocket-Push
+(`app.realtime.push.SessionLocal`) durch eine Session in einer äußeren, danach zurückgerollten Transaktion (Commits
+werden Savepoints), sodass die Test-DB den Seed-Stand behält; dort legt `other_adventure` ein zweites Abenteuer mit
+eigenen Szenen an (Filter je Abenteuer, fremde Szene bei `PATCH`, Abenteuerwechsel). Der Medienordner der Tests ist ein temporäres Verzeichnis:
 `tests/conftest.py` setzt `MEDIA_DIR` vor dem Import von `app` (Fixture `media_dir`).
 
 Konfiguration: `backend/.env` aus `.env.example`, Schlüssel siehe [README.md](README.md#konfiguration). Gelesen von
@@ -66,7 +72,8 @@ unter `/app/.venv` (im `PATH`), der Prozess läuft als Non-Root-User `dnd`. `CMD
 ## Struktur & Schichten
 
 ```
-app/main.py               App `app`, lifespan (Migrationen + Seeder), CORS, include_router mit Prefix/Tags,
+app/main.py               App `app`, lifespan (Migrationen + Seeder), CORS, include_router mit Prefix/Tags (WebSocket
+                          `ws` mit Prefix `/ws`, ohne Tag),
                           StaticFiles des Medienordners unter /media
 app/core/config.py        Settings (pydantic-settings) und Instanz `settings`
 app/db/base.py            class Base(DeclarativeBase), MetaData mit Namenskonvention für Constraints
@@ -74,25 +81,35 @@ app/db/session.py         engine, SessionLocal, get_db()
 app/db/migrate.py         run_migrations(): Alt-DB-Prüfung (check_legacy_schema), dann alembic upgrade head
 app/db/seed.py            Seeder; Daten in app/db/data/seed_data.json
 app/models/               SQLAlchemy-Models: adventure.py (Adventure), player.py (Player), scene.py (Scene, scene_track),
+                          game_table.py (GameTable, genau eine Zeile `GAME_TABLE_ID`),
                           media.py (Media, berechnetes `source`); __init__.py re-exportiert alle (vollständige Base.metadata)
-app/schemas/              Pydantic-Schemas des API-Vertrags: adventure.py (AdventureSummary, AdventureDetail, Player,
+app/schemas/              Pydantic-Schemas des API-Vertrags: game_table.py (GameTableState, GameTableUpdate, Theme),
+                          adventure.py (AdventureSummary, AdventureDetail, Player,
                           AdventureUpdate), scene.py (SceneDetail, Image, Track), map.py (MapEntry)
 app/crud/adventure.py     Abenteuer lesen (mit Spielern und Avatar), Existenzprüfung, Update
+app/crud/game_table.py    Spieltisch-Zeile lesen (mit aktivem Abenteuer), Update
 app/crud/scene.py         Lesezugriffe auf Scene, immer mit Relationen (read_scenes und read_scenes_by_main je
                           adventure_id, read_scene), read_scene_adventure_id
 app/services/adventure.py Fachlogik Abenteuer (Liste, Detail, Szenen/Karten je Abenteuer → None bei unbekannter ID,
                           update_adventure inkl. Prüfung der aktiven Szene → SceneNotInAdventureError)
 app/services/scene.py     Fachlogik Szenen (get_scene → Scene | None)
+app/services/game_table.py Spieltisch-Zustand (get_state inkl. aktiver Szene des aktiven Abenteuers, update_state mit
+                          Prüfung des Abenteuers → AdventureNotFoundError)
+app/realtime/             WebSocket: manager.py (ConnectionManager `manager` im Prozess, Connection je Verbindung mit
+                          Sende-Lock, Broadcast entfernt Verbindungen bei Sendefehler/Timeout, PING_INTERVAL_SECONDS),
+                          push.py (push_state als BackgroundTask nach dem Commit, eigene Session; send_initial_state),
+                          origin.py (is_origin_allowed: ohne Origin, CORS_ORIGINS oder gleicher Host/Port wie `Host`)
 app/services/map.py       Fachlogik Karten (get_maps je Abenteuer → list[MapEntry], MapType)
 app/api/deps.py           SessionDep
 app/api/routes/*.py       je Ressource ein `router` (adventures inkl. Szenen/Karten je Abenteuer, scenes nur
                           Einzelszene) – nur HTTP-Mapping
 tests/conftest.py         Fixtures: TestClient, Seed-Daten und daraus berechnete Erwartungen
-tests/test_*.py           Tests je Router (adventures inkl. Karten, scenes), Medien (media), CORS, Config, Migrationsstart
-                          (migrate), Seeder (seed), Migrationen 0002 und 0003 (migration_0002, migration_0003)
+tests/test_*.py           Tests je Router (adventures inkl. Karten, scenes, table), WebSocket (ws), Medien (media), CORS,
+                          Config, Migrationsstart (migrate), Seeder (seed), Migrationen 0002–0004 (migration_000n)
 alembic.ini               Alembic-Konfiguration (ohne DB-URL; Dateinamen <revision>_<slug>.py, ruff als post_write_hook)
 migrations/env.py         URL aus settings.database_url, target_metadata = Base.metadata, compare_type=True
-migrations/versions/      Migrationen, nummeriert (0001_initial_schema.py, 0002_…, 0003_adventure_and_player.py)
+migrations/versions/      Migrationen, nummeriert (0001_initial_schema.py, 0002_…, 0003_adventure_and_player.py,
+                          0004_game_table.py)
 scripts/export_openapi.py schreibt app.openapi() nach openapi.json (versioniert, Basis der Frontend-Typen)
 ```
 
@@ -111,15 +128,18 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
 - Antworten sind Pydantic-Schemas in `app/schemas/` (`ConfigDict(from_attributes=True)`). Geben Route/Service
   ORM-Objekte zurück, steht das Schema als `response_model` im Decorator (`/scenes/{id}`, `/adventures*`: Services
   liefern ORM-Objekte bzw. `None`); sonst reicht die Rückgabe-Annotation (`/adventures/{id}/maps/*` liefert
-  `list[MapEntry]`). Kein `response_model=None`.
+  `list[MapEntry]`, `/table` liefert `GameTableState`). Kein `response_model=None`.
   „Nicht gefunden“ meldet der Service mit `None`, die Route wirft `HTTPException(404, "Scene not found")` und
   dokumentiert sie per `responses={404: …}`. Fachliche Ablehnungen meldet der Service per Exception
-  (`SceneNotInAdventureError`), die Route übersetzt sie in 422.
+  (`SceneNotInAdventureError`, `AdventureNotFoundError`), die Route übersetzt sie in 422.
+- Schreibende Routen, die den Spieltisch-Zustand ändern können (`PATCH /table`, `PATCH /adventures/{id}`), hängen nach
+  Erfolg `push_state` als `BackgroundTask` an (läuft nach dem Commit; die Routen bleiben synchron). uvicorn läuft mit
+  einem Worker, weil der Verbindungsmanager im Prozess liegt.
   Relationen, die ein Schema braucht, lädt die CRUD-Funktion eager (`joinedload`/`contains_eager`, die Spieler
   eines Abenteuers per `selectinload`).
 - Models im typisierten 2.0-Stil: `Mapped[...]`/`mapped_column`, Nullbarkeit im Typ spiegelt das Schema (aktuell
-  sind alle Spalten außer `media.size`, `adventure.description`, `adventure.active_scene_id` und
-  `player.avatar_media_id` (`Mapped[... | None]`) `NOT NULL`); Relationen zwischen Modulen per
+  sind alle Spalten außer `media.size`, `adventure.description`, `adventure.active_scene_id`,
+  `player.avatar_media_id` und `game_table.active_adventure_id` (`Mapped[... | None]`) `NOT NULL`); Relationen zwischen Modulen per
   `TYPE_CHECKING`-Import und String-Annotation. Abfragen nur mit `select()`,
   `db.scalars()`, `db.get()` (kein `db.query`); bei `joinedload` von Collections `.unique()`; gefiltert wird in SQL.
 - ruff: Zeilenlänge 120, Regelsets `E`, `F`, `W`, `I`, `B`, `UP`, `SIM`; ignoriert nur `B008` (`Depends(...)` als

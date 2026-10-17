@@ -3,6 +3,7 @@ import { WebDriver } from 'selenium-webdriver'
 
 import {
   MEDIA_BASE_URL,
+  MEDIA_PATH,
   buildDriver,
   clickElement,
   confirmDialog,
@@ -17,8 +18,10 @@ const feature = loadFeature('__tests__/bdd/features/selectMainScene.feature')
 // The seed data contains 25 main scenes (main_1.jpg … main_25.jpg)
 const MAIN_SCENE_COUNT = 25
 
-const getRandomMainScene = (): string =>
-  `${MEDIA_BASE_URL}/images/ground_screen/main_${getRandomNumber(1, MAIN_SCENE_COUNT)}.jpg`
+// Media path of a random main scene, relative to the media base
+const getRandomMainScene = (): string => `/images/ground_screen/main_${getRandomNumber(1, MAIN_SCENE_COUNT)}.jpg`
+
+const tile = (mediaPath: string): string => `[data-test-id="${MEDIA_PATH}${mediaPath}"]`
 
 defineFeature(feature, (test) => {
   let driver: WebDriver
@@ -44,11 +47,11 @@ defineFeature(feature, (test) => {
     })
 
     when('I click on a main scene', async () => {
-      await clickElement(driver, `[data-test-id="${mainScene}"]`)
+      await clickElement(driver, tile(mainScene))
     })
 
     and('I click the Confirm button', async () => {
-      await confirmDialog(driver)
+      await confirmDialog(driver, tile(mainScene))
     })
 
     and('I go to ground screen', async () => {
@@ -56,7 +59,7 @@ defineFeature(feature, (test) => {
     })
 
     then('I see the correct main map', async () => {
-      const expectedSrc = mainScene
+      const expectedSrc = `${MEDIA_BASE_URL}${mainScene}`
       const imageSrc = await waitForAttribute(driver, '[data-test-id="groundImg"]', 'src', expectedSrc)
       expect(imageSrc).toBe(expectedSrc)
     })
@@ -75,11 +78,11 @@ defineFeature(feature, (test) => {
     })
 
     when('I click on a main scene', async () => {
-      await clickElement(driver, `[data-test-id="${mainScene}"]`)
+      await clickElement(driver, tile(mainScene))
     })
 
     and('I click the Confirm button', async () => {
-      await confirmDialog(driver)
+      await confirmDialog(driver, tile(mainScene))
     })
 
     and('I go to wall screen', async () => {
@@ -87,7 +90,7 @@ defineFeature(feature, (test) => {
     })
 
     then('I see the updated map overview', async () => {
-      const map = await waitForElement(driver, `[data-test-id="${mainScene}"]`)
+      const map = await waitForElement(driver, tile(mainScene))
       expect(map).toBeDefined()
     })
   })
@@ -107,11 +110,11 @@ defineFeature(feature, (test) => {
     })
 
     when('I click on a main scene', async () => {
-      await clickElement(driver, `[data-test-id="${mainScene}"]`)
+      await clickElement(driver, tile(mainScene))
     })
 
     and('I click the Confirm button', async () => {
-      await confirmDialog(driver)
+      await confirmDialog(driver, tile(mainScene))
     })
 
     and('I go to wall screen', async () => {

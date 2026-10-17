@@ -3,6 +3,7 @@ import { WebDriver } from 'selenium-webdriver'
 
 import {
   MEDIA_BASE_URL,
+  MEDIA_PATH,
   buildDriver,
   clickElement,
   confirmDialog,
@@ -33,6 +34,7 @@ defineFeature(feature, (test) => {
     const sideScenes = ['forest', 'shop', 'tavern']
     const sideScene = sideScenes[getRandomNumber(0, sideScenes.length - 1)]
 
+    const sideSceneTile = `[data-test-id="${MEDIA_PATH}/images/wall_screen/${sideScene}.jpg"]`
     const sideSceneImageSource = `${MEDIA_BASE_URL}/images/wall_screen/${sideScene}.jpg`
 
     given('I am on the admin screen', async () => {
@@ -40,11 +42,11 @@ defineFeature(feature, (test) => {
     })
 
     when('I click on a side scene', async () => {
-      await clickElement(driver, `[data-test-id="${sideSceneImageSource}"]`)
+      await clickElement(driver, sideSceneTile)
     })
 
     and('I click the Confirm button', async () => {
-      await confirmDialog(driver)
+      await confirmDialog(driver, sideSceneTile)
     })
 
     and('I go to wall screen', async () => {

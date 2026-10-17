@@ -9,11 +9,13 @@ import json
 import os
 import tempfile
 from collections.abc import Iterator
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
 SEED_DATA_PATH = Path(__file__).resolve().parent.parent / "app" / "db" / "data" / "seed_data.json"
 
@@ -36,6 +38,64 @@ def client() -> Iterator[TestClient]:
     # As a context manager the TestClient runs the lifespan (migrations and seeder).
     with TestClient(app, raise_server_exceptions=False) as client:
         yield client
+
+
+@pytest.fixture
+def db(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> Iterator[Session]:
+    """Session in an outer transaction that is rolled back afterwards (commits become savepoints).
+
+    Used by the routes (`get_db`) and by the WebSocket push, which otherwise opens its own session and would not see
+    the uncommitted changes.
+    """
+    from app.db.session import engine, get_db
+    from app.main import app
+    from app.realtime import push
+
+    with engine.connect() as connection:
+        transaction = connection.begin()
+        session = Session(bind=connection, join_transaction_mode="create_savepoint", autoflush=False)
+        app.dependency_overrides[get_db] = lambda: session
+        monkeypatch.setattr(push, "SessionLocal", lambda: nullcontext(session))
+        try:
+            yield session
+        finally:
+            app.dependency_overrides.pop(get_db, None)
+            session.close()
+            transaction.rollback()
+
+
+@pytest.fixture
+def other_adventure(db: Session) -> dict[str, int]:
+    """A second adventure with one Kampfszene and one Nicht-Kampfszene (inside the rolled-back transaction)."""
+    from app.models import Adventure, Media, Scene
+
+    adventure = Adventure(name="Zweites Abenteuer", description=None)
+    media = [
+        Media(kind="image", name=name, storage_key=f"adventure-test/{name}.jpg", content_type="image/jpeg")
+        for name in ("wall", "ground_main", "ground_side")
+    ]
+    db.add_all([adventure, *media])
+    db.flush()
+    wall, ground_main, ground_side = media
+    main_scene = Scene(
+        adventure_id=adventure.id,
+        name="Other fight",
+        description="Elsewhere",
+        main=True,
+        wall_image_id=wall.id,
+        ground_image_id=ground_main.id,
+    )
+    side_scene = Scene(
+        adventure_id=adventure.id,
+        name="Other village",
+        description="Elsewhere",
+        main=False,
+        wall_image_id=wall.id,
+        ground_image_id=ground_side.id,
+    )
+    db.add_all([main_scene, side_scene])
+    db.commit()
+    return {"id": adventure.id, "main_scene_id": main_scene.id, "side_scene_id": side_scene.id}
 
 
 @pytest.fixture(scope="session")
