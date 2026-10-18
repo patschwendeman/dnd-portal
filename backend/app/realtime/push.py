@@ -69,12 +69,6 @@ async def update_audio(update: AudioUpdate) -> AudioState:
         return audio.state()
 
 
-async def next_track() -> AudioState:
-    async with manager.state_lock:
-        audio.next()
-        return audio.state()
-
-
 async def send_initial_state(connection: Connection) -> bool:
     """Registers the connection and sends it the current state and audio state; False if a send failed."""
     async with manager.state_lock:

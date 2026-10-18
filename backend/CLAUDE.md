@@ -50,7 +50,7 @@ Transaktion) sowie `test_migration_0002.py`, `test_migration_0003.py` und `test_
 `TestClient.websocket_connect` (Snapshot, Push nach `PATCH`, `screen`- und Origin-Prüfung, Ping mit per `monkeypatch`
 verkürztem `PING_INTERVAL_SECONDS`, Entfernen getrennter Verbindungen, Audioausgabe per `audio_ready`/`track_ended`,
 `sound` nur an die Ausgabe); Nachrichten werden mit Timeout gelesen, damit ein fehlender Push den Test scheitern lässt
-statt ihn zu blockieren. `test_audio.py` prüft `GET`/`PATCH /table/audio`, `POST /table/audio/next` und
+statt ihn zu blockieren. `test_audio.py` prüft `GET`/`PATCH /table/audio`, die Track-Wahl beim Trackende und
 `POST /table/sounds` (Zufall per `monkeypatch` auf `audio.random` gesteuert). Der Musikzustand liegt im Speicher: Die
 Fixture `reset_audio` setzt ihn nach dem Test zurück (`test_audio.py`, `test_ws.py` und alle Tests mit `db`).
 Schreibende Tests (`PATCH` in `test_adventures.py`, `test_table.py`, `test_ws.py`) laufen über die Fixture `db`

@@ -10,7 +10,6 @@ import { ErrorBar } from '../components/ErrorBar'
 import { Label } from '../components/Label'
 import { MapOverview } from '../components/MapOverview'
 import { SideMaps } from '../components/SideMaps'
-import { TextButton } from '../components/TextButton'
 import { TopBar } from '../components/TopBar'
 import { ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext } from '../context/context'
 import { AdventureSummary, Map, SceneDetail, SoundName } from '../models/models'
@@ -18,7 +17,6 @@ import {
     getAdminData,
     getAdventures,
     getSceneById,
-    playNextTrack,
     playSound,
     saveActiveAdventure,
     saveActiveScene,
@@ -345,10 +343,6 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
         runSave(() => saveAudio({ playing }))
     }
 
-    const handleNextTrack = () => {
-        runSave(playNextTrack)
-    }
-
     const handleVolumeCommit = (_event: unknown, value: number | number[]) => {
         const volume = value as number
         runSave(() => saveAudio({ volume }))
@@ -430,7 +424,6 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
                                 }}
                             />
                         </AudioControlButton>
-                        <TextButton $variant='default' onClick={ handleNextTrack }>Weiter</TextButton>
                         <Track>
                             <Label>Musik</Label>
                             <TrackName>{ getMusicTitle(audio?.track?.source ?? '') }</TrackName>

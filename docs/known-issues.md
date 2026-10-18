@@ -27,8 +27,9 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - Der Musikzustand (Track, Play/Pause, Lautstärke, Audioausgabe) liegt nur im Speicher des API-Prozesses: Nach einem
   Neustart ist die Musik pausiert und die Lautstärke wieder 10 %. Die Wiedergabeposition wird nicht synchronisiert
   (eine neue Ausgabe startet den Track von vorn), Überblendungen gibt es nicht.
-- `POST` ist per CORS nicht freigegeben: Die Audio-Befehle funktionieren über den Proxy (gleicher Origin), nicht bei
-  direktem Zugriff auf Port 8000 aus einem anderen Origin (z. B. Frontend mit absoluter `VITE_API_URL`).
+- `POST` ist per CORS nicht freigegeben: Die Soundeffekte (`POST /table/sounds`) funktionieren über den Proxy
+  (gleicher Origin), nicht bei direktem Zugriff auf Port 8000 aus einem anderen Origin (z. B. Frontend mit absoluter
+  `VITE_API_URL`).
 
 ### Bugs & Daten
 

@@ -1,4 +1,4 @@
-"""Tests for the music state of the game table: GET/PATCH /table/audio, POST /table/audio/next and POST /table/sounds.
+"""Tests for the music state of the game table: GET/PATCH /table/audio, end of a track and POST /table/sounds.
 
 The state is kept in memory (app/realtime/audio.py); the fixture `reset_audio` restores the start state after each
 test. Scene changes use the fixture `db` (tests/conftest.py), which is rolled back afterwards.
@@ -41,6 +41,18 @@ def first_track(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(audio, "random", lambda: 0.0)
 
 
+def end_current_track() -> dict[str, Any]:
+    """The audio output reports the end of the current track (like track_ended of the Wall); returns the new state."""
+    from app.realtime.audio import audio
+    from app.realtime.manager import Connection
+
+    output = Connection(websocket=None, screen="wall")  # type: ignore[arg-type]
+    audio.set_output(output)
+    assert audio.track is not None
+    assert audio.track_ended(output, audio.track.id) is True
+    return audio.state().model_dump(mode="json")
+
+
 def activate_scene(client: TestClient, scene_id: int) -> None:
     client.patch("/table", json={"active_adventure_id": 1})
     assert client.patch("/adventures/1", json={"active_scene_id": scene_id}).status_code == 200
@@ -72,8 +84,8 @@ def test_without_active_scene_the_default_music_is_the_playlist(
     client.patch("/table", json={"active_adventure_id": None})
 
     assert client.get("/table/audio").json()["track"] == default_track
-    # The only track: "next" stays with it
-    assert client.post("/table/audio/next").json()["track"] == default_track
+    # The only track: the next one is the same again
+    assert end_current_track()["track"] == default_track
 
 
 def test_missing_default_music_gives_an_empty_playlist(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -126,7 +138,7 @@ def test_patch_rejects_invalid_values(client: TestClient, body: dict[str, Any], 
     assert client.get("/table/audio").json() == before
 
 
-def test_next_picks_another_track_and_keeps_playing(
+def test_end_of_track_picks_another_track_and_keeps_playing(
     client: TestClient, db: Session, first_track: None, expected_scene_details: list[dict[str, Any]]
 ) -> None:
     tracks = scene_tracks(expected_scene_details, SCENE_WITH_TRACKS)
@@ -134,12 +146,12 @@ def test_next_picks_another_track_and_keeps_playing(
     client.patch("/table/audio", json={"playing": True})
     assert client.get("/table/audio").json()["track"] == tracks[0]
 
-    response = client.post("/table/audio/next")
+    state = end_current_track()
 
-    assert response.status_code == 200
-    assert response.json()["track"] == tracks[1]
-    assert response.json()["playing"] is True
-    assert client.post("/table/audio/next").json()["track"] == tracks[0]
+    assert state["track"] == tracks[1]
+    assert state["playing"] is True
+    assert client.get("/table/audio").json()["track"] == tracks[1]
+    assert end_current_track()["track"] == tracks[0]
 
 
 def test_scene_change_loads_the_new_playlist_and_keeps_playing(
@@ -169,7 +181,6 @@ def test_scene_without_tracks_gives_an_empty_playlist(
     assert body["playing"] is True
     client.patch("/table/audio", json={"playing": False})
     assert client.patch("/table/audio", json={"playing": True}).json()["playing"] is False
-    assert client.post("/table/audio/next").json()["track"] is None
 
 
 @pytest.mark.parametrize(

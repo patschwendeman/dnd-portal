@@ -5,7 +5,6 @@ import { apiClient } from '../../src/api/apiClient'
 import { patchData } from '../../src/api/apiMethods'
 import { SaveError } from '../../src/api/saveData'
 import {
-  playNextTrack,
   playSound,
   saveActiveAdventure,
   saveActiveScene,
@@ -122,11 +121,7 @@ describe('audio commands', () => {
     expect(patch).toHaveBeenCalledWith('table/audio', { volume: 35 })
   })
 
-  it('posts the next track and sound effects', async () => {
-    post.mockResolvedValue({ data: { playing: false } })
-    await expect(playNextTrack()).resolves.toEqual({ playing: false })
-    expect(post).toHaveBeenCalledWith('table/audio/next', undefined)
-
+  it('posts sound effects', async () => {
     post.mockResolvedValue({ data: '' })
     await expect(playSound('heal')).resolves.toBeUndefined()
     expect(post).toHaveBeenCalledWith('table/sounds', { name: 'heal' })
@@ -139,7 +134,6 @@ describe('audio commands', () => {
     const music = await failure(saveAudio({ playing: true }))
     expect(music).toBeInstanceOf(SaveError)
     expect(music?.message).toMatch(/^Saving music failed: backend not reachable$/)
-    expect((await failure(playNextTrack()))?.message).toMatch(/^Saving next track failed: HTTP 422$/)
     expect((await failure(playSound('lock')))?.message).toMatch(/^Saving sound lock failed: HTTP 422$/)
   })
 })

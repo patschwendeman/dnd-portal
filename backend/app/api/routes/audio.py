@@ -25,13 +25,6 @@ async def update_audio(update: AudioUpdate, background_tasks: BackgroundTasks) -
     return state
 
 
-@router.post("/audio/next")
-async def next_track(background_tasks: BackgroundTasks) -> AudioState:
-    state = await push.next_track()
-    background_tasks.add_task(push.push_audio)
-    return state
-
-
 @router.post("/sounds", status_code=status.HTTP_204_NO_CONTENT, responses=SOUND_RESPONSES)
 async def play_sound(sound: SoundRequest, background_tasks: BackgroundTasks) -> None:
     """Plays the sound effect on the audio output; without an output it is dropped (204 anyway)."""

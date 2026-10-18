@@ -146,23 +146,6 @@ export interface paths {
         patch: operations["update_audio_table_audio_patch"];
         trace?: never;
     };
-    "/table/audio/next": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Next Track */
-        post: operations["next_track_table_audio_next_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/table/sounds": {
         parameters: {
             query?: never;
@@ -716,26 +699,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-        };
-    };
-    next_track_table_audio_next_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AudioState"];
-                };
             };
         };
     };

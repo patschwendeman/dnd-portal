@@ -49,7 +49,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Notizen:** Bereich „Notizen“ mit Tabs Main, Fight, Side, Leveling, Mechaniken (Markdown aus
   `public/story/`); Inhaltsverzeichnis-Links, Bilder öffnen in neuem Tab. Tab „Side“ ist leer (Ordner fehlt).
 - **Musik (Fernbedienung):** Der Admin spielt selbst nichts ab; Musik und Soundeffekte kommen aus der Wall, die
-  Audioausgabe ist (siehe Wall Screen). Bottom-Bar links Play/Pause, „Weiter“, „Musik“ mit dem Titel des aktuellen
+  Audioausgabe ist (siehe Wall Screen). Bottom-Bar links Play/Pause, „Musik“ mit dem Titel des aktuellen
   Tracks und ein Lautstärke-Slider (gesendet beim Loslassen). Die Anzeige folgt dem Zustand auf dem
   Server, auch für mehrere Admin-Fenster. Der Server spielt zufällige Tracks aus der Playlist der aktiven Szene; nach
   einem Trackende folgt ein anderer Track (bei nur einem derselbe von vorne), die Musik stoppt nur durch Pause. Beim
@@ -128,7 +128,7 @@ Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets.
 - **AUDIO:** Button in derselben Steuerleiste; ein Klick macht diese Wall zur Audioausgabe für Musik und Soundeffekte
   (die Nutzerinteraktion gibt die Wiedergabe im Browser frei). Er ist hervorgehoben, solange die Wall Ausgabe ist.
   Es spielt immer nur eine Wall: Klickt man auf einer anderen Wall „AUDIO“, verstummt die bisherige. Die Ausgabe folgt
-  der Fernbedienung im Admin (Play/Pause, Weiter, Lautstärke, Sounds bei voller Lautstärke über der Musik) und meldet
+  der Fernbedienung im Admin (Play/Pause, Lautstärke, Sounds bei voller Lautstärke über der Musik) und meldet
   das Trackende an den Server; sonst zeigt die Wall nichts an. Nach einem Verbindungsabbruch meldet sie sich ohne
   neuen Klick wieder als Ausgabe. Blockiert der Browser das Abspielen, loggt sie den Fehler; ein erneuter Klick auf
   „AUDIO“ versucht es wieder.

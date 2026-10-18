@@ -885,27 +885,6 @@
         ]
       }
     },
-    "/table/audio/next": {
-      "post": {
-        "operationId": "next_track_table_audio_next_post",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AudioState"
-                }
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "summary": "Next Track",
-        "tags": [
-          "audio"
-        ]
-      }
-    },
     "/table/sounds": {
       "post": {
         "description": "Plays the sound effect on the audio output; without an output it is dropped (204 anyway).",

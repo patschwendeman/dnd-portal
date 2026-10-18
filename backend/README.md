@@ -21,7 +21,6 @@ Theme des Spieltischs (`PATCH`) sowie die Audio-Befehle (`PATCH`/`POST`).
 | `PATCH /table` | aktives Abenteuer (`active_adventure_id`, `null` leert es) und/oder `theme` setzen; 422 bei unbekanntem Abenteuer |
 | `GET /table/audio` | Musikzustand: läuft/pausiert, aktueller Track, Lautstärke (0–100), ob eine Audioausgabe bereit ist |
 | `PATCH /table/audio` | `playing` und/oder `volume` (0–100) setzen; 422 bei ungültigen Werten |
-| `POST /table/audio/next` | nächster zufälliger Track der Playlist |
 | `POST /table/sounds` | Soundeffekt (`name`) an die Audioausgabe schicken; 204, auch ohne Ausgabe; 422 bei unbekanntem Namen |
 | `WS /ws?screen=admin\|wall\|ground\|player` | WebSocket: Snapshot des Spieltischs und Musikzustand beim Verbinden und nach jeder Änderung, alle 15 s ein Ping, Audio-Meldungen der Wall; Origin-Prüfung (nicht in OpenAPI) |
 | `GET /media/...` | Mediendateien (Bilder, Musik) aus `../media`, inkl. `Range` |
@@ -74,7 +73,7 @@ Für Zugriff über das LAN ist nichts zu konfigurieren: Das Frontend erreicht AP
 Origins (`/api/`, `/ws`; nginx bzw. Vite), andere Geräte öffnen nur `http://<IP>:8080`. Der WebSocket nimmt
 Verbindungen ohne `Origin`, aus `CORS_ORIGINS` oder mit gleichem Host und Port wie der `Host`-Header an. Nur wer die API
 direkt (Port 8000) aus einem anderen Origin aufruft, muss diesen in `CORS_ORIGINS` ergänzen (`POST`, also die
-Audio-Befehle, ist per CORS nicht freigegeben). Fehlende Pflichtwerte
+Soundeffekte, ist per CORS nicht freigegeben). Fehlende Pflichtwerte
 brechen den Start mit einem Validierungsfehler ab.
 
 ## Seed

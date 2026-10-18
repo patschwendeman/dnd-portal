@@ -54,10 +54,6 @@ export const saveAudio = async (update: AudioUpdate): Promise<AudioState> => {
   return saveData('music', 'table/audio', update)
 }
 
-export const playNextTrack = async (): Promise<AudioState> => {
-  return postCommand('next track', 'table/audio/next')
-}
-
 export const playSound = async (name: SoundName): Promise<void> => {
   await postCommand(`sound ${name}`, 'table/sounds', { name })
 }

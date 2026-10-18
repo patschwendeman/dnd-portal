@@ -21,6 +21,6 @@ const asSave = async <T>(what: string, request: () => Promise<T>): Promise<T> =>
 
 export const saveData = async (what: string, path: string, body: object) => asSave(what, () => patchData(path, body))
 
-// For commands without a resource to patch (e.g. next track, sound effect)
+// For commands without a resource to patch (e.g. sound effect)
 export const postCommand = async (what: string, path: string, body?: object) =>
   asSave(what, () => postData(path, body))

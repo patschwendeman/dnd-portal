@@ -98,7 +98,7 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
   Server, ob sich die aktive Szene geändert hat; dann lädt er die neue Playlist, wählt zufällig einen Track und pusht
   zusätzlich `audio`. `playing` bleibt dabei unverändert (läuft die Musik, startet sofort ein Track der neuen Szene).
 - **Nächster Track:** zufällig aus der Playlist und, wenn möglich, nicht der aktuelle (Zufallsquelle `audio.random`,
-  für Tests ersetzbar) – bei `POST /table/audio/next` und bei `track_ended` der Ausgabe.
+  für Tests ersetzbar) – bei `track_ended` der Ausgabe.
 - **Ausgabe:** Genau eine Wall spielt (kein Echo im Raum): die zuletzt per `audio_ready` gemeldete. Trennt sich die
   Ausgabe, ist `output_ready` `false` und alle bekommen den neuen `AudioState`. Befehle funktionieren auch ohne
   Ausgabe und ändern den Zustand; eine Wall, die Ausgabe wird, setzt mit dem aktuellen Zustand ein (läuft die Musik,
@@ -111,10 +111,10 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
   `src/audio/sounds.ts`). Scheitert `play()` (Autoplay), loggt sie per `console.error`. Nach einem Reconnect meldet
   sich eine Wall, die vorher Ausgabe war, von selbst wieder mit `audio_ready`, bis eine andere Wall übernimmt.
 - **Admin als Fernbedienung:** zeigt `playing`, den Tracktitel (`getMusicTitle(track.source)`) und ohne Ausgabe den
-  Hinweis „Keine Audioausgabe bereit“; Play/Pause (`PATCH /table/audio {playing}`), „Weiter“ (`POST
-  /table/audio/next`), Lautstärke-Slider (`PATCH /table/audio {volume}` beim Loslassen) – ohne lokale Vorwegnahme,
-  Fehler in der Speicherfehler-Leiste mit „Erneut versuchen“. Die Sound-Buttons der Top-Bar senden `POST
-  /table/sounds`; Fehler werden nur geloggt (kein Retry). Im Admin wird nichts abgespielt.
+  Hinweis „Keine Audioausgabe bereit“; Play/Pause (`PATCH /table/audio {playing}`), Lautstärke-Slider
+  (`PATCH /table/audio {volume}` beim Loslassen) – ohne lokale Vorwegnahme, Fehler in der Speicherfehler-Leiste mit
+  „Erneut versuchen“. Die Sound-Buttons der Top-Bar senden `POST /table/sounds`; Fehler werden nur geloggt (kein
+  Retry). Im Admin wird nichts abgespielt.
 
 ## Backend (`backend`)
 
@@ -146,7 +146,6 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
 | `PATCH /table` | Body `GameTableUpdate`, Antwort `GameTableState` (200); 422 `{"detail": "Adventure not found"}` bei unbekanntem Abenteuer (nichts wird geändert), 422 im FastAPI-Standardformat bei ungültigem `theme` |
 | `/table/audio` | `AudioState`: Musikzustand (200), siehe [Audio](#audio) |
 | `PATCH /table/audio` | Body `AudioUpdate`, Antwort `AudioState` (200); 422 im FastAPI-Standardformat bei `volume` außerhalb 0–100 bzw. `null`; `playing: true` bei leerer Playlist ändert `playing` nicht |
-| `POST /table/audio/next` | Antwort `AudioState` (200): neuer zufälliger Track, `playing` unverändert |
 | `POST /table/sounds` | Body `SoundRequest`, 204 (auch ohne Audioausgabe); 422 bei unbekanntem Namen |
 | `/ws` | WebSocket des Spieltischs (nicht in OpenAPI), siehe [WebSocket `/ws`](#websocket-ws) |
 | `/media/{storage_key}` | Mediendatei aus dem Medienordner (`StaticFiles`, nicht in OpenAPI): 200 bzw. 206 bei `Range`-Header (Audio-Seek), 404 bei fehlender Datei oder Pfad außerhalb des Ordners |
@@ -385,7 +384,7 @@ per Build-Argument. Eine andere URL erfordert einen neuen Build.
 `http://<IP>:8080` (bzw. `:5173` in Dev), ohne besonderen Build und ohne CORS-Eintrag. Für direkte Zugriffe auf Port
 8000 erlaubt die API per CORS weiterhin die Origins aus `CORS_ORIGINS` (`backend/.env`, JSON-Liste; Default
 `["http://localhost:5173","http://localhost:8080"]`), nur `GET` und `PATCH` (Preflight für JSON-Body), ohne
-Credentials. `POST` ist per CORS nicht freigegeben: Die Audio-Befehle (`POST /table/audio/next`, `POST /table/sounds`)
+Credentials. `POST` ist per CORS nicht freigegeben: Die Soundeffekte (`POST /table/sounds`)
 funktionieren über den Proxy (gleicher Origin), bei direktem Zugriff aus einem anderen Origin scheitert der Preflight. Der WebSocket prüft den Origin selbst (siehe [WebSocket `/ws`](#websocket-ws)). Der Player Screen ruft die
 API nicht auf.
 

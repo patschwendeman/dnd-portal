@@ -48,12 +48,6 @@ class AudioService:
         if "playing" in values and (self.track is not None or not values["playing"]):
             self.playing = values["playing"]
 
-    def next(self) -> None:
-        """Another random track of the playlist (if possible not the current one); `playing` stays as it is."""
-        current = self.track
-        others = [track for track in self.playlist if current is None or track.id != current.id]
-        self.track = self._choose(others or self.playlist)
-
     def set_output(self, connection: Connection) -> Connection | None:
         """Makes the connection the audio output; returns the previous output (if it was another connection)."""
         previous = self.output
@@ -71,8 +65,14 @@ class AudioService:
         """Next track if the output reports the end of the current track; False for outdated or duplicate reports."""
         if self.output is not connection or self.track is None or self.track.id != track_id:
             return False
-        self.next()
+        self._next_track()
         return True
+
+    def _next_track(self) -> None:
+        """Another random track of the playlist (if possible not the current one); `playing` stays as it is."""
+        current = self.track
+        others = [track for track in self.playlist if current is None or track.id != current.id]
+        self.track = self._choose(others or self.playlist)
 
     def _choose(self, tracks: list[Track]) -> Track | None:
         if not tracks:

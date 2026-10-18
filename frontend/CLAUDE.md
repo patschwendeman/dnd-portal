@@ -80,7 +80,7 @@ src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen der To
 src/screens/         Screens
 src/components/      UI-Bausteine (TopBar, DocumentReader, MapOverview, GridOverlay, ScreenControlBar, ResourceBarPlayer …)
 src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
-                     saveActiveScene, saveActiveAdventure, saveTheme, saveAudio, playNextTrack, playSound, getWallScene,
+                     saveActiveScene, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
                      getWallMainmaps, getGroundScreenData …)
 src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData/patchData/postData (apiMethods.ts), loadData,
                      saveData/postCommand, mediaUrl (mediaUrl.ts), wsUrl (wsUrl.ts); schema.d.ts generiert
@@ -106,7 +106,7 @@ Verbindungsfehler. Player-Screens sind nicht angebunden. Details: `../docs/archi
 
 Audio: Der Server hält den Musikzustand und pusht ihn als `audio` an alle Screens. Die Wall, auf der „AUDIO“ geklickt
 wurde (`audio_ready`), ist die einzige Audioausgabe und spielt per `WallAudioPlayer`; nach einem Reconnect meldet sie
-sich selbst wieder. Der Admin spielt nichts ab, er sendet Befehle (`PATCH table/audio`, `POST table/audio/next`,
+sich selbst wieder. Der Admin spielt nichts ab, er sendet Befehle (`PATCH table/audio`,
 `POST table/sounds`) ohne lokale Vorwegnahme. Details: `../docs/architecture.md#audio`.
 
 ## Konventionen (durch ESLint erzwungen bzw. im Code üblich)

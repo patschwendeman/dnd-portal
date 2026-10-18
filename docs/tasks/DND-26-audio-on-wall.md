@@ -9,7 +9,7 @@ Musik und Soundeffekte laufen heute im Admin-Fenster: `useMusicPlayer`/`MusicPla
 zufällig, ohne Szene spielt die fest eingebundene Standardmusik, und die `TopBar` spielt Soundeffekte per `playAtmoSounds`.
 Seit DND-25 können Wall und Ground auf anderen Geräten laufen, der Ton kommt aber weiter aus dem Rechner des Spielleiters.
 Ziel: **Die Wall ist der Lautsprecher** für Musik und Soundeffekte, der Admin ist die Fernbedienung (Play/Pause,
-Weiter, Lautstärke, Sounds). Wie beim Spieltisch-Zustand ist der **Server die Quelle** des Musikzustands und
+Lautstärke, Sounds). Wie beim Spieltisch-Zustand ist der **Server die Quelle** des Musikzustands und
 pusht ihn per WebSocket. Zweiter von drei Schritten der Zieldefinition (DND-25 Zustand, DND-27 Smartphones).
 
 **Voraussetzung:** DND-25 (fertig).
@@ -19,7 +19,7 @@ pusht ihn per WebSocket. Zweiter von drei Schritten der Zieldefinition (DND-25 Z
 **Im Scope**
 - Musikzustand im Server (im Speicher): Playlist aus der aktiven Szene bzw. Standardmusik, aktueller Track,
   läuft/pausiert, Lautstärke, Audioausgabe bereit.
-- REST-Endpoints für Play/Pause, Lautstärke, Weiter und Soundeffekte; neue WebSocket-Nachrichten in beide Richtungen
+- REST-Endpoints für Play/Pause, Lautstärke und Soundeffekte; neue WebSocket-Nachrichten in beide Richtungen
   (erstmals Client → Server, nur von der Wall).
 - Wall: „Audio“-Button in der Steuerleiste, Wiedergabe von Musik und Sounds, wenn sie die Ausgabe ist.
 - Admin: Musiksteuerung und Sounds senden Befehle an den Server, Anzeige von Track und Ausgabe-Status.
@@ -31,6 +31,8 @@ pusht ihn per WebSocket. Zweiter von drei Schritten der Zieldefinition (DND-25 Z
 - Eigene Playlists, Upload, Verwaltung von Soundeffekten im Backend (die Sounddateien bleiben im Frontend).
 - Lautstärke der Soundeffekte (bleiben bei 100 %), Audio auf Ground oder Player.
 - Anzeige aller verbundenen Screens im Admin.
+- Manueller Trackwechsel („Weiter“-Button, `POST /table/audio/next`): in Runde 2 per User-Entscheidung gestrichen.
+  Ein neuer Track kommt nur noch durch Trackende oder Szenenwechsel.
 
 ## Entscheidungen
 
@@ -61,7 +63,6 @@ pusht ihn per WebSocket. Zweiter von drei Schritten der Zieldefinition (DND-25 Z
   |---|---|
   | `GET /table/audio` | `AudioState` |
   | `PATCH /table/audio` | Body `AudioUpdate`, Antwort `AudioState`; 422 bei `volume` außerhalb 0–100 |
-  | `POST /table/audio/next` | `AudioState` (neuer zufälliger Track, `playing` unverändert) |
   | `POST /table/sounds` | Body `SoundRequest`, 204; 422 bei unbekanntem Namen |
 
   ```
@@ -91,7 +92,7 @@ pusht ihn per WebSocket. Zweiter von drei Schritten der Zieldefinition (DND-25 Z
 - **Begründung:** Die Bereitschaft hängt an der Verbindung und endet beim Trennen von selbst. Eine einzige Ausgabe verhindert Echo im Raum.
 
 ### E5: Ohne bereite Ausgabe merkt sich der Server den Zustand
-- **Entscheidung:** Play/Pause, Weiter und Lautstärke funktionieren auch ohne Ausgabe und ändern den Zustand. Wird eine Wall
+- **Entscheidung:** Play/Pause und Lautstärke funktionieren auch ohne Ausgabe und ändern den Zustand. Wird eine Wall
   bereit, setzt sie mit dem aktuellen Zustand ein (läuft die Musik, startet sie den aktuellen Track von vorn). Der Admin zeigt
   ohne Ausgabe den Hinweis „Keine Audioausgabe bereit“ neben der Musiksteuerung.
 - **Verworfene Alternativen:** Befehle ablehnen bzw. Buttons deaktivieren.
@@ -114,12 +115,14 @@ pusht ihn per WebSocket. Zweiter von drei Schritten der Zieldefinition (DND-25 Z
 
 ### E8: Admin als Fernbedienung
 - **Entscheidung:** Die Musiksteuerung in der Bottom-Bar zeigt `playing` und den Tracktitel (`getMusicTitle(track.source)`)
-  aus dem `AudioState`. Play/Pause schickt `PATCH /table/audio {playing}`, dazu kommen ein Button „Weiter“ (`POST
-  /table/audio/next`), ein Lautstärke-Slider (`PATCH /table/audio {volume}`, gesendet beim Loslassen) und der Hinweis aus E5. Alles
+  aus dem `AudioState`. Play/Pause schickt `PATCH /table/audio {playing}`, dazu kommen ein Lautstärke-Slider
+  (`PATCH /table/audio {volume}`, gesendet beim Loslassen) und der Hinweis aus E5. Alles
   ohne lokale Vorwegnahme, die Anzeige folgt dem Push. Fehler bei Musik-Befehlen landen in der gemeinsamen Speicherfehler-Leiste (DND-25 E7)
   inkl. „Erneut versuchen“. Die Sound-Buttons der `TopBar` schicken `POST /table/sounds`. Fehler dabei werden nur geloggt (ein verspäteter
   Sound ist sinnlos, daher kein Retry). Im Admin wird nichts mehr abgespielt.
 - **Begründung:** Der Spielleiter sieht jederzeit den tatsächlichen Zustand der Ausgabe.
+- **Änderung in Runde 2 (User-Entscheidung):** Der Button „Weiter“ samt `POST /table/audio/next` entfällt; der
+  automatische Wechsel bei Trackende (E4) bleibt.
 
 ## Subtasks
 
@@ -142,7 +145,7 @@ pusht ihn per WebSocket. Zweiter von drei Schritten der Zieldefinition (DND-25 Z
 - [x] `uv run python scripts/export_openapi.py`.
 - [x] Tests:
   - `tests/test_audio.py`: GET-Startzustand (pausiert, 10 %, Track aus der Playlist bzw. Standardmusik ohne Szene), PATCH
-    `playing`/`volume`, 422 für `volume` −1/101 und unbekannten Sound, `next` wählt einen anderen Track (Zufall gesteuert),
+    `playing`/`volume`, 422 für `volume` −1/101 und unbekannten Sound, Trackende wählt einen anderen Track (Zufall gesteuert),
     leere Playlist (z. B. Szene ohne Tracks), Szenenwechsel lädt die neue Playlist und behält `playing`. Zustand nach jedem Test zurücksetzen.
   - `tests/test_ws.py` erweitern: `audio` nach `state` beim Verbinden; `audio_ready` einer Wall → `output_ready` true und
     `audio_output` active; zweite Wall übernimmt → erste bekommt `active: false`; `audio_ready` von Admin/Ground/Player wird
@@ -161,7 +164,7 @@ pusht ihn per WebSocket. Zweiter von drei Schritten der Zieldefinition (DND-25 Z
 - [x] Wiedergabeklasse für die Wall (E7) mit Unit-Tests (Fake-Audio: Track-Wechsel, Play/Pause, Lautstärke, `ended` → Callback,
       Rollenverlust pausiert, abgelehntes `play()` wirft nicht).
 - [x] `WallScreen.tsx` und `ScreenControlBar`: Button „AUDIO“ (E6), Wiedergabe einbinden.
-- [x] `AdminScreen.tsx`, `src/service/adminScreen.ts`, `TopBar.tsx`: Fernbedienung gemäß E8 (Play/Pause, Weiter, Slider,
+- [x] `AdminScreen.tsx`, `src/service/adminScreen.ts`, `TopBar.tsx`: Fernbedienung gemäß E8 (Play/Pause, Slider,
       Hinweis), Sounds per API. `useMusicPlayer`, `MusicPlayer`, `getRandomTrack`, `playAtmoSounds`, Import und Datei der
       Standardmusik samt zugehöriger Tests (`musicPlayer.spec.ts`, Teile von `utils.spec.ts`) entfernen. `getMusicTitle` bleibt.
 
@@ -173,6 +176,16 @@ pusht ihn per WebSocket. Zweiter von drei Schritten der Zieldefinition (DND-25 Z
       `CLAUDE.md` (Monorepo-Tabelle: `From_Past_To_Present.mp3` nicht mehr im Frontend), `frontend/CLAUDE.md`,
       `backend/CLAUDE.md`, `backend/README.md`.
 
+### Runde 2 (User-Entscheidung: kein „Weiter“)
+- [x] Button „Weiter“ (`AdminScreen.tsx`), `playNextTrack` (`src/service/adminScreen.ts`), Route
+      `POST /table/audio/next` und `push.next_track` entfernen; `AudioService.next` wird privat (`_next_track`, nur
+      noch für `track_ended`). `openapi.json` und `schema.d.ts` neu erzeugen.
+- [x] Tests anpassen: `test_audio.py` prüft die Track-Wahl über das Trackende statt über `next`, `saveData.spec.ts`
+      ohne `playNextTrack`.
+- [x] Doku ohne „Weiter“ bzw. `POST /table/audio/next` (`architecture.md`, `screens.md`, `domain.md`,
+      `known-issues.md`, `backend/README.md`, `backend/CLAUDE.md`, `frontend/CLAUDE.md`); CORS-Hinweis betrifft nur
+      noch die Soundeffekte.
+
 ## Akzeptanzkriterien
 
 ### AK1: Wall wird zur Audioausgabe
@@ -183,8 +196,8 @@ pusht ihn per WebSocket. Zweiter von drei Schritten der Zieldefinition (DND-25 Z
 
 ### AK2: Fernbedienung
 - **Given** die Wall ist Ausgabe und die Musik läuft
-- **When** der Spielleiter im Admin Pause, Play, „Weiter“ oder den Lautstärke-Slider benutzt
-- **Then** reagiert die Wall entsprechend (Pause, Fortsetzen, anderer Track, andere Lautstärke), und der Admin zeigt den neuen Zustand.
+- **When** der Spielleiter im Admin Pause, Play oder den Lautstärke-Slider benutzt
+- **Then** reagiert die Wall entsprechend (Pause, Fortsetzen, andere Lautstärke), und der Admin zeigt den neuen Zustand.
 
 ### AK3: Szenenwechsel und Playlist
 - **Given** die Musik läuft
@@ -223,7 +236,7 @@ pusht ihn per WebSocket. Zweiter von drei Schritten der Zieldefinition (DND-25 Z
 
 **Manuell** (`dnd prod`)
 1. Admin auf dem Rechner, Wall auf einem zweiten Gerät bzw. in einem zweiten Browser: „AUDIO“ klicken, Play (AK1), Pause,
-   Weiter, Slider (AK2).
+   Slider (AK2).
 2. Szene wechseln, einen kurzen Track zu Ende laufen lassen (AK3). Szene leeren (zweites Abenteuer ohne Szene) → Standardmusik.
 3. Sounds in der TopBar (AK4), danach Wall schließen und erneut Sounds auslösen (kein Fehler).
 4. Zweite Wall „AUDIO“ (AK5).
@@ -234,3 +247,47 @@ pusht ihn per WebSocket. Zweiter von drei Schritten der Zieldefinition (DND-25 Z
 - keine
 
 ## Review
+
+### Runde 1 – 2026-10-18
+
+**Empfehlung:** Abnahme. Keine blockierenden Befunde; alle sieben AK erfüllt (Code und automatische Tests). Ton,
+Mehrgeräte-Betrieb und API-Neustart nicht hörbar/live geprüft; manuelle Verifikation 1–6 mit `dnd prod` steht aus.
+
+Geprüft: Commit `9688e00` auf `development` gegen `9688e00^`, Diff vollständig, alle Checks. Plan liegt im
+Feature-Commit (kein eigener Approve-Commit), wie seit DND-23 üblich.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Wall wird Audioausgabe | erfüllt (ohne Ton) | Button AUDIO `ScreenControlBar.tsx:155-159`, `WallScreen.tsx:182-200`, `useGameTable.ts:77-81` sendet `audio_ready`; `push.make_audio_output`; Hinweis nur bei `!audio.output_ready` (`AdminScreen.tsx:435-437`); `useMusicPlayer`/`musicPlayer.ts`/`playAtmoSounds` entfernt; `test_audio_ready_of_a_wall_makes_it_the_output`, `wallAudioPlayer.spec.ts` |
+| AK2 Fernbedienung | erfüllt | `AdminScreen.tsx:343-355` (PATCH `playing`, POST `next`, PATCH `volume` in `onChangeCommitted`, über `runSave`); `WallAudioPlayer.update`; `test_patch_sets_playing_and_volume…`, `test_next_picks_another_track…` |
+| AK3 Szenenwechsel und Playlist | erfüllt | `push.py:47-58`, `audio.track_ended`/`next()`, `default_music_key`; `test_scene_change_loads_the_new_playlist_and_keeps_playing`, `test_without_active_scene_the_default_music_is_the_playlist`, `test_track_ended_of_the_output_plays_the_next_track` |
+| AK4 Soundeffekte | erfüllt | `send_sound` nur an `audio.output`, ohne Ausgabe 204; `WallAudioPlayer.playSound` mit Lautstärke 1; `test_sound_is_sent_only_to_the_output`, `test_sound_without_output_is_accepted`, `test_sound_rejects_unknown_names` |
+| AK5 Nur eine Ausgabe | erfüllt | `set_output` liefert bisherige Ausgabe → `audio_output false`, Client pausiert; `test_second_wall_takes_over_the_output` |
+| AK6 Ausgabe weg und zurück | erfüllt (API-Neustart nicht live) | `ws.py` `finally` → `release_audio_output` (shielded); Re-Register bei `open` (`useGameTable.ts:55-64`); `reset_audio` im `lifespan`; `test_disconnect_of_the_output_is_pushed_to_all` |
+| AK7 Befehle ohne Ausgabe | erfüllt | `update()` setzt `playing` auch ohne Ausgabe; `becameActive` startet Track von vorn; Unit-Test „starts the current track from the beginning…“ |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+- **H1 CORS:** Preflight für POST `/table/sounds` mit Origin `http://localhost:5173` → 400 „Disallowed CORS method“.
+  Proxy-Setups (Vite, nginx, E2E) nicht betroffen; bei absoluter `VITE_API_URL` gehen „Weiter“ und Sounds nicht.
+  In known-issues dokumentiert; Fix wäre `allow_methods=["GET", "PATCH", "POST"]` (`backend/app/main.py:32`) plus
+  `test_cors.py`. Entscheidung User.
+- **H2 `playing=true` ohne Track:** Vom Plan gedeckt (E1). Admin zeigt Pause ohne Titel, es ist nichts zu hören;
+  Wechsel auf Szene mit Tracks startet Musik von selbst. Alternative: `playing=false` bei leerer Playlist.
+- **H3 Ergänzungen außerhalb des Plans:** `screen-layouts.md` (DESIGN-Regel 1.3), `frontend/README.md`,
+  `postData`/`postCommand` – kein Scope-Verstoß.
+- **H4 Autoplay (Vermutung):** `play()` erst nach Server-Roundtrip, nicht im Klick-Handler; Chrome ok, Safari/iOS
+  evtl. nicht. Im manuellen Test mit Safari-Wall prüfen.
+- **H5 Kein Unit-Test für Re-Register** nach Reconnect (`useGameTable.ts`); Plan verlangt keinen.
+- **H6 Volume-Slider:** `setDraggedVolume(null)` bei jedem `audio`-Push; Griff springt beim Ziehen kurz zurück.
+- **H7 Toter Ausgabe-Verweis:** Nach fehlgeschlagenem Send zeigt `audio.output` bis zum `finally` noch auf die
+  entfernte Verbindung; Sounds gehen kurz ins Leere.
+- **H8 Lint-Warnung** `WallScreen.tsx:217` (`img` ohne `alt`) bestand schon vorher.
+
+**Checks**
+- Backend: `ruff check`, `ruff format --check`, `mypy app` ok; `openapi.json` aktuell; `pytest` 166 passed.
+- Frontend: `typecheck` ok, `lint` 0 Fehler (1 Warnung, H8); `schema.d.ts` aktuell; `test:unit` 155 passed;
+  `vite build` ok; `test:e2e` 4/4 passed. `docker build --target prod` nur vom Implementer ausgeführt (ok).
+- Scope/Subtasks vollständig, keine Restverweise auf entfernte Altlasten; Commit-Konvention eingehalten.
