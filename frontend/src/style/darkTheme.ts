@@ -16,6 +16,10 @@ export const darkTheme = {
       background: '#5a5a5a',
       text: '#ffffff',
     },
+    qr: {
+      foreground: '#000000',
+      background: '#ffffff',
+    },
     resource: {
       action: { strong: '#099000', muted: '#072900' },
       bonus: { strong: '#db4400', muted: '#290e00' },

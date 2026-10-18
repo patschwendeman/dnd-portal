@@ -66,29 +66,35 @@ Im Container liegt `node_modules` in einem eigenen Volume; nach Änderungen an `
 ## Struktur & Datenfluss
 
 ```
-src/app/App.tsx      Routing; Admin, Wall, Ground je im GameTableProvider; lokales Theme des Player Screens (localStorage)
-src/realtime/        WebSocket-Client des Spieltischs: GameTableProvider (ThemeProvider + Contexts aus dem Snapshot),
+src/app/App.tsx      Routing; alle vier Screens je im GameTableProvider; Theme-Abweichung des Player Screens
+                     (localStorage playerThemeOverride, Prop themeOverride), entfernt den Altschlüssel isDarkTheme
+src/realtime/        WebSocket-Client des Spieltischs: GameTableProvider (ThemeProvider + Contexts aus dem Snapshot,
+                     optional themeOverride),
                      useGameTable(screen) → { state, audio, isAudioOutput, connected, reconnectNow, requestAudioOutput,
                      reportTrackEnded, subscribeSound }, connection.ts (Reconnect, Heartbeat, send nur bei offener
-                     Verbindung), messages.ts (parseServerMessage, ClientMessage), backoff.ts (reconnectDelay),
-                     heartbeat.ts (Watchdog 35 s)
+                     Verbindung, sofortiger Reconnect beim Sichtbarwerden), messages.ts (parseServerMessage,
+                     ClientMessage), backoff.ts (reconnectDelay), heartbeat.ts (Watchdog 35 s), visibility.ts
+                     (VisibilitySource, für Tests ersetzbar)
 src/context/         ActiveAdventureContext, ActiveSceneContext (IDs number | null, nur lesend), GameTableContext
                      (hasState, theme, connected, reconnectNow), GameAudioContext (audio, isAudioOutput,
                      requestAudioOutput, reportTrackEnded, subscribeSound)
 src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen der TopBar), wallAudioPlayer.ts
                      (WallAudioPlayer: Wiedergabe auf der Wall nach dem AudioState, Audio-Fabrik injizierbar für vitest)
 src/screens/         Screens
-src/components/      UI-Bausteine (TopBar, DocumentReader, MapOverview, GridOverlay, ScreenControlBar, ResourceBarPlayer …)
+src/components/      UI-Bausteine (TopBar, JoinDialog, ThemeMenu, DocumentReader, MapOverview, GridOverlay, ScreenControlBar,
+                     ResourceBarPlayer …)
 src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
-                     saveActiveScene, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
+                     getJoinInfo, saveActiveScene, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
                      getWallMainmaps, getGroundScreenData …)
 src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData/patchData/postData (apiMethods.ts), loadData,
                      saveData/postCommand, mediaUrl (mediaUrl.ts), wsUrl (wsUrl.ts); schema.d.ts generiert
 src/models/models.ts API-Typen AdventureSummary, AdventureDetail, SceneDetail, Image, Track, MapResponse (= MapEntry),
-                     GameTableState, Theme, AudioState, AudioUpdate, SoundName aus src/api/schema.d.ts;
+                     GameTableState, Theme, JoinInfo, AudioState, AudioUpdate, SoundName aus src/api/schema.d.ts;
                      Map ist Frontend-Modell (sceneId), Umwandlung aus MapResponse im Service
 src/utils/utils.ts   Musiktitel (getMusicTitle), filterSceneByKey, getGridLayout
 src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
+src/utils/playerTheme.ts Theme-Abweichung des Players lesen/schreiben, effectiveTheme, Altschlüssel verwerfen
+src/utils/playerUrl.ts selectPlayerUrl (URL der API, sonst Origin des Admins, nicht bei localhost/127.0.0.1/[::1])
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }), appTheme(theme),
                      styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden)
 public/assets/       sounds (Soundeffekte, auf der Wall abgespielt), icons; dazu das fest eingebundene Medium
@@ -102,7 +108,9 @@ Szene, Theme) kommt nur vom Server: `GameTableProvider` verbindet sich per WebSo
 Contexts aus jedem Snapshot. Szenen-, Abenteuer- und Theme-Wechsel schreibt der Admin per REST (`PATCH adventures/{id}`
 bzw. `PATCH table`) **ohne lokale Vorwegnahme**; der Server pusht danach den neuen Stand an alle Screens, die die Szene
 per `scenes/{id}` neu laden (ohne aktive Szene kein Request, nur Hintergrund). Nur der Admin zeigt Speicher- und
-Verbindungsfehler. Player-Screens sind nicht angebunden. Details: `../docs/architecture.md#synchronisation`.
+Verbindungsfehler. Der Player nutzt vom Snapshot nur das Theme (`Abweichung ?? Spieltisch-Theme`), sendet nichts und
+zeigt keinen Verbindungsstatus. Der QR-Code-Dialog im Admin (`JoinDialog`) lädt beim Öffnen `table/join`.
+Details: `../docs/architecture.md#synchronisation`.
 
 Audio: Der Server hält den Musikzustand und pusht ihn als `audio` an alle Screens. Die Wall, auf der „AUDIO“ geklickt
 wurde (`audio_ready`), ist die einzige Audioausgabe und spielt per `WallAudioPlayer`; nach einem Reconnect meldet sie

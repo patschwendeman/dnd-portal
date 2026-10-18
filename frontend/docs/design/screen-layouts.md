@@ -17,6 +17,7 @@ Regel: [1.3](../../DESIGN.md#13-layout-konstanten).
 | 1440px | maximale Breite des Wall-Panels (`OVERLAY_PANEL_MAX_WIDTH`), siehe [Breite des Overlay-Panels](#breite-des-overlay-panels) | `WallScreen` |
 | 104px | Platz für die Steuerleiste (24 + 56 + 24, `CONTROL_BAR_CLEARANCE`) | `ScreenControlBar` |
 | 600px | Breite des Dialogs (`DIALOG_WIDTH`) | `Dialogue` |
+| 360px · 240px · 4 Module | Breite des Dialogs „Spieler verbinden“, Kantenlänge und Ruhezone des QR-Codes (`JOIN_DIALOG_WIDTH`, `QR_CODE_SIZE`, `QR_CODE_MARGIN`) | `JoinDialog` |
 | 200px · 16px · 3ch | Breite des Sliders, Größe des Griffs, Mindestbreite der Wertanzeige (`SLIDER_WIDTH`, `SLIDER_THUMB_SIZE`, `SLIDER_VALUE_MIN_WIDTH`) | `ScreenControlBar` |
 | 120px · 16px | Breite und Griffgröße des Lautstärke-Sliders in der Bottom-Bar (`VOLUME_SLIDER_WIDTH`, `VOLUME_SLIDER_THUMB_SIZE`) | `AdminScreen` |
 | 64px | Höhe der Ressourcen-Buttons (`RESOURCE_HEIGHT`) | `ResourceBarPlayer` |
@@ -49,4 +50,4 @@ kann dann über die Steuerleiste reichen.
 | Admin | Grid in Zeilen Top-Bar / `1fr` / Bottom-Bar (Höhen nach [1.2](../../DESIGN.md#12-tokens)). Bei einem Lade- oder Speicherfehler kommt unter der Top-Bar eine Zeile `auto` für die [Hinweisleiste](components.md#hinweisleiste) hinzu, ohne Fehler gibt es diese Zeile nicht. Mittlere Zeile: Grid in Spalten `LEFT_COLUMN_WIDTH 1fr RIGHT_COLUMN_WIDTH`, Innenabstand `space.5`, `gap` nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“. Links Navigation, Mitte Notizen, rechts Karten. |
 | Wall | Vollbild-Hintergrund, darüber das Overlay-Panel (BATTLE: Kachelraster, WORLD: Weltkarte) und die schwebende Steuerleiste |
 | Ground | Vollbild-Medium (Bild oder Video), Raster-Ebene, schwebende Steuerleiste mit Raster-Optionen und Slider |
-| Player | Smartphone im Querformat. Spalte, vertikal mittig, `gap` `space.4`: Theme-Button, darunter Karte mit zwei Zeilen à vier Ressourcen-Buttons (Aktion, Bonusaktion, Bewegung, Spezial / Zauberplätze I–IV), `gap` `space.4`. Im Hochformat deckt ein Overlay mit Hinweis alles ab. Ab 344px Höhe und etwa 568px Breite. |
+| Player | Smartphone im Querformat. Spalte, vertikal mittig, `gap` `space.4`: Settings-Button mit Theme-Menü (klappt über der Karte auf), darunter Karte mit zwei Zeilen à vier Ressourcen-Buttons (Aktion, Bonusaktion, Bewegung, Spezial / Zauberplätze I–IV), `gap` `space.4`. Im Hochformat deckt ein Overlay mit Hinweis alles ab. Ab 344px Höhe und etwa 568px Breite. |

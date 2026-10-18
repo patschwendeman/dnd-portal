@@ -146,6 +146,23 @@ export interface paths {
         patch: operations["update_audio_table_audio_patch"];
         trace?: never;
     };
+    "/table/join": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Join Info */
+        get: operations["read_join_info_table_join_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/table/sounds": {
         parameters: {
             query?: never;
@@ -268,6 +285,14 @@ export interface components {
             name: string;
             /** Source */
             source: string;
+        };
+        /**
+         * JoinInfo
+         * @description How players join the game table: URL of the Player Screen in the LAN, `null` if unknown.
+         */
+        JoinInfo: {
+            /** Player Url */
+            player_url: string | null;
         };
         /**
          * MapEntry
@@ -699,6 +724,26 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    read_join_info_table_join_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JoinInfo"];
+                };
             };
         };
     };

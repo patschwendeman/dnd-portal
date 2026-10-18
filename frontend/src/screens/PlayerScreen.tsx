@@ -3,9 +3,10 @@ import { ReactSVG } from 'react-svg'
 import styled, { useTheme, keyframes } from 'styled-components'
 
 import turnImg from '/assets/icons/phone.svg'
-import settingsIcon from '/assets/icons/settings.svg'
 
 import { ResourceBarPlayer } from '../components/ResourceBarPlayer'
+import { ThemeMenu } from '../components/ThemeMenu'
+import { Theme } from '../models/models'
 import { GlobalStyle } from '../style/GlobalStyle'
 
 const ROTATE_ICON_SIZE = '96px'
@@ -58,46 +59,19 @@ const OverlayText = styled.p`
   font-weight: ${(props) => props.theme.fontWeight.medium};
 `
 
-const ThemeToggleButton = styled.button`
-  align-self: flex-start;
-  width: ${(props) => props.theme.size.control.lg};
-  height: ${(props) => props.theme.size.control.lg};
-  padding: 0;
-  display: grid;
-  place-items: center;
-  background-color: ${(props) => props.theme.colors.secondary};
-  border: none;
-  border-radius: ${(props) => props.theme.radius.md};
-  cursor: pointer;
-  div {
-    display: grid;
-    place-items: center;
-  }
-  svg {
-    width: ${(props) => props.theme.size.icon};
-    height: ${(props) => props.theme.size.icon};
-    color: ${(props) => props.theme.colors.text.color};
-  }
-`
-
 interface PlayerScreenProps {
-  toggleTheme: () => void;
+  // Theme chosen on this device, null = follows the game table
+  themeOverride: Theme | null
+  onChangeThemeOverride: (override: Theme | null) => void
 }
 
-const PlayerScreen: FunctionComponent<PlayerScreenProps> = ({ toggleTheme }): ReactElement => {
+const PlayerScreen: FunctionComponent<PlayerScreenProps> = ({ themeOverride, onChangeThemeOverride }): ReactElement => {
   const theme = useTheme()
   return (
     <>
       <GlobalStyle />
       <Background>
-        <ThemeToggleButton onClick={toggleTheme}>
-          <ReactSVG
-            src={settingsIcon}
-            beforeInjection={(svg) => {
-              svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
-            }}
-          />
-        </ThemeToggleButton>
+        <ThemeMenu themeOverride={themeOverride} onChangeThemeOverride={onChangeThemeOverride} />
         <ResourceBarPlayer />
         <Overlay>
           <ReactSVG

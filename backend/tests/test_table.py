@@ -1,4 +1,4 @@
-"""Tests for /table: state of the game table (active adventure, its active scene, theme), GET and PATCH.
+"""Tests for /table: state of the game table (active adventure, its active scene, theme), GET and PATCH; /table/join.
 
 Changing tests use the fixture `db` (tests/conftest.py): everything is rolled back afterwards, so the shared test DB
 keeps its state.
@@ -135,3 +135,17 @@ def test_deleting_the_active_adventure_clears_it(
     db.expire_all()
 
     assert client.get("/table").json()["active_adventure_id"] is None
+
+
+@pytest.mark.parametrize("player_url", ["http://192.168.0.10:8080/", None])
+def test_join_returns_the_configured_player_url(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch, player_url: str | None
+) -> None:
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "player_url", player_url)
+
+    response = client.get("/table/join")
+
+    assert response.status_code == 200
+    assert response.json() == {"player_url": player_url}

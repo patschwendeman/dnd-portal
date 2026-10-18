@@ -23,6 +23,7 @@ gilt der Code.
 | `onError` | `#ffffff` | `#ffffff` |
 | `badge.background` | `#5a5a5a` | `#5a5a5a` |
 | `badge.text` | `#ffffff` | `#ffffff` |
+| `qr.foreground` · `qr.background` | `#000000` · `#ffffff` | gleich |
 | `resource.action.strong` · `.muted` | `#099000` · `#072900` | gleich |
 | `resource.bonus.strong` · `.muted` | `#db4400` · `#290e00` | gleich |
 | `resource.movement.strong` · `.muted` | `#fae100` · `#292500` | gleich |
@@ -50,6 +51,7 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `border` auf `secondary` | Trennlinien in Karten | 3,0 | **1,5** | 3,0 | bewusst ✗ Dark |
 | `badge.text` auf `badge.background` | Kachelnummer | 4,5 | 6,9 | 6,9 | ✓ |
 | `onError` auf `error` | Text der Hinweisleiste (14px) | 4,5 | 9,0 | 9,0 | ✓ |
+| `qr.foreground` auf `qr.background` | QR-Code im Dialog „Spieler verbinden“ | 3,0 | 21,0 | 21,0 | ✓ |
 | `onError` auf `error` | Icon-Button und Fokus-Outline der Hinweisleiste | 3,0 | 9,0 | 9,0 | ✓ |
 | `text.color` auf `resource.*.muted` | Zahl im Ressourcen-Button (24px, groß) | 3,0 | 14,2–17,6 | 7,2–9,0 | ✓ beide |
 | `resource.*.strong` auf `resource.*.muted` | Rahmen, verfügbare Icons und Plätze | 3,0 | 3,8–11,7 | 3,8–11,7 | ✓ beide |

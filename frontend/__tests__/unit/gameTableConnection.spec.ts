@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 import { ConnectionStatus, createGameTableConnection, SocketLike } from '../../src/realtime/connection'
+import { VisibilitySource } from '../../src/realtime/visibility'
 
 // The payload follows the API contract, whose fields are snake_case
 /* eslint-disable camelcase */
@@ -31,7 +32,28 @@ let statuses: ConnectionStatus[]
 let states: unknown[]
 let messages: unknown[]
 
-const connect = (heartbeatTimeoutMs = 35000) =>
+class FakeVisibility implements VisibilitySource {
+  visible = true
+  listeners = new Set<() => void>()
+
+  isVisible() {
+    return this.visible
+  }
+
+  subscribe(listener: () => void) {
+    this.listeners.add(listener)
+    return () => {
+      this.listeners.delete(listener)
+    }
+  }
+
+  change(visible: boolean) {
+    this.visible = visible
+    this.listeners.forEach((listener) => listener())
+  }
+}
+
+const connect = (heartbeatTimeoutMs = 35000, visibility: VisibilitySource = new FakeVisibility()) =>
   createGameTableConnection({
     url: 'ws://localhost/ws?screen=wall',
     onState: (payload) => states.push(payload),
@@ -43,6 +65,7 @@ const connect = (heartbeatTimeoutMs = 35000) =>
       return socket
     },
     heartbeatTimeoutMs,
+    visibility,
   })
 
 const latest = () => sockets[sockets.length - 1]
@@ -185,5 +208,57 @@ describe('createGameTableConnection', () => {
     expect(sockets).toHaveLength(1)
     expect(sockets[0].closed).toBe(true)
     expect(statuses).toEqual(['connecting', 'open'])
+  })
+
+  it('reconnects at once when the page becomes visible without an open connection', () => {
+    const visibility = new FakeVisibility()
+    connect(35000, visibility)
+    latest().onopen?.()
+    visibility.change(false)
+    latest().onclose?.()
+    vi.advanceTimersByTime(1000)
+    latest().onclose?.()
+    expect(sockets).toHaveLength(2)
+
+    visibility.change(true)
+
+    expect(sockets).toHaveLength(3)
+    // The planned reconnect (2 s backoff) was cancelled
+    vi.advanceTimersByTime(10000)
+    expect(sockets).toHaveLength(3)
+  })
+
+  it('keeps an open connection when the page becomes visible', () => {
+    const visibility = new FakeVisibility()
+    connect(35000, visibility)
+    latest().onopen?.()
+
+    visibility.change(false)
+    visibility.change(true)
+
+    expect(sockets).toHaveLength(1)
+    expect(sockets[0].closed).toBe(false)
+  })
+
+  it('does not reconnect when the page becomes hidden', () => {
+    const visibility = new FakeVisibility()
+    connect(35000, visibility)
+    latest().onclose?.()
+
+    visibility.change(false)
+
+    expect(sockets).toHaveLength(1)
+  })
+
+  it('stops listening to the visibility after close', () => {
+    const visibility = new FakeVisibility()
+    const connection = connect(35000, visibility)
+    latest().onclose?.()
+
+    connection.close()
+    visibility.change(true)
+
+    expect(visibility.listeners.size).toBe(0)
+    expect(sockets).toHaveLength(1)
   })
 })

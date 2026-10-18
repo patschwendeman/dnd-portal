@@ -2,7 +2,8 @@
 
 REST-API, WebSocket und PostgreSQL für das DnD Portal. Liefert Abenteuer (mit Spielern, aktiver Szene und globalem Level) und
 Szenen mit ihren Wall-/Ground-Bildern und Musik-Playlists an das Frontend (`../frontend`), hält den Spieltisch-Zustand
-(aktives Abenteuer, aktive Szene, Theme) und den Musikzustand (im Speicher) und pusht beides per WebSocket (`/ws`) an Admin, Wall und Ground und die Mediendateien selbst (Ordner `../media`, unter `/media`). Projektübergreifender Kontext (Vision, Screens, Begriffe, bekannte Probleme) liegt
+(aktives Abenteuer, aktive Szene, Theme) und den Musikzustand (im Speicher) und pusht beides per WebSocket (`/ws`) an Admin, Wall, Ground und Player, liefert die Player-URL für den QR-Code im
+Admin (`GET /table/join`, `Settings.player_url`) und die Mediendateien selbst (Ordner `../media`, unter `/media`). Projektübergreifender Kontext (Vision, Screens, Begriffe, bekannte Probleme) liegt
 eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 
 ## Stack
@@ -46,7 +47,8 @@ CRUD-Funktion geprüft. Daneben prüfen `test_cors.py` (erlaubte Origins und Met
 in `../media` vorhanden), `test_seed.py` (Seeder inkl. Abenteuer, Spieler und fehlender Datei, in einer zurückgerollten
 Transaktion) sowie `test_migration_0002.py`, `test_migration_0003.py` und `test_migration_0004.py` (Migration `0001` →
 `0002`, `0002` → `0003` bzw. `0003` → `0004` und zurück mit Daten, in einer eigenen temporären Datenbank – braucht
-`CREATE DATABASE`). `test_table.py` prüft `GET`/`PATCH /table`, `test_ws.py` den WebSocket `/ws` per
+`CREATE DATABASE`). `test_table.py` prüft `GET`/`PATCH /table` und `GET /table/join` (`player_url` per `monkeypatch` auf `settings`),
+`test_ws.py` den WebSocket `/ws` per
 `TestClient.websocket_connect` (Snapshot, Push nach `PATCH`, `screen`- und Origin-Prüfung, Ping mit per `monkeypatch`
 verkürztem `PING_INTERVAL_SECONDS`, Entfernen getrennter Verbindungen, Audioausgabe per `audio_ready`/`track_ended`,
 `sound` nur an die Ausgabe); Nachrichten werden mit Timeout gelesen, damit ein fehlender Push den Test scheitern lässt
@@ -86,7 +88,8 @@ app/db/seed.py            Seeder; Daten in app/db/data/seed_data.json
 app/models/               SQLAlchemy-Models: adventure.py (Adventure), player.py (Player), scene.py (Scene, scene_track),
                           game_table.py (GameTable, genau eine Zeile `GAME_TABLE_ID`),
                           media.py (Media, berechnetes `source`); __init__.py re-exportiert alle (vollständige Base.metadata)
-app/schemas/              Pydantic-Schemas des API-Vertrags: game_table.py (GameTableState, GameTableUpdate, Theme),
+app/schemas/              Pydantic-Schemas des API-Vertrags: game_table.py (GameTableState, GameTableUpdate, Theme,
+                          JoinInfo),
                           audio.py (AudioState, AudioUpdate, SoundRequest, SoundName),
                           adventure.py (AdventureSummary, AdventureDetail, Player,
                           AdventureUpdate), scene.py (SceneDetail, Image, Track), map.py (MapEntry)
@@ -100,7 +103,7 @@ app/services/adventure.py Fachlogik Abenteuer (Liste, Detail, Szenen/Karten je A
 app/services/scene.py     Fachlogik Szenen (get_scene → Scene | None)
 app/services/audio.py     get_playlist: Tracks der aktiven Szene bzw. Standardmusik (Settings.default_music_key)
 app/services/game_table.py Spieltisch-Zustand (get_state inkl. aktiver Szene des aktiven Abenteuers, update_state mit
-                          Prüfung des Abenteuers → AdventureNotFoundError)
+                          Prüfung des Abenteuers → AdventureNotFoundError), get_join_info (Settings.player_url)
 app/realtime/             WebSocket: manager.py (ConnectionManager `manager` im Prozess, Connection je Verbindung mit
                           Sende-Lock, Broadcast entfernt Verbindungen bei Sendefehler/Timeout, PING_INTERVAL_SECONDS),
                           audio.py (AudioService `audio`: Musikzustand im Speicher, zufällige Track-Wahl, Ausgabe),
@@ -136,7 +139,7 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
 - Antworten sind Pydantic-Schemas in `app/schemas/` (`ConfigDict(from_attributes=True)`). Geben Route/Service
   ORM-Objekte zurück, steht das Schema als `response_model` im Decorator (`/scenes/{id}`, `/adventures*`: Services
   liefern ORM-Objekte bzw. `None`); sonst reicht die Rückgabe-Annotation (`/adventures/{id}/maps/*` liefert
-  `list[MapEntry]`, `/table` liefert `GameTableState`). Kein `response_model=None`.
+  `list[MapEntry]`, `/table` liefert `GameTableState`, `/table/join` liefert `JoinInfo`). Kein `response_model=None`.
   „Nicht gefunden“ meldet der Service mit `None`, die Route wirft `HTTPException(404, "Scene not found")` und
   dokumentiert sie per `responses={404: …}`. Fachliche Ablehnungen meldet der Service per Exception
   (`SceneNotInAdventureError`, `AdventureNotFoundError`), die Route übersetzt sie in 422.

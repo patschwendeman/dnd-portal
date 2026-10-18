@@ -41,6 +41,9 @@ services:
     container_name: dnd-dev-api
     working_dir: /app
     env_file: backend/.env
+    # URL of the Player Screen for the QR code in the Admin; set by script.sh, empty = unknown.
+    environment:
+      PLAYER_URL: ${PLAYER_URL:-}
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     depends_on:
       db:

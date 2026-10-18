@@ -30,3 +30,4 @@
 | DND-24 | feat | Abenteuer im Frontend (Auswahl im Admin, aktive Szene persistent) | Fertig | [DND-24-adventure-frontend.md](DND-24-adventure-frontend.md) |
 | DND-25 | feat | Spieltisch-Zustand per WebSocket (Server als einzige Quelle) | Fertig | [DND-25-game-table-websocket.md](DND-25-game-table-websocket.md) |
 | DND-26 | feat | Audio auf der Wall, Admin als Fernbedienung | Fertig | [DND-26-audio-on-wall.md](DND-26-audio-on-wall.md) |
+| DND-27 | feat | Smartphones anbinden (Player Screen am Spieltisch, Theme, QR-Code im Admin) | Im Review | [DND-27-connect-player-screens.md](DND-27-connect-player-screens.md) |

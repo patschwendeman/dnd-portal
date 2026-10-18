@@ -70,6 +70,20 @@ ensure_docker() {
   echo "Docker läuft."
 }
 
+# IP of the computer in the LAN (en0), empty if it cannot be determined.
+lan_ip() {
+  ipconfig getifaddr en0 2>/dev/null || true
+}
+
+# Exports PLAYER_URL (URL of the Player Screen for the QR code in the Admin; compose passes it to the API) unless it is
+# already set in the environment. Without IP it stays empty. $1 = IP, $2 = port of the frontend.
+export_player_url() {
+  if [ -z "${PLAYER_URL:-}" ] && [ -n "$1" ]; then
+    PLAYER_URL="http://$1:$2/"
+  fi
+  export PLAYER_URL="${PLAYER_URL:-}"
+}
+
 stop_dev() {
   docker compose -f "$DEV_FILE" --profile tools down
 }
@@ -87,12 +101,16 @@ cmd_dev() {
   esac
   ensure_docker
   stop_prod
+  export_player_url "$(lan_ip)" 5173
   docker compose -f "$DEV_FILE" "${profile[@]+"${profile[@]}"}" up --build
 }
 
 cmd_prod() {
+  local ip
   ensure_docker
   stop_dev
+  ip=$(lan_ip)
+  export_player_url "$ip" 8080
   # VITE_API_URL from the environment is passed on as a build argument by compose.prod.yaml.
   # --wait: returns only once all services are running or healthy (API healthcheck in compose.prod.yaml).
   echo "Starte Prod-Stack und warte bis zu ${WAIT_TIMEOUT}s, bis alle Dienste bereit sind ..."
@@ -103,8 +121,6 @@ cmd_prod() {
   open "$PROD_URL/admin"
   open "$PROD_URL/wall"
   open "$PROD_URL/ground"
-  local ip
-  ip=$(ipconfig getifaddr en0 2>/dev/null || true)
   echo
   echo "Admin/Wall/Ground: $PROD_URL/admin, $PROD_URL/wall, $PROD_URL/ground"
   if [ -n "$ip" ]; then

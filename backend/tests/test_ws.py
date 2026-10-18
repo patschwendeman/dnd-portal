@@ -122,6 +122,15 @@ def test_two_clients_receive_the_push_after_patch_table(client: TestClient, db: 
         assert response.json()["theme"] == "tavern"
 
 
+def test_player_receives_the_push_after_patch_table(client: TestClient, db: Session) -> None:
+    with client.websocket_connect("/ws?screen=player") as player:
+        receive_snapshot(player)
+
+        client.patch("/table", json={"theme": "tavern"})
+
+        assert receive_state(player)["theme"] == "tavern"
+
+
 def test_two_clients_receive_the_push_after_patch_adventure(client: TestClient, db: Session) -> None:
     client.patch("/table", json={"active_adventure_id": 1})
     with (

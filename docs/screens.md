@@ -61,8 +61,13 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Sounds:** Top-Bar mittig mit Buttons für Soundeffekte in Gruppen (Heilung/Trank, Buff, Zauber, Debuff, Lock); die
   Wall, die Audioausgabe ist, spielt sie über der Musik. Ohne Ausgabe passiert nichts (kein Fehler), Fehler beim Senden
   werden nur geloggt.
-- Theme-Umschalter (Settings-Icon rechts in der Top-Bar): schaltet das Theme global für Admin, Wall und Ground um
-  (nicht für den Player Screen).
+- Theme-Umschalter (Settings-Icon rechts in der Top-Bar): schaltet das Theme global für Admin, Wall, Ground und die
+  Player Screens um (außer auf Smartphones, deren Spieler lokal ein anderes Theme gewählt hat).
+- **Spieler verbinden:** Ein Button mit Handy-Icon rechts in der Top-Bar öffnet einen Dialog mit dem QR-Code der
+  Player-URL (dunkel auf hellem Grund, unabhängig vom Theme) und der URL als Text; die Spieler scannen ihn mit der
+  Smartphone-Kamera. Die URL kommt vom Start-Skript (`dnd prod`: `http://<IP>:8080/`) bzw. ist der Origin des Admins,
+  wenn dieser über die IP geöffnet ist; sonst zeigt der Dialog „Player-URL unbekannt – Spieltisch mit „dnd prod“
+  starten oder den Admin über die IP des Rechners öffnen“. Schließen per Button, Escape oder Klick außerhalb.
 - **Ladefehler:** Lassen sich Abenteuer oder Szenen nicht laden (Backend nicht erreichbar, Timeout, HTTP-Fehler), erscheint unter der
   Top-Bar die Hinweisleiste „Backend nicht erreichbar“ mit Button „Erneut versuchen“; bei Erfolg verschwindet sie.
   Keine automatischen Wiederholungen. Kann eine Notizdatei nicht geladen werden, zeigt der Notizbereich „Notizen
@@ -91,11 +96,15 @@ Zähler 0, Icon deaktiviert → nächste Runde: erneut tippen → wieder aktiv.
   Maximum.
 - **Spezial:** 3 Plätze, Startwert 1; Verhalten wie Zauberplätze.
 - **Bewegung (WIP):** fester Wert 9.5, nicht interaktiv.
-- Layout: oben links der Theme-Button (wirkt nur lokal auf diesem Gerät, gespeichert im `localStorage`; unabhängig vom
-  Theme des Spieltischs), darunter eine Karte mit Aktion · Bonusaktion · Bewegung · Spezial und darunter
+- **Theme:** Der Player Screen ist per WebSocket mit dem Spieltisch verbunden und folgt dessen Theme ohne Reload
+  (Abenteuer, Szene und Musik zeigt er nicht an, einen Verbindungsstatus auch nicht). Der Settings-Button oben links
+  öffnet ein Menü „Wie Spieltisch“ (Standard), „Dunkel“, „Taverne“; die Wahl gilt nur auf diesem Gerät (auch nach einem
+  Reload) und bleibt bei Theme-Wechseln im Admin bestehen. Nach dem Entsperren des Smartphones verbindet er sich sofort
+  neu.
+- Layout: oben links der Settings-Button mit dem Theme-Menü, darunter eine Karte mit Aktion · Bonusaktion · Bewegung · Spezial und darunter
   „Zauberplätze“ mit I–IV. Die Ressourcen sind per Tastatur bedienbar (Bewegung nicht).
 - Im Hochformat verdeckt ein Hinweis „Bitte das Handy quer halten“ den Screen.
-- Werte nur lokal: nicht gespeichert, nicht mit Admin verbunden, Reload setzt zurück; nicht pro Charakter
+- Ressourcen nur lokal: nicht gespeichert, nicht mit dem Admin synchronisiert, Reload setzt zurück; nicht pro Charakter
   konfigurierbar.
 
 ### Geparkt: `/spells`

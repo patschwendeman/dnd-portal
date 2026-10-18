@@ -13,7 +13,8 @@ Markdown-Notizen das Frontend selbst aus `public/`.
 
 Admin, Wall und Ground folgen dem Spieltisch-Zustand des Servers (aktives Abenteuer, aktive Szene, Theme), den er per
 WebSocket pusht; sie können daher auch in verschiedenen Browsern bzw. auf verschiedenen Geräten laufen. Der Player
-Screen ist noch nicht angebunden.
+Screen ist ebenfalls verbunden und übernimmt davon nur das Theme (pro Gerät abweichend wählbar); die Spieler öffnen ihn
+per QR-Code aus dem Admin („Spieler verbinden“ in der Top-Bar).
 
 ## Starten
 

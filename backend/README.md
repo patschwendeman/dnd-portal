@@ -3,7 +3,8 @@
 REST-API, WebSocket und PostgreSQL-Datenbank des DnD Portals (FastAPI, SQLAlchemy, Alembic). Liefert dem Frontend
 ([`../frontend`](../frontend/)) die Szenen mit ihren Wall-/Ground-Bildern und Musik-Tracks sowie die Mediendateien
 selbst (Ordner [`../media`](../media/)). Abenteuer bündeln Szenen und Spieler. Der Server ist die einzige Quelle des
-Spieltisch-Zustands (aktives Abenteuer, aktive Szene, Theme) und pusht ihn per WebSocket an Admin, Wall und Ground.
+Spieltisch-Zustands (aktives Abenteuer, aktive Szene, Theme) und pusht ihn per WebSocket an Admin, Wall, Ground und
+die Player Screens der Smartphones (die davon nur das Theme nutzen).
 Ebenso hält er den Musikzustand (im Speicher) und schickt Musik und Soundeffekte an die Wall, die Audioausgabe ist.
 Schreibend sind nur das Setzen von aktiver Szene und globalem Level eines Abenteuers, von aktivem Abenteuer und
 Theme des Spieltischs (`PATCH`) sowie die Audio-Befehle (`PATCH`/`POST`).
@@ -22,6 +23,7 @@ Theme des Spieltischs (`PATCH`) sowie die Audio-Befehle (`PATCH`/`POST`).
 | `GET /table/audio` | Musikzustand: läuft/pausiert, aktueller Track, Lautstärke (0–100), ob eine Audioausgabe bereit ist |
 | `PATCH /table/audio` | `playing` und/oder `volume` (0–100) setzen; 422 bei ungültigen Werten |
 | `POST /table/sounds` | Soundeffekt (`name`) an die Audioausgabe schicken; 204, auch ohne Ausgabe; 422 bei unbekanntem Namen |
+| `GET /table/join` | URL des Player Screens im LAN (`player_url`, aus `PLAYER_URL`; `null`, wenn unbekannt) für den QR-Code im Admin |
 | `WS /ws?screen=admin\|wall\|ground\|player` | WebSocket: Snapshot des Spieltischs und Musikzustand beim Verbinden und nach jeder Änderung, alle 15 s ein Ping, Audio-Meldungen der Wall; Origin-Prüfung (nicht in OpenAPI) |
 | `GET /media/...` | Mediendateien (Bilder, Musik) aus `../media`, inkl. `Range` |
 
@@ -67,6 +69,7 @@ Umgebungsvariablen haben Vorrang vor `.env`.
 | `CORS_ORIGINS` | optional, JSON-Liste; Default `["http://localhost:5173","http://localhost:8080"]` (Dev- und Prod-Frontend); gilt auch für die Origin-Prüfung des WebSockets |
 | `MEDIA_DIR` | optional, Medienordner; Default `/app/media` (Container), lokal `../media` |
 | `DEFAULT_MUSIC_KEY` | optional, Storage-Key der Standardmusik ohne aktive Szene; Default `music/side/forest/From_Past_To_Present.mp3` (fehlt das Medium, bleibt die Playlist leer) |
+| `PLAYER_URL` | optional, URL des Player Screens im LAN für `GET /table/join` (leer = unbekannt). Im Container setzt sie `../script.sh` (`prod`: `http://<IP>:8080/`, `dev`: `http://<IP>:5173/`), Compose reicht sie per `environment` durch und überschreibt damit einen Wert aus `.env`; dort nur für eine API außerhalb von Docker |
 | `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD` | Login für pgAdmin (`http://localhost:5050`, nur mit `--tools`) |
 
 Für Zugriff über das LAN ist nichts zu konfigurieren: Das Frontend erreicht API und WebSocket über den Proxy desselben

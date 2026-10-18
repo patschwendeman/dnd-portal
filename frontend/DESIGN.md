@@ -73,8 +73,8 @@ Die Werte stehen nur in [tokens.ts](src/style/tokens.ts).
 
 **Ebenen (`z-index`):** `z-index` nur über `layer.*`, nie als freie Zahl. Was im Grid-Layout ohnehin richtig
 liegt, bekommt keinen `z-index`. `layer.raised` gilt nur innerhalb einer Komponente mit eigenem Stapelkontext.
-Im Player gibt es keinen `z-index`: Das Overlay „Handy drehen“ steht im JSX zuletzt und ist das einzige positionierte
-Element.
+Im Player gibt es keinen `z-index`: Das Theme-Menü liegt als positioniertes Element über den nicht positionierten
+Ressourcen, das Overlay „Handy drehen“ steht im JSX zuletzt und verdeckt beides.
 
 | Token | Wofür |
 |---|---|
@@ -191,8 +191,8 @@ Aufbau je Baustein in [components.md](docs/design/components.md): [Icon-Button](
 [Karte](docs/design/components.md#karte), [Ressourcen-Button](docs/design/components.md#ressourcen-button) (Player),
 [Overlay-Panel](docs/design/components.md#overlay-panel) (Wall), [Schwebende Steuerleiste](docs/design/components.md#schwebende-steuerleiste)
 (Wall, Ground), [Kachel](docs/design/components.md#kachel), [Nummern-Badge](docs/design/components.md#nummern-badge),
-[Dialog](docs/design/components.md#dialog), [Top-Bar](docs/design/components.md#top-bar),
-[Bottom-Bar](docs/design/components.md#bottom-bar) (Admin), [Hinweisleiste](docs/design/components.md#hinweisleiste) (Admin),
+[Dialog](docs/design/components.md#dialog), [Dialog „Spieler verbinden“](docs/design/components.md#dialog-spieler-verbinden) (Admin), [Top-Bar](docs/design/components.md#top-bar),
+[Theme-Menü](docs/design/components.md#theme-menü) (Player), [Bottom-Bar](docs/design/components.md#bottom-bar) (Admin), [Hinweisleiste](docs/design/components.md#hinweisleiste) (Admin),
 [Slider](docs/design/components.md#slider) (Ground).
 
 ### 1.6 Screen-Layouts
@@ -213,10 +213,9 @@ Wechselt mit dem Theme.
 - Jede Rolle gibt es in **jedem** Theme. Ein Theme ist nur ein anderer Satz Werte für dieselben Rollen.
 - Eine neue Farbe ist immer eine neue Rolle und wird in **allen** Themes angelegt.
 - Der Theme-Wechsel läuft über den Settings-Button im Admin: Er speichert das Theme (`dark` | `tavern`) auf dem
-  Server, der es per WebSocket an Admin, Wall und Ground pusht ([Synchronisation](../docs/architecture.md#synchronisation)).
-  Ausnahme: Der Player Screen hat einen eigenen Theme-Button, die Einstellung gilt nur auf dem jeweiligen Gerät
-  (`localStorage` `isDarkTheme`; der Schlüssel heißt trotz des dunklen Tavern-Themes weiter so, damit gespeicherte
-  Einstellungen gültig bleiben).
+  Server, der es per WebSocket an Admin, Wall, Ground und Player pusht ([Synchronisation](../docs/architecture.md#synchronisation)).
+  Im Player kann ein Spieler über das Theme-Menü des Settings-Buttons nur für sein Gerät abweichen („Wie Spieltisch“,
+  „Dunkel“, „Taverne“; `localStorage` `playerThemeOverride`).
 
 ### 2.2 Rollen
 
@@ -234,6 +233,7 @@ Wechselt mit dem Theme.
 | `onError` | Vordergrund auf `error` | Text, Icon und Fokus-Outline der Hinweisleiste |
 | `badge.background` | Fläche der Kachelnummer | Nummern-Badge auf den Kacheln der Wall |
 | `badge.text` | Text der Kachelnummer | Zahl im Nummern-Badge |
+| `qr.foreground` · `qr.background` | Module und Grund des QR-Codes | QR-Code im Dialog „Spieler verbinden“ (Admin); dunkel auf hell, damit Kameras ihn sicher erkennen |
 | `resource.<art>.strong` | kräftiger Ton einer Ressource (`action`, `bonus`, `movement`, `spell`, `special`) | Rahmen des Ressourcen-Buttons, verfügbare Icons und Plätze (Player) |
 | `resource.<art>.muted` | dunkler Ton einer Ressource | Fläche des Ressourcen-Buttons (Player) |
 | `resource.empty` | verbraucht | verbrauchte Icons und Plätze (Player) |
@@ -241,7 +241,7 @@ Wechselt mit dem Theme.
 ### 2.3 Themes
 
 Zwei Themes: Dark (`darkTheme`, [darkTheme.ts](src/style/darkTheme.ts)) und Tavern (`tavernTheme`,
-[tavernTheme.ts](src/style/tavernTheme.ts)). `resource.*`, `badge.*`, `error` und `onError` sind in beiden Themes
+[tavernTheme.ts](src/style/tavernTheme.ts)). `resource.*`, `badge.*`, `qr.*`, `error` und `onError` sind in beiden Themes
 gleich, weil sie Bedeutung tragen, nicht Stimmung. Die `resource.*`-Töne sind so gewählt, dass alle Grafik-Paare 3:1 erreichen. Werte: [contrast.md](docs/design/contrast.md#theme-werte).
 
 ### 2.4 Zustände

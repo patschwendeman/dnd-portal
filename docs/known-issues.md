@@ -1,6 +1,6 @@
 # Bekannte Lücken, Bugs & Altlasten
 
-Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-10-10, Alembic-Migrationen und Medien im Backend am 2026-10-11, Spieltisch per WebSocket am 2026-10-18, Audio auf der Wall am 2026-10-18. Punkte mit „(ungeprüft)“ wurden aus dem Code abgeleitet, aber nicht zur Laufzeit verifiziert.
+Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-10-10, Alembic-Migrationen und Medien im Backend am 2026-10-11, Spieltisch per WebSocket am 2026-10-18, Audio auf der Wall am 2026-10-18, Smartphones angebunden am 2026-10-18. Punkte mit „(ungeprüft)“ wurden aus dem Code abgeleitet, aber nicht zur Laufzeit verifiziert.
 
 ## Lücken gegenüber der Vision
 
@@ -13,7 +13,6 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
   Weltkarten-/Upload-Thematik. (Die Standardmusik kommt seit DND-26 nur noch aus dem Backend.)
 - Grid-Einstellungen gelten global und werden nicht gespeichert; Wall-Overlay und Grid lassen sich nicht aus dem Admin
   steuern und werden nicht zwischen Geräten synchronisiert.
-- Player Screens verbinden sich noch nicht mit dem Spieltisch (kein WebSocket, Theme nur lokal; geplant: DND-27).
 - Der Admin zeigt nicht an, welche Screens verbunden sind (der Server kennt sie).
 - Szenen lassen sich nur über `seed_data.json` pflegen (keine schreibenden Endpoints, Seeder aktualisiert bestehende DB nicht).
 

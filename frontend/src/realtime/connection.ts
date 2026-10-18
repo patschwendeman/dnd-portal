@@ -1,6 +1,7 @@
 import { reconnectDelay } from './backoff'
 import { browserTimers, createHeartbeatWatchdog, HEARTBEAT_TIMEOUT_MS, Timers } from './heartbeat'
 import { ClientMessage, parseServerMessage, ServerMessage } from './messages'
+import { browserVisibility, VisibilitySource } from './visibility'
 import { GameTableState } from '../models/models'
 
 // connecting: first attempt still running; open: connected; closed: broken or not reachable, a reconnect is planned
@@ -25,6 +26,7 @@ export interface GameTableConnectionOptions {
   createSocket?: (url: string) => SocketLike
   timers?: Timers
   heartbeatTimeoutMs?: number
+  visibility?: VisibilitySource
 }
 
 export interface GameTableConnection {
@@ -51,7 +53,8 @@ const browserSocket = (url: string): SocketLike => {
 }
 
 // Keeps a WebSocket to the server open: reconnects with backoff after every disconnect and treats a connection without
-// messages for longer than the heartbeat timeout as broken.
+// messages for longer than the heartbeat timeout as broken. When the page becomes visible again (e.g. an unlocked
+// smartphone) without an open connection, it connects at once instead of waiting for the heartbeat or the backoff.
 export const createGameTableConnection = ({
   url,
   onState,
@@ -60,6 +63,7 @@ export const createGameTableConnection = ({
   createSocket = browserSocket,
   timers = browserTimers,
   heartbeatTimeoutMs = HEARTBEAT_TIMEOUT_MS,
+  visibility = browserVisibility,
 }: GameTableConnectionOptions): GameTableConnection => {
   let socket: SocketLike | null = null
   let open = false
@@ -130,18 +134,26 @@ export const createGameTableConnection = ({
     current.onclose = handleDisconnect
   }
 
+  const reconnectNow = () => {
+    if (closedForGood) {
+      return
+    }
+    cancelReconnect()
+    dropSocket()
+    connect()
+  }
+
   onStatus('connecting')
   connect()
 
+  const unsubscribeVisibility = visibility.subscribe(() => {
+    if (visibility.isVisible() && !open) {
+      reconnectNow()
+    }
+  })
+
   return {
-    reconnectNow: () => {
-      if (closedForGood) {
-        return
-      }
-      cancelReconnect()
-      dropSocket()
-      connect()
-    },
+    reconnectNow,
     send: (message) => {
       if (!open || socket === null) {
         return false
@@ -151,6 +163,7 @@ export const createGameTableConnection = ({
     },
     close: () => {
       closedForGood = true
+      unsubscribeVisibility()
       cancelReconnect()
       dropSocket()
     },

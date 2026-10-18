@@ -1,11 +1,13 @@
-import { Fragment, FunctionComponent, ReactElement } from 'react'
+import { Fragment, FunctionComponent, ReactElement, useCallback, useRef, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
 import { AdventureSelect } from './AdventureSelect'
+import { JoinDialog } from './JoinDialog'
 import { SOUND_GROUPS } from '../audio/sounds'
 import { AdventureSummary, SoundName } from '../models/models'
 
+import phoneIcon from '/assets/icons/phone.svg'
 import settingsIcon from '/assets/icons/settings.svg'
 
 const OUTER_COLUMN_WIDTH = '240px'
@@ -53,10 +55,15 @@ const AtmoButton = styled.div`
     }
 `
 
-const ThemeToggleButton = styled.button`
+const Actions = styled.div`
+    display: flex;
+    justify-self: end;
+    gap: ${(props) => props.theme.space[1]};
+`
+
+const IconButton = styled.button`
     display: grid;
     place-items: center;
-    justify-self: end;
     width: ${(props) => props.theme.size.control.md};
     height: ${(props) => props.theme.size.control.md};
     padding: 0;
@@ -90,6 +97,13 @@ const TopBar: FunctionComponent<TopBarProps> = ({
   onPlaySound,
 }): ReactElement => {
   const theme = useTheme()
+  const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false)
+  const joinButtonRef = useRef<HTMLButtonElement>(null)
+
+  const closeJoinDialog = useCallback(() => {
+    setIsJoinDialogOpen(false)
+    joinButtonRef.current?.focus()
+  }, [])
 
   return (
     <Bar>
@@ -117,14 +131,33 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           </Fragment>
         ))}
       </Sounds>
-      <ThemeToggleButton onClick={onToggleTheme}>
-        <ReactSVG
-          src={settingsIcon}
-          beforeInjection={(svg) => {
-            svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
-          }}
-        />
-      </ThemeToggleButton>
+      <Actions>
+        <IconButton
+          ref={joinButtonRef}
+          type='button'
+          title='Spieler verbinden'
+          aria-label='Spieler verbinden'
+          aria-haspopup='dialog'
+          data-test-id='join-button'
+          onClick={() => setIsJoinDialogOpen(true)}
+        >
+          <ReactSVG
+            src={phoneIcon}
+            beforeInjection={(svg) => {
+              svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
+            }}
+          />
+        </IconButton>
+        <IconButton onClick={onToggleTheme}>
+          <ReactSVG
+            src={settingsIcon}
+            beforeInjection={(svg) => {
+              svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
+            }}
+          />
+        </IconButton>
+      </Actions>
+      {isJoinDialogOpen && <JoinDialog onClose={closeJoinDialog} />}
     </Bar>
   )
 }

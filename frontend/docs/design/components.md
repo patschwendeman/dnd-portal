@@ -21,7 +21,7 @@ Größe nach [1.2](../../DESIGN.md#12-tokens) Größen, Icon nach [1.4](../../DE
 | Padding | `0` (Reset bei `<button>`) |
 | Farbe | Hintergrund in der Top-Bar und der Hinweisleiste transparent, sonst nach [2.2](../../DESIGN.md#22-rollen) und [2.4](../../DESIGN.md#24-zustände) |
 | Beispiele | Sound-Buttons, Settings, Play/Pause, Nach oben |
-| Player | Hintergrund `secondary` (Theme-Button) |
+| Player | Hintergrund `secondary` (Settings-Button des Theme-Menüs) |
 
 ## Text-Button
 
@@ -128,11 +128,25 @@ Szenenbild.
 | Abstände | nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“ und „Innenabstand von Flächen“ |
 | Button-Reihenfolge | Abbrechen links, Hauptaktion rechts außen |
 
+## Dialog „Spieler verbinden“
+
+Nur im Admin, Komponente `JoinDialog` ([src/components/JoinDialog.tsx](../../src/components/JoinDialog.tsx)), geöffnet
+über den Icon-Button „Spieler verbinden“ in der Top-Bar.
+
+| Eigenschaft | Wert |
+|---|---|
+| Ebene, Abdunklung | wie [Dialog](#dialog): `layer.dialog`, Hintergrund `overlay` |
+| Breite | `JOIN_DIALOG_WIDTH` |
+| Aufbau | Spalte, zentriert: Titel „Spieler verbinden“, QR-Code (`QR_CODE_SIZE`, `qrcode.react`), darunter die URL (`text.sm`, bricht überall um), Button „Schließen“ rechts (`TextButton` `cancel`); ohne URL statt Code und URL der Hinweis „Player-URL unbekannt …“ (`text.sm`) |
+| QR-Code | Module `qr.foreground` auf `qr.background`, unabhängig vom Theme; Ruhezone `QR_CODE_MARGIN` Module im Grund des Codes |
+| Abstände | Innenabstand `space.5`, `gap` `space.4` |
+| Bedienung | `role="dialog"`, `aria-modal`; Fokus beim Öffnen auf „Schließen“, danach zurück auf den Button der Top-Bar; schließt per Button, Esc oder Klick außerhalb |
+
 ## Top-Bar
 
 | Eigenschaft | Wert |
 |---|---|
-| Aufbau | Grid `OUTER_COLUMN_WIDTH 1fr OUTER_COLUMN_WIDTH`: Abenteuer-Auswahl links, Sound-Gruppen mittig, Settings rechts |
+| Aufbau | Grid `OUTER_COLUMN_WIDTH 1fr OUTER_COLUMN_WIDTH`: Abenteuer-Auswahl links, Sound-Gruppen mittig, rechts die Icon-Buttons „Spieler verbinden“ (`phone.svg`) und Settings (`gap` `space.1`) |
 | Abenteuer-Auswahl | [Auswahlliste](#auswahlliste) `AdventureSelect` (zugänglicher Name „Abenteuer“), Button mit `text.md` `bold`; langer Name einzeilig mit Ellipse innerhalb der Außenspalte |
 | Gruppen | mit senkrechter Trennlinie ([1.4](../../DESIGN.md#14-regeln) Rahmen). Abstände nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“ |
 
@@ -148,6 +162,18 @@ zeichnet. Bisher nur die Abenteuer-Auswahl ([src/components/AdventureSelect.tsx]
 | Liste | direkt unter dem Button (`position: absolute`, `top: calc(100% + space.1)`, `left: 0`), mindestens so breit wie der Button; Fläche `secondary`, Rand `borderWidth.thin` in `border`, `radius.lg`, Innenabstand `space.1`, `gap` `space.1`, ohne `box-shadow`; höchstens `ADVENTURE_LIST_MAX_HEIGHT` hoch, darüber scrollt sie; Ebene `layer.popover` |
 | Eintrag | wie [Navigationseintrag](#navigationseintrag), `text.sm` `medium`, `radius.md`. Gewählt: Fläche `primary`, Text `onPrimary`. Hover und Fokus: Fläche `background`. Gewählt mit Tastatur-Fokus (`:focus-visible`): bleibt `primary`, dazu Outline `borderWidth.thick` in `onPrimary`, nach innen versetzt (`outline-offset` −`borderWidth.thick`), damit die scrollende Liste sie nicht abschneidet. Nicht gewählt mit Tastatur-Fokus: Fläche `background`, dazu dieselbe innere Outline in `primary`. Hover und Maus ohne Outline. `role="option"`, `aria-selected` |
 | Bedienung | Klick auf den Button öffnet und schließt. Am Button öffnen Enter, Leertaste und Pfeil runter/hoch, der Fokus steht dann auf dem gewählten Eintrag. In der Liste bewegen Pfeile (ohne Umlauf) und Pos1/Ende; Enter/Leertaste wählen und schließen; Esc schließt und setzt den Fokus zurück auf den Button; Tab und Klick außerhalb schließen. Den gewählten Eintrag erneut zu wählen schließt nur |
+
+## Theme-Menü
+
+Nur im Player, Komponente `ThemeMenu` ([src/components/ThemeMenu.tsx](../../src/components/ThemeMenu.tsx)). Aufbau und
+Bedienung wie die [Auswahlliste](#auswahlliste), mit diesen Abweichungen:
+
+| Eigenschaft | Wert |
+|---|---|
+| Button | Icon-Button mit Settings-Icon (Player: `size.control.lg`, Fläche `secondary`); zugänglicher Name „Darstellung“ |
+| Liste | ohne Höhenbegrenzung und ohne `z-index` (siehe [1.2](../../DESIGN.md#12-tokens) Ebenen) |
+| Einträge | „Wie Spieltisch“, „Dunkel“, „Taverne“; Höhe `size.control.lg` (Touch-Ziel), Innenabstand `0 space.4` |
+| Bedienung | zusätzlich schließt Tippen außerhalb (`pointerdown`) |
 
 ## Bottom-Bar
 

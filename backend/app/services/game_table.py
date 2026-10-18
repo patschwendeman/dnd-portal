@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.crud import adventure as adventure_crud
 from app.crud import game_table as game_table_crud
-from app.schemas import GameTableState, GameTableUpdate
+from app.schemas import GameTableState, GameTableUpdate, JoinInfo
 
 
 class AdventureNotFoundError(ValueError):
@@ -31,3 +32,7 @@ def update_state(db: Session, update: GameTableUpdate) -> GameTableState:
     # Read again: after the commit the relationship to the (new) active adventure has to be reloaded.
     db.expire_all()
     return get_state(db)
+
+
+def get_join_info() -> JoinInfo:
+    return JoinInfo(player_url=settings.player_url)

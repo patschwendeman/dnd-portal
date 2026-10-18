@@ -266,6 +266,27 @@
         "title": "Image",
         "type": "object"
       },
+      "JoinInfo": {
+        "description": "How players join the game table: URL of the Player Screen in the LAN, `null` if unknown.",
+        "properties": {
+          "player_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Player Url"
+          }
+        },
+        "required": [
+          "player_url"
+        ],
+        "title": "JoinInfo",
+        "type": "object"
+      },
       "MapEntry": {
         "description": "A tile in the map overviews: `id` is the scene ID, `source` its ground (Kampfszene) or wall image.",
         "properties": {
@@ -882,6 +903,27 @@
         "summary": "Update Audio",
         "tags": [
           "audio"
+        ]
+      }
+    },
+    "/table/join": {
+      "get": {
+        "operationId": "read_join_info_table_join_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JoinInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Read Join Info",
+        "tags": [
+          "table"
         ]
       }
     },

@@ -48,7 +48,8 @@ Teil-spezifischer Kontext (Befehle, Struktur, Konventionen): `frontend/CLAUDE.md
   Server ist die einzige Quelle des Spieltisch-Zustands (Abenteuer, aktive Szene, Theme) und pusht ihn per WebSocket
   an diese Screens (siehe architecture.md, „Synchronisation“); `localStorage` dient dafür nicht mehr.
   Musik und Soundeffekte spielt die Wall, die per „AUDIO“ Audioausgabe ist; der Admin ist nur Fernbedienung (Zustand
-  ebenfalls auf dem Server). Die Player-Screens laufen auf den Smartphones der Spieler und sind noch nicht angebunden.
+  ebenfalls auf dem Server). Die Player-Screens laufen auf den Smartphones der Spieler (geöffnet per QR-Code im Admin),
+  sind ebenfalls per WebSocket angebunden und übernehmen davon nur das Theme (pro Gerät abweichend wählbar).
 - **Begriffe:** „Kampfszene“ = `main: true` / Mainmap, „Nicht-Kampfszene“ = `main: false` / Sidemap.
   Ältere Bezeichnungen `battlemap`/`sidemap`/`fight` tauchen noch in Asset-Pfaden und Tests auf.
 - **Sprache:** Docs auf Deutsch, Code-Bezeichner englisch. UI-Texte im Player Screen und die Markdown-Notizen sind deutsch.

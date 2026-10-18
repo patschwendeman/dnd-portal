@@ -31,6 +31,9 @@ services:
     restart: unless-stopped
     working_dir: /app
     env_file: backend/.env
+    # URL of the Player Screen for the QR code in the Admin; set by script.sh, empty = unknown.
+    environment:
+      PLAYER_URL: ${PLAYER_URL:-}
     depends_on:
       db:
         condition: service_healthy

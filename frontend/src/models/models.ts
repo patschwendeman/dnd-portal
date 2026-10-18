@@ -13,6 +13,9 @@ export type Track = Schemas['Track']
 export type GameTableState = Schemas['GameTableState']
 export type Theme = GameTableState['theme']
 
+// How players join the game table (GET /table/join): URL of the Player Screen in the LAN, null if unknown
+export type JoinInfo = Schemas['JoinInfo']
+
 export type AudioState = Schemas['AudioState']
 export type AudioUpdate = Schemas['AudioUpdate']
 export type SoundName = Schemas['SoundRequest']['name']

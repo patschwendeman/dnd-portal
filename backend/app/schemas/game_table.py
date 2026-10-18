@@ -21,3 +21,9 @@ class GameTableUpdate(BaseModel):
 
     active_adventure_id: int | None = None
     theme: Theme = Field(default=DEFAULT_THEME, json_schema_extra=_without_default)
+
+
+class JoinInfo(BaseModel):
+    """How players join the game table: URL of the Player Screen in the LAN, `null` if unknown."""
+
+    player_url: str | None

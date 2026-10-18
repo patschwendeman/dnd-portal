@@ -1,4 +1,4 @@
-"""Settings: read from the environment (DB_*, POSTGRES_*, CORS_ORIGINS, MEDIA_DIR) without backend/.env."""
+"""Settings: read from the environment (DB_*, POSTGRES_*, CORS_ORIGINS, MEDIA_DIR, PLAYER_URL) without backend/.env."""
 
 from pathlib import Path
 
@@ -19,7 +19,7 @@ ENV = {
 
 @pytest.fixture
 def env(monkeypatch: pytest.MonkeyPatch) -> pytest.MonkeyPatch:
-    for key in [*ENV, "CORS_ORIGINS"]:
+    for key in [*ENV, "CORS_ORIGINS", "PLAYER_URL"]:
         monkeypatch.delenv(key, raising=False)
     for key, value in ENV.items():
         monkeypatch.setenv(key, value)
@@ -75,3 +75,26 @@ def test_media_dir_is_read_from_environment(env: pytest.MonkeyPatch) -> None:
     settings = Settings(_env_file=None)  # type: ignore[call-arg]
 
     assert settings.media_dir == Path("/srv/dnd/media")
+
+
+@pytest.mark.parametrize("value", ["", "  "])
+def test_empty_player_url_is_none(env: pytest.MonkeyPatch, value: str) -> None:
+    env.setenv("PLAYER_URL", value)
+
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+
+    assert settings.player_url is None
+
+
+def test_player_url_defaults_to_none(env: pytest.MonkeyPatch) -> None:
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+
+    assert settings.player_url is None
+
+
+def test_player_url_is_read_from_environment(env: pytest.MonkeyPatch) -> None:
+    env.setenv("PLAYER_URL", "http://192.168.0.10:8080/")
+
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+
+    assert settings.player_url == "http://192.168.0.10:8080/"

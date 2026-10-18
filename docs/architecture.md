@@ -4,10 +4,10 @@
  Spieltisch-Screens (beliebige Browser/Geräte im LAN)                 Smartphones
  ┌──────────┐  ┌──────────┐  ┌──────────┐                            ┌──────────┐
  │ /admin   │  │ /wall    │  │ /ground  │                            │ /        │ × n
- └────┬─────┘  └────┬─────┘  └────┬─────┘                            └──────────┘
-      │ HTTP GET/PATCH/POST (axios, /api/...)                       (noch keine Anbindung)
+ └────┬─────┘  └────┬─────┘  └────┬─────┘                            └────┬─────┘
+      │ HTTP GET/PATCH/POST (axios, /api/...)                             │ nur WebSocket (Theme)
       │ WebSocket /ws?screen=… (Snapshots, Audio, Ping; Wall → Server: Audio-Meldungen)
-      └─────────────┴─────────────┘
+      └─────────────┴─────────────┴──────────────────────────────────────┘
                     │ gleicher Origin: Vite-Proxy (Dev :5173) bzw. nginx (Prod :8080)
                     │ /api/… → API (Präfix entfernt), /ws → API
             ┌───────▼────────┐         ┌──────────────┐
@@ -25,7 +25,7 @@
 - **Der Server ist die einzige Quelle** des Spieltisch-Zustands: aktives Abenteuer, dessen aktive Szene und Theme
   (Tabelle `game_table`, die aktive Szene steht in `adventure.active_scene_id`). Ein Server ist ein Spieltisch (eine
   globale Session, kein Beitreten).
-- Admin, Wall und Ground verbinden sich beim Laden per WebSocket mit `/ws?screen=admin|wall|ground`
+- Admin, Wall, Ground und Player verbinden sich beim Laden per WebSocket mit `/ws?screen=admin|wall|ground|player`
   (`GameTableProvider`/`useGameTable`, `src/realtime/`). Der Server schickt direkt nach dem Verbinden und nach **jeder**
   erfolgreichen Änderung per `PATCH /table` oder `PATCH /adventures/{id}` einen vollständigen Snapshot an alle
   Verbindungen (auch an andere Admins; der letzte Schreibzugriff gewinnt, keine Sperren). Der Provider speist daraus
@@ -45,13 +45,21 @@
   keine Nachricht, schließt er die Verbindung und verbindet sich neu.
 - **Reconnect:** Nach jedem Abbruch verbinden sich die Screens selbst neu, mit Backoff 1 s, 2 s, 4 s … höchstens 10 s
   (nach erfolgreichem Verbinden zurückgesetzt). Währenddessen behalten alle Screens den letzten Stand. Nur der Admin
-  zeigt die Leiste „Verbindung zum Server getrennt“, deren „Erneut versuchen“ sofort neu verbindet.
+  zeigt die Leiste „Verbindung zum Server getrennt“, deren „Erneut versuchen“ sofort neu verbindet. Wird der Tab
+  wieder sichtbar (`visibilitychange`, z. B. entsperrtes Smartphone) und ist die Verbindung nicht offen, verbindet
+  jeder Screen sofort neu, statt auf Heartbeat oder Backoff zu warten (`src/realtime/connection.ts`, Sichtbarkeit über
+  `VisibilitySource` aus `src/realtime/visibility.ts`, für Tests ersetzbar).
 - **Ein Worker:** Der Verbindungsmanager hält die offenen Verbindungen im Speicher des API-Prozesses; uvicorn läuft
   deshalb mit genau einem Worker (Default, so in beiden Compose-Stacks).
 - **Audio** (Musik, Soundeffekte) folgt demselben Muster, siehe [Audio](#audio): Der Server hält den Musikzustand,
   eine Wall spielt ihn ab, der Admin steuert per REST.
-- Das Theme des **Player Screens** ist lokal (`localStorage` `isDarkTheme`, nur dieses Gerät); Player-Screens verbinden
-  sich noch nicht.
+- Der **Player Screen** (Smartphones) nutzt vom Spieltisch nur das Theme; `state`, `audio` und `sound` empfängt er,
+  zeigt sie aber nicht an, und er sendet nichts. Er zeigt keinen Verbindungsstatus. Im Settings-Menü kann ein Spieler
+  auf seinem Gerät vom Spieltisch-Theme abweichen („Wie Spieltisch“, „Dunkel“, „Taverne“): gespeichert in
+  `localStorage` `playerThemeOverride` (`dark` | `tavern`, fehlend oder ungültig = „Wie Spieltisch“,
+  `src/utils/playerTheme.ts`); wirksam ist `Abweichung ?? Spieltisch-Theme` (Prop `themeOverride` des
+  `GameTableProvider`, die Contexts behalten das Spieltisch-Theme). Ein Theme-Wechsel im Admin ändert eine gesetzte
+  Abweichung nicht. Den alten Schlüssel `isDarkTheme` entfernt das Frontend beim Start, ohne ihn zu übernehmen.
 
 ### WebSocket `/ws`
 
@@ -147,6 +155,7 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
 | `/table/audio` | `AudioState`: Musikzustand (200), siehe [Audio](#audio) |
 | `PATCH /table/audio` | Body `AudioUpdate`, Antwort `AudioState` (200); 422 im FastAPI-Standardformat bei `volume` außerhalb 0–100 bzw. `null`; `playing: true` bei leerer Playlist ändert `playing` nicht |
 | `POST /table/sounds` | Body `SoundRequest`, 204 (auch ohne Audioausgabe); 422 bei unbekanntem Namen |
+| `/table/join` | `JoinInfo { player_url: str \| null }`: URL des Player Screens im LAN aus `Settings.player_url` (Umgebungsvariable `PLAYER_URL`, leer = `null`), Basis des QR-Codes im Admin (200) |
 | `/ws` | WebSocket des Spieltischs (nicht in OpenAPI), siehe [WebSocket `/ws`](#websocket-ws) |
 | `/media/{storage_key}` | Mediendatei aus dem Medienordner (`StaticFiles`, nicht in OpenAPI): 200 bzw. 206 bei `Range`-Header (Audio-Seek), 404 bei fehlender Datei oder Pfad außerhalb des Ordners |
 
@@ -286,8 +295,9 @@ Datensatz trotzdem an (`size` = NULL).
   Kartenübersichten ergibt sich aus `activeSceneId` (Kachel-ID = Szenen-ID, im Frontend `Map.sceneId`, Attribut
   `data-active`); ist sie `null`, ist keine Kachel hervorgehoben. Die Wahl des Default-Abenteuers trifft
   `selectDefaultAdventureId` (`src/utils/adventure.ts`).
-- Struktur: `src/app` (Routing, lokales Player-Theme), `src/realtime` (WebSocket-Client: `GameTableProvider`,
-  `useGameTable`, Verbindung mit Reconnect `connection.ts`, `messages.ts`, `backoff.ts`, `heartbeat.ts`),
+- Struktur: `src/app` (Routing, Theme-Abweichung des Player Screens), `src/realtime` (WebSocket-Client:
+  `GameTableProvider`, `useGameTable`, Verbindung mit Reconnect `connection.ts`, `messages.ts`, `backoff.ts`,
+  `heartbeat.ts`, `visibility.ts`),
   `src/screens` (Screens), `src/components`, `src/service` (Datenladen und Schreibzugriffe je Screen),
   `src/audio` (Soundliste `sounds.ts`, Wiedergabe auf der Wall `wallAudioPlayer.ts`),
   `src/api` (axios-Client, Base-URL aus `VITE_API_URL`, Default `/api/`, Timeout 5000 ms; `wsUrl` leitet daraus die
@@ -322,8 +332,8 @@ Die ganze Anwendung läuft lokal in Docker und wird aus dem Root gestartet, am e
 
 | `./script.sh …` | Wirkung |
 |---|---|
-| `dev [--tools]` | Docker sicherstellen, Prod-Stack stoppen, Dev-Stack im Vordergrund starten (`--tools`: mit pgAdmin); Ctrl+C beendet |
-| `prod` | Docker sicherstellen, Dev-Stack stoppen, Prod-Stack im Hintergrund starten (`up -d --build --wait --wait-timeout 180`: wartet, bis DB und API healthy sind und nginx läuft; sonst Fehlermeldung, Exit ≠ 0, keine Tabs), dann `/admin`, `/wall`, `/ground` im Browser öffnen, Smartphone-URL (`http://<IP von en0>:8080/`) ausgeben; `VITE_API_URL` aus der Umgebung wird durchgereicht |
+| `dev [--tools]` | Docker sicherstellen, Prod-Stack stoppen, `PLAYER_URL` setzen (siehe unten, Port 5173), Dev-Stack im Vordergrund starten (`--tools`: mit pgAdmin); Ctrl+C beendet |
+| `prod` | Docker sicherstellen, Dev-Stack stoppen, `PLAYER_URL` setzen (siehe unten, Port 8080), Prod-Stack im Hintergrund starten (`up -d --build --wait --wait-timeout 180`: wartet, bis DB und API healthy sind und nginx läuft; sonst Fehlermeldung, Exit ≠ 0, keine Tabs), dann `/admin`, `/wall`, `/ground` im Browser öffnen, Smartphone-URL (`http://<IP von en0>:8080/`) ausgeben; `VITE_API_URL` aus der Umgebung wird durchgereicht |
 | `stop` | beide Stacks stoppen (`down` ohne `-v`, DB-Volumes bleiben) |
 | `reset` | nach Rückfrage (`y`) den Dev-Stack stoppen und sein DB-Volume löschen (`down -v`, inkl. Profil `tools`); beim nächsten `dev` entstehen Schema und Seed neu. Der Prod-Stack bleibt unberührt |
 | `logs [service]` | Logs des Prod-Stacks verfolgen |
@@ -333,6 +343,12 @@ Die ganze Anwendung läuft lokal in Docker und wird aus dem Root gestartet, am e
 
 „Docker sicherstellen“: Antwortet `docker info` nicht, startet das Skript Docker Desktop (`open -a Docker`) und wartet
 bis zu 120 s.
+
+„`PLAYER_URL` setzen“: Das Skript ermittelt die IP von `en0` und exportiert vor `docker compose … up` die URL des Player
+Screens, `prod` → `http://<IP>:8080/`, `dev` → `http://<IP>:5173/`; ohne IP bleibt sie leer. Eine bereits gesetzte
+`PLAYER_URL` aus der Umgebung hat Vorrang. `compose.dev.yaml` und `compose.prod.yaml` reichen sie per `environment` an
+den Service `api` weiter (leer als Default, überschreibt einen Wert aus `backend/.env`); die API liefert sie unter
+`GET /table/join` an den QR-Code-Dialog des Admins. Der Container selbst kennt die LAN-IP nicht.
 
 Einmalig `./script.sh install`, danach funktionieren alle Befehle aus jedem Ordner als `dnd prod|dev|stop|reset|logs` (das
 Skript ermittelt sein Verzeichnis über die Symlink-Kette; Hilfe und Ausgaben zeigen den aufgerufenen Namen).
@@ -386,7 +402,7 @@ per Build-Argument. Eine andere URL erfordert einen neuen Build.
 `["http://localhost:5173","http://localhost:8080"]`), nur `GET` und `PATCH` (Preflight für JSON-Body), ohne
 Credentials. `POST` ist per CORS nicht freigegeben: Die Soundeffekte (`POST /table/sounds`)
 funktionieren über den Proxy (gleicher Origin), bei direktem Zugriff aus einem anderen Origin scheitert der Preflight. Der WebSocket prüft den Origin selbst (siehe [WebSocket `/ws`](#websocket-ws)). Der Player Screen ruft die
-API nicht auf.
+REST-API nicht auf, er nutzt nur den WebSocket.
 
 ### Am Spieltisch (Production)
 
@@ -403,7 +419,11 @@ oben: `backend/.env`.
 
 UI unter http://localhost:8080/admin, `/wall` und `/ground`; Wall und Ground können auch in anderen Browsern oder auf
 anderen Geräten laufen (`http://<IP des Rechners>:8080/wall`). Smartphones öffnen den Player Screen über
-`http://<IP des Rechners>:8080/`. nginx (`frontend/nginx.conf`) leitet `/api/` an die API weiter (Präfix entfernt,
+`http://<IP des Rechners>:8080/` (gleicher Build, kein Sonder-Build): am einfachsten per QR-Code im Admin (Top-Bar,
+„Spieler verbinden“) oder über die URL, die `dnd prod` ausgibt. Der Dialog nimmt `player_url` aus `GET /table/join`;
+ist sie `null` (Stack ohne Skript gestartet), nimmt er den Origin des Admins, sofern dieser nicht über `localhost`,
+`127.0.0.1` oder `[::1]` geöffnet ist (`selectPlayerUrl`, `src/utils/playerUrl.ts`), sonst zeigt er den Hinweis
+„Player-URL unbekannt …“. nginx (`frontend/nginx.conf`) leitet `/api/` an die API weiter (Präfix entfernt,
 `Range` für Medien funktioniert) und `/ws` als WebSocket (`Upgrade`/`Connection`, `proxy_read_timeout` 120 s), beide
 mit dem ursprünglichen `Host`-Header; Port 8000 bleibt für direkte Zugriffe veröffentlicht. nginx liefert `index.html`
 auch für direkt aufgerufene Unterrouten aus (SPA-Fallback); die Dateien aus `public/` (Sounds, Icons, Notizen) stecken im

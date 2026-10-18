@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL
 
@@ -20,6 +21,17 @@ class Settings(BaseSettings):
 
     # Storage key of the music played while no scene is active (medium in the table `media`)
     default_music_key: str = "music/side/forest/From_Past_To_Present.mp3"
+
+    # URL of the Player Screen in the LAN (set by script.sh); the container itself does not know the LAN IP
+    player_url: str | None = None
+
+    @field_validator("player_url", mode="before")
+    @classmethod
+    def _empty_player_url_is_none(cls, value: object) -> object:
+        # Compose passes an unset PLAYER_URL as empty string
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
 
     @property
     def database_url(self) -> URL:
