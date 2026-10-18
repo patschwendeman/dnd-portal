@@ -3,7 +3,6 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "//": "test:e2e runs jest --runInBand: all BDD specs write to the one game table state on the server and would overwrite each other in parallel",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

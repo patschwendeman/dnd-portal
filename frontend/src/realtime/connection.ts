@@ -26,7 +26,6 @@ export interface GameTableConnectionOptions {
 export interface GameTableConnection {
   // Connects at once (e.g. "Erneut versuchen"), drops a running attempt or a planned reconnect
   reconnectNow: () => void
-  // Closes for good (unmount)
   close: () => void
 }
 

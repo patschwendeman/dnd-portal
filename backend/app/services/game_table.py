@@ -6,7 +6,7 @@ from app.schemas import GameTableState, GameTableUpdate
 
 
 class AdventureNotFoundError(ValueError):
-    """The adventure to activate does not exist."""
+    pass
 
 
 def get_state(db: Session) -> GameTableState:

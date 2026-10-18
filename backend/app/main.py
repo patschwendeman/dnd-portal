@@ -34,7 +34,6 @@ app.add_middleware(
 app.include_router(adventures.router, prefix="/adventures", tags=["adventures"])
 app.include_router(scenes.router, prefix="/scenes", tags=["scenes"])
 app.include_router(table.router, prefix="/table", tags=["table"])
-# WebSocket routes do not appear in the OpenAPI schema.
 app.include_router(ws.router, prefix="/ws")
 # check_dir=False keeps `import app.main` working without the media folder (e.g. when exporting the OpenAPI schema).
 app.mount(MEDIA_URL_PREFIX, StaticFiles(directory=settings.media_dir, check_dir=False), name="media")
