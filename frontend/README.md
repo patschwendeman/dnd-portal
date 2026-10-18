@@ -7,7 +7,7 @@ Markdown-Notizen das Frontend selbst aus `public/`.
 | Route | Screen | Zweck |
 |---|---|---|
 | `/admin` | Admin | Spielleiter: Szenen aktivieren, Notizen lesen, Musik und Sounds steuern |
-| `/wall` | Wall | Atmosphäre: Hintergrundbild der aktiven Szene, optional Karten-Overlay |
+| `/wall` | Wall | Atmosphäre: Hintergrundbild der aktiven Szene, optional Karten-Overlay; spielt als Audioausgabe Musik und Sounds |
 | `/ground` | Ground | Digitales Spielbrett: Kampfschauplatz, optional mit Grid |
 | `/` | Player | Smartphone der Spieler: Ressourcen des Charakters |
 

@@ -4,13 +4,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { apiClient } from '../../src/api/apiClient'
 import { patchData } from '../../src/api/apiMethods'
 import { SaveError } from '../../src/api/saveData'
-import { saveActiveAdventure, saveActiveScene, saveTheme } from '../../src/service/adminScreen'
+import {
+  playNextTrack,
+  playSound,
+  saveActiveAdventure,
+  saveActiveScene,
+  saveAudio,
+  saveTheme,
+} from '../../src/service/adminScreen'
 
 vi.mock('../../src/api/apiClient', () => ({
-  apiClient: { get: vi.fn(), patch: vi.fn() },
+  apiClient: { get: vi.fn(), patch: vi.fn(), post: vi.fn() },
 }))
 
 const patch = vi.mocked(apiClient.patch)
+const post = vi.mocked(apiClient.post)
 
 const networkError = () => new AxiosError('Network Error', AxiosError.ERR_NETWORK)
 const timeoutError = () => new AxiosError('timeout of 5000ms exceeded', AxiosError.ECONNABORTED)
@@ -27,6 +35,7 @@ const failure = (promise: Promise<unknown>) => promise.then(() => undefined, (er
 
 beforeEach(() => {
   patch.mockReset()
+  post.mockReset()
 })
 
 describe('patchData', () => {
@@ -100,5 +109,37 @@ describe('game table writes', () => {
     const error = await failure(saveTheme('dark'))
     expect(error).toBeInstanceOf(SaveError)
     expect(error?.message).toMatch(/^Saving theme failed: backend not reachable$/)
+  })
+})
+
+describe('audio commands', () => {
+  it('patches play/pause and volume of the music', async () => {
+    patch.mockResolvedValue({ data: { playing: true } })
+    await saveAudio({ playing: true })
+    expect(patch).toHaveBeenCalledWith('table/audio', { playing: true })
+
+    await saveAudio({ volume: 35 })
+    expect(patch).toHaveBeenCalledWith('table/audio', { volume: 35 })
+  })
+
+  it('posts the next track and sound effects', async () => {
+    post.mockResolvedValue({ data: { playing: false } })
+    await expect(playNextTrack()).resolves.toEqual({ playing: false })
+    expect(post).toHaveBeenCalledWith('table/audio/next', undefined)
+
+    post.mockResolvedValue({ data: '' })
+    await expect(playSound('heal')).resolves.toBeUndefined()
+    expect(post).toHaveBeenCalledWith('table/sounds', { name: 'heal' })
+  })
+
+  it('reports failures as SaveError', async () => {
+    patch.mockRejectedValue(networkError())
+    post.mockRejectedValue(httpError(422))
+
+    const music = await failure(saveAudio({ playing: true }))
+    expect(music).toBeInstanceOf(SaveError)
+    expect(music?.message).toMatch(/^Saving music failed: backend not reachable$/)
+    expect((await failure(playNextTrack()))?.message).toMatch(/^Saving next track failed: HTTP 422$/)
+    expect((await failure(playSound('lock')))?.message).toMatch(/^Saving sound lock failed: HTTP 422$/)
   })
 })

@@ -2,7 +2,7 @@
 
 REST-API, WebSocket und PostgreSQL für das DnD Portal. Liefert Abenteuer (mit Spielern, aktiver Szene und globalem Level) und
 Szenen mit ihren Wall-/Ground-Bildern und Musik-Playlists an das Frontend (`../frontend`), hält den Spieltisch-Zustand
-(aktives Abenteuer, aktive Szene, Theme) und pusht ihn per WebSocket (`/ws`) an Admin, Wall und Ground und die Mediendateien selbst (Ordner `../media`, unter `/media`). Projektübergreifender Kontext (Vision, Screens, Begriffe, bekannte Probleme) liegt
+(aktives Abenteuer, aktive Szene, Theme) und den Musikzustand (im Speicher) und pusht beides per WebSocket (`/ws`) an Admin, Wall und Ground und die Mediendateien selbst (Ordner `../media`, unter `/media`). Projektübergreifender Kontext (Vision, Screens, Begriffe, bekannte Probleme) liegt
 eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 
 ## Stack
@@ -48,8 +48,11 @@ Transaktion) sowie `test_migration_0002.py`, `test_migration_0003.py` und `test_
 `0002`, `0002` → `0003` bzw. `0003` → `0004` und zurück mit Daten, in einer eigenen temporären Datenbank – braucht
 `CREATE DATABASE`). `test_table.py` prüft `GET`/`PATCH /table`, `test_ws.py` den WebSocket `/ws` per
 `TestClient.websocket_connect` (Snapshot, Push nach `PATCH`, `screen`- und Origin-Prüfung, Ping mit per `monkeypatch`
-verkürztem `PING_INTERVAL_SECONDS`, Entfernen getrennter Verbindungen); Nachrichten werden mit Timeout gelesen, damit
-ein fehlender Push den Test scheitern lässt statt ihn zu blockieren.
+verkürztem `PING_INTERVAL_SECONDS`, Entfernen getrennter Verbindungen, Audioausgabe per `audio_ready`/`track_ended`,
+`sound` nur an die Ausgabe); Nachrichten werden mit Timeout gelesen, damit ein fehlender Push den Test scheitern lässt
+statt ihn zu blockieren. `test_audio.py` prüft `GET`/`PATCH /table/audio`, `POST /table/audio/next` und
+`POST /table/sounds` (Zufall per `monkeypatch` auf `audio.random` gesteuert). Der Musikzustand liegt im Speicher: Die
+Fixture `reset_audio` setzt ihn nach dem Test zurück (`test_audio.py`, `test_ws.py` und alle Tests mit `db`).
 Schreibende Tests (`PATCH` in `test_adventures.py`, `test_table.py`, `test_ws.py`) laufen über die Fixture `db`
 (`tests/conftest.py`): Sie ersetzt `get_db` per `app.dependency_overrides` und die Session des WebSocket-Push
 (`app.realtime.push.SessionLocal`) durch eine Session in einer äußeren, danach zurückgerollten Transaktion (Commits
@@ -72,7 +75,7 @@ unter `/app/.venv` (im `PATH`), der Prozess läuft als Non-Root-User `dnd`. `CMD
 ## Struktur & Schichten
 
 ```
-app/main.py               App `app`, lifespan (Migrationen + Seeder), CORS, include_router mit Prefix/Tags (WebSocket
+app/main.py               App `app`, lifespan (Migrationen + Seeder + Start-Musikzustand), CORS, include_router mit Prefix/Tags (WebSocket
                           `ws` mit Prefix `/ws`, ohne Tag),
                           StaticFiles des Medienordners unter /media
 app/core/config.py        Settings (pydantic-settings) und Instanz `settings`
@@ -84,27 +87,32 @@ app/models/               SQLAlchemy-Models: adventure.py (Adventure), player.py
                           game_table.py (GameTable, genau eine Zeile `GAME_TABLE_ID`),
                           media.py (Media, berechnetes `source`); __init__.py re-exportiert alle (vollständige Base.metadata)
 app/schemas/              Pydantic-Schemas des API-Vertrags: game_table.py (GameTableState, GameTableUpdate, Theme),
+                          audio.py (AudioState, AudioUpdate, SoundRequest, SoundName),
                           adventure.py (AdventureSummary, AdventureDetail, Player,
                           AdventureUpdate), scene.py (SceneDetail, Image, Track), map.py (MapEntry)
 app/crud/adventure.py     Abenteuer lesen (mit Spielern und Avatar), Existenzprüfung, Update
 app/crud/game_table.py    Spieltisch-Zeile lesen (mit aktivem Abenteuer), Update
+app/crud/media.py         read_media_by_storage_key (Standardmusik)
 app/crud/scene.py         Lesezugriffe auf Scene, immer mit Relationen (read_scenes und read_scenes_by_main je
                           adventure_id, read_scene), read_scene_adventure_id
 app/services/adventure.py Fachlogik Abenteuer (Liste, Detail, Szenen/Karten je Abenteuer → None bei unbekannter ID,
                           update_adventure inkl. Prüfung der aktiven Szene → SceneNotInAdventureError)
 app/services/scene.py     Fachlogik Szenen (get_scene → Scene | None)
+app/services/audio.py     get_playlist: Tracks der aktiven Szene bzw. Standardmusik (Settings.default_music_key)
 app/services/game_table.py Spieltisch-Zustand (get_state inkl. aktiver Szene des aktiven Abenteuers, update_state mit
                           Prüfung des Abenteuers → AdventureNotFoundError)
 app/realtime/             WebSocket: manager.py (ConnectionManager `manager` im Prozess, Connection je Verbindung mit
                           Sende-Lock, Broadcast entfernt Verbindungen bei Sendefehler/Timeout, PING_INTERVAL_SECONDS),
-                          push.py (push_state als BackgroundTask nach dem Commit, eigene Session; send_initial_state),
+                          audio.py (AudioService `audio`: Musikzustand im Speicher, zufällige Track-Wahl, Ausgabe),
+                          push.py (push_state als BackgroundTask nach dem Commit, eigene Session, lädt bei Szenenwechsel
+                          die Playlist; send_initial_state, push_audio, send_sound, Ausgabe-Wechsel, reset_audio),
                           origin.py (is_origin_allowed: ohne Origin, CORS_ORIGINS oder gleicher Host/Port wie `Host`)
 app/services/map.py       Fachlogik Karten (get_maps je Abenteuer → list[MapEntry], MapType)
 app/api/deps.py           SessionDep
 app/api/routes/*.py       je Ressource ein `router` (adventures inkl. Szenen/Karten je Abenteuer, scenes nur
-                          Einzelszene) – nur HTTP-Mapping
+                          Einzelszene, table, audio mit Prefix `/table` und Tag `audio`, ws) – nur HTTP-Mapping
 tests/conftest.py         Fixtures: TestClient, Seed-Daten und daraus berechnete Erwartungen
-tests/test_*.py           Tests je Router (adventures inkl. Karten, scenes, table), WebSocket (ws), Medien (media), CORS,
+tests/test_*.py           Tests je Router (adventures inkl. Karten, scenes, table, audio), WebSocket (ws), Medien (media), CORS,
                           Config, Migrationsstart (migrate), Seeder (seed), Migrationen 0002–0004 (migration_000n)
 alembic.ini               Alembic-Konfiguration (ohne DB-URL; Dateinamen <revision>_<slug>.py, ruff als post_write_hook)
 migrations/env.py         URL aus settings.database_url, target_metadata = Base.metadata, compare_type=True
@@ -133,7 +141,9 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
   dokumentiert sie per `responses={404: …}`. Fachliche Ablehnungen meldet der Service per Exception
   (`SceneNotInAdventureError`, `AdventureNotFoundError`), die Route übersetzt sie in 422.
 - Schreibende Routen, die den Spieltisch-Zustand ändern können (`PATCH /table`, `PATCH /adventures/{id}`), hängen nach
-  Erfolg `push_state` als `BackgroundTask` an (läuft nach dem Commit; die Routen bleiben synchron). uvicorn läuft mit
+  Erfolg `push_state` als `BackgroundTask` an (läuft nach dem Commit; die Routen bleiben synchron). Die Audio-Routen
+  (`app/api/routes/audio.py`) sind `async` (kein DB-Zugriff), ändern den Musikzustand unter `manager.state_lock` und
+  hängen `push_audio` bzw. `send_sound` an. uvicorn läuft mit
   einem Worker, weil der Verbindungsmanager im Prozess liegt.
   Relationen, die ein Schema braucht, lädt die CRUD-Funktion eager (`joinedload`/`contains_eager`, die Spieler
   eines Abenteuers per `selectinload`).

@@ -107,9 +107,20 @@ interface ScreenControlBarProps {
     label?: string
     // Controlled active button; if omitted, the bar tracks the last clicked button itself
     activeIndex?: number | null
+    // Wall: button "AUDIO" makes this screen the audio output, highlighted while it is
+    onAudioOutput?: () => void
+    isAudioOutput?: boolean
 }
 
-const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({ onVisibilityChange, onSliderChange, buttonLabels, label, activeIndex }): ReactElement => {
+const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({
+    onVisibilityChange,
+    onSliderChange,
+    buttonLabels,
+    label,
+    activeIndex,
+    onAudioOutput,
+    isAudioOutput = false,
+}): ReactElement => {
     const [clickedButton, setClickedButton] = useState<number | null>(null)
     const activeButton = activeIndex !== undefined ? activeIndex : clickedButton
     const [sliderValue, setSliderValue] = useState<number>(100)
@@ -141,6 +152,11 @@ const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({ onVisibili
                         </Button>
                     ))}
                 </ButtonGroup>
+                {onAudioOutput && (
+                    <Button onClick={onAudioOutput} $variant={isAudioOutput ? 'active' : 'default'}>
+                        AUDIO
+                    </Button>
+                )}
                 {onSliderChange && (
                     <SliderGroup>
                         <Label>Zelle</Label>

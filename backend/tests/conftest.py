@@ -41,11 +41,22 @@ def client() -> Iterator[TestClient]:
 
 
 @pytest.fixture
-def db(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> Iterator[Session]:
+def reset_audio(client: TestClient) -> Iterator[None]:
+    """Resets the music state kept in memory after the test (start state for the stored game table)."""
+    from app.db.session import SessionLocal
+    from app.realtime import push
+
+    yield
+    with SessionLocal() as session:
+        push.reset_audio(session)
+
+
+@pytest.fixture
+def db(client: TestClient, reset_audio: None, monkeypatch: pytest.MonkeyPatch) -> Iterator[Session]:
     """Session in an outer transaction that is rolled back afterwards (commits become savepoints).
 
     Used by the routes (`get_db`) and by the WebSocket push, which otherwise opens its own session and would not see
-    the uncommitted changes.
+    the uncommitted changes. A scene change also changes the music state, so it is reset afterwards (`reset_audio`).
     """
     from app.db.session import engine, get_db
     from app.main import app

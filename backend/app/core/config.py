@@ -18,6 +18,9 @@ class Settings(BaseSettings):
 
     media_dir: Path = Path("/app/media")
 
+    # Storage key of the music played while no scene is active (medium in the table `media`)
+    default_music_key: str = "music/side/forest/From_Past_To_Present.mp3"
+
     @property
     def database_url(self) -> URL:
         return URL.create(

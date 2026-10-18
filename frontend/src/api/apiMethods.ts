@@ -12,3 +12,8 @@ export const patchData = async (path: string, body: object) => {
   const response = await apiClient.patch(path, body)
   return response.data
 }
+
+export const postData = async (path: string, body?: object) => {
+  const response = await apiClient.post(path, body)
+  return response.data
+}

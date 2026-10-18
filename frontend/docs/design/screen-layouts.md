@@ -18,6 +18,7 @@ Regel: [1.3](../../DESIGN.md#13-layout-konstanten).
 | 104px | Platz für die Steuerleiste (24 + 56 + 24, `CONTROL_BAR_CLEARANCE`) | `ScreenControlBar` |
 | 600px | Breite des Dialogs (`DIALOG_WIDTH`) | `Dialogue` |
 | 200px · 16px · 3ch | Breite des Sliders, Größe des Griffs, Mindestbreite der Wertanzeige (`SLIDER_WIDTH`, `SLIDER_THUMB_SIZE`, `SLIDER_VALUE_MIN_WIDTH`) | `ScreenControlBar` |
+| 120px · 16px | Breite und Griffgröße des Lautstärke-Sliders in der Bottom-Bar (`VOLUME_SLIDER_WIDTH`, `VOLUME_SLIDER_THUMB_SIZE`) | `AdminScreen` |
 | 64px | Höhe der Ressourcen-Buttons (`RESOURCE_HEIGHT`) | `ResourceBarPlayer` |
 | 8px · 24px | Breite und Höhe eines Zauber- oder Spezialplatzes (`SLOT_WIDTH`, `SLOT_HEIGHT`) | `ResourceBarPlayer` |
 | 96px | Icon im Overlay „Handy drehen“ (`ROTATE_ICON_SIZE`) | `PlayerScreen` |

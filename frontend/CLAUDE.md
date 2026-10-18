@@ -2,7 +2,7 @@
 
 UI des DnD Portals: Admin Screen (Spielleiter), Player Screen (Smartphone), Wall Screen (Atmosphäre) und
 Ground Screen (digitales Spielbrett). Holt Szenen vom Backend (`../backend`); Szenenbilder und Musik liefert das
-Backend unter `/media` aus, Sounds, Icons und Markdown-Notizen das Frontend selbst aus `public/`. Projektübergreifender Kontext (Vision, Screens
+Backend unter `/media` aus, Soundeffekte, Icons und Markdown-Notizen das Frontend selbst aus `public/`. Projektübergreifender Kontext (Vision, Screens
 Soll/Ist, Begriffe, bekannte Probleme) liegt eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 
 Gestaltungsregeln, Tokens und Farbrollen stehen in [DESIGN.md](DESIGN.md). Details dazu (Bausteine, Layout-Konstanten
@@ -68,29 +68,31 @@ Im Container liegt `node_modules` in einem eigenen Volume; nach Änderungen an `
 ```
 src/app/App.tsx      Routing; Admin, Wall, Ground je im GameTableProvider; lokales Theme des Player Screens (localStorage)
 src/realtime/        WebSocket-Client des Spieltischs: GameTableProvider (ThemeProvider + Contexts aus dem Snapshot),
-                     useGameTable(screen) → { state, connected, reconnectNow }, connection.ts (Reconnect, Heartbeat),
-                     messages.ts (parseServerMessage), backoff.ts (reconnectDelay), heartbeat.ts (Watchdog 35 s)
+                     useGameTable(screen) → { state, audio, isAudioOutput, connected, reconnectNow, requestAudioOutput,
+                     reportTrackEnded, subscribeSound }, connection.ts (Reconnect, Heartbeat, send nur bei offener
+                     Verbindung), messages.ts (parseServerMessage, ClientMessage), backoff.ts (reconnectDelay),
+                     heartbeat.ts (Watchdog 35 s)
 src/context/         ActiveAdventureContext, ActiveSceneContext (IDs number | null, nur lesend), GameTableContext
-                     (hasState, theme, connected, reconnectNow)
+                     (hasState, theme, connected, reconnectNow), GameAudioContext (audio, isAudioOutput,
+                     requestAudioOutput, reportTrackEnded, subscribeSound)
+src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen der TopBar), wallAudioPlayer.ts
+                     (WallAudioPlayer: Wiedergabe auf der Wall nach dem AudioState, Audio-Fabrik injizierbar für vitest)
 src/screens/         Screens
 src/components/      UI-Bausteine (TopBar, DocumentReader, MapOverview, GridOverlay, ScreenControlBar, ResourceBarPlayer …)
 src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
-                     saveActiveScene, saveActiveAdventure, saveTheme, getWallScene, getWallMainmaps, getGroundScreenData …)
-src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData/patchData (apiMethods.ts), loadData, saveData,
-                     mediaUrl (mediaUrl.ts), wsUrl (wsUrl.ts); schema.d.ts generiert
+                     saveActiveScene, saveActiveAdventure, saveTheme, saveAudio, playNextTrack, playSound, getWallScene,
+                     getWallMainmaps, getGroundScreenData …)
+src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData/patchData/postData (apiMethods.ts), loadData,
+                     saveData/postCommand, mediaUrl (mediaUrl.ts), wsUrl (wsUrl.ts); schema.d.ts generiert
 src/models/models.ts API-Typen AdventureSummary, AdventureDetail, SceneDetail, Image, Track, MapResponse (= MapEntry),
-                     GameTableState, Theme aus src/api/schema.d.ts;
+                     GameTableState, Theme, AudioState, AudioUpdate, SoundName aus src/api/schema.d.ts;
                      Map ist Frontend-Modell (sceneId), Umwandlung aus MapResponse im Service
-src/hooks/           useMusicPlayer (bindet MusicPlayer an den Admin Screen: Track/Play-Zustand, Cleanup)
-src/utils/utils.ts   Zufallstrack (getRandomTrack), Musiktitel, Soundeffekte (playAtmoSounds), filterSceneByKey,
-                     getGridLayout
+src/utils/utils.ts   Musiktitel (getMusicTitle), filterSceneByKey, getGridLayout
 src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
-src/utils/musicPlayer.ts  MusicPlayer: Hintergrundmusik ohne React (ein Audio-Element, Playlist, aktueller Track,
-                     Trackende → nächster Track); Audio-Fabrik und Zufall injizierbar für vitest
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }), appTheme(theme),
                      styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden)
-public/assets/       sounds, icons; dazu die fest eingebundenen Medien images/ground_screen/mapOverview.jpg (Weltkarte)
-                     und music/side/forest/From_Past_To_Present.mp3 (Standardmusik) – Szenenmedien liegen in ../media
+public/assets/       sounds (Soundeffekte, auf der Wall abgespielt), icons; dazu das fest eingebundene Medium
+                     images/ground_screen/mapOverview.jpg (Weltkarte) – Szenenmedien und Standardmusik liegen in ../media
 public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mechanics), deutsch
 ```
 
@@ -101,6 +103,11 @@ Contexts aus jedem Snapshot. Szenen-, Abenteuer- und Theme-Wechsel schreibt der 
 bzw. `PATCH table`) **ohne lokale Vorwegnahme**; der Server pusht danach den neuen Stand an alle Screens, die die Szene
 per `scenes/{id}` neu laden (ohne aktive Szene kein Request, nur Hintergrund). Nur der Admin zeigt Speicher- und
 Verbindungsfehler. Player-Screens sind nicht angebunden. Details: `../docs/architecture.md#synchronisation`.
+
+Audio: Der Server hält den Musikzustand und pusht ihn als `audio` an alle Screens. Die Wall, auf der „AUDIO“ geklickt
+wurde (`audio_ready`), ist die einzige Audioausgabe und spielt per `WallAudioPlayer`; nach einem Reconnect meldet sie
+sich selbst wieder. Der Admin spielt nichts ab, er sendet Befehle (`PATCH table/audio`, `POST table/audio/next`,
+`POST table/sounds`) ohne lokale Vorwegnahme. Details: `../docs/architecture.md#audio`.
 
 ## Konventionen (durch ESLint erzwungen bzw. im Code üblich)
 
@@ -129,7 +136,7 @@ Verbindungsfehler. Player-Screens sind nicht angebunden. Details: `../docs/archi
 
 - Medienpfade (`source`) kommen vom Backend als API-relativer Pfad (`/media/...`) und werden immer über
   `mediaUrl(source)` (`src/api/mediaUrl.ts`, gleiche Basis-URL wie `apiClient`) in eine absolute URL umgewandelt –
-  in `WallScreen`, `GroundScreen`, `MapOverview`, `SideMaps`, `Dialogue` und der Playlist im `AdminScreen`.
+  in `WallScreen`, `GroundScreen`, `MapOverview`, `SideMaps`, `Dialogue` und im `WallAudioPlayer` (Musik der Wall).
 - Kacheln (`Map`) tragen die Szenen-ID als `sceneId`: Das Backend liefert in `adventures/{id}/maps/*` `id = scene.id`, die Services
   mappen es auf `sceneId`. Aktiv ist die Kachel mit `sceneId === activeSceneId`. `MapOverview` rendert jede Anzahl als
   Raster mit `⌈√n⌉` Spalten (`getGridLayout` in `src/utils/utils.ts`, auch Basis der Wall-Overlay-Breite).

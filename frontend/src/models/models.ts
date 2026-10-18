@@ -13,6 +13,12 @@ export type Track = Schemas['Track']
 export type GameTableState = Schemas['GameTableState']
 export type Theme = GameTableState['theme']
 
+// Music of the game table, pushed over the WebSocket /ws (and returned by the /table/audio endpoints)
+export type AudioState = Schemas['AudioState']
+export type AudioUpdate = Schemas['AudioUpdate']
+// Sound effects the Wall that is the audio output plays (POST /table/sounds)
+export type SoundName = Schemas['SoundRequest']['name']
+
 // Response of /adventures/{id}/maps/main and /adventures/{id}/maps/side: the backend sends the scene id as id
 export type MapResponse = Schemas['MapEntry']
 

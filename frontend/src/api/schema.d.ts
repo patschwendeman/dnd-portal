@@ -125,6 +125,64 @@ export interface paths {
         patch: operations["update_table_table_patch"];
         trace?: never;
     };
+    "/table/audio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Audio */
+        get: operations["read_audio_table_audio_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update Audio
+         * @description Works without an audio output as well: the Wall that becomes the output starts with the stored state.
+         */
+        patch: operations["update_audio_table_audio_patch"];
+        trace?: never;
+    };
+    "/table/audio/next": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Next Track */
+        post: operations["next_track_table_audio_next_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/table/sounds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Play Sound
+         * @description Plays the sound effect on the audio output; without an output it is dropped (204 anyway).
+         */
+        post: operations["play_sound_table_sounds_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -162,6 +220,29 @@ export interface components {
             active_scene_id?: number | null;
             /** Global Level */
             global_level?: number;
+        };
+        /**
+         * AudioState
+         * @description Music of the game table, played by the Wall that is the audio output (`output_ready`); volume in percent.
+         */
+        AudioState: {
+            /** Output Ready */
+            output_ready: boolean;
+            /** Playing */
+            playing: boolean;
+            track: components["schemas"]["Track"] | null;
+            /** Volume */
+            volume: number;
+        };
+        /**
+         * AudioUpdate
+         * @description Partial update: only the fields set in the request are changed.
+         */
+        AudioUpdate: {
+            /** Playing */
+            playing?: boolean;
+            /** Volume */
+            volume?: number;
         };
         /**
          * GameTableState
@@ -246,6 +327,14 @@ export interface components {
             /** Tracks */
             tracks: components["schemas"]["Track"][];
             wall_image: components["schemas"]["Image"];
+        };
+        /** SoundRequest */
+        SoundRequest: {
+            /**
+             * Name
+             * @enum {string}
+             */
+            name: "heal" | "bottle" | "buff" | "music_1" | "music_2" | "spell_1" | "spell_2" | "debuff_1" | "debuff_2" | "lock";
         };
         /** Track */
         Track: {
@@ -571,6 +660,106 @@ export interface operations {
                 };
             };
             /** @description Adventure not found, or validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    read_audio_table_audio_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AudioState"];
+                };
+            };
+        };
+    };
+    update_audio_table_audio_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AudioUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AudioState"];
+                };
+            };
+            /** @description Volume out of range, or validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    next_track_table_audio_next_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AudioState"];
+                };
+            };
+        };
+    };
+    play_sound_table_sounds_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SoundRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown sound, or validation error */
             422: {
                 headers: {
                     [name: string]: unknown;

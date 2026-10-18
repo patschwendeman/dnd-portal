@@ -2,10 +2,11 @@ import { FunctionComponent, ReactElement, useContext, useEffect, useState } from
 import styled, { useTheme } from 'styled-components'
 
 import { mediaUrl } from '../api/mediaUrl'
+import { WallAudioPlayer } from '../audio/wallAudioPlayer'
 import { Label } from '../components/Label'
 import { MapOverview } from '../components/MapOverview'
 import { CONTROL_BAR_CLEARANCE, ScreenControlBar } from '../components/ScreenControlBar'
-import { ActiveAdventureContext, ActiveSceneContext } from '../context/context'
+import { ActiveAdventureContext, ActiveSceneContext, GameAudioContext } from '../context/context'
 import { Map, SceneDetail } from '../models/models'
 import { getWallMainmaps, getWallScene } from '../service/WallScreen'
 import { GlobalStyle } from '../style/GlobalStyle'
@@ -94,6 +95,8 @@ const WallScreen: FunctionComponent = (): ReactElement => {
     const theme = useTheme()
     const { activeAdventureId } = useContext(ActiveAdventureContext)
     const { activeSceneId } = useContext(ActiveSceneContext)
+    const { audio, isAudioOutput, requestAudioOutput, reportTrackEnded, subscribeSound } = useContext(GameAudioContext)
+    const [audioPlayer, setAudioPlayer] = useState<WallAudioPlayer | null>(null)
     const [activeScene, setActiveScene] = useState<SceneDetail>()
     const [mainmaps, setMainmaps] = useState<Map[]>([])
     const [isActiveMainMap, setIsActiveMainMap] = useState<boolean>(false) 
@@ -176,6 +179,26 @@ const WallScreen: FunctionComponent = (): ReactElement => {
         }
     }, [activeAdventureId])
 
+    useEffect(() => {
+        const player = new WallAudioPlayer({ onTrackEnded: reportTrackEnded })
+        setAudioPlayer(player)
+        return () => {
+            player.dispose()
+        }
+    }, [reportTrackEnded])
+
+    // Plays only while this Wall is the audio output; the state comes from the server
+    useEffect(() => {
+        audioPlayer?.update(audio, isAudioOutput)
+    }, [audioPlayer, audio, isAudioOutput])
+
+    useEffect(() => {
+        if (audioPlayer === null) {
+            return
+        }
+        return subscribeSound((name) => audioPlayer.playSound(name))
+    }, [audioPlayer, subscribeSound])
+
     return(
         <Screen>
             <GlobalStyle />
@@ -193,7 +216,13 @@ const WallScreen: FunctionComponent = (): ReactElement => {
                 </PanelHeader>
                 <MapEnvironment src={MapEnvironmentSrc} ></MapEnvironment>
             </OverlayPanel>
-            <ScreenControlBar onVisibilityChange={handleMapsVisibility} buttonLabels={buttonLabels} activeIndex={activeButton}/>
+            <ScreenControlBar
+                onVisibilityChange={handleMapsVisibility}
+                buttonLabels={buttonLabels}
+                activeIndex={activeButton}
+                onAudioOutput={requestAudioOutput}
+                isAudioOutput={isAudioOutput}
+            />
         </Screen>       
     )
 }

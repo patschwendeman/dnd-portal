@@ -5,8 +5,8 @@
  ┌──────────┐  ┌──────────┐  ┌──────────┐                            ┌──────────┐
  │ /admin   │  │ /wall    │  │ /ground  │                            │ /        │ × n
  └────┬─────┘  └────┬─────┘  └────┬─────┘                            └──────────┘
-      │ HTTP GET/PATCH (axios, /api/...) │                           (noch keine Anbindung)
-      │ WebSocket /ws?screen=… (Snapshots, Ping)
+      │ HTTP GET/PATCH/POST (axios, /api/...)                       (noch keine Anbindung)
+      │ WebSocket /ws?screen=… (Snapshots, Audio, Ping; Wall → Server: Audio-Meldungen)
       └─────────────┴─────────────┘
                     │ gleicher Origin: Vite-Proxy (Dev :5173) bzw. nginx (Prod :8080)
                     │ /api/… → API (Präfix entfernt), /ws → API
@@ -16,7 +16,7 @@
             └────────────────┘         └──────────────┘
  Szenenmedien (Wall-/Ground-Bilder, Musik) liefert das Backend unter /media aus (Ordner media/ im Repo-Root),
  das Frontend lädt sie über den Proxy (/api/media/...).
- Übrige statische Assets (Sounds, Icons, Markdown) liefert das Frontend aus public/ aus:
+ Übrige statische Assets (Soundeffekte, Icons, Markdown) liefert das Frontend aus public/ aus:
  Dev: Vite-Server (:5173), Production: nginx (:8080) mit dem gebauten public/.
 ```
 
@@ -48,27 +48,73 @@
   zeigt die Leiste „Verbindung zum Server getrennt“, deren „Erneut versuchen“ sofort neu verbindet.
 - **Ein Worker:** Der Verbindungsmanager hält die offenen Verbindungen im Speicher des API-Prozesses; uvicorn läuft
   deshalb mit genau einem Worker (Default, so in beiden Compose-Stacks).
+- **Audio** (Musik, Soundeffekte) folgt demselben Muster, siehe [Audio](#audio): Der Server hält den Musikzustand,
+  eine Wall spielt ihn ab, der Admin steuert per REST.
 - Das Theme des **Player Screens** ist lokal (`localStorage` `isDarkTheme`, nur dieses Gerät); Player-Screens verbinden
   sich noch nicht.
 
 ### WebSocket `/ws`
 
-`GET /ws?screen=<admin|wall|ground|player>` (WebSocket, nicht in OpenAPI). Nachrichten nur Server → Client, JSON im
-Format `{type, payload}`:
+`GET /ws?screen=<admin|wall|ground|player>` (WebSocket, nicht in OpenAPI). JSON im Format `{type, payload}`.
 
-| Nachricht | Wann |
+Server → Client:
+
+| Nachricht | An | Wann |
+|---|---|---|
+| `{"type": "state", "payload": GameTableState}` | alle | direkt nach dem Verbinden und nach jeder erfolgreichen Änderung per `PATCH /table` oder `PATCH /adventures/{id}` (auch für nicht aktive Abenteuer) |
+| `{"type": "audio", "payload": AudioState}` | alle | direkt nach dem Verbinden (nach `state`), nach jeder Änderung des Musikzustands (Audio-Endpoints, Wechsel der aktiven Szene nach dem `state`-Push, Ausgabe bereit bzw. getrennt, Trackende) |
+| `{"type": "audio_output", "payload": {"active": bool}}` | betroffene Wall | `true` an die Wall, die per `audio_ready` Ausgabe wird; `false` an die bisherige Ausgabe, die die Rolle verliert |
+| `{"type": "sound", "payload": {"name": SoundName}}` | nur die Ausgabe | nach `POST /table/sounds`; ohne Ausgabe verfällt der Sound |
+| `{"type": "ping"}` | alle | alle 15 s (Heartbeat) |
+
+Client → Server (nur von Verbindungen mit `screen=wall` ausgewertet; andere Screens, ungültiges JSON und unbekannte
+Typen ignoriert der Server, die Verbindung bleibt bestehen):
+
+| Nachricht | Wirkung |
 |---|---|
-| `{"type": "state", "payload": GameTableState}` | direkt nach dem Verbinden und nach jeder erfolgreichen Änderung per `PATCH /table` oder `PATCH /adventures/{id}` (auch für nicht aktive Abenteuer) |
-| `{"type": "ping"}` | alle 15 s (Heartbeat) |
+| `{"type": "audio_ready"}` | diese Verbindung wird die Audioausgabe, eine bisherige verliert die Rolle |
+| `{"type": "track_ended", "payload": {"track_id": int}}` | nur von der Ausgabe und nur für den aktuellen Track (sonst veraltet bzw. doppelt, ignoriert): der Server wählt den nächsten Track |
 
-Eingehende Nachrichten ignoriert der Server, er liest sie nur, um das Trennen zu erkennen. Ein fehlender oder
+Ein fehlender oder
 unbekannter `screen` wird mit Close-Code 1008 abgewiesen. **Origin-Prüfung** (CORS greift bei WebSockets nicht): Der
 Server nimmt die Verbindung nur an, wenn der `Origin`-Header fehlt (kein Browser), in `CORS_ORIGINS` steht oder Host
 und Port des `Origin` dem `Host`-Header entsprechen (gleicher Origin über den Proxy); sonst lehnt er den Handshake ab
 (HTTP 403). Der Push läuft als async `BackgroundTask` der Schreib-Route nach dem Commit mit eigener DB-Session; das
 Lesen und Senden der Snapshots ist serialisiert, damit jeder Client sie in Lesereihenfolge erhält. Schlägt das Senden
 fehl (oder dauert länger als 5 s), entfernt der Manager die Verbindung, der Client verbindet sich neu. Unbekannte
-Nachrichtentypen ignoriert der Client (`parseServerMessage`, `src/realtime/messages.ts`).
+Nachrichtentypen ignoriert der Client (`parseServerMessage`, `src/realtime/messages.ts`). Der Client sendet nur über
+eine offene Verbindung, sonst verwirft er die Nachricht.
+
+### Audio
+
+- **Der Server entscheidet über die Musik.** `AudioService` (`app/realtime/audio.py`, Instanz `audio`) hält den
+  Musikzustand im Speicher des API-Prozesses (bewusst flüchtig, nach einem API-Neustart ist die Musik pausiert):
+  Playlist, aktueller Track (`Track` oder `null` bei leerer Playlist), `playing` (Start `false`), `volume` (Prozent
+  0–100, Start 10) und die Audioausgabe (eine Wall-Verbindung oder keine, `output_ready`). Beim App-Start (`lifespan`)
+  initialisiert `reset_audio` (`app/realtime/push.py`) ihn für den gespeicherten Spieltisch.
+- **Playlist:** die Tracks der aktiven Szene (nach ID, `get_playlist` in `app/services/audio.py`); ohne aktive Szene
+  die **Standardmusik**, das Medium mit dem Storage-Key `Settings.default_music_key` (Default
+  `music/side/forest/From_Past_To_Present.mp3`; fehlt es, ist die Playlist leer). Bei jedem `state`-Push prüft der
+  Server, ob sich die aktive Szene geändert hat; dann lädt er die neue Playlist, wählt zufällig einen Track und pusht
+  zusätzlich `audio`. `playing` bleibt dabei unverändert (läuft die Musik, startet sofort ein Track der neuen Szene).
+- **Nächster Track:** zufällig aus der Playlist und, wenn möglich, nicht der aktuelle (Zufallsquelle `audio.random`,
+  für Tests ersetzbar) – bei `POST /table/audio/next` und bei `track_ended` der Ausgabe.
+- **Ausgabe:** Genau eine Wall spielt (kein Echo im Raum): die zuletzt per `audio_ready` gemeldete. Trennt sich die
+  Ausgabe, ist `output_ready` `false` und alle bekommen den neuen `AudioState`. Befehle funktionieren auch ohne
+  Ausgabe und ändern den Zustand; eine Wall, die Ausgabe wird, setzt mit dem aktuellen Zustand ein (läuft die Musik,
+  startet sie den aktuellen Track von vorn). Synchrone Wiedergabepositionen gibt es nicht.
+- **Wall:** Der Button „AUDIO“ in der Steuerleiste sendet `audio_ready` (die Nutzerinteraktion gibt die Wiedergabe im
+  Browser frei) und ist hervorgehoben, solange die Wall Ausgabe ist. `WallAudioPlayer` (`src/audio/wallAudioPlayer.ts`)
+  setzt den `AudioState` um: Track-Wechsel → `mediaUrl(track.source)` von vorn, `playing` → `play()`/`pause()`,
+  `volume / 100` → Lautstärke, Trackende → `track_ended`; verliert die Wall die Rolle oder die Verbindung, pausiert sie
+  sofort. Soundeffekte spielt sie bei voller Lautstärke parallel (Dateien aus `public/assets/sounds`, Liste in
+  `src/audio/sounds.ts`). Scheitert `play()` (Autoplay), loggt sie per `console.error`. Nach einem Reconnect meldet
+  sich eine Wall, die vorher Ausgabe war, von selbst wieder mit `audio_ready`, bis eine andere Wall übernimmt.
+- **Admin als Fernbedienung:** zeigt `playing`, den Tracktitel (`getMusicTitle(track.source)`) und ohne Ausgabe den
+  Hinweis „Keine Audioausgabe bereit“; Play/Pause (`PATCH /table/audio {playing}`), „Weiter“ (`POST
+  /table/audio/next`), Lautstärke-Slider (`PATCH /table/audio {volume}` beim Loslassen) – ohne lokale Vorwegnahme,
+  Fehler in der Speicherfehler-Leiste mit „Erneut versuchen“. Die Sound-Buttons der Top-Bar senden `POST
+  /table/sounds`; Fehler werden nur geloggt (kein Retry). Im Admin wird nichts abgespielt.
 
 ## Backend (`backend`)
 
@@ -85,7 +131,7 @@ Nachrichtentypen ignoriert der Client (`parseServerMessage`, `src/realtime/messa
   (einmalig `docker compose -f compose.dev.yaml down -v` bzw. `… compose.prod.yaml down -v`). Ablauf für
   Schemaänderungen: `backend/CLAUDE.md`, Abschnitt „Migrationen“. `import app.main` allein baut keine DB-Verbindung auf.
 
-### Endpoints (GET, Abenteuer und Spieltisch zusätzlich PATCH; keine Auth)
+### Endpoints (GET, Abenteuer und Spieltisch zusätzlich PATCH, Audio-Befehle POST; keine Auth)
 
 | Pfad | Liefert |
 |---|---|
@@ -98,6 +144,10 @@ Nachrichtentypen ignoriert der Client (`parseServerMessage`, `src/realtime/messa
 | `/scenes/{scene_id}` | `SceneDetail` (200) bzw. 404 `{"detail": "Scene not found"}` |
 | `/table` | `GameTableState`: Zustand des Spieltischs (200) |
 | `PATCH /table` | Body `GameTableUpdate`, Antwort `GameTableState` (200); 422 `{"detail": "Adventure not found"}` bei unbekanntem Abenteuer (nichts wird geändert), 422 im FastAPI-Standardformat bei ungültigem `theme` |
+| `/table/audio` | `AudioState`: Musikzustand (200), siehe [Audio](#audio) |
+| `PATCH /table/audio` | Body `AudioUpdate`, Antwort `AudioState` (200); 422 im FastAPI-Standardformat bei `volume` außerhalb 0–100 bzw. `null`; `playing: true` bei leerer Playlist ändert `playing` nicht |
+| `POST /table/audio/next` | Antwort `AudioState` (200): neuer zufälliger Track, `playing` unverändert |
+| `POST /table/sounds` | Body `SoundRequest`, 204 (auch ohne Audioausgabe); 422 bei unbekanntem Namen |
 | `/ws` | WebSocket des Spieltischs (nicht in OpenAPI), siehe [WebSocket `/ws`](#websocket-ws) |
 | `/media/{storage_key}` | Mediendatei aus dem Medienordner (`StaticFiles`, nicht in OpenAPI): 200 bzw. 206 bei `Range`-Header (Audio-Seek), 404 bei fehlender Datei oder Pfad außerhalb des Ordners |
 
@@ -127,13 +177,20 @@ AdventureUpdate  { active_scene_id?: int | null, global_level?: int (1–20) }  
 GameTableState   { active_adventure_id: int | null, active_scene_id: int | null, theme: "dark" | "tavern" }
                    active_scene_id = active_scene_id des aktiven Abenteuers (null ohne Abenteuer)
 GameTableUpdate  { active_adventure_id?: int | null, theme?: "dark" | "tavern" }  Request-Body von PATCH /table
+
+AudioState       { playing: bool, track: Track | null, volume: int, output_ready: bool }   volume in Prozent
+AudioUpdate      { playing?: bool, volume?: int (0–100) }                       Request-Body von PATCH /table/audio
+SoundRequest     { name: SoundName }                                            Request-Body von POST /table/sounds
+SoundName        "heal" | "bottle" | "buff" | "music_1" | "music_2" | "spell_1" | "spell_2"
+                 | "debuff_1" | "debuff_2" | "lock"
 ```
 
 Alle Felder sind Pflicht; nullable sind nur `description` und `active_scene_id` des Abenteuers sowie `avatar` des
 Spielers. Die Fremdschlüssel (`wall_image_id`, `adventure_id` …) sind nicht Teil der Antwort, `SceneDetail` enthält
 kein `adventure_id`. Bei `AdventureUpdate` ändert `PATCH` nur die gesetzten Felder; `"active_scene_id": null` leert
 die aktive Szene, `"global_level": null` wird abgelehnt (422). Ebenso ändert `PATCH /table` nur die gesetzten Felder;
-`"active_adventure_id": null` leert das aktive Abenteuer, `"theme": null` wird abgelehnt (422).
+`"active_adventure_id": null` leert das aktive Abenteuer, `"theme": null` wird abgelehnt (422). `PATCH /table/audio`
+ändert ebenfalls nur die gesetzten Felder; `null` wird abgelehnt (422).
 `source` ist der API-relative Pfad der Datei, `/media/<storage_key>` (aus `media.storage_key` berechnet, nicht
 gespeichert), z. B. `/media/images/ground_screen/main_1.jpg`. Das Frontend macht daraus per `mediaUrl(source)`
 (`src/api/mediaUrl.ts`) eine URL auf Basis von `VITE_API_URL` – dieselbe Basis wie der axios-Client (Default `/api/`,
@@ -145,7 +202,8 @@ also z. B. `/api/media/images/ground_screen/main_1.jpg` über den Proxy).
 `backend/scripts/export_openapi.py` schreibt `app.openapi()` deterministisch dorthin (ohne DB-Verbindung, die
 `Settings`-Werte aus `.env` bzw. Umgebung reichen). Das Frontend erzeugt daraus per `openapi-typescript`
 `frontend/src/api/schema.d.ts` (versioniert, von ESLint ausgenommen); `src/models/models.ts` leitet `SceneDetail`,
-`Image`, `Track`, `MapResponse` (= `MapEntry`), `GameTableState` und `Theme` davon ab. Das Nachrichtenformat des
+`Image`, `Track`, `MapResponse` (= `MapEntry`), `GameTableState`, `Theme`, `AudioState`, `AudioUpdate` und
+`SoundName` davon ab. Das Nachrichtenformat des
 WebSockets `/ws` ist nicht Teil der OpenAPI, es steht oben unter [WebSocket `/ws`](#websocket-ws).
 
 Ablauf bei einer Vertragsänderung:
@@ -222,8 +280,9 @@ Datensatz trotzdem an (`size` = NULL).
 
 - React 18, Vite 5, TypeScript 5 (strict), react-router-dom 6, styled-components 6 (Haupt-Styling, zwei Themes),
   MUI nur für `Box`/`Slider`, axios, react-markdown, react-svg.
-- State: React-State + drei Contexts (`ActiveAdventureContext`, `ActiveSceneContext`, `GameTableContext` mit Theme,
-  Verbindungsstatus und `reconnectNow`; `src/context/context.ts`), gespeist vom `GameTableProvider` aus dem
+- State: React-State + vier Contexts (`ActiveAdventureContext`, `ActiveSceneContext`, `GameTableContext` mit Theme,
+  Verbindungsstatus und `reconnectNow`, `GameAudioContext` mit `AudioState`, Ausgabe-Rolle der Wall, `audio_ready`/
+  `track_ended` und Soundeffekten; `src/context/context.ts`), gespeist vom `GameTableProvider` aus dem
   WebSocket-Snapshot (siehe [Synchronisation](#synchronisation)). Kein Store-Framework. Die aktive Kachel in den
   Kartenübersichten ergibt sich aus `activeSceneId` (Kachel-ID = Szenen-ID, im Frontend `Map.sceneId`, Attribut
   `data-active`); ist sie `null`, ist keine Kachel hervorgehoben. Die Wahl des Default-Abenteuers trifft
@@ -231,9 +290,10 @@ Datensatz trotzdem an (`size` = NULL).
 - Struktur: `src/app` (Routing, lokales Player-Theme), `src/realtime` (WebSocket-Client: `GameTableProvider`,
   `useGameTable`, Verbindung mit Reconnect `connection.ts`, `messages.ts`, `backoff.ts`, `heartbeat.ts`),
   `src/screens` (Screens), `src/components`, `src/service` (Datenladen und Schreibzugriffe je Screen),
+  `src/audio` (Soundliste `sounds.ts`, Wiedergabe auf der Wall `wallAudioPlayer.ts`),
   `src/api` (axios-Client, Base-URL aus `VITE_API_URL`, Default `/api/`, Timeout 5000 ms; `wsUrl` leitet daraus die
-  WebSocket-URL ab), `src/models`, `src/utils` (Audio/Musik, Filter, Grid-Layout `getGridLayout`,
-  Fehlerbehandlung `loadSafely`), `src/hooks` (`useMusicPlayer`), `src/style` (Themes, `appTheme`), `src/context`.
+  WebSocket-URL ab), `src/models`, `src/utils` (Musiktitel, Filter, Grid-Layout `getGridLayout`,
+  Fehlerbehandlung `loadSafely`), `src/style` (Themes, `appTheme`), `src/context`.
 - Fehlerbehandlung beim Datenladen: `getData` reicht Fehler weiter. Die Services laden über `loadData`
   (`src/api/loadData.ts`) und werfen einen `LoadError`, dessen Meldung Netzwerkfehler/Timeout („backend not
   reachable“), HTTP-Status („HTTP 500“) und leere Antwort („… not found“) unterscheidet. Die Screens fangen genau
@@ -245,14 +305,14 @@ Datensatz trotzdem an (`size` = NULL).
   danach eintreffende Ergebnisse und Fehler werden verworfen. Beim schnellen Szenen- bzw. Tab-Wechsel zählt so nur die
   Antwort zum aktuellen Stand. Die HTTP-Requests selbst werden nicht abgebrochen. Der Retry im Admin Screen erhöht nur
   einen Zähler (`reloadCount`), von dem alle Lade-Effects (Abenteuerliste, Daten des Abenteuers, aktive Szene) abhängen.
-- Fehlerbehandlung beim Speichern: `patchData` (`src/api/apiMethods.ts`) reicht Fehler weiter, `saveData`
-  (`src/api/saveData.ts`) wirft einen `SaveError` mit derselben Aufbereitung wie `loadData` („Saving … failed: backend
-  not reachable“ bzw. „HTTP 422“). Der Admin wertet nur das Ergebnis des jüngsten Speicherns aus (Szene, Abenteuer
-  und Theme gemeinsam).
-- Assets in `public/`: `assets/sounds` (Soundeffekte), `assets/icons`, `story/**` (Markdown-Notizen, deutsch) sowie die
-  zwei fest eingebundenen Medien `assets/images/ground_screen/mapOverview.jpg` (Weltkarte im Wall Screen) und
-  `assets/music/side/forest/From_Past_To_Present.mp3` (Standardmusik im Admin Screen). Szenenbilder und Musik kommen
-  vom Backend (`/media/...`, siehe Datenmodell).
+- Fehlerbehandlung beim Speichern: `patchData`/`postData` (`src/api/apiMethods.ts`) reichen Fehler weiter, `saveData`
+  bzw. `postCommand` (`src/api/saveData.ts`) werfen einen `SaveError` mit derselben Aufbereitung wie `loadData`
+  („Saving … failed: backend not reachable“ bzw. „HTTP 422“). Der Admin wertet nur das Ergebnis des jüngsten
+  Speicherns aus (Szene, Abenteuer, Theme und Musik-Befehle gemeinsam).
+- Assets in `public/`: `assets/sounds` (Soundeffekte, auf der Wall abgespielt), `assets/icons`, `story/**`
+  (Markdown-Notizen, deutsch) sowie das fest eingebundene Medium `assets/images/ground_screen/mapOverview.jpg`
+  (Weltkarte im Wall Screen). Szenenbilder und Musik, auch die Standardmusik, kommen vom Backend (`/media/...`, siehe
+  Datenmodell und [Audio](#audio)).
 
 ## Lokal starten
 
@@ -281,7 +341,7 @@ Skript ermittelt sein Verzeichnis über die Symlink-Kette; Hilfe und Ausgaben ze
 
 **Voraussetzung:** `backend/.env` (gitignored) aus `backend/.env.example` anlegen: `POSTGRES_USER`,
 `POSTGRES_PASSWORD`, `POSTGRES_DB` (Postgres-Container und API), `DB_DRIVER`, `DB_HOST` (`db` = Service-Name im
-Compose-Netz), `DB_PORT`, optional `CORS_ORIGINS`, `MEDIA_DIR`, `PGADMIN_DEFAULT_EMAIL/PASSWORD`. Die API erhält sie per
+Compose-Netz), `DB_PORT`, optional `CORS_ORIGINS`, `MEDIA_DIR`, `DEFAULT_MUSIC_KEY`, `PGADMIN_DEFAULT_EMAIL/PASSWORD`. Die API erhält sie per
 `env_file`; `backend/.dockerignore` hält die `.env` aus dem Image. Fehlt ein Pflichtwert, bricht die API beim Start mit
 einem Validierungsfehler ab (Feldname im Log). Ältere `.env` mit `DRIVERNAME`/`HOST`/`PORT` einmalig auf
 `DB_DRIVER`/`DB_HOST`/`DB_PORT` umbenennen.
@@ -325,7 +385,8 @@ per Build-Argument. Eine andere URL erfordert einen neuen Build.
 `http://<IP>:8080` (bzw. `:5173` in Dev), ohne besonderen Build und ohne CORS-Eintrag. Für direkte Zugriffe auf Port
 8000 erlaubt die API per CORS weiterhin die Origins aus `CORS_ORIGINS` (`backend/.env`, JSON-Liste; Default
 `["http://localhost:5173","http://localhost:8080"]`), nur `GET` und `PATCH` (Preflight für JSON-Body), ohne
-Credentials. Der WebSocket prüft den Origin selbst (siehe [WebSocket `/ws`](#websocket-ws)). Der Player Screen ruft die
+Credentials. `POST` ist per CORS nicht freigegeben: Die Audio-Befehle (`POST /table/audio/next`, `POST /table/sounds`)
+funktionieren über den Proxy (gleicher Origin), bei direktem Zugriff aus einem anderen Origin scheitert der Preflight. Der WebSocket prüft den Origin selbst (siehe [WebSocket `/ws`](#websocket-ws)). Der Player Screen ruft die
 API nicht auf.
 
 ### Am Spieltisch (Production)

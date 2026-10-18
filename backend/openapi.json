@@ -110,6 +110,58 @@
         "title": "AdventureUpdate",
         "type": "object"
       },
+      "AudioState": {
+        "description": "Music of the game table, played by the Wall that is the audio output (`output_ready`); volume in percent.",
+        "properties": {
+          "output_ready": {
+            "title": "Output Ready",
+            "type": "boolean"
+          },
+          "playing": {
+            "title": "Playing",
+            "type": "boolean"
+          },
+          "track": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Track"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "volume": {
+            "title": "Volume",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "playing",
+          "track",
+          "volume",
+          "output_ready"
+        ],
+        "title": "AudioState",
+        "type": "object"
+      },
+      "AudioUpdate": {
+        "description": "Partial update: only the fields set in the request are changed.",
+        "properties": {
+          "playing": {
+            "title": "Playing",
+            "type": "boolean"
+          },
+          "volume": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Volume",
+            "type": "integer"
+          }
+        },
+        "title": "AudioUpdate",
+        "type": "object"
+      },
       "GameTableState": {
         "description": "State of the game table shared by Admin, Wall and Ground; `active_scene_id` belongs to the active adventure.",
         "properties": {
@@ -320,6 +372,31 @@
           "tracks"
         ],
         "title": "SceneDetail",
+        "type": "object"
+      },
+      "SoundRequest": {
+        "properties": {
+          "name": {
+            "enum": [
+              "heal",
+              "bottle",
+              "buff",
+              "music_1",
+              "music_2",
+              "spell_1",
+              "spell_2",
+              "debuff_1",
+              "debuff_2",
+              "lock"
+            ],
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "SoundRequest",
         "type": "object"
       },
       "Track": {
@@ -751,6 +828,109 @@
         "summary": "Update Table",
         "tags": [
           "table"
+        ]
+      }
+    },
+    "/table/audio": {
+      "get": {
+        "operationId": "read_audio_table_audio_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Read Audio",
+        "tags": [
+          "audio"
+        ]
+      },
+      "patch": {
+        "description": "Works without an audio output as well: the Wall that becomes the output starts with the stored state.",
+        "operationId": "update_audio_table_audio_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Volume out of range, or validation error"
+          }
+        },
+        "summary": "Update Audio",
+        "tags": [
+          "audio"
+        ]
+      }
+    },
+    "/table/audio/next": {
+      "post": {
+        "operationId": "next_track_table_audio_next_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AudioState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Next Track",
+        "tags": [
+          "audio"
+        ]
+      }
+    },
+    "/table/sounds": {
+      "post": {
+        "description": "Plays the sound effect on the audio output; without an output it is dropped (204 anyway).",
+        "operationId": "play_sound_table_sounds_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SoundRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Unknown sound, or validation error"
+          }
+        },
+        "summary": "Play Sound",
+        "tags": [
+          "audio"
         ]
       }
     }

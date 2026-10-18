@@ -1,6 +1,6 @@
 import { reconnectDelay } from './backoff'
 import { browserTimers, createHeartbeatWatchdog, HEARTBEAT_TIMEOUT_MS, Timers } from './heartbeat'
-import { parseServerMessage } from './messages'
+import { ClientMessage, parseServerMessage, ServerMessage } from './messages'
 import { GameTableState } from '../models/models'
 
 // connecting: first attempt still running; open: connected; closed: broken or not reachable, a reconnect is planned
@@ -11,12 +11,17 @@ export interface SocketLike {
   onopen: (() => void) | null
   onmessage: ((event: { data: unknown }) => void) | null
   onclose: (() => void) | null
+  send: (data: string) => void
   close: () => void
 }
+
+// The messages besides the state snapshot and the ping
+export type OtherServerMessage = Exclude<ServerMessage, { type: 'state' } | { type: 'ping' }>
 
 export interface GameTableConnectionOptions {
   url: string
   onState: (state: GameTableState) => void
+  onMessage?: (message: OtherServerMessage) => void
   onStatus: (status: ConnectionStatus) => void
   createSocket?: (url: string) => SocketLike
   timers?: Timers
@@ -26,12 +31,20 @@ export interface GameTableConnectionOptions {
 export interface GameTableConnection {
   // Connects at once (e.g. "Erneut versuchen"), drops a running attempt or a planned reconnect
   reconnectNow: () => void
+  // Sends only over an open connection; otherwise the message is dropped (false)
+  send: (message: ClientMessage) => boolean
   close: () => void
 }
 
 const browserSocket = (url: string): SocketLike => {
   const socket = new WebSocket(url)
-  const like: SocketLike = { onopen: null, onmessage: null, onclose: null, close: () => socket.close() }
+  const like: SocketLike = {
+    onopen: null,
+    onmessage: null,
+    onclose: null,
+    send: (data) => socket.send(data),
+    close: () => socket.close(),
+  }
   socket.onopen = () => like.onopen?.()
   socket.onmessage = (event) => like.onmessage?.(event)
   socket.onclose = () => like.onclose?.()
@@ -43,12 +56,14 @@ const browserSocket = (url: string): SocketLike => {
 export const createGameTableConnection = ({
   url,
   onState,
+  onMessage,
   onStatus,
   createSocket = browserSocket,
   timers = browserTimers,
   heartbeatTimeoutMs = HEARTBEAT_TIMEOUT_MS,
 }: GameTableConnectionOptions): GameTableConnection => {
   let socket: SocketLike | null = null
+  let open = false
   let attempt = 0
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null
   let closedForGood = false
@@ -58,6 +73,7 @@ export const createGameTableConnection = ({
   // Handlers are removed first, so a late event of an old socket cannot touch the current state
   const dropSocket = () => {
     watchdog.stop()
+    open = false
     if (socket !== null) {
       const old = socket
       socket = null
@@ -96,14 +112,20 @@ export const createGameTableConnection = ({
     watchdog.reset()
     current.onopen = () => {
       attempt = 0
+      open = true
       onStatus('open')
       watchdog.reset()
     }
     current.onmessage = (event) => {
       watchdog.reset()
       const message = parseServerMessage(event.data)
-      if (message?.type === 'state') {
+      if (message === null || message.type === 'ping') {
+        return
+      }
+      if (message.type === 'state') {
         onState(message.payload)
+      } else {
+        onMessage?.(message)
       }
     }
     current.onclose = handleDisconnect
@@ -120,6 +142,13 @@ export const createGameTableConnection = ({
       cancelReconnect()
       dropSocket()
       connect()
+    },
+    send: (message) => {
+      if (!open || socket === null) {
+        return false
+      }
+      socket.send(JSON.stringify(message))
+      return true
     },
     close: () => {
       closedForGood = true

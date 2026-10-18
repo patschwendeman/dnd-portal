@@ -38,7 +38,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Zustand auf dem Server:** Abenteuer, aktive Szene und Theme stehen auf dem Server und gelten für alle
   Spieltisch-Screens, auch in anderen Browsern oder auf anderen Geräten; sie überstehen Reloads und Neustarts der API.
   Mehrere Admin-Fenster dürfen gleichzeitig schreiben, der letzte Schreibzugriff gewinnt.
-- **Speicherfehler:** Schlägt das Speichern von Szene, Abenteuer oder Theme fehl, ändert sich auf keinem Screen etwas,
+- **Speicherfehler:** Schlägt das Speichern von Szene, Abenteuer, Theme oder ein Musik-Befehl fehl, ändert sich auf keinem Screen etwas,
   und unter der Top-Bar erscheint die Hinweisleiste „Änderung konnte nicht gespeichert werden“; „Erneut versuchen“
   wiederholt den zuletzt fehlgeschlagenen Schreibzugriff, bei Erfolg verschwindet sie.
 - **Verbindung:** Bricht die Verbindung zum Server ab (spätestens nach etwa 35 s ohne Nachricht erkannt), zeigt der
@@ -48,12 +48,19 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   aktiv“; „Enemies“ und „Loot“ sind nur Platzhalter („–“).
 - **Notizen:** Bereich „Notizen“ mit Tabs Main, Fight, Side, Leveling, Mechaniken (Markdown aus
   `public/story/`); Inhaltsverzeichnis-Links, Bilder öffnen in neuem Tab. Tab „Side“ ist leer (Ordner fehlt).
-- **Musik:** Bottom-Bar links Play/Pause, daneben „Musik“ und der Titel des laufenden Tracks. Spielt zufällige
-  Tracks aus der Playlist der aktiven Szene; nach einem Trackende folgt ein anderer Track (bei nur einem derselbe von
-  vorne), die Musik stoppt nur durch Pause. Beim Szenenwechsel wechselt sofort der Track – lief die Musik, spielt er
-  direkt weiter, sonst bleibt sie pausiert. Vor dem Laden der ersten Szene und ohne aktive Szene läuft ein Standard-Track. Blockiert der
-  Browser das Abspielen (Autoplay-Sperre), bleibt der Button auf Play.
-- **Sounds:** Top-Bar mittig mit Buttons für Soundeffekte in Gruppen (Heilung/Trank, Buff, Zauber, Debuff, Lock).
+- **Musik (Fernbedienung):** Der Admin spielt selbst nichts ab; Musik und Soundeffekte kommen aus der Wall, die
+  Audioausgabe ist (siehe Wall Screen). Bottom-Bar links Play/Pause, „Weiter“, „Musik“ mit dem Titel des aktuellen
+  Tracks und ein Lautstärke-Slider (gesendet beim Loslassen). Die Anzeige folgt dem Zustand auf dem
+  Server, auch für mehrere Admin-Fenster. Der Server spielt zufällige Tracks aus der Playlist der aktiven Szene; nach
+  einem Trackende folgt ein anderer Track (bei nur einem derselbe von vorne), die Musik stoppt nur durch Pause. Beim
+  Szenenwechsel wechselt sofort der Track – lief die Musik, spielt er direkt weiter, sonst bleibt sie pausiert. Ohne
+  aktive Szene ist die Standardmusik die Playlist. Ist keine Wall Ausgabe, steht unter dem Titel „Keine Audioausgabe
+  bereit“; die Befehle ändern trotzdem den Zustand, und eine Wall, die Ausgabe wird, setzt damit ein. Nach einem
+  API-Neustart ist die Musik pausiert. Fehler bei Musik-Befehlen zeigt die Hinweisleiste „Änderung konnte nicht
+  gespeichert werden“.
+- **Sounds:** Top-Bar mittig mit Buttons für Soundeffekte in Gruppen (Heilung/Trank, Buff, Zauber, Debuff, Lock); die
+  Wall, die Audioausgabe ist, spielt sie über der Musik. Ohne Ausgabe passiert nichts (kein Fehler), Fehler beim Senden
+  werden nur geloggt.
 - Theme-Umschalter (Settings-Icon rechts in der Top-Bar): schaltet das Theme global für Admin, Wall und Ground um
   (nicht für den Player Screen).
 - **Ladefehler:** Lassen sich Abenteuer oder Szenen nicht laden (Backend nicht erreichbar, Timeout, HTTP-Fehler), erscheint unter der
@@ -118,6 +125,13 @@ Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets.
     nummeriert mit Raumnummer 1–n; bei Kampfszenen automatisch sichtbar.
   - **WORLD:** „Weltkarte“ mit einer fest eingebundenen Weltkarte (nicht aus dem Backend).
   - **OFF:** Overlay ausgeblendet.
+- **AUDIO:** Button in derselben Steuerleiste; ein Klick macht diese Wall zur Audioausgabe für Musik und Soundeffekte
+  (die Nutzerinteraktion gibt die Wiedergabe im Browser frei). Er ist hervorgehoben, solange die Wall Ausgabe ist.
+  Es spielt immer nur eine Wall: Klickt man auf einer anderen Wall „AUDIO“, verstummt die bisherige. Die Ausgabe folgt
+  der Fernbedienung im Admin (Play/Pause, Weiter, Lautstärke, Sounds bei voller Lautstärke über der Musik) und meldet
+  das Trackende an den Server; sonst zeigt die Wall nichts an. Nach einem Verbindungsabbruch meldet sie sich ohne
+  neuen Klick wieder als Ausgabe. Blockiert der Browser das Abspielen, loggt sie den Fehler; ein erneuter Klick auf
+  „AUDIO“ versucht es wieder.
 - Eine szenen-/gebietsspezifische Übersichtskarte gibt es noch nicht; die „Übersicht“ ist das Raster der Kampfszenen.
 - **Ladefehler:** kein Hinweis für die Spieler; die Wall behält den zuletzt geladenen Stand, der nächste
   Szenenwechsel lädt erneut.

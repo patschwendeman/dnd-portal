@@ -7,8 +7,8 @@ unterstützt den Spielleiter und steigert durch digitale Elemente (Bilder, Karte
 
 | Ordner | Inhalt | Stack |
 |---|---|---|
-| [frontend](frontend/) | UI aller Screens (Admin, Player, Wall, Ground), Markdown-Notizen, statische Assets: Sounds, Icons und Kopien der fest eingebundenen Medien `mapOverview.jpg`, `From_Past_To_Present.mp3` | React 18, Vite, TypeScript, styled-components |
-| [backend](backend/) | REST-API und Datenbank (Szenen, Medien in Tabelle `media`); liefert `media/` unter `/media` aus | Python 3.11, FastAPI, SQLAlchemy, PostgreSQL |
+| [frontend](frontend/) | UI aller Screens (Admin, Player, Wall, Ground), Markdown-Notizen, statische Assets: Soundeffekte, Icons und die Kopie der fest eingebundenen Weltkarte `mapOverview.jpg` | React 18, Vite, TypeScript, styled-components |
+| [backend](backend/) | REST-API und Datenbank (Szenen, Medien in Tabelle `media`); Spieltisch- und Musikzustand per WebSocket; liefert `media/` unter `/media` aus (auch die Standardmusik) | Python 3.11, FastAPI, SQLAlchemy, PostgreSQL |
 | [media](media/) | Szenenmedien: Wall-/Ground-Bilder (`images/`), Musik (`music/`); vom Backend ausgeliefert, per Compose read-only eingebunden | – |
 
 Entstanden aus den früheren Einzel-Repos `dnd-portal-frontend` und `dnd-portal-backend` (Historie per
@@ -47,7 +47,8 @@ Teil-spezifischer Kontext (Befehle, Struktur, Konventionen): `frontend/CLAUDE.md
   selben Browser, Wall und Ground können aber auch in anderen Browsern bzw. auf anderen Geräten im LAN laufen. Der
   Server ist die einzige Quelle des Spieltisch-Zustands (Abenteuer, aktive Szene, Theme) und pusht ihn per WebSocket
   an diese Screens (siehe architecture.md, „Synchronisation“); `localStorage` dient dafür nicht mehr.
-  Die Player-Screens laufen auf den Smartphones der Spieler und sind noch nicht angebunden.
+  Musik und Soundeffekte spielt die Wall, die per „AUDIO“ Audioausgabe ist; der Admin ist nur Fernbedienung (Zustand
+  ebenfalls auf dem Server). Die Player-Screens laufen auf den Smartphones der Spieler und sind noch nicht angebunden.
 - **Begriffe:** „Kampfszene“ = `main: true` / Mainmap, „Nicht-Kampfszene“ = `main: false` / Sidemap.
   Ältere Bezeichnungen `battlemap`/`sidemap`/`fight` tauchen noch in Asset-Pfaden und Tests auf.
 - **Sprache:** Docs auf Deutsch, Code-Bezeichner englisch. UI-Texte im Player Screen und die Markdown-Notizen sind deutsch.

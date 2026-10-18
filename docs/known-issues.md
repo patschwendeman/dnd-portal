@@ -1,6 +1,6 @@
 # Bekannte Lücken, Bugs & Altlasten
 
-Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-10-10, Alembic-Migrationen und Medien im Backend am 2026-10-11, Spieltisch per WebSocket am 2026-10-18. Punkte mit „(ungeprüft)“ wurden aus dem Code abgeleitet, aber nicht zur Laufzeit verifiziert.
+Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-10-10, Alembic-Migrationen und Medien im Backend am 2026-10-11, Spieltisch per WebSocket am 2026-10-18, Audio auf der Wall am 2026-10-18. Punkte mit „(ungeprüft)“ wurden aus dem Code abgeleitet, aber nicht zur Laufzeit verifiziert.
 
 ## Lücken gegenüber der Vision
 
@@ -8,13 +8,12 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - Keine NPC-, Charakter- oder Kampfdaten im Datenmodell – nur Markdown-Notizen.
 - Soundeffekte und Notizen sind nicht mit Szenen verknüpft (nur Frontend-Dateien).
 - Keine gebietsspezifische Übersichtskarte auf dem Wall Screen; Weltkarte ist ein fest eingebundenes Bild.
-- Doppelte Mediendateien: `mapOverview.jpg` (Weltkarte im Wall Screen) und `From_Past_To_Present.mp3`
-  (Standardmusik im Admin Screen) liegen zusätzlich zu `media/` als Kopie in `frontend/public/assets/...`, weil sie fest
-  im Frontend eingebunden sind und an keiner Szene hängen. Ablösen gehört zur Weltkarten-/Upload-Thematik.
+- Doppelte Mediendatei: `mapOverview.jpg` (Weltkarte im Wall Screen) liegt zusätzlich zu `media/` als Kopie in
+  `frontend/public/assets/...`, weil sie fest im Frontend eingebunden ist und an keiner Szene hängt. Ablösen gehört zur
+  Weltkarten-/Upload-Thematik. (Die Standardmusik kommt seit DND-26 nur noch aus dem Backend.)
 - Grid-Einstellungen gelten global und werden nicht gespeichert; Wall-Overlay und Grid lassen sich nicht aus dem Admin
   steuern und werden nicht zwischen Geräten synchronisiert.
 - Player Screens verbinden sich noch nicht mit dem Spieltisch (kein WebSocket, Theme nur lokal; geplant: DND-27).
-- Musik und Soundeffekte laufen weiterhin im Admin (Rechner des Spielleiters), nicht auf der Wall (geplant: DND-26).
 - Der Admin zeigt nicht an, welche Screens verbunden sind (der Server kennt sie).
 - Szenen lassen sich nur über `seed_data.json` pflegen (keine schreibenden Endpoints, Seeder aktualisiert bestehende DB nicht).
 
@@ -25,6 +24,11 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - Der WebSocket-Verbindungsmanager hält die Verbindungen im Speicher des API-Prozesses: uvicorn muss mit **einem**
   Worker laufen (so in beiden Compose-Stacks). Mehrere Worker würden Pushes nur an einen Teil der Screens senden.
 - Ein Server ist ein Spieltisch: keine parallelen Sessions, keine Authentifizierung.
+- Der Musikzustand (Track, Play/Pause, Lautstärke, Audioausgabe) liegt nur im Speicher des API-Prozesses: Nach einem
+  Neustart ist die Musik pausiert und die Lautstärke wieder 10 %. Die Wiedergabeposition wird nicht synchronisiert
+  (eine neue Ausgabe startet den Track von vorn), Überblendungen gibt es nicht.
+- `POST` ist per CORS nicht freigegeben: Die Audio-Befehle funktionieren über den Proxy (gleicher Origin), nicht bei
+  direktem Zugriff auf Port 8000 aus einem anderen Origin (z. B. Frontend mit absoluter `VITE_API_URL`).
 
 ### Bugs & Daten
 

@@ -3,29 +3,9 @@ import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
 import { AdventureSelect } from './AdventureSelect'
-import { AdventureSummary } from '../models/models'
-import { playAtmoSounds } from '../utils/utils'
+import { SOUND_GROUPS } from '../audio/sounds'
+import { AdventureSummary, SoundName } from '../models/models'
 
-import buffIcon from '/assets/icons/buff.svg'
-import buffSound from '/assets/sounds/buff.wav'
-import music1Icon from '/assets/icons/music.svg'
-import music1Sound from '/assets/sounds/music_1.wav'
-import music2Icon from '/assets/icons/music_2.svg'
-import music2Sound from '/assets/sounds/music_2.wav'
-import heartIcon from '/assets/icons/heart.svg'
-import healSound from '/assets/sounds/heal.wav'
-import bottleIcon from '/assets/icons/bottle.svg'
-import bottleSound from '/assets/sounds/bottle.wav'
-import spell1Icon from '/assets/icons/bold.svg'
-import spell1Sound from '/assets/sounds/spell_1.wav'
-import spell2Icon from '/assets/icons/star_2.svg'
-import spell2Sound from '/assets/sounds/spell_2.wav'
-import debuff1Icon from '/assets/icons/eye.svg'
-import debuff1Sound from '/assets/sounds/debuff_1.mp3'
-import debuff2Icon from '/assets/icons/ghost.svg'
-import debuff2Sound from '/assets/sounds/debuff_2.wav'
-import lockIcon from '/assets/icons/lock.svg'
-import lockSound from '/assets/sounds/lock.wav'
 import settingsIcon from '/assets/icons/settings.svg'
 
 const OUTER_COLUMN_WIDTH = '240px'
@@ -99,6 +79,8 @@ interface TopBarProps {
   adventures: AdventureSummary[]
   activeAdventureId: number | null
   onSelectAdventure: (adventureId: number) => void
+  // Plays the sound effect on the Wall that is the audio output
+  onPlaySound: (name: SoundName) => void
 }
 
 const TopBar: FunctionComponent<TopBarProps> = ({
@@ -106,73 +88,9 @@ const TopBar: FunctionComponent<TopBarProps> = ({
   adventures,
   activeAdventureId,
   onSelectAdventure,
+  onPlaySound,
 }): ReactElement => {
   const theme = useTheme()
-
-  const healAtmos = [
-    {
-      name: 'heal',
-      icon: heartIcon,
-      sound: healSound,
-    },
-    {
-      name: 'bottle',
-      icon: bottleIcon,
-      sound: bottleSound,
-    },
-  ]
-  const buffAtmos = [
-    {
-      name: 'buff',
-      icon: buffIcon,
-      sound: buffSound,
-    },
-    {
-      name: 'music 1',
-      icon: music1Icon,
-      sound: music1Sound,
-    },
-    {
-      name: 'music 2',
-      icon: music2Icon,
-      sound: music2Sound,
-    },
-  ]
-  const spellsAtmos = [
-    {
-      name: 'spell 1',
-      icon: spell1Icon,
-      sound: spell1Sound,
-    },
-    {
-      name: 'spell 2',
-      icon: spell2Icon,
-      sound: spell2Sound,
-    },
-  ]
-
-  const debuffAtmos = [
-    {
-      name: 'debuff 1',
-      icon: debuff1Icon,
-      sound: debuff1Sound,
-    },
-    {
-      name: 'debuff 2',
-      icon: debuff2Icon,
-      sound: debuff2Sound,
-    },
-  ]
-
-  const otherAtmos = [
-    {
-      name: 'lock',
-      icon: lockIcon,
-      sound: lockSound,
-    },
-  ]
-
-  const atmoGroups = [healAtmos, buffAtmos, spellsAtmos, debuffAtmos, otherAtmos]
 
   return (
     <Bar>
@@ -182,14 +100,14 @@ const TopBar: FunctionComponent<TopBarProps> = ({
         onSelectAdventure={onSelectAdventure}
       />
       <Sounds>
-        {atmoGroups.map((atmos, groupIndex) => (
+        {SOUND_GROUPS.map((sounds, groupIndex) => (
           <Fragment key={groupIndex}>
             {groupIndex > 0 && <Separator />}
             <SoundGroup>
-              {atmos.map((atmo, i) => (
-                <AtmoButton onClick={() => playAtmoSounds(atmo.sound)} key={i}>
+              {sounds.map((sound) => (
+                <AtmoButton onClick={() => onPlaySound(sound.name)} key={sound.name}>
                   <ReactSVG
-                    src={atmo.icon}
+                    src={sound.icon}
                     beforeInjection={(svg) => {
                       svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
                     }}

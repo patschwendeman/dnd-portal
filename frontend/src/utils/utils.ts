@@ -33,29 +33,3 @@ export const getMusicTitle = (source: string): string => {
   const withoutHash = withoutExtension.replace(/-[A-Za-z0-9_-]{8}$/, '')
   return withoutHash.replace(/_/g, ' ').trim()
 }
-
-export const getRandomTrack = (
-  musicPlaylist: string[],
-  lastTrack: string,
-  random: () => number = Math.random
-): string => {
-  if (musicPlaylist.length <= 1) {
-    return musicPlaylist[0]
-  }
-
-  let randomIndex = 0
-
-  do {
-    randomIndex = Math.floor(random() * musicPlaylist.length)
-  } while (musicPlaylist[randomIndex] === lastTrack)
-
-  const selectedTrack = musicPlaylist[randomIndex]
-  return selectedTrack
-}
-
-export const playAtmoSounds = (track: string) => {
-  const newAudio = new Audio(track)
-  newAudio.loop = false
-  newAudio.volume = 1
-  newAudio.play()
-}

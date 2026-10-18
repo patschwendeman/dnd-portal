@@ -1,6 +1,16 @@
 import { loadData } from '../api/loadData'
-import { saveData } from '../api/saveData'
-import { AdventureDetail, AdventureSummary, GameTableState, Map, MapResponse, Theme } from '../models/models'
+import { postCommand, saveData } from '../api/saveData'
+import {
+  AdventureDetail,
+  AdventureSummary,
+  AudioState,
+  AudioUpdate,
+  GameTableState,
+  Map,
+  MapResponse,
+  SoundName,
+  Theme,
+} from '../models/models'
 
 export const getAdventures = async (): Promise<AdventureSummary[]> => {
   return loadData('adventures', 'adventures')
@@ -36,4 +46,18 @@ export const saveActiveAdventure = async (adventureId: number): Promise<GameTabl
 
 export const saveTheme = async (theme: Theme): Promise<GameTableState> => {
   return saveData('theme', 'table', { theme })
+}
+
+// Music and sound effects play on the Wall that is the audio output; the Admin only sends commands
+
+export const saveAudio = async (update: AudioUpdate): Promise<AudioState> => {
+  return saveData('music', 'table/audio', update)
+}
+
+export const playNextTrack = async (): Promise<AudioState> => {
+  return postCommand('next track', 'table/audio/next')
+}
+
+export const playSound = async (name: SoundName): Promise<void> => {
+  await postCommand(`sound ${name}`, 'table/sounds', { name })
 }

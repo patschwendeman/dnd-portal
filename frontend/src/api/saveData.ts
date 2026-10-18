@@ -1,4 +1,4 @@
-import { patchData } from './apiMethods'
+import { patchData, postData } from './apiMethods'
 import { describeFailure } from './loadData'
 
 export class SaveError extends Error {
@@ -11,10 +11,16 @@ export class SaveError extends Error {
   }
 }
 
-export const saveData = async (what: string, path: string, body: object) => {
+const asSave = async <T>(what: string, request: () => Promise<T>): Promise<T> => {
   try {
-    return await patchData(path, body)
+    return await request()
   } catch (error) {
     throw new SaveError(`Saving ${what} failed: ${describeFailure(error)}`, error)
   }
 }
+
+export const saveData = async (what: string, path: string, body: object) => asSave(what, () => patchData(path, body))
+
+// For commands without a resource to patch (e.g. next track, sound effect)
+export const postCommand = async (what: string, path: string, body?: object) =>
+  asSave(what, () => postData(path, body))

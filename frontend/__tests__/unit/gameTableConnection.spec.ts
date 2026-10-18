@@ -11,6 +11,11 @@ class FakeSocket implements SocketLike {
   onmessage: ((event: { data: unknown }) => void) | null = null
   onclose: (() => void) | null = null
   closed = false
+  sent: string[] = []
+
+  send(data: string) {
+    this.sent.push(data)
+  }
 
   close() {
     this.closed = true
@@ -24,11 +29,13 @@ class FakeSocket implements SocketLike {
 let sockets: FakeSocket[]
 let statuses: ConnectionStatus[]
 let states: unknown[]
+let messages: unknown[]
 
 const connect = (heartbeatTimeoutMs = 35000) =>
   createGameTableConnection({
     url: 'ws://localhost/ws?screen=wall',
     onState: (payload) => states.push(payload),
+    onMessage: (message) => messages.push(message),
     onStatus: (status) => statuses.push(status),
     createSocket: () => {
       const socket = new FakeSocket()
@@ -45,6 +52,7 @@ beforeEach(() => {
   sockets = []
   statuses = []
   states = []
+  messages = []
 })
 
 afterEach(() => {
@@ -62,6 +70,43 @@ describe('createGameTableConnection', () => {
     expect(sockets).toHaveLength(1)
     expect(statuses).toEqual(['connecting', 'open'])
     expect(states).toEqual([state])
+    expect(messages).toEqual([])
+  })
+
+  it('passes the other messages on', () => {
+    connect()
+    latest().onopen?.()
+    const audio = { playing: false, track: null, volume: 10, output_ready: true }
+    latest().receive({ type: 'audio', payload: audio })
+    latest().receive({ type: 'audio_output', payload: { active: true } })
+    latest().receive({ type: 'sound', payload: { name: 'lock' } })
+    latest().receive({ type: 'sound', payload: { name: 'unknown' } })
+
+    expect(messages).toEqual([
+      { type: 'audio', payload: audio },
+      { type: 'audio_output', payload: { active: true } },
+      { type: 'sound', payload: { name: 'lock' } },
+    ])
+    expect(states).toEqual([])
+  })
+
+  it('sends only over an open connection', () => {
+    const connection = connect()
+    expect(connection.send({ type: 'audio_ready' })).toBe(false)
+
+    latest().onopen?.()
+    expect(connection.send({ type: 'track_ended', payload: { track_id: 7 } })).toBe(true)
+    expect(latest().sent).toEqual(['{"type":"track_ended","payload":{"track_id":7}}'])
+
+    latest().onclose?.()
+    expect(connection.send({ type: 'audio_ready' })).toBe(false)
+    vi.advanceTimersByTime(1000)
+    expect(connection.send({ type: 'audio_ready' })).toBe(false)
+    latest().onopen?.()
+    expect(connection.send({ type: 'audio_ready' })).toBe(true)
+
+    expect(sockets[0].sent).toHaveLength(1)
+    expect(sockets[1].sent).toEqual(['{"type":"audio_ready"}'])
   })
 
   it('reconnects with growing delay and resets it after a successful connect', () => {

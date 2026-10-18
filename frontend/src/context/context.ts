@@ -1,6 +1,6 @@
 import { createContext } from 'react'
 
-import { Theme } from '../models/models'
+import { AudioState, SoundName, Theme } from '../models/models'
 
 // The game table state comes from the server (WebSocket /ws); the contexts only pass it on, changes go through the API.
 
@@ -35,4 +35,22 @@ export const GameTableContext = createContext<GameTableContextType>({
   theme: 'dark',
   connected: true,
   reconnectNow: () => {},
+})
+
+// Music and sound effects: the server decides, the Wall that is the audio output plays, the Admin controls via the API
+type GameAudioContextType = {
+  // null until the first audio state of the server arrived
+  audio: AudioState | null
+  isAudioOutput: boolean
+  requestAudioOutput: () => void
+  reportTrackEnded: (trackId: number) => void
+  subscribeSound: (listener: (name: SoundName) => void) => () => void
+}
+
+export const GameAudioContext = createContext<GameAudioContextType>({
+  audio: null,
+  isAudioOutput: false,
+  requestAudioOutput: () => {},
+  reportTrackEnded: () => {},
+  subscribeSound: () => () => {},
 })
