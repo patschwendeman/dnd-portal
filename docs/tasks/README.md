@@ -29,4 +29,4 @@
 | DND-23 | feat | Abenteuer und Spieler im Backend (Datenmodell, Migration, Adventure-API) | Fertig | [DND-23-adventure-backend.md](DND-23-adventure-backend.md) |
 | DND-24 | feat | Abenteuer im Frontend (Auswahl im Admin, aktive Szene persistent) | Fertig | [DND-24-adventure-frontend.md](DND-24-adventure-frontend.md) |
 | DND-25 | feat | Spieltisch-Zustand per WebSocket (Server als einzige Quelle) | Fertig | [DND-25-game-table-websocket.md](DND-25-game-table-websocket.md) |
-| DND-26 | feat | Audio auf der Wall, Admin als Fernbedienung | Im Review | [DND-26-audio-on-wall.md](DND-26-audio-on-wall.md) |
+| DND-26 | feat | Audio auf der Wall, Admin als Fernbedienung | Fertig | [DND-26-audio-on-wall.md](DND-26-audio-on-wall.md) |

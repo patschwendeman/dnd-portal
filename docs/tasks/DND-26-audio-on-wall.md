@@ -1,7 +1,7 @@
 # DND-26: Audio auf der Wall, Admin als Fernbedienung
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -291,3 +291,44 @@ Feature-Commit (kein eigener Approve-Commit), wie seit DND-23 üblich.
 - Frontend: `typecheck` ok, `lint` 0 Fehler (1 Warnung, H8); `schema.d.ts` aktuell; `test:unit` 155 passed;
   `vite build` ok; `test:e2e` 4/4 passed. `docker build --target prod` nur vom Implementer ausgeführt (ok).
 - Scope/Subtasks vollständig, keine Restverweise auf entfernte Altlasten; Commit-Konvention eingehalten.
+
+### Runde 2 – 2026-10-18
+
+**Empfehlung:** Abnahme. Keine blockierenden Befunde; alle sieben AK erfüllt, AK2 in der Fassung von Runde 2 (ohne
+„Weiter“, Streichung per User-Entscheidung). Keine Restverweise auf „Weiter“ oder `POST /table/audio/next` in Code,
+Tests, `openapi.json`, `schema.d.ts` und laufender Doku; Auto-Trackwechsel bei Trackende unverändert und getestet.
+Manuelle Verifikation 1–6 mit `dnd prod` steht weiter aus.
+
+Geprüft: Commit `1c616cc` gegen `9688e00`, Diff vollständig (18 Dateien), alle Checks. Uncommittete
+`.claude/agents/reviewer.md` und `.claude/skills/plan-task/SKILL.md` nicht bewertet.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Wall wird Audioausgabe | erfüllt (ohne Ton) | unverändert; Hinweis nur bei `!audio.output_ready` (`AdminScreen.tsx:430`); `test_audio_ready_of_a_wall_makes_it_the_output`, `wallAudioPlayer.spec.ts` |
+| AK2 Fernbedienung (Fassung Runde 2) | erfüllt | Play/Pause `AdminScreen.tsx:341-344`, `:419`; Slider `:346-349`, `:437` (`onChangeCommitted`), über `runSave`; Button/`handleNextTrack` entfernt; `test_patch_sets_playing_and_volume_and_keeps_unset_fields`, `saveData.spec.ts` |
+| AK3 Szenenwechsel und Playlist | erfüllt | `track_ended` → `_next_track` (`audio.py:64-75`), `push.report_track_ended` (`push.py:97-100`); `test_end_of_track_picks_another_track_and_keeps_playing`, `test_track_ended_of_the_output_plays_the_next_track`, `test_track_ended_of_a_wall_that_is_not_the_output_is_ignored`, `test_without_active_scene_the_default_music_is_the_playlist`, `test_scene_change_loads_the_new_playlist_and_keeps_playing` |
+| AK4 Soundeffekte | erfüllt | unverändert; `POST /table/sounds` bleibt; `test_sound_*`, `saveData.spec.ts` |
+| AK5 Nur eine Ausgabe | erfüllt | unverändert; `test_second_wall_takes_over_the_output` |
+| AK6 Ausgabe weg und zurück | erfüllt (API-Neustart nicht live) | unverändert; `test_disconnect_of_the_output_is_pushed_to_all` |
+| AK7 Befehle ohne Ausgabe | erfüllt | unverändert; `AudioService.update` (`audio.py:43-49`) |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+- **H1 Sporadisch rote Tests in `test_adventures.py`** (vorher schon vorhanden): E2E setzt `active_scene_id` in der
+  Dev-DB und räumt nicht auf; danach 2 failed (`test_read_adventure_returns_detail_with_players`,
+  `test_patch_returns_detail_with_players`). Nach Reset 166 passed, ohne E2E 5/5 grün. Abhilfe als eigener Task:
+  Reset in E2E (`afterAll`) oder pytest-Fixture für Seed-Zustand.
+- **H2** `end_current_track` (`test_audio.py:44-54`) umgeht WS/Lock/Push; echter Pfad durch `test_ws.py:327` gedeckt.
+- **H3** Weggefallene Assertion „next ohne Track“ ist korrekt, da ohne Track kein Trackende erreichbar.
+- **H4** `postCommand`/`postData`: `body?` könnte jetzt Pflicht werden.
+- **H5** CORS-Hinweis (Runde 1 H1) betrifft nur noch Soundeffekte; Doku angepasst.
+- **H6** Lint-Warnung `WallScreen.tsx:217` (`img` ohne `alt`) bestand schon vorher.
+
+**Checks**
+- Backend: `ruff check`, `ruff format --check`, `mypy app` ok; `openapi.json` aktuell; `pytest` 166 passed (5×),
+  direkt nach E2E 2 failed (H1).
+- Frontend: `typecheck` ok, `lint` 0 Fehler (1 Warnung, H6); `schema.d.ts` aktuell; `test:unit` 155 passed;
+  `vite build` ok; `test:e2e` 4/4 passed. `docker build --target prod` nur vom Implementer (keine Build-Änderung).
+- Scope/Subtasks Runde 2 erledigt; Commit-Konvention eingehalten. Dev-DB nach E2E zurückgesetzt.
