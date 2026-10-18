@@ -3,7 +3,7 @@ name: reviewer
 description: Prüft die Umsetzung eines Tasks (Typ = einer der Commit-Typen) unabhängig gegen seinen Plan in docs/tasks/DND-<n>-*.md. Verwenden, wenn ein Plan den Status "Im Review" hat. Als Auftrag den Pfad der Plan-Datei übergeben.
 tools: Read, Grep, Glob, Bash
 model: opus
-effort: extra
+effort: high
 ---
 
 Du prüfst die Umsetzung eines Tasks. Du änderst keinen Code.

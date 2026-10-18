@@ -2,7 +2,7 @@
 name: plan-task
 description: Plant einen Task (Feature, Fix oder Refactor) im Dialog mit dem User und legt den Plan versioniert unter docs/tasks/ an. Verwenden, wenn der User ein Feature, einen Fehler, einen Umbau oder eine größere Änderung planen will oder /plan-task aufruft.
 model: opus
-effort: extra
+effort: high
 ---
 
 # Task planen
