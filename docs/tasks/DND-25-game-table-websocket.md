@@ -1,7 +1,7 @@
 # DND-25: Spieltisch-Zustand per WebSocket (Server als einzige Quelle)
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
