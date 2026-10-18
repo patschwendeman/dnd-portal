@@ -15,7 +15,6 @@ export interface PlayableAudio {
 }
 
 export interface WallAudioPlayerOptions {
-  // Called when the current track ended, while this Wall is the audio output
   onTrackEnded: (trackId: number) => void
   createAudio?: () => PlayableAudio
   resolveSource?: (source: string) => string
@@ -81,7 +80,6 @@ export class WallAudioPlayer {
     }
   }
 
-  // Sound effects play at full volume on top of the music
   playSound(name: SoundName): void {
     const file = soundFile(name)
     if (!this.active || file === undefined) {

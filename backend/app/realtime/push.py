@@ -27,7 +27,6 @@ def _read_state_and_playlist(scene_id: int | None) -> tuple[GameTableState, list
 
 
 def reset_audio(db: Session) -> None:
-    """Start state of the music for the current game table (app start; tests after each test)."""
     scene_id = game_table_service.get_state(db).active_scene_id
     audio.reset(scene_id, audio_service.get_playlist(db, scene_id))
 
@@ -58,7 +57,6 @@ async def push_state() -> None:
 
 
 async def push_audio() -> None:
-    """Sends the audio state to all connected screens (background task of the audio routes)."""
     async with manager.state_lock:
         await manager.broadcast(audio_message())
 
@@ -78,14 +76,12 @@ async def send_initial_state(connection: Connection) -> bool:
 
 
 async def send_sound(name: SoundName) -> None:
-    """Sends a sound effect only to the audio output; without an output it is dropped."""
     async with manager.state_lock:
         if audio.output is not None:
             await manager.send(audio.output, {"type": "sound", "payload": {"name": name}})
 
 
 async def make_audio_output(connection: Connection) -> None:
-    """The connection (a Wall) becomes the audio output; a previous output loses the role."""
     async with manager.state_lock:
         previous = audio.set_output(connection)
         if previous is not None:
@@ -101,7 +97,6 @@ async def report_track_ended(connection: Connection, track_id: int) -> None:
 
 
 async def release_audio_output(connection: Connection) -> None:
-    """Called when a connection closes: without its output the others learn that no output is ready."""
     async with manager.state_lock:
         if audio.release_output(connection):
             await manager.broadcast(audio_message())

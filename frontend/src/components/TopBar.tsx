@@ -79,7 +79,6 @@ interface TopBarProps {
   adventures: AdventureSummary[]
   activeAdventureId: number | null
   onSelectAdventure: (adventureId: number) => void
-  // Plays the sound effect on the Wall that is the audio output
   onPlaySound: (name: SoundName) => void
 }
 

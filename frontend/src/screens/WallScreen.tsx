@@ -187,7 +187,6 @@ const WallScreen: FunctionComponent = (): ReactElement => {
         }
     }, [reportTrackEnded])
 
-    // Plays only while this Wall is the audio output; the state comes from the server
     useEffect(() => {
         audioPlayer?.update(audio, isAudioOutput)
     }, [audioPlayer, audio, isAudioOutput])

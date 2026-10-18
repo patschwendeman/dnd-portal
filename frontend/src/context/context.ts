@@ -37,7 +37,6 @@ export const GameTableContext = createContext<GameTableContextType>({
   reconnectNow: () => {},
 })
 
-// Music and sound effects: the server decides, the Wall that is the audio output plays, the Admin controls via the API
 type GameAudioContextType = {
   // null until the first audio state of the server arrived
   audio: AudioState | null

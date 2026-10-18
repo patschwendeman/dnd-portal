@@ -14,7 +14,6 @@ class AudioService:
     """
 
     def __init__(self, choose: Callable[[], float] = random.random) -> None:
-        # Random source in [0, 1), injectable for tests
         self.random = choose
         self.scene_id: int | None = None
         self.playlist: list[Track] = []
@@ -24,7 +23,6 @@ class AudioService:
         self.output: Connection | None = None
 
     def reset(self, scene_id: int | None, playlist: list[Track]) -> None:
-        """Start state: paused, default volume, no output, a random track of the playlist."""
         self.playing = False
         self.volume = DEFAULT_VOLUME
         self.output = None
@@ -36,7 +34,6 @@ class AudioService:
         )
 
     def set_playlist(self, scene_id: int | None, playlist: list[Track]) -> None:
-        """Playlist of a newly active scene (or the default music); `playing` stays as it is."""
         self.scene_id = scene_id
         self.playlist = list(playlist)
         self.track = self._choose(self.playlist)
@@ -49,27 +46,23 @@ class AudioService:
             self.playing = values["playing"]
 
     def set_output(self, connection: Connection) -> Connection | None:
-        """Makes the connection the audio output; returns the previous output (if it was another connection)."""
         previous = self.output
         self.output = connection
         return previous if previous is not connection else None
 
     def release_output(self, connection: Connection) -> bool:
-        """True if the connection was the output and no longer is."""
         if self.output is not connection:
             return False
         self.output = None
         return True
 
     def track_ended(self, connection: Connection, track_id: int) -> bool:
-        """Next track if the output reports the end of the current track; False for outdated or duplicate reports."""
         if self.output is not connection or self.track is None or self.track.id != track_id:
             return False
         self._next_track()
         return True
 
     def _next_track(self) -> None:
-        """Another random track of the playlist (if possible not the current one); `playing` stays as it is."""
         current = self.track
         others = [track for track in self.playlist if current is None or track.id != current.id]
         self.track = self._choose(others or self.playlist)

@@ -48,8 +48,6 @@ export const saveTheme = async (theme: Theme): Promise<GameTableState> => {
   return saveData('theme', 'table', { theme })
 }
 
-// Music and sound effects play on the Wall that is the audio output; the Admin only sends commands
-
 export const saveAudio = async (update: AudioUpdate): Promise<AudioState> => {
   return saveData('music', 'table/audio', update)
 }

@@ -15,7 +15,6 @@ export interface SocketLike {
   close: () => void
 }
 
-// The messages besides the state snapshot and the ping
 export type OtherServerMessage = Exclude<ServerMessage, { type: 'state' } | { type: 'ping' }>
 
 export interface GameTableConnectionOptions {
