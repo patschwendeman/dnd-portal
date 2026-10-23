@@ -1,7 +1,7 @@
 # DND-27: Smartphones anbinden (Player Screen am Spieltisch, Theme, QR-Code im Admin)
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -179,3 +179,35 @@ leicht öffnen können, zeigt der Admin einen **QR-Code** mit der Player-URL. Dr
 - keine
 
 ## Review
+
+### Runde 1 – 2026-10-18
+**Empfehlung:** Abnahme – keine blockierenden Befunde. Vor „Fertig“ noch die Smartphone-Prüfungen 1 (QR-Scan, AK4) und 3 (Entsperren, AK3).
+
+Geprüft: Commit `3ce061b` gegen `a9a6f37` (Diff vollständig), zusätzlich Browserprüfung (headless Chrome) gegen den Dev-Stack über `localhost:5173` und LAN-IP; Spieltisch-Theme danach wieder `dark`.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Smartphone folgt Spieltisch-Theme | erfüllt (echtes Smartphone mit `dnd prod` offen) | `App.tsx:13-23,37`, `GameTableProvider.tsx:50`; Laufzeit: `PATCH /table {"theme":"tavern"}` wechselt Hintergrund ohne Reload; `test_player_receives_the_push_after_patch_table` |
+| AK2 Lokale Abweichung | erfüllt | `ThemeMenu.tsx`, `utils/playerTheme.ts`; zwei Player: B bleibt bei Taverne (auch nach Reload), „Wie Spieltisch“ entfernt den Schlüssel; Escape/`pointerdown`/Tastatur ok; `playerTheme.spec.ts` |
+| AK3 Entsperren | Code + Unit-Tests erfüllt; Smartphone offen | `connection.ts:149-153`, `visibility.ts`; neue Tests in `gameTableConnection.spec.ts`; Restrisiko H1 |
+| AK4 QR-Code im Admin | Kette erfüllt; Kamera-Scan offen | `script.sh:74-86,104,112-113`, `compose.prod.yaml`, `config.py:26-34`, `routes/table.py:22-24`, `test_join_returns_the_configured_player_url`, `test_player_url_*`, `playerUrl.spec.ts`; Dialog rendert SVG `#000`/`#fff`, Ruhezone 4 Module, URL als Text |
+| AK5 URL unbekannt | erfüllt (Dev 5173; Prod 8080 identischer Code) | `/table/join` → `null`; über `localhost` Hinweis ohne QR, über LAN-IP QR + URL; `selectPlayerUrl` inkl. `[::1]` |
+| AK6 Altwert verworfen | erfüllt | `App.tsx:30`, `discardLegacyPlayerTheme`; Laufzeit: `isDarkTheme` entfernt, Player folgt Spieltisch |
+
+**Blockierende Befunde**
+- keine
+
+**Vor Abschluss (kein Code-Befund)**
+- [x] Manuelle Prüfungen 1 (QR-Code scannen, AK4) und 3 (sperren/entsperren, AK3) mit `dnd prod` am Smartphone; 2, 4, 5 per Browser am Dev-Stack abgedeckt. Am 2026-10-23 vom User am Smartphone bestätigt; H1 (Zombie-Socket) trat dabei nicht auf
+
+**Hinweise**
+- H1 „Zombie-Socket“ (Vermutung): `reconnectNow` nur bei `open === false` (E4); hält das Smartphone einen toten Socket für offen, greift erst der Watchdog (35 s). Falls Prüfung 3 das zeigt: beim Sichtbarwerden auch neu verbinden, wenn letzte Nachricht älter als Ping-Intervall
+- H2 Eigenentscheidungen des Implementers ohne Einwand: Farbrollen `qr.foreground`/`qr.background` (DESIGN.md 2.1, `contrast.md` 21:1); Zusatz-Doku im Doku-Scope; Dialogzustand in `TopBar` mit Fokus-Rückgabe; `PlayerRoute` + `themeOverride` gemäß E2; `pointerdown` (Abweichung: `AdventureSelect.tsx:146` nutzt `mousedown`)
+- H3 `PLAYER_URL` aus `backend/.env` wirkt im Container nicht (Compose-`environment` überschreibt); korrekt dokumentiert
+- H4 `docs/screens.md` verkürzt: sofortiger Reconnect nur bei nicht offener Verbindung (`architecture.md` korrekt)
+- H5 Hinweistext mit „dnd prod“ in typografischen Anführungszeichen statt Backticks – vertretbar
+- H6 Dialog ohne Fokusfalle trotz `aria-modal` – vom Plan nicht verlangt
+- H7 Lint-Warnung `WallScreen.tsx:216` (`img` ohne `alt`) bestand vorher
+- H8 AK5 auf Prod-Port 8080 nicht live geprüft; Logik port-unabhängig
+
+**Checks:** Backend `ruff check`/`ruff format --check`/`mypy app` ok, `pytest` 173 passed, `openapi.json` aktuell; Frontend `typecheck` ok, `lint` 0 Fehler/1 Warnung (H7), `test:unit` 167 passed, `build` ok, `test:e2e` 4/4, `docker build --target prod` ok; `bash -n script.sh` ok, `docker compose config` rendert `PLAYER_URL` korrekt; ein Commit nach Schema, ohne KI-Signatur, Arbeitsbaum sauber
