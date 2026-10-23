@@ -1,7 +1,7 @@
 # DND-29: Menüpunkt „Szenen“ im Admin, Szenen ohne Kampf-/Nicht-Kampf-Unterscheidung
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -433,3 +433,38 @@ Der blockierende Befund aus Runde 3 ist behoben. Commit `ad7f87f` ändert nur di
 
 **Checks:**
 - Nur Doku geändert: Lint, Tests, Build und E2E nicht erneut ausgeführt (Code seit `f760dc0` unverändert, dort in Runde 3 alle grün). Arbeitsbaum sauber, Dev-DB nicht angefasst.
+
+### Runde 5 – 2026-10-24
+**Empfehlung:** Abnahme
+
+Commit `edf2d60` setzt E12 und alle Subtasks von Runde 5 um. Die Menüpunkte der Navigationsleiste verhalten sich jetzt wie die Panel-Einträge, das Icon ist 24px groß über `size.iconLg`. Die Doku passt zum Code und widerspricht sich nicht. Lint, Typecheck, Unit-Tests, Build und E2E sind grün.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | Logik seit Runde 2 unverändert. Runde 5 ändert nur Styles in `NavRail.tsx:30,36-38,47-48`. E2E `adminNavigation` und `selectScene` Szenario 1 grün. Der aktive Menüpunkt ist weiter `primary`/`onPrimary` (Selenium, Theme Taverne) |
+| AK2 | erfüllt | Unverändert (`AdminScreen.tsx:362-380`). E2E Szenario 2 grün |
+| AK3 | erfüllt | Unverändert (`AdminScreen.tsx:363`) |
+| AK4 | erfüllt | Unverändert, kein Eingriff in rechte Spalte oder Bottom-Bar |
+| AK5 | erfüllt | Unverändert (`AdminScreen.tsx:246`, `:267`; `SceneNavigation.tsx:38`) |
+| AK6 | erfüllt | `SideBarLeftElement` seit Runde 3 unverändert. Tastatur an den Menüpunkten geprüft: Tab erreicht beide, `:focus-visible` mit Outline 2px `primary` und Abstand 2px, Enter öffnet, Leertaste klappt ein |
+| AK7 | erfüllt | Backend seit `508b2e3` ohne Diff, Ergebnisse aus Runde 1 gelten weiter |
+| AK8 | erfüllt (laut Code) | Wall seit Runde 1 ohne Diff |
+| AK9 | erfüllt | Kein Verhalten geändert. `size.icon` (20px) unverändert, `size.iconLg` nur in `NavRail.tsx:47-48`. Unit 158 grün, E2E 5/5 grün |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- E12 im Browser geprüft (Theme Taverne): inaktiv `transparent`, Hover inaktiv `secondary`, Hover aktiv bleibt `primary`, Fokus-Outline an aktivem und inaktivem Menüpunkt sichtbar – wie `SideBarLeftElement`.
+- Icon-`fill` stimmt in allen Zuständen (aktiv `onPrimary`, inaktiv `text.color`), auch nach Ein-/Ausklappen und Wechsel; `react-svg` injiziert bei geänderten Props neu. Icon in allen Zuständen 24×24px.
+- Dark-Theme über die Screenshots des Implementers geprüft, nicht selbst gemessen.
+- Token `size.iconLg` (`tokens.ts:60-61`) folgt dem Muster `size.button.minWidth`; `styled.d.ts` leitet den Typ ab.
+- Doku: `DESIGN.md:67-68`, `:250`; `components.md:69-70`; `contrast.md:49-52`, `:66-70` stimmen mit dem Code überein. Die Abgrenzung zum Icon-Button steht zweimal (`components.md:23`, `:70`), ohne Widerspruch. Kleine Ungenauigkeit: „der allgemeine Icon-Button bleibt gefüllt“ gilt nicht in Top-Bar und Hinweisleiste (dort transparent, `components.md:22`); optional „außer in Top-Bar und Hinweisleiste“ ergänzen.
+- Umfang: `edf2d60` ändert nur die 6 Dateien aus E12/Runde 5. Commit-Nachricht nach Schema, keine KI-Signatur.
+- Bekannt, nicht durch DND-29: Lint-Warnung `WallScreen.tsx:157`. `layer.raised` ist kein Befund.
+- Spieltisch-Zustand: vorgefunden Szene 2, Theme `dark`; nach E2E Szene 2 wiederhergestellt (Track jetzt 39, vorher nicht notiert). Theme steht auf `tavern` – Umstellung per `PATCH /table` über den UI-Container, nicht durch die Prüfläufe; nicht zurückgesetzt.
+
+**Checks:**
+- **Backend:** nicht erneut ausgeführt, seit Runde 1 kein Diff (`ruff`, `mypy` grün, `pytest` 165 passed).
+- **Frontend:** `npm run lint` 0 Fehler, 1 bestehende Warnung. `typecheck` grün. `test:unit` 158 Tests grün. `build` grün.
+- **E2E:** 5/5 grün. Eigener Selenium-Lauf über Zustände und Fokus der Menüpunkte.

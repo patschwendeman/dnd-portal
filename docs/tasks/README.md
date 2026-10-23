@@ -32,4 +32,4 @@
 | DND-26 | feat | Audio auf der Wall, Admin als Fernbedienung | Fertig | [DND-26-audio-on-wall.md](DND-26-audio-on-wall.md) |
 | DND-27 | feat | Smartphones anbinden (Player Screen am Spieltisch, Theme, QR-Code im Admin) | Fertig | [DND-27-connect-player-screens.md](DND-27-connect-player-screens.md) |
 | DND-28 | feat | Navigationsleiste im Admin Screen mit Menüpunkt „Notizen“ | Fertig | [DND-28-admin-nav-rail.md](DND-28-admin-nav-rail.md) |
-| DND-29 | feat | Menüpunkt „Szenen“ im Admin, Szenen ohne Kampf-/Nicht-Kampf-Unterscheidung | Im Review | [DND-29-admin-scenes-panel.md](DND-29-admin-scenes-panel.md) |
+| DND-29 | feat | Menüpunkt „Szenen“ im Admin, Szenen ohne Kampf-/Nicht-Kampf-Unterscheidung | Fertig | [DND-29-admin-scenes-panel.md](DND-29-admin-scenes-panel.md) |
