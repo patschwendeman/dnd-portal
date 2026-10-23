@@ -20,7 +20,7 @@ Größe nach [1.2](../../DESIGN.md#12-tokens) Größen, Icon nach [1.4](../../DE
 | Zentrierung des Icons | `display: grid; place-items: center` |
 | Padding | `0` (Reset bei `<button>`) |
 | Farbe | Hintergrund in der Top-Bar und der Hinweisleiste transparent, sonst nach [2.2](../../DESIGN.md#22-rollen) und [2.4](../../DESIGN.md#24-zustände) |
-| Beispiele | Sound-Buttons, Settings, Play/Pause, Nach oben, Menüpunkte der [Navigationsleiste](#navigationsleiste) |
+| Beispiele | Sound-Buttons, Settings, Play/Pause, Nach oben, Menüpunkte der [Navigationsleiste](#navigationsleiste) (dort abweichend inaktiv ohne eigene Fläche und Icon `size.iconLg`; der allgemeine Icon-Button bleibt gefüllt) |
 | Player | Hintergrund `secondary` (Settings-Button des Theme-Menüs) |
 
 ## Text-Button
@@ -33,7 +33,7 @@ Großbuchstaben ergänzt sie die verwendende Komponente (z. B. `ScreenControlBar
 |---|---|
 | Höhe, Breite | nach [1.2](../../DESIGN.md#12-tokens) Größen |
 | Innenabstand | `0 space.4` |
-| Beispiele | BATTLE/WORLD/OFF, BLACK/WHITE/OFF, Confirm/Decline |
+| Beispiele | WORLD/OFF, BLACK/WHITE/OFF, Confirm/Decline |
 
 ## Button-Gruppe
 
@@ -42,25 +42,33 @@ einer aktiv ist.
 
 ## Navigationseintrag
 
+Komponente `SideBarLeftElement` ([src/components/SideBarLeftElement.tsx](../../src/components/SideBarLeftElement.tsx)),
+gemeinsam für die Notizen- und die Szenenliste im Panel (`DocumentNavigation`, `SceneNavigation`). Props `name`,
+`isActive`, `onSelect`.
+
 | Eigenschaft | Wert |
 |---|---|
+| Element | `<button type="button">`: per Tab erreichbar, Enter/Leertaste lösen aus |
 | Höhe | nach [1.2](../../DESIGN.md#12-tokens) Größen |
 | Innenabstand | `0 space.3`, linksbündig |
+| Schrift | `text.sm` `medium`, einzeilig; zu lange Namen enden mit „…“ (`text-overflow: ellipsis`), der volle Name steht als `title` |
+| Zustände | aktiv: Fläche `primary`, Text `onPrimary`, `aria-current="true"`; inaktiv: ohne eigene Fläche (`transparent`, also `background` des Panels), Text `text.color`; Hover (inaktiv): Fläche `secondary`. Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`), wie beim Menüpunkt der [Navigationsleiste](#navigationsleiste) |
 
 ## Navigationsleiste
 
 Nur im Admin, Komponente `NavRail` ([src/components/NavRail.tsx](../../src/components/NavRail.tsx)) mit dem Panel
-daneben (`AdminScreen`). Die Menüpunkte kommen als Liste (id, Name, Icon, Panel-Inhalt) aus dem `AdminScreen`; bisher
-nur „Notizen“ (`notes.svg`, Panel `DocumentNavigation`).
+daneben (`AdminScreen`). Die Menüpunkte kommen als Liste (id, Name, Icon, Panel-Inhalt) aus dem `AdminScreen`; zwei
+Menüpunkte: „Notizen“ (`notes.svg`, Panel `DocumentNavigation`) und darunter „Szenen“ (`scenes.svg`, Panel
+`SceneNavigation`).
 
 | Eigenschaft | Wert |
 |---|---|
 | Breite | Leiste `NAV_RAIL_WIDTH`, Panel `LEFT_COLUMN_WIDTH` ([screen-layouts.md](screen-layouts.md#layout-konstanten)) |
 | Fläche | Leiste und Panel `background` wie die Top-Bar, bündig zwischen Top-Bar und Bottom-Bar, ohne Karte; rechts an der Leiste und rechts am Panel je eine senkrechte Linie `borderWidth.thin` in `secondary` über die volle Höhe (wie die Linie unter der Top-Bar): die Linie der Leiste trennt sie vom Panel bzw. bei eingeklapptem Panel von den Notizen, die des Panels trennt es von den Notizen |
-| Leiste | Spalte, horizontal zentriert, Innenabstand `space.3` oben/unten, `gap` `space.1` zwischen den Menüpunkten |
-| Menüpunkt | [Icon-Button](#icon-button) (`<button type="button">`, `size.control.md`, `radius.md`, Icon `size.icon`); Name als `aria-label` und `title`, `aria-pressed` für den Zustand, `aria-controls` aufs Panel |
-| Zustände | aktiv (Panel offen): Fläche `primary`, Icon `onPrimary`; inaktiv: Fläche `secondary`, Icon `text.color`; eingeklappt: kein Menüpunkt aktiv. Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`) |
-| Panel | Innenabstand `space.3`, scrollt bei Überlänge; Inhalt des aktiven Menüpunkts, bei „Notizen“ Label „Notizen“ und die [Navigationseinträge](#navigationseintrag) |
+| Leiste | Spalte, horizontal zentriert, Innenabstand `space.5` oben/unten, `gap` `space.2` zwischen den Menüpunkten |
+| Menüpunkt | [Icon-Button](#icon-button) (`<button type="button">`, `size.control.md`, `radius.md`), Icon abweichend `size.iconLg` (24px); Name als `aria-label` und `title`, `aria-pressed` für den Zustand, `aria-controls` aufs Panel |
+| Zustände | wie beim [Navigationseintrag](#navigationseintrag): aktiv (Panel offen): Fläche `primary`, Icon `onPrimary`, auch bei Hover; inaktiv: ohne eigene Fläche (`transparent`, also `background` der Leiste), Icon `text.color`; Hover (inaktiv): Fläche `secondary`; eingeklappt: kein Menüpunkt aktiv. Anders als der allgemeine [Icon-Button](#icon-button), der inaktiv gefüllt bleibt. Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`) |
+| Panel | Innenabstand `space.5` oben/unten, `space.4` seitlich, scrollt bei Überlänge; Inhalt des aktiven Menüpunkts: bei „Notizen“ Label „Notizen“ und die [Navigationseinträge](#navigationseintrag) der Notizen, bei „Szenen“ Label „Szenen“ und je Szene ein Navigationseintrag (Reihenfolge der API), ohne Szenen der Hinweis „Keine Szenen“ (`text.sm`, Innenabstand `0 space.3`) |
 | Bedienung | Klick (Enter/Leertaste) auf den aktiven Menüpunkt klappt das Panel ein, auf einen anderen bzw. im eingeklappten Zustand öffnet er dessen Panel (`nextOpenPanel` in `src/utils/navRail.ts`). Start: „Notizen“ offen |
 
 ## Label
@@ -72,14 +80,14 @@ und Laufweite nach [1.4](../../DESIGN.md#14-regeln).
 |---|---|
 | Abstand | nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“. Zum zugehörigen Wert in einem zweizeiligen Block `0` („Musik“ → Titel). |
 | Ausrichtung neben Werten | `align-items: baseline` |
-| Beispiele | Notizen, Aktive Szene, Kampfszenen, Enemies, Loot, Musik, Szenen, Szene wechseln, Raster, Zelle, Aktion, Bonusaktion, Bewegung, Spezial, Zauberplätze |
+| Beispiele | Notizen, Szenen, Aktive Szene, Enemies, Loot, Musik, Szene wechseln, Raster, Zelle, Aktion, Bonusaktion, Bewegung, Spezial, Zauberplätze |
 
 ## Karte
 
 | Eigenschaft | Wert |
 |---|---|
-| Aufbau | optional Label, optional Titel, Inhalt. Zeilen getrennt durch Trennlinien ([1.4](../../DESIGN.md#14-regeln) Rahmen). „Kampfszenen“ hat keinen Titel, nur Label mit Anzahl. |
-| Beispiele | Aktive Szene, Kampfszenen, Ressourcen (Player) |
+| Aufbau | optional Label, optional Titel, Inhalt. Zeilen getrennt durch Trennlinien ([1.4](../../DESIGN.md#14-regeln) Rahmen). |
+| Beispiele | Aktive Szene, Ressourcen (Player) |
 
 ## Ressourcen-Button
 
@@ -104,7 +112,7 @@ Nur auf der Wall.
 |---|---|
 | Breite | `min(OVERLAY_PANEL_MAX_WIDTH, 100vw − 2 × space.8, …)`, siehe [screen-layouts.md](screen-layouts.md#breite-des-overlay-panels) |
 | Position | `space.7` unter der Oberkante, horizontal mittig |
-| Kopfzeile | Überschrift, optional Label rechts, `space.5` zum Inhalt |
+| Kopfzeile | Überschrift, `space.5` zum Inhalt |
 
 ## Schwebende Steuerleiste
 
@@ -114,25 +122,6 @@ Wall und Ground.
 |---|---|
 | Position | `bottom: space.5`, horizontal mittig |
 | Sichtbarkeit | nur bei Hover über dem Screen |
-
-## Kachel
-
-Szenenbild.
-
-| Eigenschaft | Wert |
-|---|---|
-| Format | nach [1.4](../../DESIGN.md#14-regeln) Bilder |
-| Rand | nach [1.4](../../DESIGN.md#14-regeln) Rahmen und Bilder, `outline-offset` 0. Aktiv ersetzt ihn die Aktiv-Outline ([1.4](../../DESIGN.md#14-regeln) Aktiv-Zustand) |
-| Raster | quadratnah, Spaltenzahl aus `getGridLayout` (`⌈√n⌉`, bei 25 Kacheln 5), zeilenweise sortiert. Abstand nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“ |
-
-## Nummern-Badge
-
-| Eigenschaft | Wert |
-|---|---|
-| Größe | `size.badge` als Höhe und `min-width` ([1.2](../../DESIGN.md#12-tokens)), Innenabstand `0 space.2` |
-| Position | `top` und `left` `space.2` in der Kachel |
-| Schrift | zentriert |
-| Inhalt | Raumnummer (Position 1–25), nicht die Datenbank-ID |
 
 ## Dialog
 
@@ -176,7 +165,7 @@ zeichnet. Bisher nur die Abenteuer-Auswahl ([src/components/AdventureSelect.tsx]
 | Button | Höhe `size.control.md`, Innenabstand `0 space.3`, Fläche `secondary`, Text `text.color`, ohne Rahmen, `radius.md`; Fokus als Outline `borderWidth.thick` in `primary` (`:focus-visible`); ohne Einträge deaktiviert. `aria-haspopup="listbox"`, `aria-expanded` |
 | Chevron | rechts im Button, SVG-`polygon` (`viewBox 0 0 20 20`), `size.icon`, `fill` `text.color`; geöffnet um 180° gedreht |
 | Liste | direkt unter dem Button (`position: absolute`, `top: calc(100% + space.1)`, `left: 0`), mindestens so breit wie der Button; Fläche `secondary`, Rand `borderWidth.thin` in `border`, `radius.lg`, Innenabstand `space.1`, `gap` `space.1`, ohne `box-shadow`; höchstens `ADVENTURE_LIST_MAX_HEIGHT` hoch, darüber scrollt sie; Ebene `layer.popover` |
-| Eintrag | wie [Navigationseintrag](#navigationseintrag), `text.sm` `medium`, `radius.md`. Gewählt: Fläche `primary`, Text `onPrimary`. Hover und Fokus: Fläche `background`. Gewählt mit Tastatur-Fokus (`:focus-visible`): bleibt `primary`, dazu Outline `borderWidth.thick` in `onPrimary`, nach innen versetzt (`outline-offset` −`borderWidth.thick`), damit die scrollende Liste sie nicht abschneidet. Nicht gewählt mit Tastatur-Fokus: Fläche `background`, dazu dieselbe innere Outline in `primary`. Hover und Maus ohne Outline. `role="option"`, `aria-selected` |
+| Eintrag | Höhe, Innenabstand und Schrift wie beim [Navigationseintrag](#navigationseintrag) (`text.sm` `medium`, `radius.md`), Fläche nicht gewählter Einträge aber wie die Liste. Gewählt: Fläche `primary`, Text `onPrimary`. Hover und Fokus: Fläche `background`. Gewählt mit Tastatur-Fokus (`:focus-visible`): bleibt `primary`, dazu Outline `borderWidth.thick` in `onPrimary`, nach innen versetzt (`outline-offset` −`borderWidth.thick`), damit die scrollende Liste sie nicht abschneidet. Nicht gewählt mit Tastatur-Fokus: Fläche `background`, dazu dieselbe innere Outline in `primary`. Hover und Maus ohne Outline. `role="option"`, `aria-selected` |
 | Bedienung | Klick auf den Button öffnet und schließt. Am Button öffnen Enter, Leertaste und Pfeil runter/hoch, der Fokus steht dann auf dem gewählten Eintrag. In der Liste bewegen Pfeile (ohne Umlauf) und Pos1/Ende; Enter/Leertaste wählen und schließen; Esc schließt und setzt den Fokus zurück auf den Button; Tab und Klick außerhalb schließen. Den gewählten Eintrag erneut zu wählen schließt nur |
 
 ## Theme-Menü
@@ -197,8 +186,7 @@ Nur im Admin.
 
 | Eigenschaft | Wert |
 |---|---|
-| Aufbau | Grid `1fr auto 1fr`: Musik links, Nicht-Kampfszenen mittig |
-| Szenen | Kacheln `TILE_WIDTH` breit, Label davor. Abstände nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“ |
+| Aufbau | Grid `1fr auto 1fr`: Musik links, Mitte und rechts leer |
 
 ## Hinweisleiste
 

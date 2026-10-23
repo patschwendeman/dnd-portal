@@ -23,7 +23,6 @@ class SceneDetail(BaseModel):
     id: int
     name: str
     description: str
-    main: bool
     wall_image: Image
     ground_image: Image
     tracks: list[Track]

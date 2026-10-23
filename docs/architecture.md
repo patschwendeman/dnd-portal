@@ -30,7 +30,7 @@
   erfolgreichen Änderung per `PATCH /table` oder `PATCH /adventures/{id}` einen vollständigen Snapshot an alle
   Verbindungen (auch an andere Admins; der letzte Schreibzugriff gewinnt, keine Sperren). Der Provider speist daraus
   `ActiveAdventureContext`, `ActiveSceneContext` (nur lesend) und das Theme. Die Screens laden daraufhin neu vom
-  Backend: Wall die Kampfszenen des Abenteuers und die Szene, Ground die Szene. Ohne aktive Szene zeigen Wall und Ground
+  Backend: Wall und Ground die Szene, der Admin bei einem Abenteuerwechsel dessen Szenen. Ohne aktive Szene zeigen Wall und Ground
   nur die Hintergrundfarbe und stellen keinen Request. Bis zum ersten Snapshot gilt „kein Abenteuer, keine Szene,
   Theme `dark`“.
 - Schreiben nur per REST, **ohne lokale Vorwegnahme**: Der Admin wechselt das Abenteuer per `PATCH /table
@@ -147,8 +147,6 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
 | `/adventures/{adventure_id}` | `AdventureDetail` inkl. Spieler (200) bzw. 404 `{"detail": "Adventure not found"}` |
 | `PATCH /adventures/{adventure_id}` | Body `AdventureUpdate`, Antwort `AdventureDetail` (200); 404 wie oben; 422 `{"detail": "Scene does not belong to adventure"}`, wenn `active_scene_id` nicht existiert oder zu einem anderen Abenteuer gehört (nichts wird geändert), 422 im FastAPI-Standardformat bei `global_level` außerhalb 1–20 |
 | `/adventures/{adventure_id}/scenes` | `list[SceneDetail]`: Szenen des Abenteuers nach ID (200, ggf. `[]`); 404 wie oben |
-| `/adventures/{adventure_id}/maps/main` | `list[MapEntry]`: `{id: scene.id, source: ground_image.source}` je Kampfszene des Abenteuers (200, ggf. `[]`); 404 wie oben |
-| `/adventures/{adventure_id}/maps/side` | `list[MapEntry]`: `{id: scene.id, source: wall_image.source}` je Nicht-Kampfszene des Abenteuers (200, ggf. `[]`); 404 wie oben |
 | `/scenes/{scene_id}` | `SceneDetail` (200) bzw. 404 `{"detail": "Scene not found"}` |
 | `/table` | `GameTableState`: Zustand des Spieltischs (200) |
 | `PATCH /table` | Body `GameTableUpdate`, Antwort `GameTableState` (200); 422 `{"detail": "Adventure not found"}` bei unbekanntem Abenteuer (nichts wird geändert), 422 im FastAPI-Standardformat bei ungültigem `theme` |
@@ -159,8 +157,9 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
 | `/ws` | WebSocket des Spieltischs (nicht in OpenAPI), siehe [WebSocket `/ws`](#websocket-ws) |
 | `/media/{storage_key}` | Mediendatei aus dem Medienordner (`StaticFiles`, nicht in OpenAPI): 200 bzw. 206 bei `Range`-Header (Audio-Seek), 404 bei fehlender Datei oder Pfad außerhalb des Ordners |
 
-Globale Listen (`GET /scenes`, `GET /maps/main|side`) gibt es seit DND-24 nicht mehr: Szenen und Karten gibt es nur je
-Abenteuer. `/scenes/{scene_id}` bleibt der Einstieg für Wall, Ground und die Karte „Aktive Szene“ im Admin, weil die
+Globale Listen (`GET /scenes`, `GET /maps/main|side`) gibt es seit DND-24 nicht mehr: Szenen gibt es nur je
+Abenteuer. Die Kartenübersichten je Abenteuer (`GET /adventures/{id}/maps/main|side`, Schema `MapEntry`) sind seit
+DND-29 entfernt (404), weil es keine Kampf-/Nicht-Kampfszenen mehr gibt. `/scenes/{scene_id}` bleibt der Einstieg für Wall, Ground und die Karte „Aktive Szene“ im Admin, weil die
 Szenen-ID global eindeutig ist.
 
 Kanonische Pfade sind ohne Slash am Ende (mit Slash antwortet FastAPI mit 307-Redirect). Fehler im Default-Format
@@ -169,11 +168,10 @@ Kanonische Pfade sind ohne Slash am Ende (mit Slash antwortet FastAPI mit 307-Re
 ### Antwortformat
 
 ```
-SceneDetail { id: int, name: str, description: str, main: bool,
+SceneDetail { id: int, name: str, description: str,
               wall_image: Image, ground_image: Image, tracks: list[Track] }   tracks nach ID sortiert
 Image       { id: int, name: str, source: str }
 Track       { id: int, name: str, source: str }
-MapEntry    { id: int, source: str }                                         id = Szenen-ID
 
 AdventureSummary { id: int, name: str, description: str | null }
 AdventureDetail  { id: int, name: str, description: str | null, global_level: int,
@@ -210,7 +208,7 @@ also z. B. `/api/media/images/ground_screen/main_1.jpg` über den Proxy).
 `backend/scripts/export_openapi.py` schreibt `app.openapi()` deterministisch dorthin (ohne DB-Verbindung, die
 `Settings`-Werte aus `.env` bzw. Umgebung reichen). Das Frontend erzeugt daraus per `openapi-typescript`
 `frontend/src/api/schema.d.ts` (versioniert, von ESLint ausgenommen); `src/models/models.ts` leitet `SceneDetail`,
-`Image`, `Track`, `MapResponse` (= `MapEntry`), `GameTableState`, `Theme`, `AudioState`, `AudioUpdate` und
+`Image`, `Track`, `GameTableState`, `Theme`, `AudioState`, `AudioUpdate` und
 `SoundName` davon ab. Das Nachrichtenformat des
 WebSockets `/ws` ist nicht Teil der OpenAPI, es steht oben unter [WebSocket `/ws`](#websocket-ws).
 
@@ -231,9 +229,9 @@ Adventure → adventure (id, name, description (Text, nullable), global_level (1
 Player    → player    (id, adventure_id → adventure, player_name, character_name, race, character_class,
                        avatar_media_id → media (nullable))
               Player.avatar: N:1
-Scene     → scene     (id, adventure_id → adventure, name, description, main: bool, wall_image_id → media,
+Scene     → scene     (id, adventure_id → adventure, name, description, wall_image_id → media,
                        ground_image_id → media (unique))
-              Scene.wall_image: N:1 (z. B. teilen sich alle Kampfszenen ein Wall-Bild), Scene.ground_image: 1:1
+              Scene.wall_image: N:1 (z. B. teilen sich alle „Fight“-Szenen ein Wall-Bild), Scene.ground_image: 1:1
               Scene.tracks: N:M über scene_track(scene_id, media_id; PK aus beiden)
 Media     → media     (id, kind: 'image' | 'audio', name, storage_key (unique), content_type, size (Bytes, nullable))
 GameTable → game_table (id (CHECK id = 1), active_adventure_id → adventure (nullable, ON DELETE SET NULL),
@@ -271,15 +269,17 @@ Datensatz, `size` = NULL) und biegt die Fremdschlüssel um. `0003` legt `adventu
 Spalte und Fremdschlüssel, die Szenen bleiben erhalten. `0004` legt `game_table` an und fügt die eine Zeile ein:
 aktives Abenteuer = kleinste Abenteuer-ID (auf einer leeren DB NULL, weil der Seeder erst danach läuft; dann ist kein
 Abenteuer aktiv und Wall und Ground bleiben leer, bis ein Admin geöffnet wird und das erste Abenteuer aktiviert), Theme
-`dark`; `downgrade` entfernt die Tabelle. Bestehende Datenbanken laufen jeweils
+`dark`; `downgrade` entfernt die Tabelle. `0005` entfernt die Spalte `scene.main` (Kampf-/Nicht-Kampfszene); Szenen,
+Bilder, Tracks und die aktive Szene bleiben erhalten. `downgrade` legt sie wieder an (`NOT NULL`, alle Szenen
+`false`), die frühere Einteilung ist dann verloren. Bestehende Datenbanken laufen jeweils
 ohne Reset weiter.
 
 **Seed-Daten:** Listen `adventures` (`name`, `description`, `global_level`), `media` (`kind`, `name`, `storage_key`),
 `scenes` (Referenz `adventure_id` sowie `wall_image_id`, `ground_image_id`, `track_ids` auf Media-IDs) und `players`
 (`adventure_id`, `player_name`, `character_name`, `race`, `character_class`, `avatar_media_id`). Reihenfolge im
 Seeder: `adventure` → `media` → `scene` → `player`, `active_scene_id` bleibt leer. Ein Abenteuer („Erstes Abenteuer“)
-mit allen Szenen und vier Platzhalter-Spielern („Spieler 1..4“, ohne Avatar). 4 Nicht-Kampfszenen (Default/Dorf, Shop, Taverne, Level Up) und 25
-Kampfszenen („Fight 1..25“, teils mit Tags wie Boss, Loot, Ereignis, Key), 76 Medien (33 Bilder, 43 Musiktracks).
+mit allen Szenen und vier Platzhalter-Spielern („Spieler 1..4“, ohne Avatar). 29 Szenen in dieser Reihenfolge:
+Default (Dorf), Shop, Tavern, Level Up und „Fight 1..25“ (teils mit Tags wie Boss, Loot, Ereignis, Key), 76 Medien (33 Bilder, 43 Musiktracks).
 IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement). Der Seeder ermittelt `content_type` (per
 Dateiendung) und `size` aus der Datei im Medienordner; fehlt sie, schreibt er eine Warnung ins Log und legt den
 Datensatz trotzdem an (`size` = NULL).
@@ -291,9 +291,9 @@ Datensatz trotzdem an (`size` = NULL).
 - State: React-State + vier Contexts (`ActiveAdventureContext`, `ActiveSceneContext`, `GameTableContext` mit Theme,
   Verbindungsstatus und `reconnectNow`, `GameAudioContext` mit `AudioState`, Ausgabe-Rolle der Wall, `audio_ready`/
   `track_ended` und Soundeffekten; `src/context/context.ts`), gespeist vom `GameTableProvider` aus dem
-  WebSocket-Snapshot (siehe [Synchronisation](#synchronisation)). Kein Store-Framework. Die aktive Kachel in den
-  Kartenübersichten ergibt sich aus `activeSceneId` (Kachel-ID = Szenen-ID, im Frontend `Map.sceneId`, Attribut
-  `data-active`); ist sie `null`, ist keine Kachel hervorgehoben. Die Wahl des Default-Abenteuers trifft
+  WebSocket-Snapshot (siehe [Synchronisation](#synchronisation)). Kein Store-Framework. Der aktive Eintrag im Panel
+  „Szenen“ des Admins ergibt sich aus `activeSceneId` (Vergleich mit der Szenen-ID, Attribute `aria-current` und
+  `data-active`); ist sie `null`, ist kein Eintrag hervorgehoben. Die Wahl des Default-Abenteuers trifft
   `selectDefaultAdventureId` (`src/utils/adventure.ts`).
 - Struktur: `src/app` (Routing, Theme-Abweichung des Player Screens), `src/realtime` (WebSocket-Client:
   `GameTableProvider`, `useGameTable`, Verbindung mit Reconnect `connection.ts`, `messages.ts`, `backoff.ts`,
@@ -301,7 +301,7 @@ Datensatz trotzdem an (`size` = NULL).
   `src/screens` (Screens), `src/components`, `src/service` (Datenladen und Schreibzugriffe je Screen),
   `src/audio` (Soundliste `sounds.ts`, Wiedergabe auf der Wall `wallAudioPlayer.ts`),
   `src/api` (axios-Client, Base-URL aus `VITE_API_URL`, Default `/api/`, Timeout 5000 ms; `wsUrl` leitet daraus die
-  WebSocket-URL ab), `src/models`, `src/utils` (Musiktitel, Filter, Grid-Layout `getGridLayout`,
+  WebSocket-URL ab), `src/models`, `src/utils` (Musiktitel, Filter, Panel der Navigationsleiste,
   Fehlerbehandlung `loadSafely`), `src/style` (Themes, `appTheme`), `src/context`.
 - Fehlerbehandlung beim Datenladen: `getData` reicht Fehler weiter. Die Services laden über `loadData`
   (`src/api/loadData.ts`) und werfen einen `LoadError`, dessen Meldung Netzwerkfehler/Timeout („backend not

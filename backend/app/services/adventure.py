@@ -3,9 +3,7 @@ from sqlalchemy.orm import Session
 from app.crud import adventure as adventure_crud
 from app.crud import scene as scene_crud
 from app.models import Adventure, Scene
-from app.schemas import AdventureUpdate, MapEntry
-from app.services import map as map_service
-from app.services.map import MapType
+from app.schemas import AdventureUpdate
 
 
 class SceneNotInAdventureError(ValueError):
@@ -24,12 +22,6 @@ def get_scenes(db: Session, adventure_id: int) -> list[Scene] | None:
     if not adventure_crud.adventure_exists(db, adventure_id):
         return None
     return scene_crud.read_scenes(db, adventure_id)
-
-
-def get_maps(db: Session, adventure_id: int, map_type: MapType) -> list[MapEntry] | None:
-    if not adventure_crud.adventure_exists(db, adventure_id):
-        return None
-    return map_service.get_maps(db, map_type, adventure_id)
 
 
 def update_adventure(db: Session, adventure_id: int, update: AdventureUpdate) -> Adventure | None:

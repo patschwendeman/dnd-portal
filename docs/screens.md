@@ -16,19 +16,22 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 ## Admin Screen
 
 ### Soll
-- Szenen auswählen und aktivieren.
+- Szenen auswählen und aktivieren. Alle Szenen sind gleich; einen Kampf startet der Spielleiter in jeder Szene über
+  den Menüpunkt „Kampf“ (geplant).
 - Notizen (Markdown) einsehen: Story, NPCs, Kämpfe.
-- Navigationsleiste links mit Menüpunkten, die das Panel daneben füllen: „Notizen“ (umgesetzt), geplant „Szenen“
-  (Szenenliste) und „Kampf“ (Kampf starten). Die Mitte zeigt dabei weiter die Notizen.
+- Navigationsleiste links mit Menüpunkten, die das Panel daneben füllen: „Notizen“ und „Szenen“ (umgesetzt), geplant
+  „Kampf“ (Kampf starten). Die Mitte zeigt dabei weiter die Notizen.
 - Musik ein- und ausschalten.
 - Verschiedene Sounds abspielen.
 
 ### Ist
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Top-Bar, Hauptbereich, Bottom-Bar. Im Hauptbereich
   ganz links die Navigationsleiste, daneben das Panel des aktiven Menüpunkts (beide bündig zwischen Top-Bar und
-  Bottom-Bar), in der Mitte die Notizen, rechts die Karten „Aktive Szene“ und „Kampfszenen“.
-- **Navigationsleiste:** schmale Leiste mit Icon-Buttons; bisher nur der Menüpunkt „Notizen“ (Tooltip „Notizen“), der
-  beim Laden aktiv und hervorgehoben ist. Klick (oder Enter/Leertaste) auf den aktiven Menüpunkt klappt das Panel ein,
+  Bottom-Bar), in der Mitte die Notizen, rechts die Karte „Aktive Szene“. Die Bottom-Bar zeigt links die Musik, Mitte und rechte
+  Seite sind leer.
+- **Navigationsleiste:** schmale Leiste mit Icon-Buttons „Notizen“ und darunter „Szenen“ (Tooltip mit dem Namen);
+  beim Laden ist „Notizen“ aktiv und hervorgehoben. Klick (oder Enter/Leertaste) auf einen anderen Menüpunkt wechselt
+  das Panel, die Mitte zeigt dabei weiter die Notizen. Klick auf den aktiven Menüpunkt klappt das Panel ein,
   die Notizen werden breiter und kein Menüpunkt ist hervorgehoben; ein weiterer Klick klappt es wieder aus. Auswahl und
   Scrollposition der Notizen bleiben dabei erhalten. Menüpunkt und Einklapp-Zustand werden nicht gespeichert, nach
   einem Reload ist „Notizen“ wieder offen.
@@ -38,11 +41,13 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   keine Szenen geladen. Gezeigt werden nur die Szenen des aktiven Abenteuers. Ein Wechsel wird gespeichert und gilt für
   alle Spieltisch-Screens; Admin, Wall und Ground zeigen danach direkt die im neuen Abenteuer gespeicherte Szene (bzw.
   keine), nie kurz die eines anderen Abenteuers.
-- **Szenenauswahl:** Karte „Kampfszenen“ mit Anzahl und quadratisch angeordnetem Kachelraster aller Kampfszenen des
-  Abenteuers, Bottom-Bar mittig mit den Nicht-Kampfszenen („Szenen“). Die aktive Kachel ist hervorgehoben. Klick öffnet einen
+- **Szenenauswahl:** Das Panel „Szenen“ listet unter dem Label „Szenen“ alle Szenen des aktiven Abenteuers in der
+  Reihenfolge, in der sie angelegt sind (Seed: Default, Shop, Tavern, Level Up, Fight 1 … Fight 25), nur mit Namen;
+  zu lange Namen enden mit „…“, der volle Name steht im Tooltip. Die aktive Szene ist hervorgehoben. Die Einträge sind
+  per Tab erreichbar, Enter/Leertaste wirken wie ein Klick. Klick auf eine andere Szene öffnet einen
   Bestätigungsdialog „Szene wechseln“ mit Wall-Bild, Name und Beschreibung; „Confirm“ speichert die Szene, und alle
   verbundenen Screens (auch andere Admin-Fenster) wechseln, sobald der Server den neuen Stand schickt; „Decline“ bricht
-  ab.
+  ab. Klick auf die bereits aktive Szene tut nichts. Ohne Abenteuer oder ohne Szenen steht dort „Keine Szenen“.
 - **Zustand auf dem Server:** Abenteuer, aktive Szene und Theme stehen auf dem Server und gelten für alle
   Spieltisch-Screens, auch in anderen Browsern oder auf anderen Geräten; sie überstehen Reloads und Neustarts der API.
   Mehrere Admin-Fenster dürfen gleichzeitig schreiben, der letzte Schreibzugriff gewinnt.
@@ -54,8 +59,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   (1 s, 2 s, 4 s … höchstens 10 s), „Erneut versuchen“ verbindet sofort. Danach verschwindet die Leiste.
 - **Szenen-Details:** Karte „Aktive Szene“ mit Name und Beschreibung, ohne aktive Szene der Hinweis „Keine Szene
   aktiv“; „Enemies“ und „Loot“ sind nur Platzhalter („–“).
-- **Notizen:** Das Panel „Notizen“ listet die Einträge Main, Fight, Side, Leveling, Mechaniken (Start: Main); die
-  Mitte zeigt die Notizen des gewählten Eintrags (Markdown aus `public/story/`), auch bei eingeklapptem Panel.
+- **Notizen:** Das Panel „Notizen“ listet die Einträge Main, Fight, Side, Leveling, Mechaniken (Start: Main; per
+  Tastatur bedienbar wie die Szenenliste); die Mitte zeigt die Notizen des gewählten Eintrags (Markdown aus `public/story/`), auch bei eingeklapptem Panel.
   Inhaltsverzeichnis-Links, Bilder öffnen in neuem Tab. Eintrag „Side“ ist leer (Ordner fehlt).
 - **Musik (Fernbedienung):** Der Admin spielt selbst nichts ab; Musik und Soundeffekte kommen aus der Wall, die
   Audioausgabe ist (siehe Wall Screen). Bottom-Bar links Play/Pause, „Musik“ mit dem Titel des aktuellen
@@ -127,7 +132,8 @@ entfernt und auf dem Branch `feature/spells-screen` geparkt (siehe CONTRIBUTING.
 
 ### Soll
 Atmosphäre: Hintergrundbild abhängig von der aktiven Szene (z. B. Dungeon bei Kampf, Shop-Inneres bei Shop-Szene).
-Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets.
+Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets. Was die Wall bei einem Kampf zeigt,
+legt der geplante Menüpunkt „Kampf“ im Admin fest.
 
 ### Ist
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Vollbild-Hintergrund = Wall-Bild der aktiven Szene,
@@ -136,13 +142,12 @@ Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets.
 - Folgt dem Spieltisch per WebSocket (aktive Szene, Abenteuer, Theme) und kann damit auch in einem anderen Browser oder
   auf einem anderen Gerät laufen (`http://<IP>:8080/wall`). Nach einem Verbindungsabbruch behält sie das Bild ohne
   Hinweis und verbindet sich selbst neu.
-- Overlay-Panel oben mittig, umschaltbar über eine Steuerleiste, die beim Hover am unteren Rand erscheint (BATTLE /
-  WORLD / OFF):
-  - **BATTLE:** „Kampfschauplätze“ mit Anzahl („25 Räume“) und den Kacheln aller Kampfszenen des im Admin gewählten
-    Abenteuers im quadratischen Raster,
-    nummeriert mit Raumnummer 1–n; bei Kampfszenen automatisch sichtbar.
-  - **WORLD:** „Weltkarte“ mit einer fest eingebundenen Weltkarte (nicht aus dem Backend).
+- Overlay-Panel oben mittig, umschaltbar über eine Steuerleiste, die beim Hover am unteren Rand erscheint (WORLD /
+  OFF, Start: OFF):
+  - **WORLD:** „Weltkarte“ mit einer fest eingebundenen Weltkarte (nicht aus dem Backend), vollständig über der
+    Steuerleiste.
   - **OFF:** Overlay ausgeblendet.
+  Ein Szenenwechsel blendet kein Overlay ein; eine offene Weltkarte wird dabei geschlossen.
 - **AUDIO:** Button in derselben Steuerleiste; ein Klick macht diese Wall zur Audioausgabe für Musik und Soundeffekte
   (die Nutzerinteraktion gibt die Wiedergabe im Browser frei). Er ist hervorgehoben, solange die Wall Ausgabe ist.
   Es spielt immer nur eine Wall: Klickt man auf einer anderen Wall „AUDIO“, verstummt die bisherige. Die Ausgabe folgt
@@ -150,7 +155,7 @@ Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets.
   das Trackende an den Server; sonst zeigt die Wall nichts an. Nach einem Verbindungsabbruch meldet sie sich ohne
   neuen Klick wieder als Ausgabe. Blockiert der Browser das Abspielen, loggt sie den Fehler; ein erneuter Klick auf
   „AUDIO“ versucht es wieder.
-- Eine szenen-/gebietsspezifische Übersichtskarte gibt es noch nicht; die „Übersicht“ ist das Raster der Kampfszenen.
+- Eine szenen-/gebietsspezifische Übersichtskarte gibt es noch nicht.
 - **Ladefehler:** kein Hinweis für die Spieler; die Wall behält den zuletzt geladenen Stand, der nächste
   Szenenwechsel lädt erneut.
 
@@ -159,7 +164,7 @@ Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets.
 ## Ground Screen
 
 ### Soll
-Die Oberfläche der Welt als **digitales Spielbrett**. Bei einer Kampfszene wird der Kampfschauplatz angezeigt,
+Die Oberfläche der Welt als **digitales Spielbrett**. Bei einem Kampf wird der Kampfschauplatz angezeigt,
 optional mit **Grid** als Layout für taktische Kämpfe.
 
 ### Ist

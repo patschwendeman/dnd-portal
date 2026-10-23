@@ -33,9 +33,9 @@ const DocumentNavigation: FunctionComponent<DocumentNavigationProps> = ({
       <SideBarLeftElement
         key={name}
         name={name}
-        selectedStoryIndex={selectedStoryIndex}
-        handleStorySelect={onSelectStory}
-        index={index}
+        isActive={index === selectedStoryIndex}
+        onSelect={() => onSelectStory(index)}
+        testId={`notes-entry-${index}`}
       />
     ))}
   </Navigation>

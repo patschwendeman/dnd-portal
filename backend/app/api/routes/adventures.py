@@ -5,9 +5,8 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException
 from app.api.deps import SessionDep
 from app.models import Adventure, Scene
 from app.realtime.push import push_state
-from app.schemas import AdventureDetail, AdventureSummary, AdventureUpdate, MapEntry, SceneDetail
+from app.schemas import AdventureDetail, AdventureSummary, AdventureUpdate, SceneDetail
 from app.services import adventure as adventure_service
-from app.services.map import MapType
 
 router = APIRouter()
 
@@ -57,20 +56,3 @@ def read_adventure_scenes(adventure_id: int, db: SessionDep) -> list[Scene]:
     if scenes is None:
         raise _not_found()
     return scenes
-
-
-def _maps(db: SessionDep, adventure_id: int, map_type: MapType) -> list[MapEntry]:
-    maps = adventure_service.get_maps(db, adventure_id, map_type)
-    if maps is None:
-        raise _not_found()
-    return maps
-
-
-@router.get("/{adventure_id}/maps/main", responses=NOT_FOUND)
-def read_adventure_mainmaps(adventure_id: int, db: SessionDep) -> list[MapEntry]:
-    return _maps(db, adventure_id, "main")
-
-
-@router.get("/{adventure_id}/maps/side", responses=NOT_FOUND)
-def read_adventure_sidemaps(adventure_id: int, db: SessionDep) -> list[MapEntry]:
-    return _maps(db, adventure_id, "side")

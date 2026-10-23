@@ -5,7 +5,7 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-SCENE_FIELDS = {"id", "name", "description", "main", "wall_image", "ground_image", "tracks"}
+SCENE_FIELDS = {"id", "name", "description", "wall_image", "ground_image", "tracks"}
 MEDIA_FIELDS = {"id", "name", "source"}
 
 

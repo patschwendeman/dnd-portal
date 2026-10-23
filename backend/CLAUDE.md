@@ -45,8 +45,8 @@ CRUD-Funktion geprüft. Daneben prüfen `test_cors.py` (erlaubte Origins und Met
 (`Settings`, ohne DB), `test_migrate.py` (Alt-DB-Prüfung über eine Tabellenliste, ohne die Test-DB zu verändern),
 `test_media.py` (Auslieferung unter `/media` inkl. `Range`, 404 und Pfad-Traversal; `source`-Format; alle Seed-Dateien
 in `../media` vorhanden), `test_seed.py` (Seeder inkl. Abenteuer, Spieler und fehlender Datei, in einer zurückgerollten
-Transaktion) sowie `test_migration_0002.py`, `test_migration_0003.py` und `test_migration_0004.py` (Migration `0001` →
-`0002`, `0002` → `0003` bzw. `0003` → `0004` und zurück mit Daten, in einer eigenen temporären Datenbank – braucht
+Transaktion) sowie `test_migration_0002.py` bis `test_migration_0005.py` (Migration `0001` → `0002`, `0002` → `0003`,
+`0003` → `0004` bzw. `0004` → `0005` und zurück mit Daten, in einer eigenen temporären Datenbank – braucht
 `CREATE DATABASE`). `test_table.py` prüft `GET`/`PATCH /table` und `GET /table/join` (`player_url` per `monkeypatch` auf `settings`),
 `test_ws.py` den WebSocket `/ws` per
 `TestClient.websocket_connect` (Snapshot, Push nach `PATCH`, `screen`- und Origin-Prüfung, Ping mit per `monkeypatch`
@@ -92,13 +92,13 @@ app/schemas/              Pydantic-Schemas des API-Vertrags: game_table.py (Game
                           JoinInfo),
                           audio.py (AudioState, AudioUpdate, SoundRequest, SoundName),
                           adventure.py (AdventureSummary, AdventureDetail, Player,
-                          AdventureUpdate), scene.py (SceneDetail, Image, Track), map.py (MapEntry)
+                          AdventureUpdate), scene.py (SceneDetail, Image, Track)
 app/crud/adventure.py     Abenteuer lesen (mit Spielern und Avatar), Existenzprüfung, Update
 app/crud/game_table.py    Spieltisch-Zeile lesen (mit aktivem Abenteuer), Update
 app/crud/media.py         read_media_by_storage_key (Standardmusik)
-app/crud/scene.py         Lesezugriffe auf Scene, immer mit Relationen (read_scenes und read_scenes_by_main je
-                          adventure_id, read_scene), read_scene_adventure_id
-app/services/adventure.py Fachlogik Abenteuer (Liste, Detail, Szenen/Karten je Abenteuer → None bei unbekannter ID,
+app/crud/scene.py         Lesezugriffe auf Scene, immer mit Relationen (read_scenes je adventure_id, read_scene),
+                          read_scene_adventure_id
+app/services/adventure.py Fachlogik Abenteuer (Liste, Detail, Szenen je Abenteuer → None bei unbekannter ID,
                           update_adventure inkl. Prüfung der aktiven Szene → SceneNotInAdventureError)
 app/services/scene.py     Fachlogik Szenen (get_scene → Scene | None)
 app/services/audio.py     get_playlist: Tracks der aktiven Szene bzw. Standardmusik (Settings.default_music_key)
@@ -110,17 +110,16 @@ app/realtime/             WebSocket: manager.py (ConnectionManager `manager` im 
                           push.py (push_state als BackgroundTask nach dem Commit, eigene Session, lädt bei Szenenwechsel
                           die Playlist; send_initial_state, push_audio, send_sound, Ausgabe-Wechsel, reset_audio),
                           origin.py (is_origin_allowed: ohne Origin, CORS_ORIGINS oder gleicher Host/Port wie `Host`)
-app/services/map.py       Fachlogik Karten (get_maps je Abenteuer → list[MapEntry], MapType)
 app/api/deps.py           SessionDep
-app/api/routes/*.py       je Ressource ein `router` (adventures inkl. Szenen/Karten je Abenteuer, scenes nur
+app/api/routes/*.py       je Ressource ein `router` (adventures inkl. Szenen je Abenteuer, scenes nur
                           Einzelszene, table, audio mit Prefix `/table` und Tag `audio`, ws) – nur HTTP-Mapping
 tests/conftest.py         Fixtures: TestClient, Seed-Daten und daraus berechnete Erwartungen
-tests/test_*.py           Tests je Router (adventures inkl. Karten, scenes, table, audio), WebSocket (ws), Medien (media), CORS,
-                          Config, Migrationsstart (migrate), Seeder (seed), Migrationen 0002–0004 (migration_000n)
+tests/test_*.py           Tests je Router (adventures inkl. Szenen, scenes, table, audio), WebSocket (ws), Medien (media), CORS,
+                          Config, Migrationsstart (migrate), Seeder (seed), Migrationen 0002–0005 (migration_000n)
 alembic.ini               Alembic-Konfiguration (ohne DB-URL; Dateinamen <revision>_<slug>.py, ruff als post_write_hook)
 migrations/env.py         URL aus settings.database_url, target_metadata = Base.metadata, compare_type=True
 migrations/versions/      Migrationen, nummeriert (0001_initial_schema.py, 0002_…, 0003_adventure_and_player.py,
-                          0004_game_table.py)
+                          0004_game_table.py, 0005_drop_scene_main.py)
 scripts/export_openapi.py schreibt app.openapi() nach openapi.json (versioniert, Basis der Frontend-Typen)
 ```
 
@@ -138,8 +137,7 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
   `Settings` und in `.env.example` ergänzen.
 - Antworten sind Pydantic-Schemas in `app/schemas/` (`ConfigDict(from_attributes=True)`). Geben Route/Service
   ORM-Objekte zurück, steht das Schema als `response_model` im Decorator (`/scenes/{id}`, `/adventures*`: Services
-  liefern ORM-Objekte bzw. `None`); sonst reicht die Rückgabe-Annotation (`/adventures/{id}/maps/*` liefert
-  `list[MapEntry]`, `/table` liefert `GameTableState`, `/table/join` liefert `JoinInfo`). Kein `response_model=None`.
+  liefern ORM-Objekte bzw. `None`); sonst reicht die Rückgabe-Annotation (`/table` liefert `GameTableState`, `/table/join` liefert `JoinInfo`). Kein `response_model=None`.
   „Nicht gefunden“ meldet der Service mit `None`, die Route wirft `HTTPException(404, "Scene not found")` und
   dokumentiert sie per `responses={404: …}`. Fachliche Ablehnungen meldet der Service per Exception
   (`SceneNotInAdventureError`, `AdventureNotFoundError`), die Route übersetzt sie in 422.
@@ -177,8 +175,9 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
   ermittelt `content_type` und `size` aus der Datei; fehlt sie, warnt er im Log und legt den Eintrag ohne `size` an.
   Er befüllt nur leere Tabellen; Änderungen an der JSON erfordern einen DB-Reset (z. B.
   `docker compose -f compose.dev.yaml down -v` im Root).
-- `Scene.main == true` = Kampfszene (Mainmap), `false` = Nicht-Kampfszene (Sidemap). Alte Namen
-  (`battlemap`, `sidemap`, `fight`) nicht wieder einführen; `v1-roguelike` (Tags `archive/*`) ist verworfen.
+- Alle Szenen sind gleich: Die Spalte `scene.main` (Kampf-/Nicht-Kampfszene) hat Migration `0005` entfernt, die
+  Endpoints `/adventures/{id}/maps/main|side` gibt es nicht mehr. Alte Namen (`main`, `side`, `battlemap`, `sidemap`,
+  `fight`) nur noch in Asset-Pfaden, nicht wieder einführen; `v1-roguelike` (Tags `archive/*`) ist verworfen.
 - Bekannte Lücken und Altlasten: siehe `../docs/known-issues.md`.
 
 ## Migrationen

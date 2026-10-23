@@ -1,5 +1,5 @@
-"""Tests for /adventures: list, detail with players, scenes and maps per adventure (incl. trailing-slash redirects),
-PATCH, 404 for unknown IDs.
+"""Tests for /adventures: list, detail with players, scenes per adventure (incl. trailing-slash redirects), PATCH,
+404 for unknown IDs and for the removed maps endpoints.
 
 Tests that change data use the fixture `db` (tests/conftest.py): the API runs on a session in an outer transaction
 that is rolled back afterwards (commits become savepoints), so the shared test DB keeps the seed state. The persistence
@@ -19,35 +19,9 @@ ADVENTURE_FIELDS = {"id", "name", "description", "global_level", "active_scene_i
 PLAYER_FIELDS = {"id", "player_name", "character_name", "race", "character_class", "avatar"}
 NOT_FOUND = {"detail": "Adventure not found"}
 SCENE_NOT_IN_ADVENTURE = {"detail": "Scene does not belong to adventure"}
-SUB_PATHS = ["", "/scenes", "/maps/main", "/maps/side"]
-SCENE_FIELDS = {"id", "name", "description", "main", "wall_image", "ground_image", "tracks"}
+SUB_PATHS = ["", "/scenes"]
+SCENE_FIELDS = {"id", "name", "description", "wall_image", "ground_image", "tracks"}
 MEDIA_FIELDS = {"id", "name", "source"}
-
-
-def media_source(item: dict[str, Any]) -> str:
-    return f"/media/{item['storage_key']}"
-
-
-@pytest.fixture(scope="module")
-def expected_main_maps(seed: dict[str, Any]) -> list[dict[str, Any]]:
-    """Kampfszenen (main: true) with their ground image."""
-    media = seed["media"]
-    return [
-        {"id": scene_id, "source": media_source(media[scene["ground_image_id"] - 1])}
-        for scene_id, scene in enumerate(seed["scenes"], start=1)
-        if scene["main"] is True
-    ]
-
-
-@pytest.fixture(scope="module")
-def expected_side_maps(seed: dict[str, Any]) -> list[dict[str, Any]]:
-    """Nicht-Kampfszenen (main: false) with their wall image."""
-    media = seed["media"]
-    return [
-        {"id": scene_id, "source": media_source(media[scene["wall_image_id"] - 1])}
-        for scene_id, scene in enumerate(seed["scenes"], start=1)
-        if scene["main"] is False
-    ]
 
 
 def unknown_adventure_id(expected_adventures: list[dict[str, Any]]) -> int:
@@ -144,50 +118,11 @@ def test_scenes_of_adventure_return_empty_list_without_scenes(
     assert response.json() == []
 
 
-def test_main_maps_of_adventure_return_ground_image_per_fight_scene(
-    client: TestClient, expected_main_maps: list[dict[str, Any]]
-) -> None:
-    response = client.get("/adventures/1/maps/main")
-
-    assert response.status_code == 200
-    assert response.json() == expected_main_maps
-
-
-def test_side_maps_of_adventure_return_wall_image_per_non_fight_scene(
-    client: TestClient, expected_side_maps: list[dict[str, Any]]
-) -> None:
-    response = client.get("/adventures/1/maps/side")
-
-    assert response.status_code == 200
-    assert response.json() == expected_side_maps
-
-
 @pytest.mark.parametrize("map_type", ["main", "side"])
-def test_maps_trailing_slash_redirects_to_path_without_slash(client: TestClient, map_type: str) -> None:
-    response = client.get(f"/adventures/1/maps/{map_type}/", follow_redirects=False)
-
-    assert response.status_code == 307
-    assert response.headers["location"] == f"http://testserver/adventures/1/maps/{map_type}"
-
-
-@pytest.mark.parametrize("map_type", ["main", "side"])
-def test_maps_trailing_slash_followed_returns_same_maps(client: TestClient, map_type: str) -> None:
-    response = client.get(f"/adventures/1/maps/{map_type}/")
-
-    assert response.status_code == 200
-    assert response.json() == client.get(f"/adventures/1/maps/{map_type}").json()
-
-
-@pytest.mark.parametrize("map_type", ["main", "side"])
-def test_maps_of_adventure_return_empty_list_without_matching_scenes(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch, map_type: str
-) -> None:
-    monkeypatch.setattr(scene_crud, "read_scenes_by_main", lambda _db, _main, _adventure_id: [])
-
+def test_removed_maps_endpoints_return_404(client: TestClient, map_type: str) -> None:
     response = client.get(f"/adventures/1/maps/{map_type}")
 
-    assert response.status_code == 200
-    assert response.json() == []
+    assert response.status_code == 404
 
 
 def test_scenes_are_filtered_by_adventure(
@@ -198,24 +133,10 @@ def test_scenes_are_filtered_by_adventure(
 
     assert own.json() == expected_scene_details
     assert [scene["id"] for scene in other.json()] == [
-        other_adventure["main_scene_id"],
-        other_adventure["side_scene_id"],
+        other_adventure["first_scene_id"],
+        other_adventure["second_scene_id"],
     ]
-    assert other.json()[0]["ground_image"]["source"] == "/media/adventure-test/ground_main.jpg"
-
-
-def test_maps_are_filtered_by_adventure(client: TestClient, other_adventure: dict[str, int]) -> None:
-    other_main = client.get(f"/adventures/{other_adventure['id']}/maps/main")
-    other_side = client.get(f"/adventures/{other_adventure['id']}/maps/side")
-    own_ids = {
-        entry["id"] for map_type in ("main", "side") for entry in client.get(f"/adventures/1/maps/{map_type}").json()
-    }
-
-    assert other_main.json() == [
-        {"id": other_adventure["main_scene_id"], "source": "/media/adventure-test/ground_main.jpg"}
-    ]
-    assert other_side.json() == [{"id": other_adventure["side_scene_id"], "source": "/media/adventure-test/wall.jpg"}]
-    assert own_ids.isdisjoint({other_adventure["main_scene_id"], other_adventure["side_scene_id"]})
+    assert other.json()[0]["ground_image"]["source"] == "/media/adventure-test/ground_1.jpg"
 
 
 def test_patch_sets_and_clears_active_scene(client: TestClient, db: Session) -> None:
@@ -278,16 +199,16 @@ def test_patch_rejects_scene_of_other_adventure(
     before = client.get("/adventures/1").json()
 
     response = client.patch(
-        "/adventures/1", json={"active_scene_id": other_adventure["main_scene_id"], "global_level": 3}
+        "/adventures/1", json={"active_scene_id": other_adventure["first_scene_id"], "global_level": 3}
     )
 
     assert response.status_code == 422
     assert response.json() == SCENE_NOT_IN_ADVENTURE
     assert client.get("/adventures/1").json() == before
     own = client.patch(
-        f"/adventures/{other_adventure['id']}", json={"active_scene_id": other_adventure["main_scene_id"]}
+        f"/adventures/{other_adventure['id']}", json={"active_scene_id": other_adventure["first_scene_id"]}
     )
-    assert own.json()["active_scene_id"] == other_adventure["main_scene_id"]
+    assert own.json()["active_scene_id"] == other_adventure["first_scene_id"]
 
 
 @pytest.mark.parametrize("level", [0, 21, None])

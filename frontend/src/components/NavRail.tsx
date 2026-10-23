@@ -13,8 +13,8 @@ const Rail = styled.nav`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: ${(props) => props.theme.space[1]};
-  padding: ${(props) => props.theme.space[3]} 0;
+  gap: ${(props) => props.theme.space[2]};
+  padding: ${(props) => props.theme.space[5]} 0;
   min-height: 0;
   background-color: ${(props) => props.theme.colors.background};
   border-right: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.secondary};
@@ -26,11 +26,16 @@ const RailButton = styled.button<{ $isActive: boolean }>`
   width: ${(props) => props.theme.size.control.md};
   height: ${(props) => props.theme.size.control.md};
   padding: 0;
-  background-color: ${(props) => (props.$isActive ? props.theme.colors.primary : props.theme.colors.secondary)};
+  /* Like the entries in the panel: only the active item has a surface */
+  background-color: ${(props) => (props.$isActive ? props.theme.colors.primary : 'transparent')};
   color: ${(props) => (props.$isActive ? props.theme.colors.onPrimary : props.theme.colors.text.color)};
   border: none;
   border-radius: ${(props) => props.theme.radius.md};
   cursor: pointer;
+
+  &:hover {
+    background-color: ${(props) => (props.$isActive ? props.theme.colors.primary : props.theme.colors.secondary)};
+  }
 
   &:focus-visible {
     outline: ${(props) => props.theme.borderWidth.thick} solid ${(props) => props.theme.colors.primary};
@@ -39,8 +44,8 @@ const RailButton = styled.button<{ $isActive: boolean }>`
 
   svg {
     display: block;
-    width: ${(props) => props.theme.size.icon};
-    height: ${(props) => props.theme.size.icon};
+    width: ${(props) => props.theme.size.iconLg};
+    height: ${(props) => props.theme.size.iconLg};
   }
 `
 

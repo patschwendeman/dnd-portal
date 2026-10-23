@@ -154,7 +154,9 @@ def test_patch_of_inactive_adventure_also_pushes(
     with client.websocket_connect("/ws?screen=wall") as wall:
         before = receive_snapshot(wall)
 
-        client.patch(f"/adventures/{other_adventure['id']}", json={"active_scene_id": other_adventure["main_scene_id"]})
+        client.patch(
+            f"/adventures/{other_adventure['id']}", json={"active_scene_id": other_adventure["first_scene_id"]}
+        )
 
         assert receive_state(wall) == before
 
@@ -164,7 +166,7 @@ def test_switching_the_adventure_pushes_its_stored_scene(
 ) -> None:
     client.patch("/table", json={"active_adventure_id": 1})
     client.patch("/adventures/1", json={"active_scene_id": 5})
-    client.patch(f"/adventures/{other_adventure['id']}", json={"active_scene_id": other_adventure["main_scene_id"]})
+    client.patch(f"/adventures/{other_adventure['id']}", json={"active_scene_id": other_adventure["first_scene_id"]})
     with client.websocket_connect("/ws?screen=wall") as wall:
         assert receive_snapshot(wall)["active_scene_id"] == 5
 
@@ -173,7 +175,7 @@ def test_switching_the_adventure_pushes_its_stored_scene(
         # Directly the stored scene of the new adventure, without an intermediate state.
         assert receive_state(wall) == {
             "active_adventure_id": other_adventure["id"],
-            "active_scene_id": other_adventure["main_scene_id"],
+            "active_scene_id": other_adventure["first_scene_id"],
             "theme": "dark",
         }
 

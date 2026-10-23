@@ -88,7 +88,6 @@ def test_seed_data_creates_adventure_media_scenes_and_players_with_references(
                 "adventure_id": 1,
                 "name": "Scene",
                 "description": "Test",
-                "main": True,
                 "wall_image_id": 1,
                 "ground_image_id": 2,
                 "track_ids": [3, 4],

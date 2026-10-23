@@ -3,7 +3,6 @@
         "id": 1,
         "name": "Example Scene",
         "description": "This is an example scene for testing purposes.",
-        "main": true,
         "wall_image": {
             "id": 1,
             "name": "Castle Wall",
@@ -26,7 +25,6 @@
         "id": 2,
         "name": "Example Scene",
         "description": "This is an example scene for testing purposes.",
-        "main": true,
         "wall_image": {
             "id": 2,
             "name": "Castle Wall",
@@ -49,7 +47,6 @@
         "id": 3,
         "name": "Example Scene",
         "description": "This is an example scene for testing purposes.",
-        "main": true,
         "wall_image": {
             "id": 3,
             "name": "Castle Wall",
@@ -72,7 +69,6 @@
         "id": 4,
         "name": "Example Scene",
         "description": "This is an example scene for testing purposes.",
-        "main": false,
         "wall_image": {
             "id": 4,
             "name": "Castle Wall",

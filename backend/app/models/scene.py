@@ -24,7 +24,6 @@ class Scene(Base):
     adventure: Mapped["Adventure"] = relationship(back_populates="scenes", foreign_keys=[adventure_id])
     name: Mapped[str]
     description: Mapped[str] = mapped_column(Text)
-    main: Mapped[bool]
     wall_image_id: Mapped[int] = mapped_column(ForeignKey("media.id"))
     wall_image: Mapped["Media"] = relationship(foreign_keys=[wall_image_id])
     ground_image_id: Mapped[int] = mapped_column(ForeignKey("media.id"), unique=True)

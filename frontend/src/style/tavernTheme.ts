@@ -12,10 +12,6 @@ export const tavernTheme = {
     onPrimary: '#140701',
     error: '#8e1b1b',
     onError: '#ffffff',
-    badge: {
-      background: '#5a5a5a',
-      text: '#ffffff',
-    },
     qr: {
       foreground: '#000000',
       background: '#ffffff',

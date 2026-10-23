@@ -36,5 +36,6 @@ Der Spielleiter steuert das Geschehen über **Szenen**. Eine Szene umfasst immer
 - ein Bild auf dem **Wall Screen**,
 - ein oder mehrere **Sound-Elemente** (Musik).
 
-Szenen sind entweder **Kampfszenen** oder **Nicht-Kampfszenen** (z. B. Dorf, Shop, Taverne).
+Alle Szenen sind gleich (z. B. Dorf, Shop, Taverne, Kampfschauplatz). Ob gekämpft wird, entscheidet nicht die
+Szene: Einen Kampf startet der Spielleiter in jeder Szene (geplant, Menüpunkt „Kampf“ im Admin).
 Details: [domain.md](domain.md), [screens.md](screens.md).

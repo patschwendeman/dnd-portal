@@ -77,36 +77,34 @@ def db(client: TestClient, reset_audio: None, monkeypatch: pytest.MonkeyPatch) -
 
 @pytest.fixture
 def other_adventure(db: Session) -> dict[str, int]:
-    """A second adventure with one Kampfszene and one Nicht-Kampfszene (inside the rolled-back transaction)."""
+    """A second adventure with two scenes (inside the rolled-back transaction)."""
     from app.models import Adventure, Media, Scene
 
     adventure = Adventure(name="Zweites Abenteuer", description=None)
     media = [
         Media(kind="image", name=name, storage_key=f"adventure-test/{name}.jpg", content_type="image/jpeg")
-        for name in ("wall", "ground_main", "ground_side")
+        for name in ("wall", "ground_1", "ground_2")
     ]
     db.add_all([adventure, *media])
     db.flush()
-    wall, ground_main, ground_side = media
-    main_scene = Scene(
+    wall, ground_1, ground_2 = media
+    first_scene = Scene(
         adventure_id=adventure.id,
         name="Other fight",
         description="Elsewhere",
-        main=True,
         wall_image_id=wall.id,
-        ground_image_id=ground_main.id,
+        ground_image_id=ground_1.id,
     )
-    side_scene = Scene(
+    second_scene = Scene(
         adventure_id=adventure.id,
         name="Other village",
         description="Elsewhere",
-        main=False,
         wall_image_id=wall.id,
-        ground_image_id=ground_side.id,
+        ground_image_id=ground_2.id,
     )
-    db.add_all([main_scene, side_scene])
+    db.add_all([first_scene, second_scene])
     db.commit()
-    return {"id": adventure.id, "main_scene_id": main_scene.id, "side_scene_id": side_scene.id}
+    return {"id": adventure.id, "first_scene_id": first_scene.id, "second_scene_id": second_scene.id}
 
 
 @pytest.fixture(scope="session")
@@ -138,7 +136,6 @@ def expected_scene_details(seed: dict[str, Any]) -> list[dict[str, Any]]:
             "id": scene["id"],
             "name": scene["name"],
             "description": scene["description"],
-            "main": scene["main"],
             "wall_image": image(media[scene["wall_image_id"] - 1]),
             "ground_image": image(media[scene["ground_image_id"] - 1]),
             "tracks": [image(item) for item in media if item["id"] in scene["track_ids"]],

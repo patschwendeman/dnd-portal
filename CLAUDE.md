@@ -50,8 +50,9 @@ Teil-spezifischer Kontext (Befehle, Struktur, Konventionen): `frontend/CLAUDE.md
   Musik und Soundeffekte spielt die Wall, die per „AUDIO“ Audioausgabe ist; der Admin ist nur Fernbedienung (Zustand
   ebenfalls auf dem Server). Die Player-Screens laufen auf den Smartphones der Spieler (geöffnet per QR-Code im Admin),
   sind ebenfalls per WebSocket angebunden und übernehmen davon nur das Theme (pro Gerät abweichend wählbar).
-- **Begriffe:** „Kampfszene“ = `main: true` / Mainmap, „Nicht-Kampfszene“ = `main: false` / Sidemap.
-  Ältere Bezeichnungen `battlemap`/`sidemap`/`fight` tauchen noch in Asset-Pfaden und Tests auf.
+- **Begriffe:** Alle Szenen sind gleich (keine Kampf-/Nicht-Kampfszenen mehr, seit DND-29); ein Kampf soll künftig
+  in jeder Szene stattfinden können. Ältere Bezeichnungen (`main`, `side`, `fight`, `battlemap`) tauchen noch in
+  Asset-Pfaden auf (`music/main/`, `images/ground_screen/main_N.jpg`, `images/wall_screen/fight.jpg`).
 - **Sprache:** Docs auf Deutsch, Code-Bezeichner englisch. UI-Texte im Player Screen und die Markdown-Notizen sind deutsch.
 - **Verworfen:** `v1-roguelike` (Tags `archive/*-v1-roguelike`; gesperrte Karten, Loot, XP, Gegner) ist ein altes, verworfenes Konzept –
   nicht als Vorlage verwenden.

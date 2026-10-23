@@ -14,9 +14,7 @@ Theme des Spieltischs (`PATCH`) sowie die Audio-Befehle (`PATCH`/`POST`).
 | `GET /adventures` | alle Abenteuer (ID, Name, Beschreibung) |
 | `GET /adventures/{adventure_id}` | ein Abenteuer mit globalem Level, aktiver Szene und Spielern (404, wenn unbekannt) |
 | `PATCH /adventures/{adventure_id}` | aktive Szene (`active_scene_id`, nur Szenen des Abenteuers, `null` leert sie) und/oder `global_level` (1–20) setzen; 404 bzw. 422 |
-| `GET /adventures/{adventure_id}/scenes` | Szenen des Abenteuers mit Wall-/Ground-Bild und Tracks |
-| `GET /adventures/{adventure_id}/maps/main` | Kartenübersicht der Kampfszenen (`main: true`) des Abenteuers: Szenen-ID und Ground-Bild |
-| `GET /adventures/{adventure_id}/maps/side` | Kartenübersicht der Nicht-Kampfszenen (`main: false`) des Abenteuers: Szenen-ID und Wall-Bild |
+| `GET /adventures/{adventure_id}/scenes` | Szenen des Abenteuers mit Wall-/Ground-Bild und Tracks, nach ID (wie angelegt) |
 | `GET /scenes/{scene_id}` | eine Szene (404, wenn unbekannt) |
 | `GET /table` | Spieltisch-Zustand: aktives Abenteuer, dessen aktive Szene, Theme (`dark` \| `tavern`) |
 | `PATCH /table` | aktives Abenteuer (`active_adventure_id`, `null` leert es) und/oder `theme` setzen; 422 bei unbekanntem Abenteuer |

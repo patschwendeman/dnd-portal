@@ -64,9 +64,9 @@ Die Werte stehen nur in [tokens.ts](src/style/tokens.ts).
 |---|---|
 | `size.control.md` | Höhe aller Bedienelemente (Buttons, Navigation), Höhe und Breite von Icon-Buttons |
 | `size.control.lg` | Bedienelemente am Smartphone (Player): Höhe und Breite des Icon-Buttons, Mindestmaß für Höhe und Breite jedes Touch-Ziels. 48px nach Material (48dp), über Apples Mindestmaß (44pt) |
-| `size.icon` | alle Icons |
+| `size.icon` | alle Icons außer in den Menüpunkten der Navigationsleiste |
+| `size.iconLg` | Icons in den Menüpunkten der Navigationsleiste (Admin), 24px |
 | `size.scrollbar` | Breite der Scrollleiste (Notizen im Admin) |
-| `size.badge` | Kachelnummer |
 | `size.button.minWidth` | Mindestbreite von Text-Buttons |
 | `size.bar.md` | Top-Bar, Höhe der schwebenden Steuerleiste |
 | `size.bar.lg` | Bottom-Bar im Admin |
@@ -79,7 +79,7 @@ Ressourcen, das Overlay „Handy drehen“ steht im JSX zuletzt und verdeckt bei
 | Token | Wofür |
 |---|---|
 | `layer.base` | normaler Inhalt |
-| `layer.raised` | lokal innerhalb einer Komponente, z. B. Nummer über dem Kachelbild |
+| `layer.raised` | lokal innerhalb einer Komponente, z. B. ein Element über einem Bild (derzeit nicht verwendet) |
 | `layer.media` | Vollbild-Hintergrund (Bild, Video) |
 | `layer.grid` | Raster-Ebene auf dem Ground |
 | `layer.panel` | Overlay-Panel auf der Wall |
@@ -99,9 +99,9 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 
 | Abstand | Beziehung | Beispiele |
 |---|---|---|
-| `space.1` | innerhalb einer Gruppe | Icon-Gruppe, Navigationseinträge, Menüpunkte der Navigationsleiste, Button-Gruppe, Label über Überschrift |
-| `space.2` | kleine Kacheln, Label vor Inhalt in derselben Zeile | Kacheln im Admin, „Szenen“ → Kacheln (`margin-right` am Label plus `gap`) |
-| `space.3` | zusammengehörige Elemente, Label → Inhalt darunter | Musik-Button → Titel, Zeilen der Details, Kacheln auf der Wall, Dialog-Buttons, „Kampfszenen“ → Kachelraster, „Notizen“ → Navigation (`padding-bottom: space.2` am Label plus `gap` `space.1` der Spalte) |
+| `space.1` | innerhalb einer Gruppe | Icon-Gruppe, Navigationseinträge, Button-Gruppe, Label über Überschrift |
+| `space.2` | Label vor Inhalt in derselben Zeile, Menüpunkte untereinander | Menüpunkte der Navigationsleiste; sonst als Teil zusammengesetzter Abstände, z. B. am Label der Panel-Listen |
+| `space.3` | zusammengehörige Elemente, Label → Inhalt darunter | Musik-Button → Titel, Zeilen der Details, Dialog-Buttons, „Notizen“ bzw. „Szenen“ → Navigation (`padding-bottom: space.2` am Label plus `gap` `space.1` der Spalte) |
 | `space.4` | Gruppen in einer Leiste, Elemente im Dialog | Sound-Gruppen in der Top-Bar, Bild → Text → Buttons |
 | `space.5` | Bereiche | Spalten im Admin, Karten, Notizseiten, Gruppen in der Steuerleiste |
 | `space.6`–`space.8` | große Flächen | Abstand zum Bildschirmrand, Innenabstände nach der nächsten Tabelle |
@@ -114,7 +114,8 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 | Karte | `space.5` |
 | Dialog | `space.5` seitlich und unten |
 | Leisten (seitlich) | `space.5` |
-| Navigationsleiste (oben/unten) und ihr Panel im Admin | `space.3` |
+| Navigationsleiste im Admin | `space.5` oben/unten (seitlich aus `NAV_RAIL_WIDTH`) |
+| Panel der Navigationsleiste im Admin | `space.5` oben/unten, `space.4` seitlich |
 | Hinweisleiste | `space.1` oben/unten, `space.5` seitlich |
 | Wall-Panel | `space.6` |
 | Notizseite | `space.7` oben/unten, `space.8` seitlich |
@@ -128,7 +129,7 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 | `text.2xl` | `bold` | h1 in den Notizen |
 | `text.xl` | `semibold` | h2 in den Notizen, Überschrift des Wall-Panels, Zahl im Ressourcen-Button (Player) |
 | `text.lg` | `semibold` | Titel von Karte und Dialog, Ziffer der Zauberstufe I–IV (Player) |
-| `text.md` | `regular` / `medium` / `semibold` / `bold` | Standard und Listen in den Notizen (`ul`, `ol`, `li`, auch Absätze in Listeneinträgen des Inhaltsverzeichnisses) (`regular`), Hinweis im Overlay „Handy drehen“ (`medium`, Player), h3 und h4 in den Notizen (`semibold`), Abenteuer-Auswahl in der Top-Bar und Kachelnummer (`bold`) |
+| `text.md` | `regular` / `medium` / `semibold` / `bold` | Standard und Listen in den Notizen (`ul`, `ol`, `li`, auch Absätze in Listeneinträgen des Inhaltsverzeichnisses) (`regular`), Hinweis im Overlay „Handy drehen“ (`medium`, Player), h3 und h4 in den Notizen (`semibold`), Abenteuer-Auswahl in der Top-Bar (`bold`) |
 | `text.sm` | `regular` / `medium` / `semibold` | Werte, Beschreibungen (`regular`), Navigation, Musiktitel und Text der Hinweisleiste (`medium`), Buttons, Slider-Wert, h5 und h6 in den Notizen (`semibold`) |
 | `text.xs` | `semibold` | Labels |
 | `text.reading` | `regular` | nur Fließtext (Absätze) in den Notizen |
@@ -138,20 +139,19 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 **Gewichte:** nur die aus der Schrift-Hierarchie. Andere Gewichte gibt es nicht.
 
 **Großbuchstaben und Laufweite:** Großbuchstaben nur bei Labels und bei Button-Texten, die schon groß geschrieben
-sind (BATTLE, BLACK). Dann immer mit `letterSpacing.label`. Alles andere hat keine Laufweite, auch Überschriften,
+sind (WORLD, BLACK). Dann immer mit `letterSpacing.label`. Alles andere hat keine Laufweite, auch Überschriften,
 Titel und normale Texte wie „Confirm“.
 
 **Radien**
 
 | Element | Radius |
 |---|---|
-| Kachel im Admin | `radius.sm` |
-| Kachel auf der Wall, Weltkarte | `radius.md` |
+| Weltkarte | `radius.md` |
 | Bedienelemente (Buttons, Navigation, Icon-Buttons, Ressourcen-Buttons im Player) | `radius.md` |
 | Zauber- und Spezialplatz (Player) | `radius.sm` |
 | Karte, Notizseite, Wall-Panel, Dialog | `radius.lg` |
 | schwebende Leiste | `radius.xl` |
-| Badge, Slider-Schiene | `radius.pill` |
+| Slider-Schiene | `radius.pill` |
 
 Verschachtelte Flächen: **äußerer Radius = innerer Radius + Innenabstand.** Bei großem Innenabstand (ab
 `space.5`) gilt die Regel nicht, dort reicht `radius.lg`.
@@ -160,25 +160,23 @@ Verschachtelte Flächen: **äußerer Radius = innerer Radius + Innenabstand.** B
 Dreieck der Ressourcen) sind SVG (`<circle>`, `<polygon>`, `viewBox 0 0 20 20`) mit `fill` aus einer Farbrolle, keine
 CSS-Dreiecke über `border-width`.
 
-**Rahmen und Linien:** `borderWidth.thin` für Trennlinien, Ränder von Seiten und Kacheln. `borderWidth.thick` nur
+**Rahmen und Linien:** `borderWidth.thin` für Trennlinien und Ränder von Seiten. `borderWidth.thick` nur
 für Aktiv-Markierungen. Senkrechte Trennlinien sind so hoch wie die Icons daneben (`size.icon`); Ausnahme sind die
 Linien rechts an Navigationsleiste und Panel im Admin, die Flächen abgrenzen und über die volle Höhe laufen.
 
-**Aktiv-Zustand:** Kacheln bekommen eine Outline in `borderWidth.thick` mit `outline-offset: borderWidth.thick`.
-Kein Leuchten (`box-shadow`). Buttons und Navigation zeigen den Aktiv-Zustand über die Farbe
+**Aktiv-Zustand:** Kein Leuchten (`box-shadow`). Buttons und Navigation zeigen den Aktiv-Zustand über die Farbe
 ([2.4](#24-zustände)).
 
-**Bilder:** Szenenbilder immer im Format 16:9 (`aspect-ratio: 16 / 9`) mit `object-fit: cover`. Zulässige Alternative
-bei Kacheln: `padding-top: 56.25%` mit absolut positioniertem Bild (`MapElement`). Der Kachelrand ist dort eine
-`outline`, zählt also nicht zur Höhe: Kacheln bleiben exakt 16:9. Karten (Weltkarte) mit `object-fit: contain`.
+**Bilder:** Szenenbilder immer im Format 16:9 (`aspect-ratio: 16 / 9`) mit `object-fit: cover`. Karten (Weltkarte)
+mit `object-fit: contain`.
 Vollbild-Hintergründe mit `position: fixed`, `inset: 0`, `object-fit: cover`.
 
-**Zahlen:** `font-variant-numeric: tabular-nums`, wo Zahlen sich ändern oder untereinander stehen (Kachelnummer,
-Slider-Wert, Zahl im Ressourcen-Button).
+**Zahlen:** `font-variant-numeric: tabular-nums`, wo Zahlen sich ändern oder untereinander stehen (Slider-Wert,
+Zahl im Ressourcen-Button).
 
 **Übergangsdauern:** bewusst **keine** Tokens, sondern Werte in der jeweiligen Komponente.
 
-**UI-Texte:** Admin, Wall und Ground verwenden die vorhandenen Bezeichnungen (teils englisch, z. B. BATTLE, Confirm).
+**UI-Texte:** Admin, Wall und Ground verwenden die vorhandenen Bezeichnungen (teils englisch, z. B. WORLD, Confirm).
 Im Player sind alle Texte deutsch, auch der Hinweis „Bitte das Handy quer halten“.
 
 ### 1.5 Bausteine
@@ -192,7 +190,7 @@ Aufbau je Baustein in [components.md](docs/design/components.md): [Icon-Button](
 [Navigationseintrag](docs/design/components.md#navigationseintrag), [Navigationsleiste](docs/design/components.md#navigationsleiste) (Admin), [Label](docs/design/components.md#label),
 [Karte](docs/design/components.md#karte), [Ressourcen-Button](docs/design/components.md#ressourcen-button) (Player),
 [Overlay-Panel](docs/design/components.md#overlay-panel) (Wall), [Schwebende Steuerleiste](docs/design/components.md#schwebende-steuerleiste)
-(Wall, Ground), [Kachel](docs/design/components.md#kachel), [Nummern-Badge](docs/design/components.md#nummern-badge),
+(Wall, Ground),
 [Dialog](docs/design/components.md#dialog), [Dialog „Spieler verbinden“](docs/design/components.md#dialog-spieler-verbinden) (Admin), [Top-Bar](docs/design/components.md#top-bar),
 [Theme-Menü](docs/design/components.md#theme-menü) (Player), [Bottom-Bar](docs/design/components.md#bottom-bar) (Admin), [Hinweisleiste](docs/design/components.md#hinweisleiste) (Admin),
 [Slider](docs/design/components.md#slider) (Ground).
@@ -224,17 +222,15 @@ Wechselt mit dem Theme.
 | Rolle | Bedeutung | Verwendung |
 |---|---|---|
 | `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Navigationsleiste und Panel im Admin, Wall-Panel, Nebenaktion ([2.4](#24-zustände)) |
-| `secondary` | erhöhte Fläche | Karten, Dialog, Nach-oben-Button, Kachel-Platzhalter, Slider-Schiene, Hintergrund der Wall, Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel im Admin, inaktiver Zustand ([2.4](#24-zustände)) |
+| `secondary` | erhöhte Fläche | Karten, Dialog, Nach-oben-Button, Slider-Schiene, Hintergrund der Wall, Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel im Admin, inaktiver Zustand ([2.4](#24-zustände)) |
 | `dark` | tiefste Fläche | Bottom-Bar, schwebende Steuerleiste |
 | `primary` | Akzent, aktiv | Links, Slider-Füllung, aktiver Zustand ([2.4](#24-zustände)) |
-| `border` | Linien | Trennlinien in Karten und Top-Bar, Ränder von Notizseiten und Kacheln, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |
+| `border` | Linien | Trennlinien in Karten und Top-Bar, Ränder von Notizseiten, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |
 | `overlay` | Abdunklung | Hintergrund hinter dem Dialog |
 | `text.color` | Vordergrund | Text, Icon-Füllung, Slider-Griff |
 | `onPrimary` | Vordergrund auf Akzent | aktiver Zustand ([2.4](#24-zustände)) |
 | `error` | Fläche für Fehler | Hinweisleiste im Admin |
 | `onError` | Vordergrund auf `error` | Text, Icon und Fokus-Outline der Hinweisleiste |
-| `badge.background` | Fläche der Kachelnummer | Nummern-Badge auf den Kacheln der Wall |
-| `badge.text` | Text der Kachelnummer | Zahl im Nummern-Badge |
 | `qr.foreground` · `qr.background` | Module und Grund des QR-Codes | QR-Code im Dialog „Spieler verbinden“ (Admin); dunkel auf hell, damit Kameras ihn sicher erkennen |
 | `resource.<art>.strong` | kräftiger Ton einer Ressource (`action`, `bonus`, `movement`, `spell`, `special`) | Rahmen des Ressourcen-Buttons, verfügbare Icons und Plätze (Player) |
 | `resource.<art>.muted` | dunkler Ton einer Ressource | Fläche des Ressourcen-Buttons (Player) |
@@ -243,15 +239,15 @@ Wechselt mit dem Theme.
 ### 2.3 Themes
 
 Zwei Themes: Dark (`darkTheme`, [darkTheme.ts](src/style/darkTheme.ts)) und Tavern (`tavernTheme`,
-[tavernTheme.ts](src/style/tavernTheme.ts)). `resource.*`, `badge.*`, `qr.*`, `error` und `onError` sind in beiden Themes
+[tavernTheme.ts](src/style/tavernTheme.ts)). `resource.*`, `qr.*`, `error` und `onError` sind in beiden Themes
 gleich, weil sie Bedeutung tragen, nicht Stimmung. Die `resource.*`-Töne sind so gewählt, dass alle Grafik-Paare 3:1 erreichen. Werte: [contrast.md](docs/design/contrast.md#theme-werte).
 
 ### 2.4 Zustände
 
 | Zustand | Rolle | Beispiele |
 |---|---|---|
-| aktiv / ausgewählt | Fläche `primary`, Text und Icons `onPrimary`. Kachel: Outline in `primary` ([1.4](#14-regeln)) | aktive Buttons und Navigation, aktiver Menüpunkt der Navigationsleiste, aktive Kachel, Confirm, Play-Button während die Musik läuft |
-| inaktiv / normal | `secondary` | inaktive Buttons und Navigation, Play-Button ohne Musik |
+| aktiv / ausgewählt | Fläche `primary`, Text und Icons `onPrimary` | aktive Buttons und Navigation, aktiver Menüpunkt der Navigationsleiste, aktive Szene im Panel „Szenen“, Confirm, Play-Button während die Musik läuft |
+| inaktiv / normal | `secondary` | inaktive Buttons und Navigation, Play-Button ohne Musik; Ausnahme: inaktive Menüpunkte der Navigationsleiste und Panel-Einträge im Admin ohne eigene Fläche, `secondary` nur bei Hover ([Navigationsleiste](docs/design/components.md#navigationsleiste), [Navigationseintrag](docs/design/components.md#navigationseintrag)) |
 | Abbrechen, Nebenaktion | `background` | Decline-Button |
 | Fläche auf Fläche | `background` → `secondary` → `dark` | welche Fläche welche Rolle hat: [2.2](#22-rollen) |
 | Linie | `border`, nie `text.color` | Ausnahme: `secondary` für die Linie unter der Top-Bar und die Linien rechts an Navigationsleiste und Panel im Admin ([2.2](#22-rollen)) |
@@ -260,7 +256,7 @@ gleich, weil sie Bedeutung tragen, nicht Stimmung. Die `resource.*`-Töne sind s
 
 Einzige Ausnahme von [2.1](#21-prinzip) ist `gridColorMap` in `GroundScreen` (`black`, `white`, `transparent` für die
 Prop `gridColor` an `GridOverlay`): Die Gitterfarbe wählt der Spielleiter, sie ist eine Funktion, keine Gestaltung.
-Die Farben von Kachelnummer und Ressourcen sind Rollen ([2.2](#22-rollen)).
+Die Farben der Ressourcen sind Rollen ([2.2](#22-rollen)).
 
 ### 2.6 Kontrast
 
@@ -270,6 +266,6 @@ Geprüft nach WCAG 2.1. Ziel AA:
 - **Bedienelemente und Grafik:** 3:1.
 - **Ausnahme:** `border` im Dark-Theme und die Linien in `secondary` auf `background` (unter der Top-Bar, rechts an
   Navigationsleiste und Panel im Admin) in beiden Themes verfehlen 3:1 bewusst: Trennlinien sind Gestaltung, kein
-  Bedienelement, und WCAG verlangt 3:1 nur für die Grenzen von Bedienelementen. Kacheln sind über ihre Bilder erkennbar.
+  Bedienelement, und WCAG verlangt 3:1 nur für die Grenzen von Bedienelementen.
 
 Messwerte je Farbpaar und Anmerkungen: [contrast.md](docs/design/contrast.md#kontrastmessung).

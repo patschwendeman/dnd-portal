@@ -2,8 +2,8 @@ import { Builder, By, error, until, WebDriver, WebElement } from 'selenium-webdr
 
 // Lives outside steps/ so jest (testMatch: __tests__/bdd/steps/*.ts) does not run it as a test file
 const BASE_URL = 'http://localhost:5173'
-// Scene media are served by the backend through the proxy of the frontend (VITE_API_URL default /api/). Tiles carry
-// the path as rendered (data-test-id), the src property of an image is resolved against the page.
+// Scene media are served by the backend through the proxy of the frontend (VITE_API_URL default /api/). The src
+// property of an image is resolved against the page.
 const MEDIA_PATH = '/api/media'
 const MEDIA_BASE_URL = `${BASE_URL}${MEDIA_PATH}`
 
@@ -36,13 +36,13 @@ const waitForElementGone = async (driver: WebDriver, selector: string): Promise<
   await driver.wait(async () => (await driver.findElements(By.css(selector))).length === 0, WAIT_TIMEOUT)
 }
 
-// The Admin marks the tile as active only with the push of the server, so afterwards the scene is saved and other
-// screens receive it when they connect
-const confirmDialog = async (driver: WebDriver, tileSelector: string): Promise<void> => {
+// The Admin marks the scene entry as active only with the push of the server, so afterwards the scene is saved and
+// other screens receive it when they connect
+const confirmDialog = async (driver: WebDriver, entrySelector: string): Promise<void> => {
   await clickElement(driver, '[data-test-id="confirm-button"]')
   await driver.wait(async () => {
-    const tiles = await driver.findElements(By.css(tileSelector))
-    return tiles.length > 0 && (await tiles[0].getAttribute('data-active')) === 'true'
+    const entries = await driver.findElements(By.css(entrySelector))
+    return entries.length > 0 && (await entries[0].getAttribute('data-active')) === 'true'
   }, WAIT_TIMEOUT)
 }
 
@@ -74,6 +74,7 @@ export {
   BASE_URL,
   MEDIA_BASE_URL,
   MEDIA_PATH,
+  WAIT_TIMEOUT,
   buildDriver,
   clickElement,
   confirmDialog,

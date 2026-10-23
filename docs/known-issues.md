@@ -1,11 +1,13 @@
 # Bekannte Lücken, Bugs & Altlasten
 
-Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-10-10, Alembic-Migrationen und Medien im Backend am 2026-10-11, Spieltisch per WebSocket am 2026-10-18, Audio auf der Wall am 2026-10-18, Smartphones angebunden am 2026-10-18. Punkte mit „(ungeprüft)“ wurden aus dem Code abgeleitet, aber nicht zur Laufzeit verifiziert.
+Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-10-10, Alembic-Migrationen und Medien im Backend am 2026-10-11, Spieltisch per WebSocket am 2026-10-18, Audio auf der Wall am 2026-10-18, Smartphones angebunden am 2026-10-18, Szenen ohne Kampf-Unterscheidung am 2026-10-24. Punkte mit „(ungeprüft)“ wurden aus dem Code abgeleitet, aber nicht zur Laufzeit verifiziert.
 
 ## Lücken gegenüber der Vision
 
 - Player-Ressourcen sind nur lokal, nicht persistiert und nicht pro Charakter konfigurierbar.
 - Keine NPC-, Charakter- oder Kampfdaten im Datenmodell – nur Markdown-Notizen.
+- Einen Kampf kann der Spielleiter noch nicht starten: Seit DND-29 sind alle Szenen gleich, der Menüpunkt „Kampf“
+  im Admin (und was Wall und Ground bei einem Kampf zeigen) folgt in einem eigenen Task.
 - Soundeffekte und Notizen sind nicht mit Szenen verknüpft (nur Frontend-Dateien).
 - Keine gebietsspezifische Übersichtskarte auf dem Wall Screen; Weltkarte ist ein fest eingebundenes Bild.
 - Doppelte Mediendatei: `mapOverview.jpg` (Weltkarte im Wall Screen) liegt zusätzlich zu `media/` als Kopie in

@@ -9,12 +9,11 @@ import { DocumentNavigation } from '../components/DocumentNavigation'
 import { DocumentReader } from '../components/DocumentReader'
 import { ErrorBar } from '../components/ErrorBar'
 import { Label } from '../components/Label'
-import { MapOverview } from '../components/MapOverview'
 import { NavRail, NavRailItem } from '../components/NavRail'
-import { SideMaps } from '../components/SideMaps'
+import { SceneNavigation } from '../components/SceneNavigation'
 import { TopBar } from '../components/TopBar'
 import { ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext } from '../context/context'
-import { AdventureSummary, Map, SceneDetail, SoundName } from '../models/models'
+import { AdventureSummary, SceneDetail, SoundName } from '../models/models'
 import {
     getAdminData,
     getAdventures,
@@ -37,10 +36,11 @@ import { ReactSVG } from 'react-svg'
 import notesIcon from '/assets/icons/notes.svg'
 import playIcon from '/assets/icons/play.svg'
 import pauseIcon from '/assets/icons/pause.svg'
+import scenesIcon from '/assets/icons/scenes.svg'
 
 // Icon button (size.control.md, 40px) plus space.3 on both sides
 const NAV_RAIL_WIDTH = '64px'
-const LEFT_COLUMN_WIDTH = '200px'
+const LEFT_COLUMN_WIDTH = '240px'
 const RIGHT_COLUMN_WIDTH = '400px'
 const VOLUME_SLIDER_WIDTH = '120px'
 const VOLUME_SLIDER_THUMB_SIZE = '16px'
@@ -74,7 +74,7 @@ const Main = styled.div<{ $isPanelOpen: boolean }>`
 const NavPanel = styled.div`
     min-height: 0;
     overflow-y: auto;
-    padding: ${(props) => props.theme.space[3]};
+    padding: ${(props) => props.theme.space[5]} ${(props) => props.theme.space[4]};
     background-color: ${(props) => props.theme.colors.background};
     border-right: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.secondary};
 `
@@ -94,22 +94,6 @@ const SidebarRight = styled.div`
     align-items: stretch;
     gap: ${(props) => props.theme.space[5]};
     min-height: 0;
-`
-
-const SidebarMapContainer = styled.div`
-    width: 100%;
-    height: auto;
-    display: block;
-    padding: ${(props) => props.theme.space[5]};
-    border-radius: ${(props) => props.theme.radius.lg};
-    background-color: ${(props) => props.theme.colors.secondary};
-`
-
-const SectionHead = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: ${(props) => props.theme.space[3]};
 `
 
 const BottomBar = styled.div`
@@ -209,9 +193,6 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     const [dialogueVisibility, setDialogueVisibility] = useState<boolean>(false)
     const [sceneOption, setSceneOption] = useState<SceneDetail | undefined>()
 
-    const [mainmaps, setMainmaps] = useState<Map[]>([])
-    const [sidemaps, setSidemaps] = useState<Map[]>([])
-
     // Neither kept on the server nor in localStorage: after a reload the notes panel is open again
     const [openPanel, setOpenPanel] = useState<string | null>('docs')
     const [selectedStoryIndex, setSelectedStoryIndex] = useState<number>(0)
@@ -262,8 +243,6 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
         let stale = false
 
         if (loadedAdventureId === null) {
-            setMainmaps([])
-            setSidemaps([])
             setScenesDetails([])
             setAdminDataFailed(false)
             return
@@ -271,9 +250,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
 
         loadLatest(
             () => getAdminData(loadedAdventureId),
-            ([sidemaps, mainmaps, scenesDetails]) => {
-                setMainmaps(mainmaps)
-                setSidemaps(sidemaps)
+            (scenesDetails) => {
                 setScenesDetails(scenesDetails)
                 setAdminDataFailed(false)
             },
@@ -381,7 +358,11 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
         playSound(name).catch((err) => console.error('Error playing sound:', err))
     }
 
+    // The active scene is already on the game table: no dialog, and no write that would only switch the track
     const handleSceneSelection = (sceneId: number) => {
+        if (sceneId === activeSceneId) {
+            return
+        }
         const scene = filterSceneByKey('id', sceneId, scenesDetails)
         if (!scene) {
             throw new Error('No Scene to select not found')
@@ -406,6 +387,12 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
             name: 'Notizen',
             icon: notesIcon,
             panel: <DocumentNavigation selectedStoryIndex={selectedStoryIndex} onSelectStory={setSelectedStoryIndex} />,
+        },
+        {
+            id: 'scenes',
+            name: 'Szenen',
+            icon: scenesIcon,
+            panel: <SceneNavigation scenes={scenesDetails} onSelectScene={handleSceneSelection} />,
         },
     ]
     const openNavItem = navItems.find((item) => item.id === openPanel)
@@ -453,19 +440,6 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
                         <DocumentReader selectedStoryIndex={selectedStoryIndex} />
                         <SidebarRight>
                             <DetailsSideBar activeScene={ activeScene }/>
-                            <SidebarMapContainer>
-                                <SectionHead>
-                                    <Label>Kampfszenen</Label>
-                                    <Label>{ mainmaps.length }</Label>
-                                </SectionHead>
-                                <MapOverview
-                                    mainmaps={mainmaps}
-                                    gap={theme.space[2]}
-                                    padding='0'
-                                    handleSceneSelection={handleSceneSelection}
-                                    isAdminScreen={ true }
-                                />
-                            </SidebarMapContainer>
                         </SidebarRight>
                     </Content>
                 </Main>
@@ -495,7 +469,7 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
                             />
                         </Box>
                     </Music>
-                    <SideMaps sidemaps={sidemaps} handleSceneSelection={handleSceneSelection} />
+                    <div />
                     <div />
                 </BottomBar>
             </Screen>

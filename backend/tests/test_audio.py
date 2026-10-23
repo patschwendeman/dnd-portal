@@ -170,7 +170,7 @@ def test_scene_change_loads_the_new_playlist_and_keeps_playing(
 def test_scene_without_tracks_gives_an_empty_playlist(
     client: TestClient, db: Session, other_adventure: dict[str, int]
 ) -> None:
-    client.patch(f"/adventures/{other_adventure['id']}", json={"active_scene_id": other_adventure["main_scene_id"]})
+    client.patch(f"/adventures/{other_adventure['id']}", json={"active_scene_id": other_adventure["first_scene_id"]})
     client.patch("/table/audio", json={"playing": True})
 
     client.patch("/table", json={"active_adventure_id": other_adventure["id"]})

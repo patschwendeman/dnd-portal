@@ -10,11 +10,11 @@ Regel: [1.3](../../DESIGN.md#13-layout-konstanten).
 | Wert | Wofür | Ort |
 |---|---|---|
 | 64px | Navigationsleiste im Admin (`NAV_RAIL_WIDTH`: Icon-Button `size.control.md` plus `space.3` auf beiden Seiten) | `AdminScreen` |
-| 200px · 400px | Panel neben der Navigationsleiste und rechte Spalte im Admin (`LEFT_COLUMN_WIDTH`, `RIGHT_COLUMN_WIDTH`) | `AdminScreen` |
+| 240px · 400px | Panel neben der Navigationsleiste und rechte Spalte im Admin (`LEFT_COLUMN_WIDTH`, `RIGHT_COLUMN_WIDTH`) | `AdminScreen` |
 | 240px | Außenspalten der Top-Bar (`OUTER_COLUMN_WIDTH`) | `TopBar` |
 | 320px | maximale Höhe der Abenteuer-Liste (`ADVENTURE_LIST_MAX_HEIGHT`) | `AdventureSelect` |
 | 880px · 68ch | maximale Breite einer Notizseite, maximale Zeilenlänge (`PAGE_MAX_WIDTH`, `LINE_MAX_WIDTH`) | `DocumentReader` |
-| 96px | Label-Spalte der Szenen-Details (`LABEL_COLUMN_WIDTH`), Kachelbreite der Nicht-Kampfszenen (`TILE_WIDTH`) | `DetailsSideBar`, `SideMaps` |
+| 96px | Label-Spalte der Szenen-Details (`LABEL_COLUMN_WIDTH`) | `DetailsSideBar` |
 | 1440px | maximale Breite des Wall-Panels (`OVERLAY_PANEL_MAX_WIDTH`), siehe [Breite des Overlay-Panels](#breite-des-overlay-panels) | `WallScreen` |
 | 104px | Platz für die Steuerleiste (24 + 56 + 24, `CONTROL_BAR_CLEARANCE`) | `ScreenControlBar` |
 | 600px | Breite des Dialogs (`DIALOG_WIDTH`) | `Dialogue` |
@@ -32,23 +32,16 @@ Das Panel auf der Wall nimmt den kleinsten von drei Werten (`OverlayPanel` in `W
 
 - `OVERLAY_PANEL_MAX_WIDTH` als Obergrenze,
 - `100vw − 2 × space.8` (Rand links und rechts),
-- die verfügbare Höhe als Breite, abgeleitet aus Spalten `c` und Zeilen `r` des Kampfszenen-Rasters
-  (`getGridLayout`, `c = ⌈√n⌉`, `r = ⌈n / c⌉`) und dem Abstand `g = space.3`:
-  `(H − (r − 1) × g) × 16 / 9 × c / r + (c − 1) × g + 2 × space.6` mit
+- die verfügbare Höhe als Breite für ein einzelnes 16:9-Bild (die Weltkarte): `H × 16 / 9 + 2 × space.6` mit
   `H = 100vh − space.7 − CONTROL_BAR_CLEARANCE − 2 × space.6 − text.xl-Zeilenhöhe − space.5`.
-  `H` ist die Höhe, die nach Abstand oben, Steuerleiste, Innenabstand und Kopfzeile für das Raster bleibt; so haben
-  alle Zeilen mit Kacheln in 16:9 über der Steuerleiste Platz. Ohne Kampfszenen (`r = 0`) entfällt dieser Wert.
-
-Bei 25 Kacheln (5 × 5) ergibt das `(H − 4 × space.3) × 16 / 9 + 4 × space.3 + 2 × space.6`. Die Weltkarte nutzt
-dieselbe Breite; bei quadratischem Raster (`c = r`, z. B. 16, 24, 25) ist sie (16:9 ohne Abstände) nicht höher als
-das Raster und passt. Bei `r < c` (z. B. 26–30 Kacheln) ist das Panel breiter als die Höhe erlaubt, die Weltkarte
-kann dann über die Steuerleiste reichen.
+  `H` ist die Höhe, die nach Abstand oben, Steuerleiste, Innenabstand und Kopfzeile für das Bild bleibt; so passt die
+  Weltkarte vollständig über die Steuerleiste.
 
 ## Screen-Layouts
 
 | Screen | Aufbau |
 |---|---|
-| Admin | Grid in Zeilen Top-Bar / `1fr` / Bottom-Bar (Höhen nach [1.2](../../DESIGN.md#12-tokens)). Bei einem Lade- oder Speicherfehler kommt unter der Top-Bar eine Zeile `auto` für die [Hinweisleiste](components.md#hinweisleiste) hinzu, ohne Fehler gibt es diese Zeile nicht. Mittlere Zeile: Grid in Spalten `NAV_RAIL_WIDTH LEFT_COLUMN_WIDTH 1fr` ohne Innenabstand und `gap`: links die [Navigationsleiste](components.md#navigationsleiste), daneben ihr Panel, beide bündig zwischen Top-Bar und Bottom-Bar, mit Fläche `background` wie die Top-Bar und rechts je einer Linie `borderWidth.thin` in `secondary`; bei eingeklapptem Panel entfällt die Spalte `LEFT_COLUMN_WIDTH`, die Notizen werden breiter. Die Spalte `1fr` ist ein Grid `1fr RIGHT_COLUMN_WIDTH` mit Innenabstand `space.5` und `gap` nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“: Mitte Notizen, rechts Karten. |
-| Wall | Vollbild-Hintergrund, darüber das Overlay-Panel (BATTLE: Kachelraster, WORLD: Weltkarte) und die schwebende Steuerleiste |
+| Admin | Grid in Zeilen Top-Bar / `1fr` / Bottom-Bar (Höhen nach [1.2](../../DESIGN.md#12-tokens)). Bei einem Lade- oder Speicherfehler kommt unter der Top-Bar eine Zeile `auto` für die [Hinweisleiste](components.md#hinweisleiste) hinzu, ohne Fehler gibt es diese Zeile nicht. Mittlere Zeile: Grid in Spalten `NAV_RAIL_WIDTH LEFT_COLUMN_WIDTH 1fr` ohne Innenabstand und `gap`: links die [Navigationsleiste](components.md#navigationsleiste), daneben ihr Panel, beide bündig zwischen Top-Bar und Bottom-Bar, mit Fläche `background` wie die Top-Bar und rechts je einer Linie `borderWidth.thin` in `secondary`; bei eingeklapptem Panel entfällt die Spalte `LEFT_COLUMN_WIDTH`, die Notizen werden breiter. Die Spalte `1fr` ist ein Grid `1fr RIGHT_COLUMN_WIDTH` mit Innenabstand `space.5` und `gap` nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“: Mitte Notizen, rechts die Karte „Aktive Szene“. Bottom-Bar: links Musik, Mitte und rechts leer. |
+| Wall | Vollbild-Hintergrund, darüber das Overlay-Panel (WORLD: Weltkarte) und die schwebende Steuerleiste (WORLD / OFF, AUDIO) |
 | Ground | Vollbild-Medium (Bild oder Video), Raster-Ebene, schwebende Steuerleiste mit Raster-Optionen und Slider |
 | Player | Smartphone im Querformat. Spalte, vertikal mittig, `gap` `space.4`: Settings-Button mit Theme-Menü (klappt über der Karte auf), darunter Karte mit zwei Zeilen à vier Ressourcen-Buttons (Aktion, Bonusaktion, Bewegung, Spezial / Zauberplätze I–IV), `gap` `space.4`. Im Hochformat deckt ein Overlay mit Hinweis alles ab. Ab 344px Höhe und etwa 568px Breite. |

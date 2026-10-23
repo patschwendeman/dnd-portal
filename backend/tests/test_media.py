@@ -81,15 +81,6 @@ def test_scene_sources_point_to_media_paths(client: TestClient, seed: dict[str, 
             assert item["source"].removeprefix("/media/") in storage_keys
 
 
-@pytest.mark.parametrize("maptype", ["main", "side"])
-def test_map_sources_point_to_media_paths(client: TestClient, seed: dict[str, Any], maptype: str) -> None:
-    storage_keys = {item["storage_key"] for item in seed["media"]}
-
-    for entry in client.get(f"/adventures/1/maps/{maptype}").json():
-        assert entry["source"].removeprefix("/media/") in storage_keys
-        assert entry["source"].startswith("/media/")
-
-
 def test_every_seeded_media_file_exists_in_the_repository(seed: dict[str, Any]) -> None:
     # In the API container the tests live in /app/tests: the parent is no repository (Debian has its own /media).
     if not (REPO_ROOT / "backend").is_dir() or not REPO_MEDIA_DIR.is_dir():

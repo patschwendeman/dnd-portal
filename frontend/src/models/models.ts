@@ -19,12 +19,3 @@ export type JoinInfo = Schemas['JoinInfo']
 export type AudioState = Schemas['AudioState']
 export type AudioUpdate = Schemas['AudioUpdate']
 export type SoundName = Schemas['SoundRequest']['name']
-
-// Response of /adventures/{id}/maps/main and /adventures/{id}/maps/side: the backend sends the scene id as id
-export type MapResponse = Schemas['MapEntry']
-
-// A tile in the map overviews, selecting it selects the scene with this id
-export interface Map {
-  sceneId: number
-  source?: string
-}

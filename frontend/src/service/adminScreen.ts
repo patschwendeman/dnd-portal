@@ -7,8 +7,7 @@ import {
   AudioUpdate,
   GameTableState,
   JoinInfo,
-  Map,
-  MapResponse,
+  SceneDetail,
   SoundName,
   Theme,
 } from '../models/models'
@@ -21,12 +20,8 @@ export const getAdventure = async (id: number): Promise<AdventureDetail> => {
   return loadData(`adventure ${id}`, `adventures/${id}`)
 }
 
-export const getAdminData = async (adventureId: number) => {
-  const sidemaps = await loadData('sidemaps', `adventures/${adventureId}/maps/side`)
-  const mainmaps = await loadData('mainmaps', `adventures/${adventureId}/maps/main`)
-  const scenesDetails = await loadData('scenes details', `adventures/${adventureId}/scenes`)
-  const toMap = ({ id, source }: MapResponse): Map => ({ sceneId: id, source })
-  return [sidemaps.map(toMap), mainmaps.map(toMap), scenesDetails]
+export const getAdminData = async (adventureId: number): Promise<SceneDetail[]> => {
+  return loadData('scenes details', `adventures/${adventureId}/scenes`)
 }
 
 export const getJoinInfo = async (): Promise<JoinInfo> => {

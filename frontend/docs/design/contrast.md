@@ -21,8 +21,6 @@ gilt der Code.
 | `onPrimary` | `#0e1117` (= `background`) | `#140701` (= `background`) |
 | `error` | `#8e1b1b` | `#8e1b1b` |
 | `onError` | `#ffffff` | `#ffffff` |
-| `badge.background` | `#5a5a5a` | `#5a5a5a` |
-| `badge.text` | `#ffffff` | `#ffffff` |
 | `qr.foreground` · `qr.background` | `#000000` · `#ffffff` | gleich |
 | `resource.action.strong` · `.muted` | `#099000` · `#072900` | gleich |
 | `resource.bonus.strong` · `.muted` | `#db4400` · `#290e00` | gleich |
@@ -38,23 +36,21 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 
 | Paar | Verwendung | Ziel | Dark | Tavern | Ergebnis |
 |---|---|---|---|---|---|
-| `text.color` auf `background` | Notizen, Wall-Panel | 4,5 | 17,4 | 9,2 | ✓ beide |
-| `text.color` auf `secondary` | Karten, Dialog, inaktive Buttons | 4,5 | 15,9 | 6,5 | ✓ beide |
+| `text.color` auf `background` | Notizen, Wall-Panel, inaktive Panel-Einträge (Admin, ohne eigene Fläche) | 4,5 | 17,4 | 9,2 | ✓ beide |
+| `text.color` auf `secondary` | Karten, Dialog, inaktive Buttons, Panel-Einträge bei Hover (Admin) | 4,5 | 15,9 | 6,5 | ✓ beide |
 | `text.color` auf `dark` | Bottom-Bar, Steuerleiste | 4,5 | 18,8 | 9,8 | ✓ beide |
 | `onPrimary` auf `primary` | aktive Buttons (auch in der Steuerleiste von Wall und Ground) und Navigation, Confirm (14px) | 4,5 | 6,1 | 4,7 | ✓ beide |
 | `onPrimary` auf `primary` | Fokus-Outline des gewählten Eintrags der Auswahlliste | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `background` | Links in den Notizen (16px) | 4,5 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `background` | Fokus-Outline nicht gewählter Einträge der Auswahlliste | 3,0 | 6,1 | 4,7 | ✓ beide |
-| `primary` auf `secondary` | aktive Kachel im Admin (Outline) | 3,0 | 5,6 | 3,3 | ✓ beide |
-| `primary` auf `background` | aktive Kachel auf der Wall (Outline) | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `border` auf `background` | Rand der Notizseiten | 3,0 | **1,5** | 4,3 | bewusst ✗ Dark |
 | `border` auf `secondary` | Trennlinien in Karten | 3,0 | **1,5** | 3,0 | bewusst ✗ Dark |
 | `secondary` auf `background` | Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel (Admin) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide |
-| `secondary` auf `background` | Fläche inaktiver Menüpunkte der Navigationsleiste und der Panel-Einträge (Admin) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide, siehe Anmerkung |
-| `text.color` auf `secondary` | Icon des inaktiven Menüpunkts der Navigationsleiste | 3,0 | 15,9 | 6,5 | ✓ beide |
+| `secondary` auf `background` | Hover-Fläche der Menüpunkte der Navigationsleiste und der Panel-Einträge (Admin) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide, siehe Anmerkung |
+| `text.color` auf `background` | Icon des inaktiven Menüpunkts der Navigationsleiste (ohne eigene Fläche) | 3,0 | 17,4 | 9,2 | ✓ beide |
+| `text.color` auf `secondary` | Icon des inaktiven Menüpunkts der Navigationsleiste bei Hover | 3,0 | 15,9 | 6,5 | ✓ beide |
 | `onPrimary` auf `primary` | Icon des aktiven Menüpunkts der Navigationsleiste | 3,0 | 6,1 | 4,7 | ✓ beide |
-| `primary` auf `background` | Fokus-Outline der Menüpunkte der Navigationsleiste | 3,0 | 6,1 | 4,7 | ✓ beide |
-| `badge.text` auf `badge.background` | Kachelnummer | 4,5 | 6,9 | 6,9 | ✓ |
+| `primary` auf `background` | Fokus-Outline der Menüpunkte der Navigationsleiste und der Panel-Einträge (Notizen, Szenen) | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `onError` auf `error` | Text der Hinweisleiste (14px) | 4,5 | 9,0 | 9,0 | ✓ |
 | `qr.foreground` auf `qr.background` | QR-Code im Dialog „Spieler verbinden“ | 3,0 | 21,0 | 21,0 | ✓ |
 | `onError` auf `error` | Icon-Button und Fokus-Outline der Hinweisleiste | 3,0 | 9,0 | 9,0 | ✓ |
@@ -67,8 +63,9 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 
 - **Tavern-Rot** (`primary` in Tavern): liegt mit 4,7:1 sicher über der Grenze; `#BD5A5A` erreichte nur genau 4,50:1.
 - **`border` im Dark-Theme:** Ausnahme und Begründung in [2.6](../../DESIGN.md#26-kontrast).
-- **Navigationsleiste (Admin):** Leiste und Panel haben die Fläche `background`. Die Fläche `secondary` inaktiver
-  Menüpunkte und Panel-Einträge hebt sich davon nur schwach ab (Dark 1,1, Tavern 1,4); erkennbar sind sie über Icon
-  bzw. Text, die das Ziel erreichen (`text.color` auf `secondary` bzw. `background`). Die Linien in `secondary` sind
+- **Navigationsleiste (Admin):** Leiste und Panel haben die Fläche `background`. Inaktive Menüpunkte und
+  Panel-Einträge haben keine eigene Fläche; ihre Hover-Fläche `secondary` hebt sich davon nur schwach ab (Dark 1,1,
+  Tavern 1,4) und ist nur ein Zusatzsignal. Erkennbar sind sie über Icon bzw. Text, die das Ziel auf `background` und
+  auf `secondary` erreichen. Die Linien in `secondary` sind
   Gestaltung wie die Linie unter der Top-Bar (Ausnahme in [2.6](../../DESIGN.md#26-kontrast)).
 - **Ressourcen (Player):** Die Spannen reichen über alle fünf Ressourcen.

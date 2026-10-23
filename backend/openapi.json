@@ -287,25 +287,6 @@
         "title": "JoinInfo",
         "type": "object"
       },
-      "MapEntry": {
-        "description": "A tile in the map overviews: `id` is the scene ID, `source` its ground (Kampfszene) or wall image.",
-        "properties": {
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "source": {
-            "title": "Source",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "source"
-        ],
-        "title": "MapEntry",
-        "type": "object"
-      },
       "Player": {
         "description": "A person with their character in one adventure (another adventure has its own entry for the same person).",
         "properties": {
@@ -364,10 +345,6 @@
             "title": "Id",
             "type": "integer"
           },
-          "main": {
-            "title": "Main",
-            "type": "boolean"
-          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -387,7 +364,6 @@
           "id",
           "name",
           "description",
-          "main",
           "wall_image",
           "ground_image",
           "tracks"
@@ -602,104 +578,6 @@
           }
         },
         "summary": "Update Adventure",
-        "tags": [
-          "adventures"
-        ]
-      }
-    },
-    "/adventures/{adventure_id}/maps/main": {
-      "get": {
-        "operationId": "read_adventure_mainmaps_adventures__adventure_id__maps_main_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "adventure_id",
-            "required": true,
-            "schema": {
-              "title": "Adventure Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/MapEntry"
-                  },
-                  "title": "Response Read Adventure Mainmaps Adventures  Adventure Id  Maps Main Get",
-                  "type": "array"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "description": "Adventure not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Read Adventure Mainmaps",
-        "tags": [
-          "adventures"
-        ]
-      }
-    },
-    "/adventures/{adventure_id}/maps/side": {
-      "get": {
-        "operationId": "read_adventure_sidemaps_adventures__adventure_id__maps_side_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "adventure_id",
-            "required": true,
-            "schema": {
-              "title": "Adventure Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/MapEntry"
-                  },
-                  "title": "Response Read Adventure Sidemaps Adventures  Adventure Id  Maps Side Get",
-                  "type": "array"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "404": {
-            "description": "Adventure not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Read Adventure Sidemaps",
         "tags": [
           "adventures"
         ]

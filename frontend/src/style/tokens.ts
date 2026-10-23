@@ -57,8 +57,9 @@ const size = {
     lg: '48px',
   },
   icon: '20px',
+  // Icons in the menu items of the nav rail only
+  iconLg: '24px',
   scrollbar: '4px',
-  badge: '32px',
   button: {
     minWidth: '112px',
   },

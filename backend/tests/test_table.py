@@ -40,14 +40,14 @@ def test_get_returns_the_stored_state(client: TestClient, expected_adventures: l
 def test_patch_sets_active_adventure_and_returns_its_active_scene(
     client: TestClient, db: Session, other_adventure: dict[str, int]
 ) -> None:
-    client.patch(f"/adventures/{other_adventure['id']}", json={"active_scene_id": other_adventure["side_scene_id"]})
+    client.patch(f"/adventures/{other_adventure['id']}", json={"active_scene_id": other_adventure["second_scene_id"]})
 
     response = client.patch("/table", json={"active_adventure_id": other_adventure["id"]})
 
     assert response.status_code == 200
     expected = {
         "active_adventure_id": other_adventure["id"],
-        "active_scene_id": other_adventure["side_scene_id"],
+        "active_scene_id": other_adventure["second_scene_id"],
         "theme": "dark",
     }
     assert response.json() == expected

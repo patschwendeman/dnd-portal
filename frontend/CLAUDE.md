@@ -34,7 +34,8 @@ Spieltisch: [../docs/architecture.md](../docs/architecture.md#lokal-starten) (Ab
 
 E2E-Struktur: `__tests__/bdd/features/*.feature` (Szenarien), `__tests__/bdd/steps/*.ts` (Steps, von jest per
 `testMatch` ausgeführt), `__tests__/bdd/support/helpers.ts` (gemeinsame Helper: Driver, Basis-URL, explizite Waits –
-liegt bewusst außerhalb von `steps/`). Die Tests erwarten die Seed-Daten (25 Kampfszenen).
+liegt bewusst außerhalb von `steps/`). Die Tests erwarten die Seed-Daten (29 Szenen,
+Auswahl über die Namen aus `../backend/app/db/data/seed_data.json`).
 
 API-URL: `src/api/apiClient.ts` nimmt `import.meta.env.VITE_API_URL` (Typ in `src/vite-env.d.ts`), Default
 `/api/` (relativ: der Vite-Dev-Server bzw. nginx leiten `/api/` ohne Präfix und `/ws` an die API weiter, gleicher
@@ -82,17 +83,17 @@ src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen der To
                      (WallAudioPlayer: Wiedergabe auf der Wall nach dem AudioState, Audio-Fabrik injizierbar für vitest)
 src/screens/         Screens
 src/components/      UI-Bausteine (TopBar, JoinDialog, ThemeMenu, NavRail (Navigationsleiste im Admin),
-                     DocumentNavigation (Notizen-Einträge im Panel), DocumentReader (Notizen des gewählten Eintrags),
-                     MapOverview, GridOverlay, ScreenControlBar, ResourceBarPlayer …)
+                     SideBarLeftElement (Eintrag im Panel, Button), DocumentNavigation (Notizen-Einträge im Panel),
+                     SceneNavigation (Szenenliste im Panel), DocumentReader (Notizen des gewählten Eintrags),
+                     DetailsSideBar, Dialogue, GridOverlay, ScreenControlBar, ResourceBarPlayer …)
 src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
                      getJoinInfo, saveActiveScene, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
-                     getWallMainmaps, getGroundScreenData …)
+                     getGroundScreenData …)
 src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData/patchData/postData (apiMethods.ts), loadData,
                      saveData/postCommand, mediaUrl (mediaUrl.ts), wsUrl (wsUrl.ts); schema.d.ts generiert
-src/models/models.ts API-Typen AdventureSummary, AdventureDetail, SceneDetail, Image, Track, MapResponse (= MapEntry),
-                     GameTableState, Theme, JoinInfo, AudioState, AudioUpdate, SoundName aus src/api/schema.d.ts;
-                     Map ist Frontend-Modell (sceneId), Umwandlung aus MapResponse im Service
-src/utils/utils.ts   Musiktitel (getMusicTitle), filterSceneByKey, getGridLayout
+src/models/models.ts API-Typen AdventureSummary, AdventureDetail, SceneDetail, Image, Track, GameTableState, Theme,
+                     JoinInfo, AudioState, AudioUpdate, SoundName aus src/api/schema.d.ts
+src/utils/utils.ts   Musiktitel (getMusicTitle), filterSceneByKey
 src/utils/navRail.ts nextOpenPanel (welches Panel neben der Navigationsleiste offen ist)
 src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
 src/utils/playerTheme.ts Theme-Abweichung des Players lesen/schreiben, effectiveTheme, Altschlüssel verwerfen
@@ -104,8 +105,8 @@ public/assets/       sounds (Soundeffekte, auf der Wall abgespielt), icons; dazu
 public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mechanics), deutsch
 ```
 
-Datenfluss: Screen → `src/service/*` → `getData()` → Backend. Admin und Wall laden Szenen und Karten nur über
-`adventures/{id}/...` des aktiven Abenteuers (`activeAdventureId`). Der Spieltisch-Zustand (aktives Abenteuer, aktive
+Datenfluss: Screen → `src/service/*` → `getData()` → Backend. Der Admin lädt die Szenenliste nur über
+`adventures/{id}/scenes` des aktiven Abenteuers (`activeAdventureId`). Der Spieltisch-Zustand (aktives Abenteuer, aktive
 Szene, Theme) kommt nur vom Server: `GameTableProvider` verbindet sich per WebSocket (`/ws?screen=…`) und speist die
 Contexts aus jedem Snapshot. Szenen-, Abenteuer- und Theme-Wechsel schreibt der Admin per REST (`PATCH adventures/{id}`
 bzw. `PATCH table`) **ohne lokale Vorwegnahme**; der Server pusht danach den neuen Stand an alle Screens, die die Szene
@@ -146,10 +147,10 @@ sich selbst wieder. Der Admin spielt nichts ab, er sendet Befehle (`PATCH table/
 
 - Medienpfade (`source`) kommen vom Backend als API-relativer Pfad (`/media/...`) und werden immer über
   `mediaUrl(source)` (`src/api/mediaUrl.ts`, gleiche Basis-URL wie `apiClient`) in eine absolute URL umgewandelt –
-  in `WallScreen`, `GroundScreen`, `MapOverview`, `SideMaps`, `Dialogue` und im `WallAudioPlayer` (Musik der Wall).
-- Kacheln (`Map`) tragen die Szenen-ID als `sceneId`: Das Backend liefert in `adventures/{id}/maps/*` `id = scene.id`, die Services
-  mappen es auf `sceneId`. Aktiv ist die Kachel mit `sceneId === activeSceneId`. `MapOverview` rendert jede Anzahl als
-  Raster mit `⌈√n⌉` Spalten (`getGridLayout` in `src/utils/utils.ts`, auch Basis der Wall-Overlay-Breite).
+  in `WallScreen`, `GroundScreen`, `Dialogue` und im `WallAudioPlayer` (Musik der Wall).
+- Alle Szenen sind gleich (kein `main` mehr). Das Panel „Szenen“ (`SceneNavigation`) zeigt sie in der Reihenfolge der
+  API; aktiv ist der Eintrag mit `scene.id === activeSceneId`. Klick auf die aktive Szene tut nichts, sonst öffnet
+  `handleSceneSelection` im `AdminScreen` den Dialog „Szene wechseln“.
 - `DocumentReader` sammelt Markdown per `import.meta.glob` aus `public/story/**` – neue Notizen dort ablegen.
 - Player-Ressourcen (`ResourceBarPlayer`) sind reiner lokaler State; Zauberplatz-Maxima sind hart codiert (`SpellMax`).
 - Die Ressource „Bewegung“ ist Work in Progress; `/spells` ist auf dem Branch `feature/spells-screen` geparkt; `v1-roguelike` (Tags `archive/*`) ist verworfen.

@@ -11,9 +11,7 @@
 | Globales Level | Charakterlevel, das vorerst für alle Spieler eines Abenteuers gilt (1–20) | `Adventure.global_level` (Default 1) |
 | Aktive Szene | Szene, die der Spielleiter gerade aktiviert hat und die Wall und Ground zeigen | Im Frontend `activeSceneId` (`number \| null`, `null` = keine Szene aktiv) im `ActiveSceneContext` (aus dem WebSocket-Snapshot, `GameTableState.active_scene_id` = aktive Szene des aktiven Abenteuers); persistent im Abenteuer: `Adventure.active_scene_id` (`PATCH /adventures/{id}`, nur Szenen desselben Abenteuers), beim Aktivieren gespeichert |
 | NPC | Nicht-Spieler-Charakter, freundlich oder feindlich, vom Spielleiter gespielt | kein eigenes Datenmodell; Infos nur in Markdown-Notizen |
-| Szene | Situation, die der Spielleiter aktiviert; bündelt Wall-Bild, Ground-Bild und Musik | Tabelle/Model `Scene` (Backend), API-Schema `SceneDetail` (Backend `app/schemas/`, Frontend-Typ generiert) |
-| Kampfszene | Szene mit taktischem Kampf | `Scene.main == true` → „Mainmap“, Endpoint `/adventures/{id}/maps/main` |
-| Nicht-Kampfszene | Dorf, Shop, Taverne, Level-Up … | `Scene.main == false` → „Sidemap“, Endpoint `/adventures/{id}/maps/side` |
+| Szene | Situation, die der Spielleiter aktiviert (Dorf, Shop, Taverne, Kampfschauplatz …); bündelt Wall-Bild, Ground-Bild und Musik. Alle Szenen sind gleich: Ob gekämpft wird, entscheidet nicht die Szene; ein Kampf soll künftig in jeder Szene gestartet werden können (Soll) | Tabelle/Model `Scene` (Backend), API-Schema `SceneDetail` (Backend `app/schemas/`, Frontend-Typ generiert), `GET /adventures/{id}/scenes`; im Admin Panel „Szenen“ (`SceneNavigation`) |
 | Wall-Bild | Atmosphäre-Hintergrund der Szene | `Media` (`kind` `image`) / `scene.wall_image` |
 | Ground-Bild | Spielbrett/Kampfschauplatz der Szene (Bild oder Video) | `Media` (`kind` `image`) / `scene.ground_image` |
 | Musik (Sound-Element einer Szene) | Playlist von Tracks einer Szene, vom Server zufällig gewählt und von der Audioausgabe abgespielt; ohne aktive Szene die Standardmusik | `Media` (`kind` `audio`), n:m über `scene_track`; `scene.tracks[]` (API-Typ `Track`); Musikzustand im Speicher des Servers (`AudioService`, `app/realtime/audio.py`), API `GET`/`PATCH /table/audio` (`AudioState`, `AudioUpdate`), Standardmusik `Settings.default_music_key` |
@@ -22,13 +20,15 @@
 | Notizen | Markdown-Dateien zu Story, NPCs, Kämpfen, Leveling, Regeln | nur Frontend: `public/story/**.md`, `DocumentReader` |
 | Ressourcen (Spieler) | Aktion, Bonusaktion, Zauberplätze I–IV, Spezial-Ressource (+ WIP: Bewegung) | nur Frontend: `ResourceBarPlayer` (lokaler State) |
 | Grid | Optionales Raster auf dem Ground Screen für taktische Kämpfe | `GridOverlay`, Steuerung über `ScreenControlBar` |
-| Weltkarte / Übersichtskarte | Overlay auf dem Wall Screen | WallScreen: Weltkarte = statisches Bild; Übersicht = Kacheln aller Mainmaps |
+| Weltkarte | Overlay auf dem Wall Screen | WallScreen: statisches Bild (`mapOverview.jpg`), Button WORLD |
 
 ## Historische Bezeichnungen
 
-- `battlemap(s)` → heute `mainmap(s)` bzw. `main` (Commit „Change battlemaps to mainmaps“). Assets folgen dem Schema
-  (`music/main/`, `ground_screen/main_N.jpg`); der WallScreen-Button „BATTLE“ ist eine bewusste UI-Bezeichnung.
-- `sidemap(s)` → heute über `/adventures/{id}/maps/side`; Musik-Ordner `music/side/`.
-- `fight` (Bool auf Scene) → heute `main`.
+- Kampfszene / Nicht-Kampfszene (`Scene.main` `true`/`false`, „Mainmap“/„Sidemap“, Endpoints
+  `/adventures/{id}/maps/main|side`, Wall-Overlay „Kampfschauplätze“ mit Button BATTLE): seit DND-29 entfernt, alle
+  Szenen sind gleich. Die Bezeichnungen bleiben nur in Asset-Pfaden: `music/main/`, `music/side/`,
+  `images/ground_screen/main_N.jpg`, `images/wall_screen/fight.jpg`.
+- Davor: `battlemap(s)` → `mainmap(s)` bzw. `main` (Commit „Change battlemaps to mainmaps“), `sidemap(s)` → `side`,
+  `fight` (Bool auf Scene) → `main`.
 - `v1-roguelike` (Tags `archive/*-v1-roguelike`): altes, **verworfenes** Konzept mit Tabelle `battlemaps` (loot, xp, enemies, locked,
   source_locked) und PUT-Endpoint zum Entsperren. Im Code sind keine Reste mehr vorhanden.

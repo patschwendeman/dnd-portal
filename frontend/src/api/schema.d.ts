@@ -39,40 +39,6 @@ export interface paths {
         patch: operations["update_adventure_adventures__adventure_id__patch"];
         trace?: never;
     };
-    "/adventures/{adventure_id}/maps/main": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read Adventure Mainmaps */
-        get: operations["read_adventure_mainmaps_adventures__adventure_id__maps_main_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/adventures/{adventure_id}/maps/side": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read Adventure Sidemaps */
-        get: operations["read_adventure_sidemaps_adventures__adventure_id__maps_side_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/adventures/{adventure_id}/scenes": {
         parameters: {
             query?: never;
@@ -295,16 +261,6 @@ export interface components {
             player_url: string | null;
         };
         /**
-         * MapEntry
-         * @description A tile in the map overviews: `id` is the scene ID, `source` its ground (Kampfszene) or wall image.
-         */
-        MapEntry: {
-            /** Id */
-            id: number;
-            /** Source */
-            source: string;
-        };
-        /**
          * Player
          * @description A person with their character in one adventure (another adventure has its own entry for the same person).
          */
@@ -328,8 +284,6 @@ export interface components {
             ground_image: components["schemas"]["Image"];
             /** Id */
             id: number;
-            /** Main */
-            main: boolean;
             /** Name */
             name: string;
             /** Tracks */
@@ -470,82 +424,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-        };
-    };
-    read_adventure_mainmaps_adventures__adventure_id__maps_main_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                adventure_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MapEntry"][];
-                };
-            };
-            /** @description Adventure not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    read_adventure_sidemaps_adventures__adventure_id__maps_side_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                adventure_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MapEntry"][];
-                };
-            };
-            /** @description Adventure not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
             };
         };
     };
