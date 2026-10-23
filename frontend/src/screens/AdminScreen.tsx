@@ -5,10 +5,12 @@ import styled, { useTheme } from 'styled-components'
 
 import { DetailsSideBar } from '../components/DetailsSideBar'
 import { Dialogue } from '../components/Dialogue'
+import { DocumentNavigation } from '../components/DocumentNavigation'
 import { DocumentReader } from '../components/DocumentReader'
 import { ErrorBar } from '../components/ErrorBar'
 import { Label } from '../components/Label'
 import { MapOverview } from '../components/MapOverview'
+import { NavRail, NavRailItem } from '../components/NavRail'
 import { SideMaps } from '../components/SideMaps'
 import { TopBar } from '../components/TopBar'
 import { ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext } from '../context/context'
@@ -27,13 +29,17 @@ import { GlobalStyle } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 import { selectDefaultAdventureId } from '../utils/adventure'
 import { loadLatest } from '../utils/loadSafely'
+import { nextOpenPanel } from '../utils/navRail'
 import { filterSceneByKey, getMusicTitle } from '../utils/utils'
 
 import { ReactSVG } from 'react-svg'
 
+import notesIcon from '/assets/icons/notes.svg'
 import playIcon from '/assets/icons/play.svg'
 import pauseIcon from '/assets/icons/pause.svg'
 
+// Icon button (size.control.md, 40px) plus space.3 on both sides
+const NAV_RAIL_WIDTH = '64px'
 const LEFT_COLUMN_WIDTH = '200px'
 const RIGHT_COLUMN_WIDTH = '400px'
 const VOLUME_SLIDER_WIDTH = '120px'
@@ -43,6 +49,8 @@ const LOAD_ERROR_MESSAGE = 'Backend nicht erreichbar'
 const SAVE_ERROR_MESSAGE = 'Änderung konnte nicht gespeichert werden'
 const CONNECTION_ERROR_MESSAGE = 'Verbindung zum Server getrennt'
 const NO_AUDIO_OUTPUT_MESSAGE = 'Keine Audioausgabe bereit'
+
+const NAV_PANEL_ID = 'admin-nav-panel'
 
 const Screen = styled.div<{ $hasErrorBar: boolean }>`
     display: grid;
@@ -56,11 +64,27 @@ const Screen = styled.div<{ $hasErrorBar: boolean }>`
     };
 `
 
-const Main = styled.div`
+// Rail and panel sit flush between Top-Bar and Bottom-Bar; only the content keeps the outer padding
+const Main = styled.div<{ $isPanelOpen: boolean }>`
     display: grid;
-    grid-template-columns: ${LEFT_COLUMN_WIDTH} 1fr ${RIGHT_COLUMN_WIDTH};
+    grid-template-columns: ${NAV_RAIL_WIDTH} ${(props) => (props.$isPanelOpen ? `${LEFT_COLUMN_WIDTH} ` : '')}1fr;
+    min-height: 0;
+`
+
+const NavPanel = styled.div`
+    min-height: 0;
+    overflow-y: auto;
+    padding: ${(props) => props.theme.space[3]};
+    background-color: ${(props) => props.theme.colors.background};
+    border-right: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.secondary};
+`
+
+const Content = styled.div`
+    display: grid;
+    grid-template-columns: 1fr ${RIGHT_COLUMN_WIDTH};
     gap: ${(props) => props.theme.space[5]};
     padding: ${(props) => props.theme.space[5]};
+    min-width: 0;
     min-height: 0;
 `
 
@@ -187,6 +211,10 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
 
     const [mainmaps, setMainmaps] = useState<Map[]>([])
     const [sidemaps, setSidemaps] = useState<Map[]>([])
+
+    // Neither kept on the server nor in localStorage: after a reload the notes panel is open again
+    const [openPanel, setOpenPanel] = useState<string | null>('docs')
+    const [selectedStoryIndex, setSelectedStoryIndex] = useState<number>(0)
 
     const [adventuresFailed, setAdventuresFailed] = useState<boolean>(false)
     const [adminDataFailed, setAdminDataFailed] = useState<boolean>(false)
@@ -372,6 +400,20 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
 
     const hasErrorBar = !connected || hasLoadError || failedSave !== null
 
+    const navItems: (NavRailItem & { panel: ReactElement })[] = [
+        {
+            id: 'docs',
+            name: 'Notizen',
+            icon: notesIcon,
+            panel: <DocumentNavigation selectedStoryIndex={selectedStoryIndex} onSelectStory={setSelectedStoryIndex} />,
+        },
+    ]
+    const openNavItem = navItems.find((item) => item.id === openPanel)
+
+    const handleNavSelect = (id: string) => {
+        setOpenPanel((open) => nextOpenPanel(open, id))
+    }
+
     return(
         <>
             <GlobalStyle />
@@ -395,24 +437,37 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
                         {failedSave !== null && <ErrorBar message={SAVE_ERROR_MESSAGE} onRetry={retrySaving} />}
                     </div>
                 )}
-                <Main>
-                    <DocumentReader />
-                    <SidebarRight>
-                        <DetailsSideBar activeScene={ activeScene }/>
-                        <SidebarMapContainer>
-                            <SectionHead>
-                                <Label>Kampfszenen</Label>
-                                <Label>{ mainmaps.length }</Label>
-                            </SectionHead>
-                            <MapOverview
-                                mainmaps={mainmaps}
-                                gap={theme.space[2]}
-                                padding='0'
-                                handleSceneSelection={handleSceneSelection}
-                                isAdminScreen={ true }
-                            />
-                        </SidebarMapContainer>
-                    </SidebarRight>
+                <Main $isPanelOpen={openNavItem !== undefined}>
+                    <NavRail
+                        items={navItems}
+                        openItemId={openNavItem?.id ?? null}
+                        panelId={NAV_PANEL_ID}
+                        onSelect={handleNavSelect}
+                    />
+                    {openNavItem && (
+                        <NavPanel id={NAV_PANEL_ID} aria-label={openNavItem.name} data-test-id='nav-panel'>
+                            {openNavItem.panel}
+                        </NavPanel>
+                    )}
+                    <Content>
+                        <DocumentReader selectedStoryIndex={selectedStoryIndex} />
+                        <SidebarRight>
+                            <DetailsSideBar activeScene={ activeScene }/>
+                            <SidebarMapContainer>
+                                <SectionHead>
+                                    <Label>Kampfszenen</Label>
+                                    <Label>{ mainmaps.length }</Label>
+                                </SectionHead>
+                                <MapOverview
+                                    mainmaps={mainmaps}
+                                    gap={theme.space[2]}
+                                    padding='0'
+                                    handleSceneSelection={handleSceneSelection}
+                                    isAdminScreen={ true }
+                                />
+                            </SidebarMapContainer>
+                        </SidebarRight>
+                    </Content>
                 </Main>
                 <BottomBar>
                     <Music>

@@ -9,7 +9,8 @@ Regel: [1.3](../../DESIGN.md#13-layout-konstanten).
 
 | Wert | Wofür | Ort |
 |---|---|---|
-| 200px · 400px | linke und rechte Spalte im Admin (`LEFT_COLUMN_WIDTH`, `RIGHT_COLUMN_WIDTH`) | `AdminScreen` |
+| 64px | Navigationsleiste im Admin (`NAV_RAIL_WIDTH`: Icon-Button `size.control.md` plus `space.3` auf beiden Seiten) | `AdminScreen` |
+| 200px · 400px | Panel neben der Navigationsleiste und rechte Spalte im Admin (`LEFT_COLUMN_WIDTH`, `RIGHT_COLUMN_WIDTH`) | `AdminScreen` |
 | 240px | Außenspalten der Top-Bar (`OUTER_COLUMN_WIDTH`) | `TopBar` |
 | 320px | maximale Höhe der Abenteuer-Liste (`ADVENTURE_LIST_MAX_HEIGHT`) | `AdventureSelect` |
 | 880px · 68ch | maximale Breite einer Notizseite, maximale Zeilenlänge (`PAGE_MAX_WIDTH`, `LINE_MAX_WIDTH`) | `DocumentReader` |
@@ -47,7 +48,7 @@ kann dann über die Steuerleiste reichen.
 
 | Screen | Aufbau |
 |---|---|
-| Admin | Grid in Zeilen Top-Bar / `1fr` / Bottom-Bar (Höhen nach [1.2](../../DESIGN.md#12-tokens)). Bei einem Lade- oder Speicherfehler kommt unter der Top-Bar eine Zeile `auto` für die [Hinweisleiste](components.md#hinweisleiste) hinzu, ohne Fehler gibt es diese Zeile nicht. Mittlere Zeile: Grid in Spalten `LEFT_COLUMN_WIDTH 1fr RIGHT_COLUMN_WIDTH`, Innenabstand `space.5`, `gap` nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“. Links Navigation, Mitte Notizen, rechts Karten. |
+| Admin | Grid in Zeilen Top-Bar / `1fr` / Bottom-Bar (Höhen nach [1.2](../../DESIGN.md#12-tokens)). Bei einem Lade- oder Speicherfehler kommt unter der Top-Bar eine Zeile `auto` für die [Hinweisleiste](components.md#hinweisleiste) hinzu, ohne Fehler gibt es diese Zeile nicht. Mittlere Zeile: Grid in Spalten `NAV_RAIL_WIDTH LEFT_COLUMN_WIDTH 1fr` ohne Innenabstand und `gap`: links die [Navigationsleiste](components.md#navigationsleiste), daneben ihr Panel, beide bündig zwischen Top-Bar und Bottom-Bar, mit Fläche `background` wie die Top-Bar und rechts je einer Linie `borderWidth.thin` in `secondary`; bei eingeklapptem Panel entfällt die Spalte `LEFT_COLUMN_WIDTH`, die Notizen werden breiter. Die Spalte `1fr` ist ein Grid `1fr RIGHT_COLUMN_WIDTH` mit Innenabstand `space.5` und `gap` nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“: Mitte Notizen, rechts Karten. |
 | Wall | Vollbild-Hintergrund, darüber das Overlay-Panel (BATTLE: Kachelraster, WORLD: Weltkarte) und die schwebende Steuerleiste |
 | Ground | Vollbild-Medium (Bild oder Video), Raster-Ebene, schwebende Steuerleiste mit Raster-Optionen und Slider |
 | Player | Smartphone im Querformat. Spalte, vertikal mittig, `gap` `space.4`: Settings-Button mit Theme-Menü (klappt über der Karte auf), darunter Karte mit zwei Zeilen à vier Ressourcen-Buttons (Aktion, Bonusaktion, Bewegung, Spezial / Zauberplätze I–IV), `gap` `space.4`. Im Hochformat deckt ein Overlay mit Hinweis alles ab. Ab 344px Höhe und etwa 568px Breite. |

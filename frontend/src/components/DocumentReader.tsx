@@ -3,8 +3,6 @@ import ReactMarkdown from 'react-markdown'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
-import { Label } from './Label'
-import { SideBarLeftElement } from './SideBarLeftElement'
 import { textStyle } from '../style/tokens'
 import { loadLatest } from '../utils/loadSafely'
 
@@ -20,17 +18,6 @@ const markdownLists = [markdownFilesMain, markdownFilesFight, markdownFilesNoneF
 
 const PAGE_MAX_WIDTH = '880px'
 const LINE_MAX_WIDTH = '68ch'
-
-const SidebarLeft = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: ${(props) => props.theme.space[1]};
-`
-
-const NotesLabel = styled(Label)`
-  padding: 0 ${(props) => props.theme.space[3]} ${(props) => props.theme.space[2]};
-`
 
 const StoryReaderContainer = styled.div`
   display: flex;
@@ -187,11 +174,15 @@ function HeadingRenderer(props: { level: number; children: React.ReactNode }): R
   return React.createElement(`h${props.level}`, { id: slug }, props.children)
 }
 
-const DocumentReader: FunctionComponent = (): ReactElement => {
+interface DocumentReaderProps {
+  // Index of the note folder, chosen in DocumentNavigation
+  selectedStoryIndex: number
+}
+
+const DocumentReader: FunctionComponent<DocumentReaderProps> = ({ selectedStoryIndex }): ReactElement => {
   const theme = useTheme()
   const [markdownContent, setMarkdownContent] = useState<string[]>([])
   const [loadFailed, setLoadFailed] = useState<boolean>(false)
-  const [selectedStoryIndex, setSelectedStoryIndex] = useState<number>(0)
   const [isVisible, setIsVisible] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
@@ -252,51 +243,37 @@ const DocumentReader: FunctionComponent = (): ReactElement => {
     }
   }, [])
 
-  const handleStorySelect = (index: number) => {
-    setSelectedStoryIndex(index)
-  }
-
   return (
-    <>
-      <SidebarLeft>
-        <NotesLabel>Notizen</NotesLabel>
-        <SideBarLeftElement name='Main' selectedStoryIndex={ selectedStoryIndex } handleStorySelect={ handleStorySelect } index={0} />
-        <SideBarLeftElement name='Fight' selectedStoryIndex={ selectedStoryIndex } handleStorySelect={ handleStorySelect } index={1} />
-        <SideBarLeftElement name='Side' selectedStoryIndex={ selectedStoryIndex } handleStorySelect={ handleStorySelect } index={2} />
-        <SideBarLeftElement name='Leveling' selectedStoryIndex={ selectedStoryIndex } handleStorySelect={ handleStorySelect } index={3} />
-        <SideBarLeftElement name='Mechaniken' selectedStoryIndex={ selectedStoryIndex } handleStorySelect={ handleStorySelect } index={4} />
-      </SidebarLeft>
-      <StoryReaderContainer>
-        <Background ref={scrollContainerRef} onScroll={handleScroll}>
-          {loadFailed && <LoadFailedText>Notizen konnten nicht geladen werden</LoadFailedText>}
-          {!loadFailed && markdownContent.map((content, index) => (
-            <Page key={index}>
-              <ReactMarkdown
-              components={{
-                  h1: (props) => <HeadingRenderer {...props} level={1} />,
-                  h2: (props) => <HeadingRenderer {...props} level={2} />,
-                  h3: (props) => <HeadingRenderer {...props} level={3} />,
-                  h4: (props) => <HeadingRenderer {...props} level={4} />,
-                  h5: (props) => <HeadingRenderer {...props} level={5} />,
-                  h6: (props) => <HeadingRenderer {...props} level={6} />,
-                  img: (props) => <MarkdownImage {...props} />,
+    <StoryReaderContainer data-test-id='notes-view'>
+      <Background ref={scrollContainerRef} onScroll={handleScroll} data-test-id='notes-scroll'>
+        {loadFailed && <LoadFailedText>Notizen konnten nicht geladen werden</LoadFailedText>}
+        {!loadFailed && markdownContent.map((content, index) => (
+          <Page key={index}>
+            <ReactMarkdown
+            components={{
+                h1: (props) => <HeadingRenderer {...props} level={1} />,
+                h2: (props) => <HeadingRenderer {...props} level={2} />,
+                h3: (props) => <HeadingRenderer {...props} level={3} />,
+                h4: (props) => <HeadingRenderer {...props} level={4} />,
+                h5: (props) => <HeadingRenderer {...props} level={5} />,
+                h6: (props) => <HeadingRenderer {...props} level={6} />,
+                img: (props) => <MarkdownImage {...props} />,
+              }}
+            >
+              {content || 'Loading...'}
+            </ReactMarkdown>
+          </Page>
+        ))}
+          <TopLink onClick={scrollToTop} $isVisible={isVisible}>
+            <ReactSVG
+                src={arrowUpIcon}
+                beforeInjection={(svg) => {
+                svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
                 }}
-              >
-                {content || 'Loading...'}
-              </ReactMarkdown>
-            </Page>
-          ))}
-            <TopLink onClick={scrollToTop} $isVisible={isVisible}>
-              <ReactSVG
-                  src={arrowUpIcon}
-                  beforeInjection={(svg) => {
-                  svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
-                  }}
-              />
-            </TopLink>
-        </Background>
-      </StoryReaderContainer>
-    </>
+            />
+          </TopLink>
+      </Background>
+    </StoryReaderContainer>
   )
 }
 

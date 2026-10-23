@@ -49,6 +49,11 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `primary` auf `background` | aktive Kachel auf der Wall (Outline) | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `border` auf `background` | Rand der Notizseiten | 3,0 | **1,5** | 4,3 | bewusst ✗ Dark |
 | `border` auf `secondary` | Trennlinien in Karten | 3,0 | **1,5** | 3,0 | bewusst ✗ Dark |
+| `secondary` auf `background` | Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel (Admin) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide |
+| `secondary` auf `background` | Fläche inaktiver Menüpunkte der Navigationsleiste und der Panel-Einträge (Admin) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide, siehe Anmerkung |
+| `text.color` auf `secondary` | Icon des inaktiven Menüpunkts der Navigationsleiste | 3,0 | 15,9 | 6,5 | ✓ beide |
+| `onPrimary` auf `primary` | Icon des aktiven Menüpunkts der Navigationsleiste | 3,0 | 6,1 | 4,7 | ✓ beide |
+| `primary` auf `background` | Fokus-Outline der Menüpunkte der Navigationsleiste | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `badge.text` auf `badge.background` | Kachelnummer | 4,5 | 6,9 | 6,9 | ✓ |
 | `onError` auf `error` | Text der Hinweisleiste (14px) | 4,5 | 9,0 | 9,0 | ✓ |
 | `qr.foreground` auf `qr.background` | QR-Code im Dialog „Spieler verbinden“ | 3,0 | 21,0 | 21,0 | ✓ |
@@ -62,4 +67,8 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 
 - **Tavern-Rot** (`primary` in Tavern): liegt mit 4,7:1 sicher über der Grenze; `#BD5A5A` erreichte nur genau 4,50:1.
 - **`border` im Dark-Theme:** Ausnahme und Begründung in [2.6](../../DESIGN.md#26-kontrast).
+- **Navigationsleiste (Admin):** Leiste und Panel haben die Fläche `background`. Die Fläche `secondary` inaktiver
+  Menüpunkte und Panel-Einträge hebt sich davon nur schwach ab (Dark 1,1, Tavern 1,4); erkennbar sind sie über Icon
+  bzw. Text, die das Ziel erreichen (`text.color` auf `secondary` bzw. `background`). Die Linien in `secondary` sind
+  Gestaltung wie die Linie unter der Top-Bar (Ausnahme in [2.6](../../DESIGN.md#26-kontrast)).
 - **Ressourcen (Player):** Die Spannen reichen über alle fünf Ressourcen.

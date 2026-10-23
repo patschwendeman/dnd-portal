@@ -18,12 +18,20 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 ### Soll
 - Szenen auswählen und aktivieren.
 - Notizen (Markdown) einsehen: Story, NPCs, Kämpfe.
+- Navigationsleiste links mit Menüpunkten, die das Panel daneben füllen: „Notizen“ (umgesetzt), geplant „Szenen“
+  (Szenenliste) und „Kampf“ (Kampf starten). Die Mitte zeigt dabei weiter die Notizen.
 - Musik ein- und ausschalten.
 - Verschiedene Sounds abspielen.
 
 ### Ist
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Top-Bar, Hauptbereich, Bottom-Bar. Im Hauptbereich
-  links die Notizen-Navigation, in der Mitte die Notizen, rechts die Karten „Aktive Szene“ und „Kampfszenen“.
+  ganz links die Navigationsleiste, daneben das Panel des aktiven Menüpunkts (beide bündig zwischen Top-Bar und
+  Bottom-Bar), in der Mitte die Notizen, rechts die Karten „Aktive Szene“ und „Kampfszenen“.
+- **Navigationsleiste:** schmale Leiste mit Icon-Buttons; bisher nur der Menüpunkt „Notizen“ (Tooltip „Notizen“), der
+  beim Laden aktiv und hervorgehoben ist. Klick (oder Enter/Leertaste) auf den aktiven Menüpunkt klappt das Panel ein,
+  die Notizen werden breiter und kein Menüpunkt ist hervorgehoben; ein weiterer Klick klappt es wieder aus. Auswahl und
+  Scrollposition der Notizen bleiben dabei erhalten. Menüpunkt und Einklapp-Zustand werden nicht gespeichert, nach
+  einem Reload ist „Notizen“ wieder offen.
 - **Abenteuer-Auswahl:** Links in der Top-Bar eine Auswahlliste (Button mit aufklappender Liste, per Maus und Tastatur
   bedienbar) mit allen Abenteuern. Ist auf dem Spieltisch (Server) kein Abenteuer aktiv, wird automatisch das erste
   aktiviert (mit nur einem Abenteuer also ohne Zutun); ohne Abenteuer ist die Auswahl leer und deaktiviert, es werden
@@ -46,8 +54,9 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   (1 s, 2 s, 4 s … höchstens 10 s), „Erneut versuchen“ verbindet sofort. Danach verschwindet die Leiste.
 - **Szenen-Details:** Karte „Aktive Szene“ mit Name und Beschreibung, ohne aktive Szene der Hinweis „Keine Szene
   aktiv“; „Enemies“ und „Loot“ sind nur Platzhalter („–“).
-- **Notizen:** Bereich „Notizen“ mit Tabs Main, Fight, Side, Leveling, Mechaniken (Markdown aus
-  `public/story/`); Inhaltsverzeichnis-Links, Bilder öffnen in neuem Tab. Tab „Side“ ist leer (Ordner fehlt).
+- **Notizen:** Das Panel „Notizen“ listet die Einträge Main, Fight, Side, Leveling, Mechaniken (Start: Main); die
+  Mitte zeigt die Notizen des gewählten Eintrags (Markdown aus `public/story/`), auch bei eingeklapptem Panel.
+  Inhaltsverzeichnis-Links, Bilder öffnen in neuem Tab. Eintrag „Side“ ist leer (Ordner fehlt).
 - **Musik (Fernbedienung):** Der Admin spielt selbst nichts ab; Musik und Soundeffekte kommen aus der Wall, die
   Audioausgabe ist (siehe Wall Screen). Bottom-Bar links Play/Pause, „Musik“ mit dem Titel des aktuellen
   Tracks und ein Lautstärke-Slider (gesendet beim Loslassen). Die Anzeige folgt dem Zustand auf dem
@@ -71,7 +80,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Ladefehler:** Lassen sich Abenteuer oder Szenen nicht laden (Backend nicht erreichbar, Timeout, HTTP-Fehler), erscheint unter der
   Top-Bar die Hinweisleiste „Backend nicht erreichbar“ mit Button „Erneut versuchen“; bei Erfolg verschwindet sie.
   Keine automatischen Wiederholungen. Kann eine Notizdatei nicht geladen werden, zeigt der Notizbereich „Notizen
-  konnten nicht geladen werden“; ein Tab-Wechsel lädt erneut.
+  konnten nicht geladen werden“; ein Wechsel des Eintrags lädt erneut.
 
 ---
 

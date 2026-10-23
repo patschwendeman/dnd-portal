@@ -20,7 +20,7 @@ Größe nach [1.2](../../DESIGN.md#12-tokens) Größen, Icon nach [1.4](../../DE
 | Zentrierung des Icons | `display: grid; place-items: center` |
 | Padding | `0` (Reset bei `<button>`) |
 | Farbe | Hintergrund in der Top-Bar und der Hinweisleiste transparent, sonst nach [2.2](../../DESIGN.md#22-rollen) und [2.4](../../DESIGN.md#24-zustände) |
-| Beispiele | Sound-Buttons, Settings, Play/Pause, Nach oben |
+| Beispiele | Sound-Buttons, Settings, Play/Pause, Nach oben, Menüpunkte der [Navigationsleiste](#navigationsleiste) |
 | Player | Hintergrund `secondary` (Settings-Button des Theme-Menüs) |
 
 ## Text-Button
@@ -46,6 +46,22 @@ einer aktiv ist.
 |---|---|
 | Höhe | nach [1.2](../../DESIGN.md#12-tokens) Größen |
 | Innenabstand | `0 space.3`, linksbündig |
+
+## Navigationsleiste
+
+Nur im Admin, Komponente `NavRail` ([src/components/NavRail.tsx](../../src/components/NavRail.tsx)) mit dem Panel
+daneben (`AdminScreen`). Die Menüpunkte kommen als Liste (id, Name, Icon, Panel-Inhalt) aus dem `AdminScreen`; bisher
+nur „Notizen“ (`notes.svg`, Panel `DocumentNavigation`).
+
+| Eigenschaft | Wert |
+|---|---|
+| Breite | Leiste `NAV_RAIL_WIDTH`, Panel `LEFT_COLUMN_WIDTH` ([screen-layouts.md](screen-layouts.md#layout-konstanten)) |
+| Fläche | Leiste und Panel `background` wie die Top-Bar, bündig zwischen Top-Bar und Bottom-Bar, ohne Karte; rechts an der Leiste und rechts am Panel je eine senkrechte Linie `borderWidth.thin` in `secondary` über die volle Höhe (wie die Linie unter der Top-Bar): die Linie der Leiste trennt sie vom Panel bzw. bei eingeklapptem Panel von den Notizen, die des Panels trennt es von den Notizen |
+| Leiste | Spalte, horizontal zentriert, Innenabstand `space.3` oben/unten, `gap` `space.1` zwischen den Menüpunkten |
+| Menüpunkt | [Icon-Button](#icon-button) (`<button type="button">`, `size.control.md`, `radius.md`, Icon `size.icon`); Name als `aria-label` und `title`, `aria-pressed` für den Zustand, `aria-controls` aufs Panel |
+| Zustände | aktiv (Panel offen): Fläche `primary`, Icon `onPrimary`; inaktiv: Fläche `secondary`, Icon `text.color`; eingeklappt: kein Menüpunkt aktiv. Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`) |
+| Panel | Innenabstand `space.3`, scrollt bei Überlänge; Inhalt des aktiven Menüpunkts, bei „Notizen“ Label „Notizen“ und die [Navigationseinträge](#navigationseintrag) |
+| Bedienung | Klick (Enter/Leertaste) auf den aktiven Menüpunkt klappt das Panel ein, auf einen anderen bzw. im eingeklappten Zustand öffnet er dessen Panel (`nextOpenPanel` in `src/utils/navRail.ts`). Start: „Notizen“ offen |
 
 ## Label
 

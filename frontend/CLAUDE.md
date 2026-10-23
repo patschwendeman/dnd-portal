@@ -81,8 +81,9 @@ src/context/         ActiveAdventureContext, ActiveSceneContext (IDs number | nu
 src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen der TopBar), wallAudioPlayer.ts
                      (WallAudioPlayer: Wiedergabe auf der Wall nach dem AudioState, Audio-Fabrik injizierbar für vitest)
 src/screens/         Screens
-src/components/      UI-Bausteine (TopBar, JoinDialog, ThemeMenu, DocumentReader, MapOverview, GridOverlay, ScreenControlBar,
-                     ResourceBarPlayer …)
+src/components/      UI-Bausteine (TopBar, JoinDialog, ThemeMenu, NavRail (Navigationsleiste im Admin),
+                     DocumentNavigation (Notizen-Einträge im Panel), DocumentReader (Notizen des gewählten Eintrags),
+                     MapOverview, GridOverlay, ScreenControlBar, ResourceBarPlayer …)
 src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
                      getJoinInfo, saveActiveScene, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
                      getWallMainmaps, getGroundScreenData …)
@@ -92,6 +93,7 @@ src/models/models.ts API-Typen AdventureSummary, AdventureDetail, SceneDetail, I
                      GameTableState, Theme, JoinInfo, AudioState, AudioUpdate, SoundName aus src/api/schema.d.ts;
                      Map ist Frontend-Modell (sceneId), Umwandlung aus MapResponse im Service
 src/utils/utils.ts   Musiktitel (getMusicTitle), filterSceneByKey, getGridLayout
+src/utils/navRail.ts nextOpenPanel (welches Panel neben der Navigationsleiste offen ist)
 src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
 src/utils/playerTheme.ts Theme-Abweichung des Players lesen/schreiben, effectiveTheme, Altschlüssel verwerfen
 src/utils/playerUrl.ts selectPlayerUrl (URL der API, sonst Origin des Admins, nicht bei localhost/127.0.0.1/[::1])

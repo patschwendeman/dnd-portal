@@ -30,7 +30,12 @@ interface SideBarLeftElementProps {
 const SideBarLeftElement: FunctionComponent<SideBarLeftElementProps> = ({ name, selectedStoryIndex, handleStorySelect, index }): ReactElement => {
     const isElementActive = selectedStoryIndex === index
     return(
-        <NavigationElement $isElementActive={isElementActive} onClick={() => handleStorySelect(index)}>
+        <NavigationElement
+          $isElementActive={isElementActive}
+          data-test-id={`notes-entry-${index}`}
+          data-active={isElementActive}
+          onClick={() => handleStorySelect(index)}
+        >
           { name}
         </NavigationElement>
     )

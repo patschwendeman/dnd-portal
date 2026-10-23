@@ -14,6 +14,8 @@ Die App soll
 - Gestaltet das Abenteuer und erzählt die Geschichte.
 - Schlüpft in die Rolle aller anderen Charaktere (NPCs), auf die die Spieler treffen – freundlich wie feindlich.
 - Bedient den **Admin Screen**: aktiviert Szenen, liest Notizen, steuert Musik und Sounds.
+  Eine Navigationsleiste links wechselt zwischen Notizen, Szenen und Kampf (bisher nur Notizen umgesetzt, siehe
+  [screens.md](screens.md#admin-screen)).
 
 ### Spieler (n)
 - Erleben die Welt durch ihre Charaktere, in die sie schlüpfen.

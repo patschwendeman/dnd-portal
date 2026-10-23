@@ -99,7 +99,7 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 
 | Abstand | Beziehung | Beispiele |
 |---|---|---|
-| `space.1` | innerhalb einer Gruppe | Icon-Gruppe, Navigationseinträge, Button-Gruppe, Label über Überschrift |
+| `space.1` | innerhalb einer Gruppe | Icon-Gruppe, Navigationseinträge, Menüpunkte der Navigationsleiste, Button-Gruppe, Label über Überschrift |
 | `space.2` | kleine Kacheln, Label vor Inhalt in derselben Zeile | Kacheln im Admin, „Szenen“ → Kacheln (`margin-right` am Label plus `gap`) |
 | `space.3` | zusammengehörige Elemente, Label → Inhalt darunter | Musik-Button → Titel, Zeilen der Details, Kacheln auf der Wall, Dialog-Buttons, „Kampfszenen“ → Kachelraster, „Notizen“ → Navigation (`padding-bottom: space.2` am Label plus `gap` `space.1` der Spalte) |
 | `space.4` | Gruppen in einer Leiste, Elemente im Dialog | Sound-Gruppen in der Top-Bar, Bild → Text → Buttons |
@@ -114,6 +114,7 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 | Karte | `space.5` |
 | Dialog | `space.5` seitlich und unten |
 | Leisten (seitlich) | `space.5` |
+| Navigationsleiste (oben/unten) und ihr Panel im Admin | `space.3` |
 | Hinweisleiste | `space.1` oben/unten, `space.5` seitlich |
 | Wall-Panel | `space.6` |
 | Notizseite | `space.7` oben/unten, `space.8` seitlich |
@@ -160,7 +161,8 @@ Dreieck der Ressourcen) sind SVG (`<circle>`, `<polygon>`, `viewBox 0 0 20 20`) 
 CSS-Dreiecke über `border-width`.
 
 **Rahmen und Linien:** `borderWidth.thin` für Trennlinien, Ränder von Seiten und Kacheln. `borderWidth.thick` nur
-für Aktiv-Markierungen. Senkrechte Trennlinien sind so hoch wie die Icons daneben (`size.icon`).
+für Aktiv-Markierungen. Senkrechte Trennlinien sind so hoch wie die Icons daneben (`size.icon`); Ausnahme sind die
+Linien rechts an Navigationsleiste und Panel im Admin, die Flächen abgrenzen und über die volle Höhe laufen.
 
 **Aktiv-Zustand:** Kacheln bekommen eine Outline in `borderWidth.thick` mit `outline-offset: borderWidth.thick`.
 Kein Leuchten (`box-shadow`). Buttons und Navigation zeigen den Aktiv-Zustand über die Farbe
@@ -187,7 +189,7 @@ gemeinsame Komponenten gibt es `TextButton` ([TextButton.tsx](src/components/Tex
 
 Aufbau je Baustein in [components.md](docs/design/components.md): [Icon-Button](docs/design/components.md#icon-button),
 [Text-Button](docs/design/components.md#text-button), [Button-Gruppe](docs/design/components.md#button-gruppe),
-[Navigationseintrag](docs/design/components.md#navigationseintrag), [Label](docs/design/components.md#label),
+[Navigationseintrag](docs/design/components.md#navigationseintrag), [Navigationsleiste](docs/design/components.md#navigationsleiste) (Admin), [Label](docs/design/components.md#label),
 [Karte](docs/design/components.md#karte), [Ressourcen-Button](docs/design/components.md#ressourcen-button) (Player),
 [Overlay-Panel](docs/design/components.md#overlay-panel) (Wall), [Schwebende Steuerleiste](docs/design/components.md#schwebende-steuerleiste)
 (Wall, Ground), [Kachel](docs/design/components.md#kachel), [Nummern-Badge](docs/design/components.md#nummern-badge),
@@ -197,7 +199,7 @@ Aufbau je Baustein in [components.md](docs/design/components.md): [Icon-Button](
 
 ### 1.6 Screen-Layouts
 
-Aufbau von Admin (Grid aus Top-Bar, drei Spalten und Bottom-Bar), Wall (Vollbild mit Overlay-Panel und Steuerleiste),
+Aufbau von Admin (Grid aus Top-Bar, Navigationsleiste mit Panel, Notizen und rechter Spalte, Bottom-Bar), Wall (Vollbild mit Overlay-Panel und Steuerleiste),
 Ground (Vollbild-Medium mit Raster und Steuerleiste) und Player (Smartphone im Querformat, Karte mit
 Ressourcen-Buttons): [screen-layouts.md](docs/design/screen-layouts.md#screen-layouts).
 
@@ -221,8 +223,8 @@ Wechselt mit dem Theme.
 
 | Rolle | Bedeutung | Verwendung |
 |---|---|---|
-| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Wall-Panel, Nebenaktion ([2.4](#24-zustände)) |
-| `secondary` | erhöhte Fläche | Karten, Dialog, Nach-oben-Button, Kachel-Platzhalter, Slider-Schiene, Hintergrund der Wall, Linie unter der Top-Bar, inaktiver Zustand ([2.4](#24-zustände)) |
+| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Navigationsleiste und Panel im Admin, Wall-Panel, Nebenaktion ([2.4](#24-zustände)) |
+| `secondary` | erhöhte Fläche | Karten, Dialog, Nach-oben-Button, Kachel-Platzhalter, Slider-Schiene, Hintergrund der Wall, Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel im Admin, inaktiver Zustand ([2.4](#24-zustände)) |
 | `dark` | tiefste Fläche | Bottom-Bar, schwebende Steuerleiste |
 | `primary` | Akzent, aktiv | Links, Slider-Füllung, aktiver Zustand ([2.4](#24-zustände)) |
 | `border` | Linien | Trennlinien in Karten und Top-Bar, Ränder von Notizseiten und Kacheln, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |
@@ -248,11 +250,11 @@ gleich, weil sie Bedeutung tragen, nicht Stimmung. Die `resource.*`-Töne sind s
 
 | Zustand | Rolle | Beispiele |
 |---|---|---|
-| aktiv / ausgewählt | Fläche `primary`, Text und Icons `onPrimary`. Kachel: Outline in `primary` ([1.4](#14-regeln)) | aktive Buttons und Navigation, aktive Kachel, Confirm, Play-Button während die Musik läuft |
+| aktiv / ausgewählt | Fläche `primary`, Text und Icons `onPrimary`. Kachel: Outline in `primary` ([1.4](#14-regeln)) | aktive Buttons und Navigation, aktiver Menüpunkt der Navigationsleiste, aktive Kachel, Confirm, Play-Button während die Musik läuft |
 | inaktiv / normal | `secondary` | inaktive Buttons und Navigation, Play-Button ohne Musik |
 | Abbrechen, Nebenaktion | `background` | Decline-Button |
 | Fläche auf Fläche | `background` → `secondary` → `dark` | welche Fläche welche Rolle hat: [2.2](#22-rollen) |
-| Linie | `border`, nie `text.color` | Ausnahme: Linie unter der Top-Bar ([2.2](#22-rollen)) |
+| Linie | `border`, nie `text.color` | Ausnahme: `secondary` für die Linie unter der Top-Bar und die Linien rechts an Navigationsleiste und Panel im Admin ([2.2](#22-rollen)) |
 
 ### 2.5 Farben außerhalb der Themes
 
@@ -266,7 +268,8 @@ Geprüft nach WCAG 2.1. Ziel AA:
 
 - **Text:** 4,5:1, große Schrift (ab 24px oder ab 18,66px fett) 3:1.
 - **Bedienelemente und Grafik:** 3:1.
-- **Ausnahme:** `border` im Dark-Theme verfehlt 3:1 bewusst: Trennlinien sind Gestaltung, kein
+- **Ausnahme:** `border` im Dark-Theme und die Linien in `secondary` auf `background` (unter der Top-Bar, rechts an
+  Navigationsleiste und Panel im Admin) in beiden Themes verfehlen 3:1 bewusst: Trennlinien sind Gestaltung, kein
   Bedienelement, und WCAG verlangt 3:1 nur für die Grenzen von Bedienelementen. Kacheln sind über ihre Bilder erkennbar.
 
 Messwerte je Farbpaar und Anmerkungen: [contrast.md](docs/design/contrast.md#kontrastmessung).

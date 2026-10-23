@@ -32,6 +32,10 @@ const clickElement = async (driver: WebDriver, selector: string): Promise<WebEle
   return element
 }
 
+const waitForElementGone = async (driver: WebDriver, selector: string): Promise<void> => {
+  await driver.wait(async () => (await driver.findElements(By.css(selector))).length === 0, WAIT_TIMEOUT)
+}
+
 // The Admin marks the tile as active only with the push of the server, so afterwards the scene is saved and other
 // screens receive it when they connect
 const confirmDialog = async (driver: WebDriver, tileSelector: string): Promise<void> => {
@@ -77,4 +81,5 @@ export {
   openScreen,
   waitForAttribute,
   waitForElement,
+  waitForElementGone,
 }
