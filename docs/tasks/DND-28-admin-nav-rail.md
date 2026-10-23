@@ -1,7 +1,7 @@
 # DND-28: Navigationsleiste im Admin Screen mit Menüpunkt „Notizen“
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -185,6 +185,8 @@ mehr Breite bekommen.
 
 ## Review
 
+> Die Umsetzungs-Commits `f04e884` (Runde 1) und `e6f5dbc` (Runde 2) wurden vor dem Push zu `959d54e` zusammengefasst; die Hashes in den Berichten beziehen sich auf den Stand vor dem Zusammenfassen.
+
 ### Runde 1 – 2026-10-23
 **Empfehlung:** Abnahme – keine blockierenden Befunde. Vor „Fertig“ H1 zur Kenntnis nehmen und die manuellen Prüfungen 4 (Musik, Sound, Abenteuer) und 5 (Hinweisleiste bei gestopptem Backend) erledigen.
 
@@ -213,3 +215,32 @@ Geprüft: Commit `f04e884` gegen `2f011ca` (Diff vollständig, 20 Dateien), zus�
 - Scope: `data-test-id`/`data-active` in `SideBarLeftElement.tsx`, `waitForElementGone` in `helpers.ts` und neue Zeilen in `contrast.md` sind durch Subtasks gedeckt; alle 13 Subtasks erledigt; Doku-Stichproben stimmen mit dem Code (`NAV_RAIL_WIDTH` = 40 + 2×12 = 64px).
 
 **Checks:** Frontend `typecheck` ok, `lint` 0 Fehler/1 Warnung (H7), `test:unit` 170 passed (neu `navRail.spec.ts`, 3 Tests), `vite build` ok, E2E 3 Suites/7 Tests grün (`adminNavigation`, `selectMainScene`, `selectSideScene`). Commit `feat(DND-28): …` nach Schema, ohne KI-Signatur. Backend nicht betroffen.
+
+### Runde 2 – 2026-10-23
+**Empfehlung:** Abnahme – keine blockierenden Befunde. H1 beachten (E2E-Lauf hat die aktive Szene auf dem Server verstellt). Weiterhin offen: manuelle Prüfungen 4 (Musik, Sound, Abenteuer) und 5 (Hinweisleiste bei gestopptem Backend).
+
+Geprüft: Commit `e6f5dbc` gegen `f04e884` (7 Dateien, Code-Diff nur `NavRail.tsx:19-20` und `AdminScreen.tsx:78-79`), zusätzlich Browserprüfung (Chrome/Selenium, headless, 1600×900) gegen den Dev-Stack; Theme nur lokal im Testbrowser simuliert (WebSocket-Nachrichten umgeschrieben), kein PATCH aufs Server-Theme (vorher und nachher `tavern`).
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Leiste mit „Notizen“ | erfüllt | E2E-Szenario 1 grün; Browser: genau 1 Button, `aria-label`/`title` „Notizen“, `aria-pressed=true`; Leiste x=0, y=56, 64×621, Panel x=64, 200 breit, bündig zwischen Top- und Bottom-Bar |
+| AK2 Notizen wählen | erfüllt | E2E-Szenario 2 grün; Runde 2 ändert nur Fläche und Linie |
+| AK3 Ein-/Ausklappen | erfüllt (H1 aus Runde 1 gilt weiter) | E2E-Szenario 3 grün; Browser: Panel weg, `aria-pressed=false`, Button-Fläche `secondary` |
+| AK4 Tastatur | erfüllt | Selbst geprüft in beiden simulierten Themes: Enter öffnet, Leertaste schließt; Fokus-Outline `primary` (Dark `rgb(68,147,248)`, Taverne `rgb(192,94,94)`) auf `background` |
+| AK5 Rest unverändert | erfüllt (Musik, Sound, Hinweisleiste nicht live geprüft, von Runde 2 nicht berührt) | Diff nur `Rail` und `NavPanel`; `BottomBar` bleibt `dark` (`AdminScreen.tsx:120`), `TopBar.tsx` unverändert; E2E `selectMainScene`/`selectSideScene` grün; Screenshots: rechte Spalte, Top- und Bottom-Bar wie in Runde 1 |
+| AK6 Beide Themes | erfüllt (nach `contrast.md` mit dokumentierter Ausnahme, siehe H2) | Nachgerechnet Dark/Taverne: Linie `secondary`/`background` 1,09/1,42; Icon inaktiv 15,9/6,5; Icon aktiv 6,1/4,7; Fokus 6,1/4,7; Eintragstext auf `secondary` 15,9/6,5 – deckt sich mit `contrast.md:52-56,70-73`; Computed Styles: Fläche und Linienfarbe identisch mit der Top-Bar (`rgb(14,17,23)`/`rgb(22,27,35)` bzw. `rgb(20,7,1)`/`rgb(61,39,28)`) |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- H1 Nebenwirkung der Prüfung: `npm run test:e2e` (`selectMainScene`/`selectSideScene`) hat `active_scene_id` von Abenteuer 1 auf dem Server von 3 auf 2 gesetzt; Zurückstellen wurde nicht ausgeführt. Szene im Admin wieder auf die gewünschte stellen (vorher ID 3).
+- H2 Leiste und Panel teilen die Fläche mit Top-Bar und Notizbereich; Abgrenzung nur über die `secondary`-Linie, im Dark-Theme 1,1:1. Gewollt (E2), in DESIGN.md 2.6 und `contrast.md` als Ausnahme dokumentiert, im Screenshot wie die Top-Bar-Linie gerade noch sichtbar.
+- H3 Doku konsistent: `components.md:59`, `screen-layouts.md:51`, `DESIGN.md:164-165,226-228,257,271-273`, `contrast.md:52-56,70-73` stimmen mit dem Code; für das Admin-Nav nirgends mehr `dark`/`border`. DESIGN.md 2.6 und `contrast.md` führen jetzt auch die bestehende Top-Bar-Linie als Ausnahme (schließt eine Lücke, durch den Doku-Subtask gedeckt).
+- H4 Commit-Kopfzeile „address review round 1“ leicht irreführend (Runde 1 ohne blockierende Befunde, Commit setzt die geänderte E2 um); Schema erfüllt.
+- H5 Subtask-Text aus Runde 1 (Doku `components.md` „Fläche `dark`, Trennlinie …“) beschreibt den alten Stand; historisch, durch den Runde-2-Subtask ersetzt.
+- H6 (Kleinigkeit) Durch `border-right` ist der Innenraum der Leiste 63px statt 64px, Button 0,5px aus der Mitte; schon in Runde 1, nicht sichtbar.
+- H7 Lint-Warnung `WallScreen.tsx:216` (`img` ohne `alt`) bestand schon vorher.
+- Scope: beide Runde-2-Subtasks erledigt, nichts außerhalb des Scopes geändert; Bericht Runde 1 mitcommittet.
+
+**Checks:** Frontend `typecheck` ok, `lint` 0 Fehler/1 Warnung (H7), `test:unit` 170 passed, `vite build` ok, E2E 3 Suites/7 Tests grün (Nebenwirkung H1). Commit nach Schema, Body nur Stichpunkte, ohne KI-Signatur. Backend nicht betroffen.
