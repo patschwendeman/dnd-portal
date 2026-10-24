@@ -388,7 +388,7 @@ vorher stoppen.
 UI unter http://localhost:5173 (`/admin`, `/wall`, `/ground`, `/`); das Frontend ruft die API über den Proxy des
 Vite-Dev-Servers auf (`/api/…` → API ohne Präfix, `/ws` → API, `server.proxy` in `frontend/vite.config.ts`). Ziel aus
 `API_PROXY_TARGET` (Default `http://localhost:8000`, im Dev-Compose `http://api:8000`).
-Node-Version: `frontend/.nvmrc` (CI) und `frontend/Dockerfile` (`node:18-slim`, Stages `dev` und `build`) synchron halten.
+Node-Version: `frontend/.nvmrc` (CI) und `frontend/Dockerfile` (`node:24-slim`, Stages `dev` und `build`) synchron halten.
 
 **API-URL:** Das Frontend liest die Base-URL der API aus `VITE_API_URL` (Build-Zeit, von Vite ins Bundle
 eingesetzt); ohne Variable gilt `/api/` (relativ, über den Proxy desselben Origins). Die WebSocket-URL leitet `wsUrl`
@@ -446,6 +446,6 @@ startet `uvicorn app.main:app` ohne `--reload`; den Reload setzt nur der Dev-Sta
 | Lint | `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app` (strict, Pydantic-Plugin; Konfig in `pyproject.toml`) | `npm run lint` (ESLint flat config, einfache Quotes, keine Semikolons) |
 | Unit-Tests | `uv run pytest` – Tests aller Endpoints in `tests/` (Erwartungen aus dem Seed), gegen PostgreSQL (lokal Dev-DB bzw. Dev-Container) | `npm run test:unit` (vitest, `__tests__/unit/*.spec.ts`) |
 | E2E | – | `npm run test:e2e` (jest-cucumber + Selenium/Chrome, braucht laufendes Backend mit Seed-Daten) |
-| CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: parallele Jobs `lint` (ruff check, ruff format --check, mypy, `openapi.json` aktuell) und `test` (Alembic-Rundlauf `upgrade head`, `check`, `downgrade base`, `upgrade head`, danach pytest gegen Service-Container `postgres:17`) direkt auf dem Runner, uv mit Cache auf `uv.lock`; Job `docker-prod` baut das Image (`--target prod`, ohne Push) | `.github/workflows/frontend.yml` – analog für `frontend/` und `backend/openapi.json`: zuerst Job `build` (`vite build`), danach parallel `typecheck` (`src/api/schema.d.ts` aktuell, `tsc -b`), `lint` und `test` (`npm run test:unit`) mit `needs: build`, Node aus `frontend/.nvmrc` (18) mit npm-Cache, `npm ci`; Job `docker-prod` baut das Production-Image (`--target prod`, ohne Push); kein E2E in CI |
+| CI | `.github/workflows/backend.yml` – bei Push auf `main`/`development` mit Änderungen unter `backend/`: parallele Jobs `lint` (ruff check, ruff format --check, mypy, `openapi.json` aktuell) und `test` (Alembic-Rundlauf `upgrade head`, `check`, `downgrade base`, `upgrade head`, danach pytest gegen Service-Container `postgres:17`) direkt auf dem Runner, uv mit Cache auf `uv.lock`; Job `docker-prod` baut das Image (`--target prod`, ohne Push) | `.github/workflows/frontend.yml` – analog für `frontend/` und `backend/openapi.json`: zuerst Job `build` (`vite build`), danach parallel `typecheck` (`src/api/schema.d.ts` aktuell, `tsc -b`), `lint` und `test` (`npm run test:unit`) mit `needs: build`, Node aus `frontend/.nvmrc` (24) mit npm-Cache, `npm ci`; Job `docker-prod` baut das Production-Image (`--target prod`, ohne Push); kein E2E in CI |
 
 Schlägt ein Job fehl (Build, Typecheck, Lint, Test oder Image-Build), ist der Workflow rot.

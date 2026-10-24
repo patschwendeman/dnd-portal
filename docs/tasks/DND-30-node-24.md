@@ -1,7 +1,7 @@
 # DND-30: Frontend auf Node 24
 
 **Typ:** setup
-**Status:** Freigegeben
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -43,19 +43,20 @@ transitiv da (22.5.4).
 ## Subtasks
 
 ### Frontend
-- [ ] `frontend/.nvmrc` auf `24`.
-- [ ] `frontend/Dockerfile`: `node:24-slim` in den Stages `dev` und `build`.
-- [ ] `@types/node` `^24.19.2` in `devDependencies`, `package-lock.json` neu erzeugt.
+- [x] `frontend/.nvmrc` auf `24`.
+- [x] `frontend/Dockerfile`: `node:24-slim` in den Stages `dev` und `build`.
+- [x] `@types/node` `^24.19.2` in `devDependencies`, `package-lock.json` neu erzeugt.
 
 ### Doku
-- [ ] `frontend/CLAUDE.md` (Node-Version), `frontend/README.md` (nativer Start), `docs/architecture.md`
+- [x] `frontend/CLAUDE.md` (Node-Version), `frontend/README.md` (nativer Start), `docs/architecture.md`
       (Abschnitt „Lokal starten“ und Tabelle „Qualitätssicherung“).
 
 ## Akzeptanzkriterien (nur setup)
-- [ ] AK1: `.nvmrc`, `Dockerfile` (dev, build) und Doku nennen Node 24. `@types/node` steht auf 24.x.
+- [x] AK1: `.nvmrc`, `Dockerfile` (dev, build) und Doku nennen Node 24. `@types/node` steht auf 24.x.
 - [ ] AK2: Wirksamkeit nachgewiesen: Unter Node 24 sind `npm ci`, `npm run build`, `typecheck`, `lint` und
       `test:unit` grün, die Images `--target prod` und `--target dev` bauen. Nach dem Push ist die Frontend-CI grün.
-- [ ] AK3: Alle Invarianten eingehalten – App-Verhalten unverändert.
+      (Lokal nachgewiesen; Frontend-CI nach Push zu prüfen.)
+- [x] AK3: Alle Invarianten eingehalten – App-Verhalten unverändert.
 
 ## Teststrategie / Verifikation
 

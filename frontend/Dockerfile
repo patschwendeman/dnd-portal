@@ -4,7 +4,7 @@
 #   prod  – nginx serves the build (compose.prod.yaml in the repo root)
 # Keep the Node version in sync with .nvmrc (stages dev and build).
 
-FROM node:18-slim AS dev
+FROM node:24-slim AS dev
 
 WORKDIR /app
 
@@ -19,7 +19,7 @@ EXPOSE 5173
 CMD [ "npm", "run", "dev-exposed" ]
 
 
-FROM node:18-slim AS build
+FROM node:24-slim AS build
 
 WORKDIR /app
 

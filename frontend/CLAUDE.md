@@ -50,7 +50,7 @@ API, SPA-Fallback auf
 `index.html`, lange Cache-Dauer nur für gehashte Dateien direkt unter `/assets/`, gzip). Dateien aus `public/` landen im
 Prod-Image.
 
-Node-Version: `.nvmrc` (`18`, von CI und nvm/fnm gelesen) und `Dockerfile` (`node:18-slim`, Stages `dev` und `build`)
+Node-Version: `.nvmrc` (`24`, von CI und nvm/fnm gelesen) und `Dockerfile` (`node:24-slim`, Stages `dev` und `build`)
 synchron halten.
 Im Container liegt `node_modules` in einem eigenen Volume; nach Änderungen an `package.json` neu aufbauen (Befehl in
 [../docs/architecture.md](../docs/architecture.md#lokal-starten)).
