@@ -11,6 +11,7 @@ import {
   saveActiveAdventure,
   saveActiveScene,
   saveAudio,
+  saveGlobalLevel,
   saveTheme,
 } from '../../src/service/adminScreen'
 
@@ -88,6 +89,22 @@ describe('saveActiveScene', () => {
     patch.mockRejectedValue(original)
     const error = await failure(saveActiveScene(1, 5))
     expect((error as SaveError).original).toBe(original)
+  })
+})
+
+describe('saveGlobalLevel', () => {
+  it('patches the level of the adventure', async () => {
+    const body = { global_level: 3 }
+    patch.mockResolvedValue({ data: { id: 2, ...body } })
+    await expect(saveGlobalLevel(2, 3)).resolves.toEqual({ id: 2, ...body })
+    expect(patch).toHaveBeenCalledWith('adventures/2', body)
+  })
+
+  it('reports a failure as SaveError', async () => {
+    patch.mockRejectedValue(httpError(422))
+    const error = await failure(saveGlobalLevel(1, 21))
+    expect(error).toBeInstanceOf(SaveError)
+    expect(error?.message).toMatch(/^Saving level of adventure 1 failed: .*HTTP 422/)
   })
 })
 

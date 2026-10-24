@@ -24,7 +24,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - Musik ein- und ausschalten.
 - Verschiedene Sounds abspielen.
 - Dashboard rechts neben den Notizen: festes Raster aus Panels, in dem alles gebündelt ist, was der Spielleiter während
-  des Spiels steuert (umgesetzt: „Aktive Szene“, „Musik“, „Sounds“, „Screens“; geplant: „Spieler“, „Level“,
+  des Spiels steuert (umgesetzt: „Aktive Szene“, „Musik“, „Sounds“, „Screens“, „Level“, „Spieler“; geplant:
   „Wall-Overlay“).
 
 ### Ist
@@ -34,11 +34,12 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   400px). Die Mitte der Top-Bar ist leer.
 - **Dashboard:** Raster mit vier Spalten und einer Mindest-Zeilenhöhe; die Panels haben feste Größe und Position (kein
   Verschieben): oben „Aktive Szene“ über die volle Breite (2 Zeilen), darunter „Musik“ und „Sounds“ nebeneinander (je
-  2 Spalten, 2 Zeilen), darunter „Screens“ über die volle Breite (2 Zeilen). Braucht der Inhalt eines Panels mehr Platz
+  2 Spalten, 2 Zeilen), darunter „Screens“ über die volle Breite (2 Zeilen), darunter „Level“ über die volle Breite
+  (1 Zeile) und „Spieler“ über die volle Breite (eine Zeile je Spieler). Braucht der Inhalt eines Panels mehr Platz
   (schmales Fenster), wird seine Zeile höher – die Panels scrollen nicht für sich und schneiden keinen Text ab; ist das
   Raster höher als der Hauptbereich, scrollt das Dashboard als Ganzes. Der Icon-Button „Dashboard“ rechts
   in der Top-Bar (links vom Theme-Umschalter, hervorgehoben solange das Dashboard offen ist) blendet es aus – die Notizen
-  nehmen dann die volle Breite, Musik, Sounds und QR-Code sind nicht erreichbar – und wieder ein. Auswahl und
+  nehmen dann die volle Breite, Musik, Sounds, Level und QR-Code sind nicht erreichbar – und wieder ein. Auswahl und
   Scrollposition der Notizen bleiben erhalten; der Zustand wird nicht gespeichert, nach einem Reload ist das Dashboard
   offen.
 - **Navigationsleiste:** schmale Leiste mit Icon-Buttons „Notizen“ und darunter „Szenen“ (Tooltip mit dem Namen);
@@ -63,7 +64,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Zustand auf dem Server:** Abenteuer, aktive Szene und Theme stehen auf dem Server und gelten für alle
   Spieltisch-Screens, auch in anderen Browsern oder auf anderen Geräten; sie überstehen Reloads und Neustarts der API.
   Mehrere Admin-Fenster dürfen gleichzeitig schreiben, der letzte Schreibzugriff gewinnt.
-- **Speicherfehler:** Schlägt das Speichern von Szene, Abenteuer, Theme oder ein Musik-Befehl fehl, ändert sich auf keinem Screen etwas,
+- **Speicherfehler:** Schlägt das Speichern von Szene, Abenteuer, Theme, Level oder ein Musik-Befehl fehl, ändert sich auf keinem Screen etwas,
   und unter der Top-Bar erscheint die Hinweisleiste „Änderung konnte nicht gespeichert werden“; „Erneut versuchen“
   wiederholt den zuletzt fehlgeschlagenen Schreibzugriff, bei Erfolg verschwindet sie.
 - **Verbindung:** Bricht die Verbindung zum Server ab (spätestens nach etwa 35 s ohne Nachricht erkannt), zeigt der
@@ -101,13 +102,24 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   je Screen; ein weiterer Klick holt das offene Fenster nach vorn, ohne es neu zu laden). Darunter „N Spieler
   verbunden“ und rechts daneben der Icon-Button „QR-Code“. Die Zahlen schickt der Server bei jeder Änderung (Öffnen
   oder Schließen eines Screens); bis zur ersten Meldung steht „–“.
+- **Level:** Panel „Level“ mit dem Level aller Spieler des aktiven Abenteuers und den Buttons „−“ und „+“ (Grenzen
+  1–20, an der Grenze deaktiviert; ohne Abenteuer „–“ und beide deaktiviert). Ein Klick speichert das neue Level; die
+  Anzeige (Panel und Level-Badges) ändert sich erst, wenn der Server den neuen Stand schickt, und folgt so auch in
+  anderen Admin-Fenstern. Fehler zeigen die Hinweisleiste „Änderung konnte nicht gespeichert werden“, das Level bleibt
+  unverändert.
+- **Spieler:** Panel „Spieler“ mit je einer Hero-Karte je Spieler des aktiven Abenteuers in der Reihenfolge der API
+  (Seed: Aragorn, Legolas, Gimli, Gandalf): Avatar (ohne Bild die Initialen des Charakternamens) mit dem Level als
+  Badge oben links, daneben Spielername (Label), Charaktername groß und Volk und Klasse als Chips. Ohne Abenteuer oder
+  ohne Spieler „Keine Spieler“. Spieler und Level lädt der Admin beim Laden, bei einem Abenteuerwechsel und nach
+  jedem Spieltisch-Zustand, den der Server schickt, neu. Effekte (Segen, Vergiftet …) gibt es noch nicht; Spieler
+  anlegen oder bearbeiten ist nicht möglich.
 - **Spieler verbinden:** Der Icon-Button „QR-Code“ im Panel „Screens“ öffnet einen Dialog mit dem QR-Code der
   Player-URL (dunkel auf hellem Grund, unabhängig vom Theme) und der URL als Text; die Spieler scannen ihn mit der
   Smartphone-Kamera. Die URL kommt vom Start-Skript (`dnd prod`: `http://<IP>:8080/`) bzw. ist der Origin des Admins,
   wenn dieser über die IP geöffnet ist; sonst zeigt der Dialog „Player-URL unbekannt – Spieltisch mit „dnd prod“
   starten oder den Admin über die IP des Rechners öffnen“. Schließen per Button, Escape oder Klick außerhalb; der Fokus
   kehrt danach zum Button zurück.
-- **Ladefehler:** Lassen sich Abenteuer oder Szenen nicht laden (Backend nicht erreichbar, Timeout, HTTP-Fehler), erscheint unter der
+- **Ladefehler:** Lassen sich Abenteuer, Spieler oder Szenen nicht laden (Backend nicht erreichbar, Timeout, HTTP-Fehler), erscheint unter der
   Top-Bar die Hinweisleiste „Backend nicht erreichbar“ mit Button „Erneut versuchen“; bei Erfolg verschwindet sie.
   Keine automatischen Wiederholungen. Kann eine Notizdatei nicht geladen werden, zeigt der Notizbereich „Notizen
   konnten nicht geladen werden“; ein Wechsel des Eintrags lädt erneut.

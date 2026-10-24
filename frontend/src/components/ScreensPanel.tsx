@@ -5,6 +5,7 @@ import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
 
 import JoinDialog from './JoinDialog'
+import PanelButton from './PanelButton'
 import { GameAudioContext, GameTableContext } from '../context/context'
 import { textStyle } from '../style/tokens'
 import { playerStatusText, screenStatusText } from '../utils/screenStatus'
@@ -61,31 +62,6 @@ const StatusDot = styled.span<{ $isConnected: boolean }>`
   border: ${(props) => props.theme.borderWidth.thick} solid
     ${(props) => (props.$isConnected ? props.theme.colors.primary : props.theme.colors.text.color)};
   border-radius: ${(props) => props.theme.radius.pill};
-`
-
-const PanelButton = styled.button`
-  display: grid;
-  place-items: center;
-  width: ${(props) => props.theme.size.control.md};
-  height: ${(props) => props.theme.size.control.md};
-  padding: 0;
-  background-color: ${(props) => props.theme.colors.background};
-  color: ${(props) => props.theme.colors.text.color};
-  border: none;
-  border-radius: ${(props) => props.theme.radius.md};
-  cursor: pointer;
-
-  &:focus-visible {
-    outline: ${(props) => props.theme.borderWidth.thick} solid
-      ${(props) => props.theme.colors.primary};
-    outline-offset: ${(props) => props.theme.borderWidth.thick};
-  }
-
-  svg {
-    display: block;
-    width: ${(props) => props.theme.size.icon};
-    height: ${(props) => props.theme.size.icon};
-  }
 `
 
 const Players = styled.span`

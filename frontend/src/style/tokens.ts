@@ -66,6 +66,12 @@ const size = {
   bar: {
     md: '56px',
   },
+  // Avatar (portrait 3:4) and level badge of the hero card of a player
+  avatar: {
+    width: '96px',
+    height: '128px',
+  },
+  badge: '36px',
 }
 
 const layer = {

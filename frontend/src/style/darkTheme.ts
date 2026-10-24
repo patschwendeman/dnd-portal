@@ -8,7 +8,9 @@ const darkTheme = {
     overlay: 'rgba(0, 0, 0, 0.850)',
     text: {
       color: '#f0f6fc',
+      muted: '#f0f6fcb0',
     },
+    initials: '#4493F8',
     onPrimary: '#0e1117',
     error: '#8e1b1b',
     onError: '#ffffff',

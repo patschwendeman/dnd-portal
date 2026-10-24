@@ -20,6 +20,7 @@ Größe nach [1.2](../../DESIGN.md#12-tokens) Größen, Icon nach [1.4](../../DE
 | Zentrierung des Icons | `display: grid; place-items: center` |
 | Padding | `0` (Reset bei `<button>`) |
 | Farbe | Hintergrund in der Top-Bar und der Hinweisleiste transparent, sonst nach [2.2](../../DESIGN.md#22-rollen) und [2.4](../../DESIGN.md#24-zustände) |
+| Dashboard-Panels | gemeinsame Styled Component `PanelButton` ([src/components/PanelButton.tsx](../../src/components/PanelButton.tsx)): Fläche `background`, Fokus als Outline `borderWidth.thick` in `primary` (`:focus-visible`); „In neuem Fenster öffnen“, „QR-Code“ und „−“/„+“ im Panel „Level“ (dort Zeichen statt Icon, `text.lg` `semibold`; deaktiviert Zeichen in `text.muted`, `cursor: default`) |
 | Beispiele | Sound-Buttons, Settings, Dashboard (Top-Bar, aktiv bei offenem Dashboard wie der Menüpunkt der [Navigationsleiste](#navigationsleiste); `aria-expanded`, `aria-controls`), Vollbild (Top-Bar, aktiv im Vollbild; `aria-pressed`), In neuem Fenster öffnen, QR-Code, Play/Pause, Nach oben, Menüpunkte der [Navigationsleiste](#navigationsleiste) (dort abweichend inaktiv ohne eigene Fläche und Icon `size.iconLg`; der allgemeine Icon-Button bleibt gefüllt) |
 | Player | Hintergrund `secondary` (Settings-Button des Theme-Menüs) |
 
@@ -80,7 +81,7 @@ und Laufweite nach [1.4](../../DESIGN.md#14-regeln).
 |---|---|
 | Abstand | nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“. Zum zugehörigen Wert in einem zweizeiligen Block `0` („Musik“ → Titel). |
 | Ausrichtung neben Werten | `align-items: baseline` |
-| Beispiele | Notizen, Szenen, Aktive Szene, Wall, Ground, Musik, Sounds, Screens, Szene wechseln, Raster, Zelle, Aktion, Bonusaktion, Bewegung, Spezial, Zauberplätze |
+| Beispiele | Notizen, Szenen, Aktive Szene, Wall, Ground, Musik, Sounds, Screens, Level, Spieler, Spielername der [Hero-Karte](#hero-karte) (in `text.muted`), Szene wechseln, Raster, Zelle, Aktion, Bonusaktion, Bewegung, Spezial, Zauberplätze |
 
 ## Karte
 
@@ -102,7 +103,23 @@ die Liste der Panels (id, Label, Größe, Inhalt) kommt aus dem `AdminScreen`, d
 | Größe | Props `columns` und `rows` (`grid-column: span n`, `grid-row: span m`), Mindesthöhe aus `DASHBOARD_ROW_HEIGHT`; braucht der Inhalt mehr, wächst die Zeile |
 | Aufbau | [Label](#label) oben, darunter mit `space.3` der Inhalt; kein Scrollen im Panel, Text bricht um statt abgeschnitten zu werden |
 | Flächen im Inhalt | `background` (Fläche auf Fläche, [2.2](../../DESIGN.md#22-rollen)) |
-| Inhalte | „Aktive Szene“ (`ActiveScenePanel`: Vorschaubilder Wall und Ground 16:9 nebeneinander mit Label, `gap` `space.3`, darunter Name `text.lg` `semibold` und Beschreibung `text.sm`, beide umbrechend mit Silbentrennung), „Musik“ (`MusicControl`: Grid, links Play/Pause und darunter Titel und Hinweis `text.sm` umbrechend mit Silbentrennung, rechts über die volle Höhe der senkrechte Lautstärke-Slider, `aria-orientation="vertical"`, Abstand `space.3`), „Sounds“ (`SoundBoard`: Gruppen und Buttons einer Gruppe umbrechend, ohne Trennlinien), „Screens“ (`ScreensPanel`: je Screen Name `text.sm` `semibold`, [Status-Punkt](#status-punkt) mit Text; rechts der Icon-Button „In neuem Fenster öffnen“; darunter Spielerzahl und rechts gleich ausgerichtet der Icon-Button „QR-Code“ (`qrCode.svg`, `aria-haspopup="dialog"`)) |
+| Inhalte | „Aktive Szene“ (`ActiveScenePanel`: Vorschaubilder Wall und Ground 16:9 nebeneinander mit Label, `gap` `space.3`, darunter Name `text.lg` `semibold` und Beschreibung `text.sm`, beide umbrechend mit Silbentrennung), „Musik“ (`MusicControl`: Grid, links Play/Pause und darunter Titel und Hinweis `text.sm` umbrechend mit Silbentrennung, rechts über die volle Höhe der senkrechte Lautstärke-Slider, `aria-orientation="vertical"`, Abstand `space.3`), „Sounds“ (`SoundBoard`: Gruppen und Buttons einer Gruppe umbrechend, ohne Trennlinien), „Screens“ (`ScreensPanel`: je Screen Name `text.sm` `semibold`, [Status-Punkt](#status-punkt) mit Text; rechts der Icon-Button „In neuem Fenster öffnen“; darunter Spielerzahl und rechts gleich ausgerichtet der Icon-Button „QR-Code“ (`qrCode.svg`, `aria-haspopup="dialog"`)), „Level“ (`LevelPanel`: Grid `minmax(0, 1fr) auto`, links das Level `text.xl` `semibold` mit `tabular-nums`, ohne Abenteuer „–“; rechts die Icon-Buttons „−“ und „+“ mit `gap` `space.1`, zugängliche Namen „Level verringern“ und „Level erhöhen“, an den Grenzen 1 und 20 `disabled`), „Spieler“ (`PlayersPanel`: [Hero-Karten](#hero-karte) untereinander, `gap` `space.4`, Reihenfolge der API; ohne Spieler „Keine Spieler“ `text.sm`) |
+
+## Hero-Karte
+
+Nur im Admin (Panel „Spieler“), Komponente `PlayerHeroCard`
+([src/components/PlayerHeroCard.tsx](../../src/components/PlayerHeroCard.tsx)) nach dem Mockup
+[player-card-hero.html](mockup/player-card-hero.html), Variante ohne Effekte. Props `player`, `level`.
+
+| Eigenschaft | Wert |
+|---|---|
+| Element | `<article>` mit dem Charakternamen als `aria-label`, `lang="de"` |
+| Fläche | `background` (Fläche auf Fläche im Panel), `radius.lg`, Innenabstand `space.5` wie die [Karte](#karte) |
+| Aufbau | `display: flex`, vertikal zentriert, `gap` `space.5`: links Avatar mit Level-Badge, rechts eine Spalte (`gap` `space.1`) aus Spielername ([Label](#label) in `text.muted`), Charaktername (`text.2xl` `medium`, bricht um mit Silbentrennung) und den Chips (`padding-top` `space.1`) |
+| Avatar | `size.avatar.width` × `size.avatar.height`, Fläche `secondary`, Rand `borderWidth.thin` in `border`, `radius.lg`; Bild aus `avatar` über `mediaUrl` mit `object-fit: cover`, ohne Bild die Initialen des Charakternamens (`characterInitials` in `src/utils/player.ts`: erster Buchstabe des ersten und des letzten Worts) in `text.2xl` `medium`, Farbe `initials` |
+| Level-Badge | über der oberen linken Ecke des Avatars (`top`/`left` −`space.2`), `size.badge`, `radius.pill`, Fläche `primary`, Zahl `onPrimary` `text.sm` `medium` `tabular-nums`, Ring `borderWidth.thick` in `background` (Farbe der Karte); zeigt das Level des Abenteuers |
+| Chips | Volk und Klasse, umbrechend mit `gap` `space.1`; Innenabstand `0 space.2`, `text.sm`, Fläche `secondary`, Rand `borderWidth.thin` in `border`, `radius.md` |
+| Nicht umgesetzt | Effektzeile, Varianten „kompakt“ und „Kachel“ aus den Mockups |
 
 ## Status-Punkt
 

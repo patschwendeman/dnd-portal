@@ -1,6 +1,8 @@
 import { createContext } from 'react'
 
-import { AudioState, SoundName, Theme } from '../models/models'
+import {
+  AudioState, GameTableState, SoundName, Theme,
+} from '../models/models'
 import { ScreenCounts } from '../realtime/messages'
 
 // The game table state comes from the server (WebSocket /ws); the contexts only pass it on, changes
@@ -27,6 +29,9 @@ export const ActiveAdventureContext = createContext<ActiveAdventureContextType>(
 interface GameTableContextType {
   // false until the first snapshot of the server arrived
   hasState: boolean
+  // The last snapshot, a new object with every push (also an unchanged state after a write), so
+  // the Admin can reload what the snapshot does not contain; null until the first one arrived
+  snapshot: GameTableState | null
   theme: Theme
   connected: boolean
   reconnectNow: () => void
@@ -36,6 +41,7 @@ interface GameTableContextType {
 
 export const GameTableContext = createContext<GameTableContextType>({
   hasState: false,
+  snapshot: null,
   theme: 'dark',
   connected: true,
   reconnectNow: () => {},

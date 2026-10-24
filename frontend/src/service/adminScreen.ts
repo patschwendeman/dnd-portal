@@ -42,6 +42,15 @@ export const saveActiveScene = async (
   { active_scene_id: sceneId },
 )
 
+export const saveGlobalLevel = async (
+  adventureId: number,
+  level: number,
+): Promise<AdventureDetail> => saveData(
+  `level of adventure ${adventureId}`,
+  `adventures/${adventureId}`,
+  { global_level: level },
+)
+
 export const saveActiveAdventure = async (adventureId: number): Promise<GameTableState> => (
   saveData('active adventure', 'table', { active_adventure_id: adventureId })
 )

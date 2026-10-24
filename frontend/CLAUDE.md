@@ -79,7 +79,8 @@ src/realtime/        WebSocket-Client des Spieltischs: GameTableProvider (ThemeP
                      ClientMessage), backoff.ts (reconnectDelay), heartbeat.ts (Watchdog 35 s), visibility.ts
                      (VisibilitySource, für Tests ersetzbar)
 src/context/         ActiveAdventureContext, ActiveSceneContext (IDs number | null, nur lesend), GameTableContext
-                     (hasState, theme, connected, reconnectNow, screens: Verbindungszahlen nur für den Admin), GameAudioContext (audio, isAudioOutput,
+                     (hasState, snapshot: letzter Spieltisch-Zustand, neues Objekt je Push, theme, connected,
+                     reconnectNow, screens: Verbindungszahlen nur für den Admin), GameAudioContext (audio, isAudioOutput,
                      requestAudioOutput, reportTrackEnded, subscribeSound)
 src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Panel „Sounds“), wallAudioPlayer.ts
                      (WallAudioPlayer: Wiedergabe auf der Wall nach dem AudioState, Audio-Fabrik injizierbar für vitest)
@@ -88,19 +89,21 @@ src/components/      UI-Bausteine (TopBar, JoinDialog, ThemeMenu, NavRail (Navig
                      SideBarLeftElement (Eintrag im Panel, Button), DocumentNavigation (Notizen-Einträge im Panel),
                      SceneNavigation (Szenenliste im Panel), DocumentReader (Notizen des gewählten Eintrags),
                      Dashboard (Raster rechts im Admin) mit DashboardPanel, ActiveScenePanel, MusicControl,
-                     SoundBoard, ScreensPanel (Panels), Dialogue, GridOverlay, ScreenControlBar,
+                     SoundBoard, ScreensPanel, LevelPanel, PlayersPanel (Panels), PlayerHeroCard (Hero-Karte),
+                     PanelButton (Icon-Button in Panels), Dialogue, GridOverlay, ScreenControlBar,
                      ResourceBarPlayer …)
 src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
-                     getJoinInfo, saveActiveScene, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
+                     getJoinInfo, saveActiveScene, saveGlobalLevel, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
                      getGroundScreenData …)
 src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData/patchData/postData (apiMethods.ts), loadData,
                      saveData/postCommand, mediaUrl (mediaUrl.ts), wsUrl (wsUrl.ts); schema.d.ts generiert
-src/models/models.ts API-Typen AdventureSummary, AdventureDetail, SceneDetail, Image, Track, GameTableState, Theme,
+src/models/models.ts API-Typen AdventureSummary, AdventureDetail, Player, SceneDetail, Image, Track, GameTableState, Theme,
                      JoinInfo, AudioState, AudioUpdate, SoundName aus src/api/schema.d.ts
 src/utils/utils.ts   Musiktitel (getMusicTitle), filterSceneByKey
 src/utils/navRail.ts nextOpenPanel (welches Panel neben der Navigationsleiste offen ist)
 src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
 src/utils/playerTheme.ts Theme-Abweichung des Players lesen/schreiben, effectiveTheme, Altschlüssel verwerfen
+src/utils/player.ts  characterInitials (Initialen ohne Avatar), steppedLevel (Level −/+ in den Grenzen 1–20)
 src/utils/screenStatus.ts Statustexte des Panels „Screens“ aus der Anzahl (screenStatusText, playerStatusText)
 src/utils/useDocumentFullscreen.ts Vollbild des eigenen Fensters (Admin, Top-Bar), Zustand über fullscreenchange
 src/utils/playerUrl.ts selectPlayerUrl (URL der API, sonst Origin des Admins, nicht bei localhost/127.0.0.1/[::1])
@@ -120,6 +123,9 @@ per `scenes/{id}` neu laden (ohne aktive Szene kein Request, nur Hintergrund). N
 Verbindungsfehler. Der Player nutzt vom Snapshot nur das Theme (`Abweichung ?? Spieltisch-Theme`), sendet nichts und
 zeigt keinen Verbindungsstatus. Der QR-Code-Dialog im Admin (`JoinDialog`, geöffnet aus dem Panel „Screens“) lädt beim Öffnen `table/join`. Nur an
 Admins schickt der Server die Zahl der verbundenen Wall-, Ground- und Player-Verbindungen (`screens`).
+Spieler und Level (`global_level`) stehen nicht im Snapshot: Der Admin lädt `adventures/{id}` beim Laden, bei einem
+Abenteuerwechsel und nach jedem Snapshot (`snapshot` im `GameTableContext`) neu; das Level schreibt er per
+`PATCH adventures/{id}` ohne lokale Vorwegnahme, der Server pusht danach einen Snapshot.
 Details: `../docs/architecture.md#synchronisation`.
 
 Audio: Der Server hält den Musikzustand und pusht ihn als `audio` an alle Screens. Die Wall, auf der „AUDIO“ geklickt

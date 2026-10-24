@@ -2,8 +2,8 @@ Feature: Dashboard in the admin screen
 
 Scenario: The dashboard shows its panels next to the notes
     Given I am on the admin screen
-    Then I see the dashboard with the panels Aktive Szene, Musik, Sounds, Screens
-    And Aktive Szene spans the full width, below it Musik and Sounds side by side, below them Screens over the full width
+    Then I see the dashboard with the panels Aktive Szene, Musik, Sounds, Screens, Level, Spieler
+    And Aktive Szene spans the full width, below it Musik and Sounds side by side, below them Screens, Level and Spieler over the full width
     And no panel scrolls on its own
     And there is no bottom bar, no sound button and no join button in the top bar
 

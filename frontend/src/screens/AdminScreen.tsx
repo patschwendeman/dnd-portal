@@ -9,8 +9,10 @@ import Dialogue from '../components/Dialogue'
 import DocumentNavigation from '../components/DocumentNavigation'
 import DocumentReader from '../components/DocumentReader'
 import ErrorBar from '../components/ErrorBar'
+import LevelPanel from '../components/LevelPanel'
 import MusicControl from '../components/MusicControl'
 import { NavRail, NavRailItem } from '../components/NavRail'
+import PlayersPanel from '../components/PlayersPanel'
 import SceneNavigation from '../components/SceneNavigation'
 import ScreensPanel from '../components/ScreensPanel'
 import SoundBoard from '../components/SoundBoard'
@@ -18,15 +20,19 @@ import TopBar from '../components/TopBar'
 import {
   ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext,
 } from '../context/context'
-import { AdventureSummary, SceneDetail, SoundName } from '../models/models'
+import {
+  AdventureDetail, AdventureSummary, SceneDetail, SoundName,
+} from '../models/models'
 import {
   getAdminData,
+  getAdventure,
   getAdventures,
   getSceneById,
   playSound,
   saveActiveAdventure,
   saveActiveScene,
   saveAudio,
+  saveGlobalLevel,
   saveTheme,
 } from '../service/adminScreen'
 import GlobalStyle, { hoverScrollbar } from '../style/GlobalStyle'
@@ -105,12 +111,14 @@ function AdminScreen(): ReactElement {
   const { activeAdventureId } = useContext(ActiveAdventureContext)
   const { activeSceneId } = useContext(ActiveSceneContext)
   const {
-    hasState, theme: gameTableTheme, connected, reconnectNow,
+    hasState, snapshot, theme: gameTableTheme, connected, reconnectNow,
   } = useContext(GameTableContext)
   const { audio } = useContext(GameAudioContext)
   const isMusicPlaying = audio?.playing ?? false
   const [adventures, setAdventures] = useState<AdventureSummary[]>()
   const [scenesDetails, setScenesDetails] = useState<SceneDetail[]>([])
+  // Players and level of the active adventure
+  const [adventureDetail, setAdventureDetail] = useState<AdventureDetail>()
   const [activeScene, setActiveScene] = useState<SceneDetail>()
 
   const [dialogueVisibility, setDialogueVisibility] = useState<boolean>(false)
@@ -124,8 +132,9 @@ function AdminScreen(): ReactElement {
 
   const [adventuresFailed, setAdventuresFailed] = useState<boolean>(false)
   const [adminDataFailed, setAdminDataFailed] = useState<boolean>(false)
+  const [adventureFailed, setAdventureFailed] = useState<boolean>(false)
   const [activeSceneFailed, setActiveSceneFailed] = useState<boolean>(false)
-  const hasLoadError = adventuresFailed || adminDataFailed || activeSceneFailed
+  const hasLoadError = adventuresFailed || adminDataFailed || adventureFailed || activeSceneFailed
 
   // The last write that failed (scene, adventure or theme), kept so "Erneut versuchen" can repeat
   // it
@@ -146,6 +155,8 @@ function AdminScreen(): ReactElement {
     if (loadedAdventureId === null) {
       setScenesDetails([])
       setAdminDataFailed(false)
+      setAdventureDetail(undefined)
+      setAdventureFailed(false)
     }
   }
   const [prevActiveSceneId, setPrevActiveSceneId] = useState(activeSceneId)
@@ -209,6 +220,33 @@ function AdminScreen(): ReactElement {
       stale = true
     }
   }, [loadedAdventureId, reloadCount])
+
+  // The snapshot does not contain the level: the server pushes one after every write to an
+  // adventure, so a new snapshot reloads players and level, also in other Admin windows
+  useEffect(() => {
+    let stale = false
+
+    if (loadedAdventureId === null) {
+      return undefined
+    }
+
+    loadLatest(
+      () => getAdventure(loadedAdventureId),
+      (loaded) => {
+        setAdventureDetail(loaded)
+        setAdventureFailed(false)
+      },
+      (err) => {
+        console.error('Error fetching adventure:', err)
+        setAdventureFailed(true)
+      },
+      () => stale,
+    )
+
+    return () => {
+      stale = true
+    }
+  }, [loadedAdventureId, snapshot, reloadCount])
 
   useEffect(() => {
     let stale = false
@@ -276,6 +314,14 @@ function AdminScreen(): ReactElement {
       return
     }
     runSave(() => saveActiveAdventure(adventureId))
+  }
+
+  const handleLevelChange = (level: number) => {
+    if (adventureDetail === undefined) {
+      return
+    }
+    const adventureId = adventureDetail.id
+    runSave(() => saveGlobalLevel(adventureId, level))
   }
 
   const handleThemeToggle = () => {
@@ -347,6 +393,9 @@ function AdminScreen(): ReactElement {
     setOpenPanel((open) => nextOpenPanel(open, id))
   }
 
+  const players = adventureDetail?.players ?? []
+  const level = adventureDetail?.global_level ?? null
+
   const dashboardPanels: DashboardItem[] = [
     {
       id: 'scene',
@@ -382,6 +431,21 @@ function AdminScreen(): ReactElement {
       columns: 4,
       rows: 2,
       content: <ScreensPanel />,
+    },
+    {
+      id: 'level',
+      label: 'Level',
+      columns: 4,
+      rows: 1,
+      content: <LevelPanel level={level} onChange={handleLevelChange} />,
+    },
+    {
+      id: 'players',
+      label: 'Spieler',
+      columns: 4,
+      // One row per hero card; the rows grow with the cards
+      rows: Math.max(1, players.length),
+      content: <PlayersPanel players={players} level={level ?? 1} />,
     },
   ]
 

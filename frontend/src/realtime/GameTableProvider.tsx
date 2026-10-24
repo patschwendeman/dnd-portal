@@ -46,7 +46,7 @@ function GameTableProvider({
   const scene = useMemo(() => ({ activeSceneId }), [activeSceneId])
   const gameTable = useMemo(
     () => ({
-      hasState: state !== null, theme, connected, reconnectNow, screens,
+      hasState: state !== null, snapshot: state, theme, connected, reconnectNow, screens,
     }),
     [state, theme, connected, reconnectNow, screens],
   )

@@ -8,7 +8,9 @@ const tavernTheme = {
     overlay: 'rgba(0, 0, 0, 0.850)',
     text: {
       color: '#CBAB96',
+      muted: '#CBAB96b0',
     },
+    initials: '#CBAB96',
     onPrimary: '#140701',
     error: '#8e1b1b',
     onError: '#ffffff',

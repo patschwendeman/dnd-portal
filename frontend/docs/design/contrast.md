@@ -18,6 +18,8 @@ gilt der Code.
 | `background` | `#0e1117` | `#140701` |
 | `overlay` | `rgba(0, 0, 0, 0.850)` | `rgba(0, 0, 0, 0.850)` |
 | `text.color` | `#f0f6fc` | `#CBAB96` |
+| `text.muted` | `#f0f6fcb0` (= `text.color`, 69 % deckend) | `#CBAB96b0` (= `text.color`, 69 % deckend) |
+| `initials` | `#4493F8` (= `primary`) | `#CBAB96` (= `text.color`) |
 | `onPrimary` | `#0e1117` (= `background`) | `#140701` (= `background`) |
 | `error` | `#8e1b1b` | `#8e1b1b` |
 | `onError` | `#ffffff` | `#ffffff` |
@@ -55,6 +57,15 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `primary` auf `secondary` | Status-Punkt „verbunden“ im Panel „Screens“ | 3,0 | 5,6 | 3,3 | ✓ beide |
 | `text.color` auf `secondary` | Ring des Status-Punkts „nicht verbunden“ | 3,0 | 15,9 | 6,5 | ✓ beide |
 | `background` auf `secondary` | Flächen in Dashboard-Panels (Buttons, Slider-Schiene, leere Bildfläche) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide, siehe Anmerkung |
+| `text.color` auf `background` | Charaktername der Hero-Karte (32px) | 3,0 | 17,4 | 9,2 | ✓ beide |
+| `text.muted` auf `background` | Spielername der Hero-Karte (12px) | 4,5 | 8,6 | 4,8 | ✓ beide |
+| `text.color` auf `secondary` | Chips der Hero-Karte (14px) | 4,5 | 15,9 | 6,5 | ✓ beide |
+| `initials` auf `secondary` | Initialen im Avatar (32px, groß) | 3,0 | 5,6 | 6,5 | ✓ beide |
+| `onPrimary` auf `primary` | Zahl im Level-Badge (14px) | 4,5 | 6,1 | 4,7 | ✓ beide |
+| `primary` auf `background` | Level-Badge gegen die Hero-Karte | 3,0 | 6,1 | 4,7 | ✓ beide |
+| `text.color` auf `background` | Zeichen „−“/„+“ der Buttons im Panel „Level“ (20px) | 4,5 | 17,4 | 9,2 | ✓ beide |
+| `text.color` auf `secondary` | Level im Panel „Level“ (24px) | 3,0 | 15,9 | 6,5 | ✓ beide |
+| `border` auf `background` | Rand von Avatar und Chips gegen die Hero-Karte | 3,0 | **1,5** | 4,3 | bewusst ✗ Dark, siehe Anmerkung |
 | `onError` auf `error` | Text der Hinweisleiste (14px) | 4,5 | 9,0 | 9,0 | ✓ |
 | `qr.foreground` auf `qr.background` | QR-Code im Dialog „Spieler verbinden“ | 3,0 | 21,0 | 21,0 | ✓ |
 | `onError` auf `error` | Icon-Button und Fokus-Outline der Hinweisleiste | 3,0 | 9,0 | 9,0 | ✓ |
@@ -72,6 +83,10 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
   Tavern 1,4) und ist nur ein Zusatzsignal. Erkennbar sind sie über Icon bzw. Text, die das Ziel auf `background` und
   auf `secondary` erreichen. Die Linien in `secondary` sind
   Gestaltung wie die Linie unter der Top-Bar (Ausnahme in [2.6](../../DESIGN.md#26-kontrast)).
+- **Hero-Karte (Admin):** Avatar und Chips sind keine Bedienelemente; ihr Rand in `border` ist Gestaltung wie die
+  Trennlinien (Ausnahme in [2.6](../../DESIGN.md#26-kontrast)). Erkennbar sind sie an Initialen bzw. Text, die das Ziel
+  erreichen. Deaktivierte Buttons „−“/„+“ (Zeichen in `text.muted`) sind nach WCAG vom Kontrastziel ausgenommen
+  (Dark 8,6, Tavern 4,8 auf `background`).
 - **Ressourcen (Player):** Die Spannen reichen über alle fünf Ressourcen.
 - **Flächen in Dashboard-Panels (Admin):** Buttons und Slider-Schiene haben die Fläche `background` auf dem Panel in
   `secondary` (wie Decline im Dialog); die Fläche hebt sich nur schwach ab und ist nur ein Zusatzsignal, erkennbar sind

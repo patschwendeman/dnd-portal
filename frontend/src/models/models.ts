@@ -7,6 +7,7 @@ type Schemas = components['schemas']
 export type AdventureSummary = Schemas['AdventureSummary']
 export type AdventureDetail = Schemas['AdventureDetail']
 export type SceneDetail = Schemas['SceneDetail']
+export type Player = Schemas['Player']
 export type Image = Schemas['Image']
 export type Track = Schemas['Track']
 

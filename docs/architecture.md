@@ -30,12 +30,13 @@
   erfolgreichen Änderung per `PATCH /table` oder `PATCH /adventures/{id}` einen vollständigen Snapshot an alle
   Verbindungen (auch an andere Admins; der letzte Schreibzugriff gewinnt, keine Sperren). Der Provider speist daraus
   `ActiveAdventureContext`, `ActiveSceneContext` (nur lesend) und das Theme. Die Screens laden daraufhin neu vom
-  Backend: Wall und Ground die Szene, der Admin bei einem Abenteuerwechsel dessen Szenen. Ohne aktive Szene zeigen Wall und Ground
+  Backend: Wall und Ground die Szene, der Admin bei einem Abenteuerwechsel dessen Szenen und nach jedem Snapshot
+  Spieler und Level des aktiven Abenteuers (`GET /adventures/{id}`; `global_level` steht nicht im Snapshot). Ohne aktive Szene zeigen Wall und Ground
   nur die Hintergrundfarbe und stellen keinen Request. Bis zum ersten Snapshot gilt „kein Abenteuer, keine Szene,
   Theme `dark`“.
 - Schreiben nur per REST, **ohne lokale Vorwegnahme**: Der Admin wechselt das Abenteuer per `PATCH /table
-  {"active_adventure_id": <id>}`, die Szene per `PATCH /adventures/{id} {"active_scene_id": <id>}` und das Theme per
-  `PATCH /table {"theme": …}`. Admin, Wall und Ground wechseln erst mit dem Push; ein Abenteuerwechsel liefert direkt
+  {"active_adventure_id": <id>}`, die Szene per `PATCH /adventures/{id} {"active_scene_id": <id>}`, das Level per
+  `PATCH /adventures/{id} {"global_level": <n>}` und das Theme per `PATCH /table {"theme": …}`. Admin, Wall und Ground wechseln erst mit dem Push; ein Abenteuerwechsel liefert direkt
   die gespeicherte Szene des neuen Abenteuers, nie die eines anderen. Ist im Snapshot kein Abenteuer gesetzt, aktiviert
   der Admin das erste der Liste (`selectDefaultAdventureId`) per `PATCH /table`. Schlägt ein Schreibzugriff fehl,
   zeigt der Admin „Änderung konnte nicht gespeichert werden“; „Erneut versuchen“ wiederholt den zuletzt

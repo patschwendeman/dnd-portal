@@ -1,7 +1,7 @@
 # DND-34: Panels „Spieler“ (Hero-Karte) und „Level“ im Admin-Dashboard
 
 **Typ:** feat
-**Status:** Entwurf
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -50,6 +50,8 @@ Spieltisch sieht er die Gruppe auf einen Blick und hebt nach einem Level-Up das 
   Vorwegnahme; Fehler zeigen die Speicherfehler-Leiste mit „Erneut versuchen“ (bestehendes `runSave`). Das Level-Badge
   jeder Hero-Karte zeigt dasselbe Level.
 - **Verworfene Alternativen:** −/+ im Kopf des Panels „Spieler“.
+- **Position:** Panel 4x1 (4 Spalten breit, eine Zeile hoch) direkt über „Spieler“; „Sounds“/„Screens“ bleiben
+  unverändert.
 - **Begründung:** Wunsch des Spielleiters.
 
 ### E4: Neuer Stand nach dem Speichern
@@ -64,14 +66,14 @@ Spieltisch sieht er die Gruppe auf einen Blick und hebt nach einem Level-Up das 
 ## Subtasks
 
 ### Frontend
-- [ ] Service-Funktionen für `GET /adventures/{id}` (falls nicht vorhanden) und `PATCH` mit `global_level`.
-- [ ] `PlayerHeroCard` (E1), ggf. neue Tokens.
-- [ ] Panel „Spieler“ (E2) und Panel „Level“ (E3) im Dashboard; Laden nach E4.
-- [ ] Unit: Initialen aus dem Charakternamen; Grenzen 1–20 (falls als Funktion ausgelagert).
-- [ ] E2E: Spieler aus dem Seed werden angezeigt; Level erhöhen und verringern, Badge folgt.
+- [x] Service-Funktionen für `GET /adventures/{id}` (falls nicht vorhanden) und `PATCH` mit `global_level`.
+- [x] `PlayerHeroCard` (E1), ggf. neue Tokens.
+- [x] Panel „Spieler“ (E2) und Panel „Level“ (E3) im Dashboard; Laden nach E4.
+- [x] Unit: Initialen aus dem Charakternamen; Grenzen 1–20 (falls als Funktion ausgelagert).
+- [x] E2E: Spieler aus dem Seed werden angezeigt; Level erhöhen und verringern, Badge folgt.
 
 ### Doku
-- [ ] `docs/screens.md` (Admin Ist), `frontend/docs/design/components.md` (Hero-Karte, Panel „Level“),
+- [x] `docs/screens.md` (Admin Ist), `frontend/docs/design/components.md` (Hero-Karte, Panel „Level“),
       `screen-layouts.md` (Raster), `contrast.md` (Badge, Chips in beiden Themes), `frontend/CLAUDE.md`.
 
 ## Akzeptanzkriterien
@@ -111,8 +113,6 @@ Spieltisch sieht er die Gruppe auf einen Blick und hebt nach einem Level-Up das 
 2. Level −/+, Grenzen, zweites Admin-Fenster (AK2); Backend stoppen und Level ändern (AK3).
 
 ## Offene Fragen
-- Größe und Position des Panels „Level“ im Raster (z. B. 1x1 neben „Screens“, dann „Sounds“/„Screens“ schmaler,
-  oder 4x1 über „Spieler“).
-- Ist E4 (Neuladen nach jedem `state`-Push) recht, oder soll `global_level` in den Spieltisch-Zustand?
+- Keine (Position „Level“ in E3 und E4 vom User bestätigt).
 
 ## Review

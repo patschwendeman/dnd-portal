@@ -30,7 +30,7 @@ const SOUND_BUTTON = '[data-test-id="dashboard-panel-sounds"] [data-test-id="sou
 const JOIN_BUTTON = '[data-test-id="join-button"]'
 const FULLSCREEN_TOGGLE = '[data-test-id="fullscreen-toggle"]'
 const JOIN_DIALOG = '[data-test-id="join-dialog"]'
-const PANEL_LABELS = ['Aktive Szene', 'Musik', 'Sounds', 'Screens']
+const PANEL_LABELS = ['Aktive Szene', 'Musik', 'Sounds', 'Screens', 'Level', 'Spieler']
 const LEVELING_INDEX = 3
 const SCROLL_TOP = 400
 // Three status waits plus the start of two more browsers, see the scenario
@@ -157,20 +157,23 @@ defineFeature(feature, (test) => {
       await openAdmin(driver)
     })
 
-    then('I see the dashboard with the panels Aktive Szene, Musik, Sounds, Screens', async () => {
-      await waitForElement(driver, DASHBOARD)
-      const panels = await driver.findElements(By.css(DASHBOARD_PANELS))
-      const labels = await Promise.all(panels.map((item) => item.getAttribute('aria-label')))
-      expect(labels).toEqual(PANEL_LABELS)
-      const dashboard = await (await waitForElement(driver, DASHBOARD)).getRect()
-      const notes = await getNotesWidth(driver)
-      expect(dashboard.width).toBeLessThan(notes)
-      expect(dashboard.width).toBeGreaterThan(notes / 3)
-    })
+    then(
+      'I see the dashboard with the panels Aktive Szene, Musik, Sounds, Screens, Level, Spieler',
+      async () => {
+        await waitForElement(driver, DASHBOARD)
+        const panels = await driver.findElements(By.css(DASHBOARD_PANELS))
+        const labels = await Promise.all(panels.map((item) => item.getAttribute('aria-label')))
+        expect(labels).toEqual(PANEL_LABELS)
+        const dashboard = await (await waitForElement(driver, DASHBOARD)).getRect()
+        const notes = await getNotesWidth(driver)
+        expect(dashboard.width).toBeLessThan(notes)
+        expect(dashboard.width).toBeGreaterThan(notes / 3)
+      },
+    )
 
     and(
       'Aktive Szene spans the full width, below it Musik and Sounds side by side, below them '
-        + 'Screens over the full width',
+        + 'Screens, Level and Spieler over the full width',
       async () => {
         const dashboard = await (await waitForElement(driver, DASHBOARD)).getRect()
         const scene = await (await waitForElement(driver, panel('scene'))).getRect()
@@ -190,6 +193,12 @@ defineFeature(feature, (test) => {
         expect(sounds.height).toBe(music.height)
         expect(screens.y).toBeGreaterThan(music.y + music.height)
         expect(screens.width).toBe(innerWidth)
+        const level = await (await waitForElement(driver, panel('level'))).getRect()
+        const players = await (await waitForElement(driver, panel('players'))).getRect()
+        expect(level.y).toBeGreaterThan(screens.y + screens.height)
+        expect(level.width).toBe(innerWidth)
+        expect(players.y).toBeGreaterThan(level.y + level.height)
+        expect(players.width).toBe(innerWidth)
       },
     )
 

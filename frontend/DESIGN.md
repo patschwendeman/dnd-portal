@@ -69,6 +69,8 @@ Die Werte stehen nur in [tokens.ts](src/style/tokens.ts).
 | `size.scrollbar` | Breite der Scrollleiste (Notizen im Admin) |
 | `size.button.minWidth` | Mindestbreite von Text-Buttons |
 | `size.bar.md` | Top-Bar, Höhe der schwebenden Steuerleiste |
+| `size.avatar.width` · `size.avatar.height` | Avatar der Hero-Karte (Admin), 96 × 128px (Hochformat 3:4) |
+| `size.badge` | Level-Badge der Hero-Karte (Admin), 36px |
 
 **Ebenen (`z-index`):** `z-index` nur über `layer.*`, nie als freie Zahl. Was im Grid-Layout ohnehin richtig
 liegt, bekommt keinen `z-index`. `layer.raised` gilt nur innerhalb einer Komponente mit eigenem Stapelkontext.
@@ -125,11 +127,11 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 
 | Stufe | Gewicht | Verwendung |
 |---|---|---|
-| `text.2xl` | `bold` | h1 in den Notizen |
-| `text.xl` | `semibold` | h2 in den Notizen, Überschrift des Wall-Panels, Zahl im Ressourcen-Button (Player) |
-| `text.lg` | `semibold` | Titel von Karte und Dialog, Ziffer der Zauberstufe I–IV (Player) |
+| `text.2xl` | `medium` / `bold` | Charaktername und Initialen der Hero-Karte (`medium`, Admin), h1 in den Notizen (`bold`) |
+| `text.xl` | `semibold` | h2 in den Notizen, Überschrift des Wall-Panels, Zahl im Ressourcen-Button (Player), Level im Panel „Level“ (Admin) |
+| `text.lg` | `semibold` | Titel von Karte und Dialog, Ziffer der Zauberstufe I–IV (Player), Zeichen „−“ und „+“ im Panel „Level“ (Admin) |
 | `text.md` | `regular` / `medium` / `semibold` / `bold` | Standard und Listen in den Notizen (`ul`, `ol`, `li`, auch Absätze in Listeneinträgen des Inhaltsverzeichnisses) (`regular`), Hinweis im Overlay „Handy drehen“ (`medium`, Player), h3 und h4 in den Notizen (`semibold`), Abenteuer-Auswahl in der Top-Bar (`bold`) |
-| `text.sm` | `regular` / `medium` / `semibold` | Werte, Beschreibungen (`regular`), Navigation, Musiktitel und Text der Hinweisleiste (`medium`), Buttons, Slider-Wert, h5 und h6 in den Notizen (`semibold`) |
+| `text.sm` | `regular` / `medium` / `semibold` | Werte, Beschreibungen, Chips der Hero-Karte (`regular`), Navigation, Musiktitel, Text der Hinweisleiste und Zahl im Level-Badge (`medium`), Buttons, Slider-Wert, h5 und h6 in den Notizen (`semibold`) |
 | `text.xs` | `semibold` | Labels |
 | `text.reading` | `regular` | nur Fließtext (Absätze) in den Notizen |
 
@@ -151,6 +153,9 @@ Titel und normale Texte wie „Confirm“.
 | Karte, Dashboard-Panel, Notizseite, Wall-Panel, Dialog | `radius.lg` |
 | Vorschaubild im Panel „Aktive Szene“ | `radius.md` |
 | Status-Punkt im Panel „Screens“ | `radius.pill` |
+| Hero-Karte und ihr Avatar (Admin) | `radius.lg` |
+| Chips der Hero-Karte (Admin) | `radius.md` |
+| Level-Badge der Hero-Karte (Admin) | `radius.pill` |
 | schwebende Leiste | `radius.xl` |
 | Slider-Schiene | `radius.pill` |
 
@@ -173,7 +178,7 @@ mit `object-fit: contain`.
 Vollbild-Hintergründe mit `position: fixed`, `inset: 0`, `object-fit: cover`.
 
 **Zahlen:** `font-variant-numeric: tabular-nums`, wo Zahlen sich ändern oder untereinander stehen (Slider-Wert,
-Zahl im Ressourcen-Button).
+Zahl im Ressourcen-Button, Level im Panel „Level“ und im Level-Badge).
 
 **Übergangsdauern:** bewusst **keine** Tokens, sondern Werte in der jeweiligen Komponente.
 
@@ -183,13 +188,14 @@ Im Player sind alle Texte deutsch, auch der Hinweis „Bitte das Handy quer halt
 ### 1.5 Bausteine
 
 Wiederkehrende Elemente werden in den Components gleich umgesetzt, am besten als gemeinsame Styled Components. Als
-gemeinsame Komponenten gibt es `TextButton` ([TextButton.tsx](src/components/TextButton.tsx)) und `Label`
-([Label.tsx](src/components/Label.tsx)).
+gemeinsame Komponenten gibt es `TextButton` ([TextButton.tsx](src/components/TextButton.tsx)), `Label`
+([Label.tsx](src/components/Label.tsx)) und `PanelButton` ([PanelButton.tsx](src/components/PanelButton.tsx), Icon-Button
+in Dashboard-Panels).
 
 Aufbau je Baustein in [components.md](docs/design/components.md): [Icon-Button](docs/design/components.md#icon-button),
 [Text-Button](docs/design/components.md#text-button), [Button-Gruppe](docs/design/components.md#button-gruppe),
 [Navigationseintrag](docs/design/components.md#navigationseintrag), [Navigationsleiste](docs/design/components.md#navigationsleiste) (Admin), [Label](docs/design/components.md#label),
-[Karte](docs/design/components.md#karte), [Dashboard-Panel](docs/design/components.md#dashboard-panel) (Admin), [Status-Punkt](docs/design/components.md#status-punkt) (Admin), [Ressourcen-Button](docs/design/components.md#ressourcen-button) (Player),
+[Karte](docs/design/components.md#karte), [Dashboard-Panel](docs/design/components.md#dashboard-panel) (Admin), [Hero-Karte](docs/design/components.md#hero-karte) (Admin), [Status-Punkt](docs/design/components.md#status-punkt) (Admin), [Ressourcen-Button](docs/design/components.md#ressourcen-button) (Player),
 [Overlay-Panel](docs/design/components.md#overlay-panel) (Wall), [Schwebende Steuerleiste](docs/design/components.md#schwebende-steuerleiste)
 (Wall, Ground),
 [Dialog](docs/design/components.md#dialog), [Dialog „Spieler verbinden“](docs/design/components.md#dialog-spieler-verbinden) (Admin), [Top-Bar](docs/design/components.md#top-bar),
@@ -222,14 +228,16 @@ Wechselt mit dem Theme.
 
 | Rolle | Bedeutung | Verwendung |
 |---|---|---|
-| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Navigationsleiste und Panel im Admin, Wall-Panel, Nebenaktion ([2.4](#24-zustände)); Flächen in Dashboard-Panels (Vorschaubilder, Play-Button ohne Musik, Slider-Schiene der Lautstärke, Buttons „In neuem Fenster öffnen“ und „QR-Code“) |
-| `secondary` | erhöhte Fläche | Karten, Dashboard-Panels, Dialog, Nach-oben-Button, Slider-Schiene, Hintergrund der Wall, Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel im Admin, inaktiver Zustand ([2.4](#24-zustände)) |
+| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Navigationsleiste und Panel im Admin, Wall-Panel, Nebenaktion ([2.4](#24-zustände)); Flächen in Dashboard-Panels (Vorschaubilder, Play-Button ohne Musik, Slider-Schiene der Lautstärke, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, Hero-Karte), Ring um das Level-Badge |
+| `secondary` | erhöhte Fläche | Karten, Dashboard-Panels, Dialog, Avatar und Chips der Hero-Karte, Nach-oben-Button, Slider-Schiene, Hintergrund der Wall, Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel im Admin, inaktiver Zustand ([2.4](#24-zustände)) |
 | `dark` | tiefste Fläche | schwebende Steuerleiste |
-| `primary` | Akzent, aktiv | Links, Slider-Füllung, Status-Punkt „verbunden“, aktiver Zustand ([2.4](#24-zustände)) |
-| `border` | Linien | Trennlinien in Karten und Top-Bar, Ränder von Notizseiten, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |
+| `primary` | Akzent, aktiv | Links, Slider-Füllung, Status-Punkt „verbunden“, Level-Badge der Hero-Karte, aktiver Zustand ([2.4](#24-zustände)) |
+| `border` | Linien | Trennlinien in Karten und Top-Bar, Rand von Avatar und Chips der Hero-Karte, Ränder von Notizseiten, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |
 | `overlay` | Abdunklung | Hintergrund hinter dem Dialog |
 | `text.color` | Vordergrund | Text, Icon-Füllung, Slider-Griff, Ring des Status-Punkts „nicht verbunden“ |
-| `onPrimary` | Vordergrund auf Akzent | aktiver Zustand ([2.4](#24-zustände)) |
+| `text.muted` | gedämpfter Vordergrund (`text.color` mit Transparenz) | Spielername (Label) der Hero-Karte, Zeichen deaktivierter Buttons ([2.4](#24-zustände)) |
+| `initials` | Initialen | Initialen im Avatar der Hero-Karte ohne Bild (Dark: wie `primary`, Tavern: wie `text.color`) |
+| `onPrimary` | Vordergrund auf Akzent | aktiver Zustand ([2.4](#24-zustände)), Zahl im Level-Badge |
 | `error` | Fläche für Fehler | Hinweisleiste im Admin |
 | `onError` | Vordergrund auf `error` | Text, Icon und Fokus-Outline der Hinweisleiste |
 | `qr.foreground` · `qr.background` | Module und Grund des QR-Codes | QR-Code im Dialog „Spieler verbinden“ (Admin); dunkel auf hell, damit Kameras ihn sicher erkennen |
@@ -250,6 +258,7 @@ gleich, weil sie Bedeutung tragen, nicht Stimmung. Die `resource.*`-Töne sind s
 | aktiv / ausgewählt | Fläche `primary`, Text und Icons `onPrimary` | aktive Buttons und Navigation, aktiver Menüpunkt der Navigationsleiste, aktive Szene im Panel „Szenen“, Icon-Button „Dashboard“ bei offenem Dashboard, Icon-Button „Vollbild“ bei Admin im Vollbild, Confirm, Play-Button während die Musik läuft |
 | inaktiv / normal | `secondary` | inaktive Buttons und Navigation; in Dashboard-Panels (Fläche `secondary`) stattdessen `background`, z. B. Play-Button ohne Musik; Ausnahme: inaktive Menüpunkte der Navigationsleiste und Panel-Einträge im Admin ohne eigene Fläche, `secondary` nur bei Hover ([Navigationsleiste](docs/design/components.md#navigationsleiste), [Navigationseintrag](docs/design/components.md#navigationseintrag)) |
 | Abbrechen, Nebenaktion | `background` | Decline-Button |
+| deaktiviert | Fläche unverändert, Zeichen `text.muted`, `cursor: default` | „−“ bei Level 1, „+“ bei Level 20 im Panel „Level“ |
 | Fläche auf Fläche | `background` → `secondary` → `dark` | welche Fläche welche Rolle hat: [2.2](#22-rollen) |
 | Linie | `border`, nie `text.color` | Ausnahme: `secondary` für die Linie unter der Top-Bar und die Linien rechts an Navigationsleiste und Panel im Admin ([2.2](#22-rollen)) |
 
