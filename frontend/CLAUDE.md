@@ -26,6 +26,8 @@ npm run test:unit    # vitest (__tests__/unit)
 npm run test:e2e     # jest-cucumber + Selenium/Chrome; braucht laufendes Backend auf :8000 (über den Vite-Proxy);
                      # sequenziell (--runInBand), weil alle Specs den einen Spieltisch-Zustand des Servers ändern
 npm run generate:api # API-Typen src/api/schema.d.ts aus ../backend/openapi.json erzeugen (openapi-typescript)
+npm run check:deadcode # knip: ungenutzte Dateien, Exporte und Dependencies (knip.jsonc)
+npm run check:dupes  # jscpd: Duplikate in src/ ab 8 Zeilen, scheitert über dem Schwellwert (.jscpd.json)
 ```
 
 Start der ganzen Anwendung bzw. nur des Frontends in Docker (`./script.sh`, `dnd`, Compose) und Production-Stack am
@@ -140,6 +142,10 @@ sich selbst wieder. Der Admin spielt nichts ab, er sendet Befehle (`PATCH table/
 - API-Typen nicht von Hand pflegen: `src/api/schema.d.ts` wird aus `../backend/openapi.json` generiert
   (`npm run generate:api`, nicht editieren, von ESLint ausgenommen); `src/models/models.ts` leitet die Typen davon ab.
   Ablauf bei Vertragsänderungen: `../docs/architecture.md#api-vertrag--typgenerierung`. API-Pfade ohne Slash am Ende.
+- Toter Code und Duplikate (knip, jscpd): Der Stand von DND-31 ist die Baseline. Bestehende Funde stehen in
+  `knip.jsonc` (`ignoreIssues`/`ignoreDependencies`, getrennt nach Falsch-Positiven und Baseline), der
+  `threshold` in `.jscpd.json` ist der Ist-Anteil duplizierter Zeilen. Keine neuen Baseline-Einträge, den Schwellwert
+  nicht anheben; beim Aufräumen Eintrag entfernen bzw. Schwellwert senken. Funde: `../docs/known-issues.md`.
 - Code-Kommentare erklären das Warum. Keine Verweise auf DESIGN.md-/docs-Abschnitte im Code – die Zuordnung
   steht in der Doku (z. B. Layout-Konstanten in `docs/design/screen-layouts.md`).
 
@@ -159,4 +165,4 @@ sich selbst wieder. Der Admin spielt nichts ab, er sendet Befehle (`PATCH table/
 ## CI
 
 `../.github/workflows/frontend.yml`: Build, Typecheck (inkl. Prüfung, dass `src/api/schema.d.ts` aktuell ist), Lint,
-Unit-Tests und Production-Image; kein E2E. Details: [../docs/architecture.md](../docs/architecture.md#qualitätssicherung).
+danach Job `quality` (`check:deadcode`, `check:dupes`), Unit-Tests und Production-Image; kein E2E. Details: [../docs/architecture.md](../docs/architecture.md#qualitätssicherung).

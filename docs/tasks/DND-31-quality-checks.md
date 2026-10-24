@@ -1,7 +1,7 @@
 # DND-31: Prüfungen auf toten Code, Duplikate und Komplexität
 
 **Typ:** setup
-**Status:** Freigegeben
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -61,31 +61,32 @@ die Baseline: Die Pipelines bleiben grün, neue Verschlechterungen brechen sie. 
 ## Subtasks
 
 ### Frontend
-- [ ] knip und jscpd exakt gepinnt, Scripts `check:deadcode` und `check:dupes`.
-- [ ] `frontend/knip.jsonc`: Falsch-Positive (generiertes `src/api/schema.d.ts`) getrennt von der Baseline.
-- [ ] `frontend/.jscpd.json`: `src/`, min. 8 Zeilen, `threshold` = Ist-%.
+- [x] knip und jscpd exakt gepinnt, Scripts `check:deadcode` und `check:dupes`.
+- [x] `frontend/knip.jsonc`: Falsch-Positive (generiertes `src/api/schema.d.ts`) getrennt von der Baseline.
+- [x] `frontend/.jscpd.json`: `src/`, min. 8 Zeilen, `threshold` = Ist-%.
 
 ### Backend
-- [ ] vulture, deptry, xenon und pylint exakt gepinnt in `[dependency-groups] dev`.
-- [ ] ruff: `C90`, `PIE`, `RET` aktiv, `max-complexity` = Ist.
-- [ ] `[tool.vulture]`, `vulture_whitelist.py` (Falsch-Positive), `vulture_baseline.py` (toter Code).
-- [ ] `[tool.deptry]` mit kommentierten Ausnahmen.
-- [ ] `[tool.pylint]` nur `duplicate-code`, `fail-under` = Ist.
-- [ ] `backend/Makefile` mit den Zielen aus E4, xenon-Grenzen = Ist.
+- [x] vulture, deptry, xenon und pylint exakt gepinnt in `[dependency-groups] dev`.
+- [x] ruff: `C90`, `PIE`, `RET` aktiv, `max-complexity` = Ist.
+- [x] `[tool.vulture]`, `vulture_whitelist.py` (Falsch-Positive), `vulture_baseline.py` (toter Code).
+- [x] `[tool.deptry]` mit kommentierten Ausnahmen.
+- [x] `[tool.pylint]` nur `duplicate-code`, `fail-under` = Ist.
+- [x] `backend/Makefile` mit den Zielen aus E4, xenon-Grenzen = Ist.
 
 ### CI
-- [ ] `frontend.yml` und `backend.yml`: Job `quality` mit `needs: lint`.
+- [x] `frontend.yml` und `backend.yml`: Job `quality` mit `needs: lint`.
 
 ### Doku
-- [ ] `frontend/CLAUDE.md`, `backend/CLAUDE.md` (Befehle, Konventionen, CI), `docs/architecture.md`
+- [x] `frontend/CLAUDE.md`, `backend/CLAUDE.md` (Befehle, Konventionen, CI), `docs/architecture.md`
       („Qualitätssicherung“), `docs/known-issues.md` (Baseline), `.claude/skills/quick-task/SKILL.md` (Checks).
 
 ## Akzeptanzkriterien (nur setup)
-- [ ] AK1: Alle neuen Checks laufen lokal über `npm run check:*` bzw. `make check-*` und im CI als Job `quality`
+- [x] AK1: Alle neuen Checks laufen lokal über `npm run check:*` bzw. `make check-*` und im CI als Job `quality`
       nach `lint`.
 - [ ] AK2: Wirksamkeit nachgewiesen: Auf dem Ist-Stand ist jeder Check grün. Eine absichtlich eingebaute
       Verschlechterung lässt ihn scheitern (nicht committet). Nach dem Push ist die CI grün.
-- [ ] AK3: Alle Invarianten eingehalten – kein Anwendungscode geändert.
+      (Lokal nachgewiesen; CI-Lauf nach dem Push zu prüfen.)
+- [x] AK3: Alle Invarianten eingehalten – kein Anwendungscode geändert.
 
 ## Teststrategie / Verifikation
 
@@ -99,7 +100,17 @@ die Baseline: Die Pipelines bleiben grün, neue Verschlechterungen brechen sie. 
 
 ## Baseline
 
-Wird bei der Umsetzung gefüllt: Anzahl und auffälligste Stellen pro Tool, Falsch-Positive getrennt.
+Details und alle Fundstellen: [known-issues.md](../known-issues.md#baseline-der-qualitätsprüfungen).
+
+| Tool | Baseline | Falsch-Positive |
+|---|---|---|
+| knip | 1 ungenutzte Dev-Dependency (`eslint-plugin-react-refresh`), 5 Exporte und 4 Typen nur in der eigenen Datei genutzt (7 Dateien in `ignoreIssues`) | Exporte von `src/api/schema.d.ts` (generiert) |
+| jscpd | 6 Duplikate, 88/4221 Zeilen = 2,08 % → `threshold` 2,09 (2,08 scheitert an Rundung); größte: `AdventureSelect.tsx` ↔ `ThemeMenu.tsx`, `darkTheme.ts` ↔ `tavernTheme.ts` | – |
+| vulture (60) | 1: `Adventure.active_scene` (Relationship nie gelesen) in `vulture_baseline.py` | Routen, Validatoren, Fixtures (`ignore_decorators`), `model_config`, Alembic-Kennungen, `pytestmark` (`ignore_names`), `cls`, `avatar_media_id`, `output_ready`, `first_track` (`vulture_whitelist.py`) |
+| deptry | 1: `starlette` transitiv importiert (`app/realtime/push.py`, DEP003) | `uvicorn`, `psycopg2-binary` (DEP002, zur Laufzeit gebraucht) |
+| ruff C90 / PIE / RET | max. Komplexität 8 (`game_table_socket`) → `max-complexity = 8`; PIE/RET ohne Funde | – |
+| xenon (`app/`) | Funktionen max. B (`seed_data` 9), Module max. B, Durchschnitt A (1,8) | – |
+| pylint `duplicate-code` (`app/`) | keine Duplikate, Score 10 → `fail-under = 10` | – |
 
 ## Offene Fragen
 - keine

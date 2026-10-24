@@ -9,9 +9,10 @@ eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 ## Stack
 
 Python 3.11 · FastAPI 0.143 · Pydantic 2.14 · pydantic-settings 2.15 · SQLAlchemy 2.1 (typisierter 2.0-Stil: `DeclarativeBase`, `Mapped`, `select()`) ·
-psycopg2 · Alembic 1.20 · PostgreSQL 17. Tooling: uv · ruff (Lint + Format) · mypy · pytest. Laufzeit-Abhängigkeiten exakt gepinnt in
+psycopg2 · Alembic 1.20 · PostgreSQL 17. Tooling: uv · ruff (Lint + Format) · mypy · pytest · vulture, deptry, xenon,
+pylint (nur `duplicate-code`) für die Qualitätsprüfungen. Laufzeit-Abhängigkeiten exakt gepinnt in
 `pyproject.toml`, Dev-Abhängigkeiten in `[dependency-groups] dev`; `uv.lock` ist versioniert. Tool-Konfiguration
-(ruff, mypy, pytest) ebenfalls in `pyproject.toml`.
+(ruff, mypy, pytest, vulture, deptry, pylint) ebenfalls in `pyproject.toml`, die xenon-Grenzen im `Makefile`.
 
 ## Befehle
 
@@ -26,6 +27,11 @@ uv run ruff format                 # Formatierung (CI: --check)
 uv run mypy app                    # Typprüfung (strict, Pydantic-Plugin)
 DB_HOST=localhost uv run pytest    # Tests gegen die DB des laufenden Dev-Stacks (Port 5432); DB_HOST aus .env (db) überschreiben
 uv run python scripts/export_openapi.py   # API-Vertrag nach openapi.json schreiben (nach jeder Schema-/Routenänderung)
+make check-quality                 # alle Qualitätsprüfungen (Makefile), einzeln:
+make check-deadcode                #   vulture: toter Code (inkl. vulture_whitelist.py, vulture_baseline.py)
+make check-deps                    #   deptry: ungenutzte, fehlende oder transitive Dependencies
+make check-complexity              #   xenon: Komplexitätsgrenzen für app/ (radon-Ränge)
+make check-dupes                   #   pylint duplicate-code: Duplikate in app/ ab 8 Zeilen
 
 # Tests im Dev-Container (im Root; DB `db` aus dem Compose-Netz, Image mit Dev-Gruppe)
 docker compose -f compose.dev.yaml run --rm api pytest
@@ -121,6 +127,8 @@ migrations/env.py         URL aus settings.database_url, target_metadata = Base.
 migrations/versions/      Migrationen, nummeriert (0001_initial_schema.py, 0002_…, 0003_adventure_and_player.py,
                           0004_game_table.py, 0005_drop_scene_main.py)
 scripts/export_openapi.py schreibt app.openapi() nach openapi.json (versioniert, Basis der Frontend-Typen)
+Makefile                  Qualitätsprüfungen (check-deadcode, check-deps, check-complexity, check-dupes, check-quality)
+vulture_whitelist.py      Falsch-Positive von vulture; vulture_baseline.py: bestehender toter Code (Baseline DND-31)
 ```
 
 Neue Funktionalität folgt dem Muster **route → service → crud → model**.
@@ -153,8 +161,15 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
   `player.avatar_media_id` und `game_table.active_adventure_id` (`Mapped[... | None]`) `NOT NULL`); Relationen zwischen Modulen per
   `TYPE_CHECKING`-Import und String-Annotation. Abfragen nur mit `select()`,
   `db.scalars()`, `db.get()` (kein `db.query`); bei `joinedload` von Collections `.unique()`; gefiltert wird in SQL.
-- ruff: Zeilenlänge 120, Regelsets `E`, `F`, `W`, `I`, `B`, `UP`, `SIM`; ignoriert nur `B008` (`Depends(...)` als
-  Default ist FastAPI-Idiom). Code ist mit `ruff format` formatiert (doppelte Quotes).
+- ruff: Zeilenlänge 120, Regelsets `E`, `F`, `W`, `I`, `B`, `UP`, `SIM`, `C90` (`max-complexity = 8`), `PIE`, `RET`;
+  ignoriert nur `B008` (`Depends(...)` als Default ist FastAPI-Idiom). Code ist mit `ruff format` formatiert
+  (doppelte Quotes).
+- Qualitätsprüfungen (`make check-*`): Der Stand von DND-31 ist die Baseline. vulture läuft mit `min_confidence = 60`;
+  indirekt genutzte Namen stehen in `[tool.vulture]` (`ignore_decorators`, `ignore_names`) bzw. in
+  `vulture_whitelist.py` (Falsch-Positive), echter toter Code getrennt in `vulture_baseline.py`. Ausnahmen für deptry
+  stehen kommentiert in `[tool.deptry.per_rule_ignores]`. Grenzen (`max-complexity`, xenon-Ränge, pylint
+  `fail-under`) sind der Ist-Stand. Keine neuen Baseline-Einträge, Grenzen nicht lockern; beim Aufräumen Eintrag
+  entfernen bzw. Grenze verschärfen. Funde: `../docs/known-issues.md`.
 - mypy `strict` mit Pydantic-Plugin für `app/` (nicht für `tests/` und `migrations/`; ruff erfasst beide); alle Funktionen mit Typannotationen. Kein
   `# type: ignore` ohne Fehlercode und Begründungskommentar.
 - Tabellen-/Spaltennamen snake_case, Model-Klassen PascalCase.
@@ -207,5 +222,5 @@ DB_HOST=localhost uv run alembic check       # Modelle ↔ Migrationen ohne Drif
 
 ## CI
 
-`../.github/workflows/backend.yml`: Jobs `lint` (ruff, mypy, `openapi.json` aktuell), `test` (Alembic-Rundlauf, pytest
-gegen `postgres:17`) und `docker-prod` (Image-Build) – Details: `../docs/architecture.md#qualitätssicherung`.
+`../.github/workflows/backend.yml`: Jobs `lint` (ruff, mypy, `openapi.json` aktuell), danach `quality` (`make check-*`),
+`test` (Alembic-Rundlauf, pytest gegen `postgres:17`) und `docker-prod` (Image-Build) – Details: `../docs/architecture.md#qualitätssicherung`.

@@ -1,0 +1,18 @@
+{
+  "path": [
+    "src"
+  ],
+  "format": [
+    "typescript",
+    "tsx"
+  ],
+  "ignore": [
+    "src/api/schema.d.ts"
+  ],
+  "minLines": 8,
+  "reporters": [
+    "console"
+  ],
+  "gitignore": true,
+  "threshold": 2.09
+}

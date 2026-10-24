@@ -32,8 +32,9 @@ sind die Checks in Schritt 4 Pflicht.
 3. **Umsetzen.** Direkt in dieser Session, auf Branch `development` (vorher prüfen). Konventionen aus Root-,
    `frontend/`- bzw. `backend/CLAUDE.md` beachten. Nur das Beauftragte ändern – Gefundenes nebenbei nur melden.
 4. **Checks des betroffenen Teils** ausführen und Ergebnis festhalten:
-   - Frontend (in `frontend/`): `npm run lint`, `npm run typecheck`, `npm run test:unit`, `npm run build`
-   - Backend (in `backend/`): `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app`,
+   - Frontend (in `frontend/`): `npm run lint`, `npm run typecheck`, `npm run test:unit`, `npm run build`,
+     `npm run check:deadcode`, `npm run check:dupes`
+   - Backend (in `backend/`): `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app`, `make check-quality`,
      `DB_HOST=localhost uv run pytest` (braucht die DB des laufenden Dev-Stacks; alternativ im Root
      `docker compose -f compose.dev.yaml run --rm --build api pytest`)
    - Compose-Dateien geändert: `docker compose -f compose.dev.yaml config -q` bzw. `-f compose.prod.yaml config -q` im Root

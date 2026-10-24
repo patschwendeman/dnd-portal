@@ -1,0 +1,19 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
+  // Entry points (index.html → src/main.tsx, vitest, jest, eslint) come from knip's plugins.
+  "ignoreIssues": {
+    // False positive: generated from ../backend/openapi.json (npm run generate:api), exports are not ours to trim.
+    "src/api/schema.d.ts": ["exports", "types"],
+
+    // Baseline (DND-31): existing findings, cleaned up in follow-up tasks. Do not add new entries.
+    "__tests__/bdd/support/helpers.ts": ["exports"],
+    "src/api/loadData.ts": ["exports"],
+    "src/realtime/backoff.ts": ["exports"],
+    "src/components/TextButton.tsx": ["types"],
+    "src/models/models.ts": ["types"],
+    "src/realtime/connection.ts": ["types"],
+    "src/realtime/useGameTable.ts": ["types"]
+  },
+  // Baseline (DND-31): not referenced in eslint.config.js.
+  "ignoreDependencies": ["eslint-plugin-react-refresh"]
+}
