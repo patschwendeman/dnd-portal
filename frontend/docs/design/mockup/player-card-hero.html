@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup Spieler-Karte groß</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; }
+body { font-family: Inter, -apple-system, "Segoe UI", sans-serif; background: #2a2d33; color: #e6e6e6; padding: 32px; }
+main { display: grid; gap: 24px; max-width: 760px; }
+.cap { font-size: 12px; color: #b0b4ba; margin-bottom: 8px; }
+.card { border-radius: 12px; padding: 32px; display: flex; gap: 24px; align-items: center; }
+.avatar-wrap { position: relative; flex: none; }
+.avatar { width: 96px; height: 128px; border-radius: 12px; border: 1px solid; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 500; }
+.level { position: absolute; top: -10px; left: -10px; width: 36px; height: 36px; border-radius: 999px; border: 2px solid; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; }
+.info { display: grid; gap: 4px; min-width: 0; }
+.lbl { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 500; }
+.name { font-size: 32px; line-height: 40px; font-weight: 500; }
+.row { display: flex; gap: 4px; flex-wrap: wrap; }
+.chips { margin-top: 8px; }
+.effects { margin-top: 12px; }
+.chip { font-size: 13px; padding: 2px 10px; border-radius: 8px; border: 1px solid; }
+.st { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; height: 28px; padding: 0 4px 0 8px; border-radius: 999px; border: 1px solid; }
+.st.no-rounds { padding-right: 10px; }
+.st i { font-size: 14px; }
+.n { min-width: 20px; height: 20px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.pos { color: #3fd033; background: #072900; border-color: #099000; }
+.pos .n { background: #099000; color: #072900; }
+.neg { color: #ff6b6b; background: #290000; border-color: #ff2424; }
+.neg .n { background: #ff2424; color: #290000; }
+
+.dark { background: #0e1117; }
+.dark .avatar, .dark .chip { background: #161b23; border-color: #3d444db3; }
+.dark .avatar { color: #4493F8; }
+.dark .chip, .dark .name { color: #f0f6fc; }
+.dark .lbl { color: #f0f6fcb0; }
+.dark .level { background: #4493F8; color: #0e1117; border-color: #0e1117; }
+
+.tavern { background: #140701; }
+.tavern .avatar, .tavern .chip { background: #3D271C; border-color: #956F01; }
+.tavern .avatar, .tavern .chip, .tavern .name { color: #CBAB96; }
+.tavern .lbl { color: #CBAB96b0; }
+.tavern .level { background: #C05E5E; color: #140701; border-color: #140701; }
+</style>
+</head>
+<body>
+<main>
+
+<section>
+  <p class="cap">Dark · mit Effekten (2 positiv, 2 negativ). Positive vor negativen, jeweils nach verbleibenden Runden sortiert</p>
+  <div class="card dark">
+    <div class="avatar-wrap"><div class="avatar">TE</div><div class="level">5</div></div>
+    <div class="info">
+      <span class="lbl">Patrick</span>
+      <span class="name">Thorin Eichenschild</span>
+      <div class="row chips"><span class="chip">Zwerg</span><span class="chip">Kämpfer</span></div>
+      <div class="row effects">
+        <span class="st pos"><i class="ti ti-arrow-up" aria-label="positiv"></i>Segen<span class="n">2</span></span>
+        <span class="st pos"><i class="ti ti-arrow-up" aria-label="positiv"></i>Hast<span class="n">8</span></span>
+        <span class="st neg"><i class="ti ti-arrow-down" aria-label="negativ"></i>Vergiftet<span class="n">1</span></span>
+        <span class="st neg"><i class="ti ti-arrow-down" aria-label="negativ"></i>Verängstigt<span class="n">3</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="cap">Tavern · ein Effekt, dazu ein Effekt ohne Rundenbegrenzung (keine Zahl)</p>
+  <div class="card tavern">
+    <div class="avatar-wrap"><div class="avatar">EM</div><div class="level">5</div></div>
+    <div class="info">
+      <span class="lbl">Lisa</span>
+      <span class="name">Elaria Mondschein</span>
+      <div class="row chips"><span class="chip">Halbelfe</span><span class="chip">Zauberin</span></div>
+      <div class="row effects">
+        <span class="st pos"><i class="ti ti-arrow-up" aria-label="positiv"></i>Magierrüstung<span class="n">10</span></span>
+        <span class="st neg no-rounds"><i class="ti ti-arrow-down" aria-label="negativ"></i>Verflucht</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="cap">Dark · ohne Effekte: die Zeile entfällt</p>
+  <div class="card dark">
+    <div class="avatar-wrap"><div class="avatar">BS</div><div class="level">5</div></div>
+    <div class="info">
+      <span class="lbl">Jonas</span>
+      <span class="name">Brom Steinfaust</span>
+      <div class="row chips"><span class="chip">Mensch</span><span class="chip">Kleriker</span></div>
+    </div>
+  </div>
+</section>
+
+</main>
+</body>
+</html>

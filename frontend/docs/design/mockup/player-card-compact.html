@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup Spieler-Karte kompakt</title>
+<style>
+* { box-sizing: border-box; margin: 0; }
+body { font-family: Inter, -apple-system, "Segoe UI", sans-serif; background: #2a2d33; color: #e6e6e6; padding: 32px; }
+main { display: grid; gap: 24px; max-width: 760px; }
+.cap { font-size: 12px; color: #b0b4ba; margin-bottom: 8px; }
+.list { background: #0e1117; border-radius: 12px; padding: 16px; display: grid; gap: 4px; }
+.item { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 8px; }
+.item.active { background: #161b23; }
+.avatar { width: 40px; height: 40px; border-radius: 8px; background: #161b23; color: #4493F8; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; flex: none; }
+.item.active .avatar { background: #0e1117; }
+.text { display: grid; min-width: 0; flex: 1; }
+.name { color: #f0f6fc; font-size: 14px; font-weight: 500; }
+.meta { color: #f0f6fcb0; font-size: 13px; }
+.level { font-size: 12px; color: #f0f6fc; border: 1px solid #3d444db3; border-radius: 8px; padding: 2px 8px; }
+</style>
+</head>
+<body>
+<main>
+<section>
+  <p class="cap">Kompakt (Listeneintrag, z. B. Admin-Panel „Spieler“) · Dark, erster Eintrag hervorgehoben</p>
+  <div class="list">
+    <div class="item active">
+      <div class="avatar">TE</div>
+      <div class="text"><span class="name">Thorin Eichenschild</span><span class="meta">Zwerg · Kämpfer · Patrick</span></div>
+      <span class="level">Lv 5</span>
+    </div>
+    <div class="item">
+      <div class="avatar">EM</div>
+      <div class="text"><span class="name">Elaria Mondschein</span><span class="meta">Halbelfe · Zauberin · Lisa</span></div>
+      <span class="level">Lv 5</span>
+    </div>
+  </div>
+</section>
+</main>
+</body>
+</html>
