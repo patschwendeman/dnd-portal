@@ -3,7 +3,7 @@
 | Begriff (fachlich) | Bedeutung | Im Code |
 |---|---|---|
 | Abenteuer | Oberste Ebene: eine Kampagne bzw. ein Abenteuer mit eigenen Szenen und Spielern | Tabelle/Model `Adventure` (Backend), API `/adventures`, Schemas `AdventureSummary`/`AdventureDetail`; Szenen und Spieler gehören je zu genau einem Abenteuer (`adventure_id`); aktiv ist eines je Spieltisch (`game_table.active_adventure_id`, `PATCH /table`); im Frontend: Auswahl im Admin (Dropdown der Top-Bar), `activeAdventureId` im `ActiveAdventureContext` (aus dem WebSocket-Snapshot) |
-| Spieltisch | Der gemeinsame Zustand von Admin, Wall und Ground: aktives Abenteuer, dessen aktive Szene und Theme; ein Server = ein Spieltisch. Die Player Screens sind ebenfalls verbunden, übernehmen aber nur das Theme | Tabelle/Model `GameTable` (`game_table`, genau eine Zeile), API `GET`/`PATCH /table` (`GameTableState`, `GameTableUpdate`), WebSocket `/ws` (Snapshots); im Frontend `GameTableProvider`/`useGameTable` (`src/realtime/`) |
+| Spieltisch | Der gemeinsame Zustand von Admin, Wall und Ground: aktives Abenteuer, dessen aktive Szene, Theme und Wall-Overlay; ein Server = ein Spieltisch. Die Player Screens sind ebenfalls verbunden, übernehmen aber nur das Theme | Tabelle/Model `GameTable` (`game_table`, genau eine Zeile), API `GET`/`PATCH /table` (`GameTableState`, `GameTableUpdate`), WebSocket `/ws` (Snapshots); im Frontend `GameTableProvider`/`useGameTable` (`src/realtime/`) |
 | Theme (global) | Farbschema `dark` oder `tavern` der Spieltisch-Screens, vom Admin umgeschaltet | `game_table.theme`, `GameTableState.theme`, Frontend-Typ `Theme`; der Player Screen übernimmt es, ein Spieler kann auf seinem Gerät abweichen (`localStorage` `playerThemeOverride`) |
 | Spielleiter / Admin | Erzählt die Geschichte, spielt alle NPCs, steuert die App | Route `/admin`, `AdminScreen` |
 | Spieler | Spielt einen Charakter, nutzt den Player Screen | Route `/` (`PlayerScreen`); geparkt: `/spells` (Branch `feature/spells-screen`) |
@@ -20,7 +20,8 @@
 | Notizen | Markdown-Dateien zu Story, NPCs, Kämpfen, Leveling, Regeln | nur Frontend: `public/story/**.md`, `DocumentReader` |
 | Ressourcen (Spieler) | Aktion, Bonusaktion, Zauberplätze I–IV, Spezial-Ressource (+ WIP: Bewegung) | nur Frontend: `ResourceBarPlayer` (lokaler State) |
 | Grid | Optionales Raster auf dem Ground Screen für taktische Kämpfe | `GridOverlay`, Steuerung über `ScreenControlBar` |
-| Weltkarte | Overlay auf dem Wall Screen | WallScreen: statisches Bild (`mapOverview.jpg`), Button WORLD |
+| Wall-Overlay | Was die Walls über dem Szenenbild zeigen: die Weltkarte oder nichts; Teil des Spieltischs, vom Admin (Panel „Wall-Overlay“) oder an der Wall (WORLD / OFF) umgeschaltet, ein Szenen- oder Abenteuerwechsel schaltet es aus | `GameTableState.wall_overlay` (`"world"` \| `"off"`, nur im Speicher der API: `app/realtime/wall_overlay.py`), Frontend-Typ `WallOverlay`, `wallOverlay` im `GameTableContext`, Panel `WallOverlayPanel` |
+| Weltkarte | Overlay auf dem Wall Screen (Wall-Overlay `world`) | WallScreen: statisches Bild (`mapOverview.jpg`), Button WORLD bzw. „Weltkarte“ im Admin |
 
 ## Historische Bezeichnungen
 

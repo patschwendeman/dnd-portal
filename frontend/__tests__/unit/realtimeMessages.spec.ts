@@ -3,7 +3,9 @@ import { describe, it, expect } from 'vitest'
 import { parseServerMessage } from '../../src/realtime/messages'
 
 // The payload follows the API contract, whose fields are snake_case
-const state = { active_adventure_id: 1, active_scene_id: 5, theme: 'tavern' }
+const state = {
+  active_adventure_id: 1, active_scene_id: 5, theme: 'tavern', wall_overlay: 'world',
+}
 
 describe('parseServerMessage', () => {
   it('parses a state snapshot', () => {
@@ -12,7 +14,9 @@ describe('parseServerMessage', () => {
   })
 
   it('accepts null for adventure and scene', () => {
-    const empty = { active_adventure_id: null, active_scene_id: null, theme: 'dark' }
+    const empty = {
+      active_adventure_id: null, active_scene_id: null, theme: 'dark', wall_overlay: 'off',
+    }
     expect(parseServerMessage(JSON.stringify({ type: 'state', payload: empty })))
       .toEqual({ type: 'state', payload: empty })
   })
@@ -36,6 +40,8 @@ describe('parseServerMessage', () => {
   it.each([
     ['a missing payload', { type: 'state' }],
     ['an unknown theme', { type: 'state', payload: { ...state, theme: 'light' } }],
+    ['an unknown overlay', { type: 'state', payload: { ...state, wall_overlay: 'map' } }],
+    ['a missing overlay', { type: 'state', payload: { ...state, wall_overlay: undefined } }],
     ['a missing field', { type: 'state', payload: { active_adventure_id: 1, theme: 'dark' } }],
     ['an ID as string', { type: 'state', payload: { ...state, active_scene_id: '5' } }],
     ['a fractional ID', { type: 'state', payload: { ...state, active_adventure_id: 1.5 } }],

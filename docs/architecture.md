@@ -22,21 +22,27 @@
 
 ## Synchronisation
 
-- **Der Server ist die einzige Quelle** des Spieltisch-Zustands: aktives Abenteuer, dessen aktive Szene und Theme
-  (Tabelle `game_table`, die aktive Szene steht in `adventure.active_scene_id`). Ein Server ist ein Spieltisch (eine
+- **Der Server ist die einzige Quelle** des Spieltisch-Zustands: aktives Abenteuer, dessen aktive Szene, Theme und
+  Wall-Overlay (Tabelle `game_table`, die aktive Szene steht in `adventure.active_scene_id`; das Wall-Overlay
+  `wall_overlay` liegt wie der Musikzustand nur im Speicher der API, `app/realtime/wall_overlay.py`, nach einem
+  Neustart `off`). Ein Server ist ein Spieltisch (eine
   globale Session, kein Beitreten).
 - Admin, Wall, Ground und Player verbinden sich beim Laden per WebSocket mit `/ws?screen=admin|wall|ground|player`
   (`GameTableProvider`/`useGameTable`, `src/realtime/`). Der Server schickt direkt nach dem Verbinden und nach **jeder**
   erfolgreichen Änderung per `PATCH /table` oder `PATCH /adventures/{id}` einen vollständigen Snapshot an alle
   Verbindungen (auch an andere Admins; der letzte Schreibzugriff gewinnt, keine Sperren). Der Provider speist daraus
-  `ActiveAdventureContext`, `ActiveSceneContext` (nur lesend) und das Theme. Die Screens laden daraufhin neu vom
+  `ActiveAdventureContext`, `ActiveSceneContext` (nur lesend), das Theme und das Wall-Overlay (`GameTableContext`). Die Screens laden daraufhin neu vom
   Backend: Wall und Ground die Szene, der Admin bei einem Abenteuerwechsel dessen Szenen und nach jedem Snapshot
   Spieler und Level des aktiven Abenteuers (`GET /adventures/{id}`; `global_level` steht nicht im Snapshot). Ohne aktive Szene zeigen Wall und Ground
   nur die Hintergrundfarbe und stellen keinen Request. Bis zum ersten Snapshot gilt „kein Abenteuer, keine Szene,
-  Theme `dark`“.
+  Theme `dark`, kein Wall-Overlay“.
 - Schreiben nur per REST, **ohne lokale Vorwegnahme**: Der Admin wechselt das Abenteuer per `PATCH /table
   {"active_adventure_id": <id>}`, die Szene per `PATCH /adventures/{id} {"active_scene_id": <id>}`, das Level per
-  `PATCH /adventures/{id} {"global_level": <n>}` und das Theme per `PATCH /table {"theme": …}`. Admin, Wall und Ground wechseln erst mit dem Push; ein Abenteuerwechsel liefert direkt
+  `PATCH /adventures/{id} {"global_level": <n>}` und das Theme per `PATCH /table {"theme": …}`; das Wall-Overlay
+  schreiben der Admin (Panel „Wall-Overlay“) und die Steuerleiste jeder Wall per `PATCH /table {"wall_overlay":
+  "world" | "off"}` (die Wall zeigt bei einem Fehler nichts an). Ändert sich die aktive Szene des aktiven Abenteuers
+  oder das aktive Abenteuer, setzt der Server `wall_overlay` im selben Schreibzugriff auf `off` (ein Push); setzt
+  derselbe `PATCH /table` auch `wall_overlay`, gilt dieser Wert. Admin, Wall und Ground wechseln erst mit dem Push; ein Abenteuerwechsel liefert direkt
   die gespeicherte Szene des neuen Abenteuers, nie die eines anderen. Ist im Snapshot kein Abenteuer gesetzt, aktiviert
   der Admin das erste der Liste (`selectDefaultAdventureId`) per `PATCH /table`. Schlägt ein Schreibzugriff fehl,
   zeigt der Admin „Änderung konnte nicht gespeichert werden“; „Erneut versuchen“ wiederholt den zuletzt
@@ -155,7 +161,7 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
 | `/adventures/{adventure_id}/scenes` | `list[SceneDetail]`: Szenen des Abenteuers nach ID (200, ggf. `[]`); 404 wie oben |
 | `/scenes/{scene_id}` | `SceneDetail` (200) bzw. 404 `{"detail": "Scene not found"}` |
 | `/table` | `GameTableState`: Zustand des Spieltischs (200) |
-| `PATCH /table` | Body `GameTableUpdate`, Antwort `GameTableState` (200); 422 `{"detail": "Adventure not found"}` bei unbekanntem Abenteuer (nichts wird geändert), 422 im FastAPI-Standardformat bei ungültigem `theme` |
+| `PATCH /table` | Body `GameTableUpdate`, Antwort `GameTableState` (200); 422 `{"detail": "Adventure not found"}` bei unbekanntem Abenteuer (nichts wird geändert), 422 im FastAPI-Standardformat bei ungültigem `theme` oder `wall_overlay` |
 | `/table/audio` | `AudioState`: Musikzustand (200), siehe [Audio](#audio) |
 | `PATCH /table/audio` | Body `AudioUpdate`, Antwort `AudioState` (200); 422 im FastAPI-Standardformat bei `volume` außerhalb 0–100 bzw. `null`; `playing: true` bei leerer Playlist ändert `playing` nicht |
 | `POST /table/sounds` | Body `SoundRequest`, 204 (auch ohne Audioausgabe); 422 bei unbekanntem Namen |
@@ -186,9 +192,11 @@ Player           { id: int, player_name: str, character_name: str, race: str,
                    character_class: str, avatar: Image | null }
 AdventureUpdate  { active_scene_id?: int | null, global_level?: int (1–20) }  Request-Body von PATCH
 
-GameTableState   { active_adventure_id: int | null, active_scene_id: int | null, theme: "dark" | "tavern" }
+GameTableState   { active_adventure_id: int | null, active_scene_id: int | null, theme: "dark" | "tavern",
+                   wall_overlay: "world" | "off" }
                    active_scene_id = active_scene_id des aktiven Abenteuers (null ohne Abenteuer)
-GameTableUpdate  { active_adventure_id?: int | null, theme?: "dark" | "tavern" }  Request-Body von PATCH /table
+GameTableUpdate  { active_adventure_id?: int | null, theme?: "dark" | "tavern", wall_overlay?: "world" | "off" }
+                                                                                Request-Body von PATCH /table
 
 AudioState       { playing: bool, track: Track | null, volume: int, output_ready: bool }   volume in Prozent
 AudioUpdate      { playing?: bool, volume?: int (0–100) }                       Request-Body von PATCH /table/audio
@@ -201,7 +209,7 @@ Alle Felder sind Pflicht; nullable sind nur `description` und `active_scene_id` 
 Spielers. Die Fremdschlüssel (`wall_image_id`, `adventure_id` …) sind nicht Teil der Antwort, `SceneDetail` enthält
 kein `adventure_id`. Bei `AdventureUpdate` ändert `PATCH` nur die gesetzten Felder; `"active_scene_id": null` leert
 die aktive Szene, `"global_level": null` wird abgelehnt (422). Ebenso ändert `PATCH /table` nur die gesetzten Felder;
-`"active_adventure_id": null` leert das aktive Abenteuer, `"theme": null` wird abgelehnt (422). `PATCH /table/audio`
+`"active_adventure_id": null` leert das aktive Abenteuer, `"theme": null` und `"wall_overlay": null` werden abgelehnt (422). `PATCH /table/audio`
 ändert ebenfalls nur die gesetzten Felder; `null` wird abgelehnt (422).
 `source` ist der API-relative Pfad der Datei, `/media/<storage_key>` (aus `media.storage_key` berechnet, nicht
 gespeichert), z. B. `/media/images/ground_screen/main_1.jpg`. Das Frontend macht daraus per `mediaUrl(source)`
@@ -214,7 +222,7 @@ also z. B. `/api/media/images/ground_screen/main_1.jpg` über den Proxy).
 `backend/scripts/export_openapi.py` schreibt `app.openapi()` deterministisch dorthin (ohne DB-Verbindung, die
 `Settings`-Werte aus `.env` bzw. Umgebung reichen). Das Frontend erzeugt daraus per `openapi-typescript`
 `frontend/src/api/schema.d.ts` (versioniert, von ESLint ausgenommen); `src/models/models.ts` leitet `SceneDetail`,
-`Image`, `Track`, `GameTableState`, `Theme`, `AudioState`, `AudioUpdate` und
+`Image`, `Track`, `GameTableState`, `Theme`, `WallOverlay`, `AudioState`, `AudioUpdate` und
 `SoundName` davon ab. Das Nachrichtenformat des
 WebSockets `/ws` ist nicht Teil der OpenAPI, es steht oben unter [WebSocket `/ws`](#websocket-ws).
 
@@ -295,7 +303,7 @@ Datensatz trotzdem an (`size` = NULL).
 - React 18, Vite 5, TypeScript 5 (strict), react-router-dom 6, styled-components 6 (Haupt-Styling, zwei Themes),
   MUI nur für `Box`/`Slider`, axios, react-markdown, react-svg.
 - State: React-State + vier Contexts (`ActiveAdventureContext`, `ActiveSceneContext`, `GameTableContext` mit Theme,
-  Verbindungsstatus und `reconnectNow`, `GameAudioContext` mit `AudioState`, Ausgabe-Rolle der Wall, `audio_ready`/
+  Wall-Overlay, Verbindungsstatus und `reconnectNow`, `GameAudioContext` mit `AudioState`, Ausgabe-Rolle der Wall, `audio_ready`/
   `track_ended` und Soundeffekten; `src/context/context.ts`), gespeist vom `GameTableProvider` aus dem
   WebSocket-Snapshot (siehe [Synchronisation](#synchronisation)). Kein Store-Framework. Der aktive Eintrag im Panel
   „Szenen“ des Admins ergibt sich aus `activeSceneId` (Vergleich mit der Szenen-ID, Attribute `aria-current` und
@@ -323,7 +331,7 @@ Datensatz trotzdem an (`size` = NULL).
 - Fehlerbehandlung beim Speichern: `patchData`/`postData` (`src/api/apiMethods.ts`) reichen Fehler weiter, `saveData`
   bzw. `postCommand` (`src/api/saveData.ts`) werfen einen `SaveError` mit derselben Aufbereitung wie `loadData`
   („Saving … failed: backend not reachable“ bzw. „HTTP 422“). Der Admin wertet nur das Ergebnis des jüngsten
-  Speicherns aus (Szene, Abenteuer, Theme und Musik-Befehle gemeinsam).
+  Speicherns aus (Szene, Abenteuer, Theme, Level, Wall-Overlay und Musik-Befehle gemeinsam).
 - Assets in `public/`: `assets/sounds` (Soundeffekte, auf der Wall abgespielt), `assets/icons`, `story/**`
   (Markdown-Notizen, deutsch) sowie das fest eingebundene Medium `assets/images/ground_screen/mapOverview.jpg`
   (Weltkarte im Wall Screen). Szenenbilder und Musik, auch die Standardmusik, kommen vom Backend (`/media/...`, siehe

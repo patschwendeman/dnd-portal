@@ -17,11 +17,12 @@ import SceneNavigation from '../components/SceneNavigation'
 import ScreensPanel from '../components/ScreensPanel'
 import SoundBoard from '../components/SoundBoard'
 import TopBar from '../components/TopBar'
+import WallOverlayPanel from '../components/WallOverlayPanel'
 import {
   ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext,
 } from '../context/context'
 import {
-  AdventureDetail, AdventureSummary, SceneDetail, SoundName,
+  AdventureDetail, AdventureSummary, SceneDetail, SoundName, WallOverlay,
 } from '../models/models'
 import {
   getAdminData,
@@ -35,6 +36,7 @@ import {
   saveGlobalLevel,
   saveTheme,
 } from '../service/adminScreen'
+import saveWallOverlay from '../service/gameTable'
 import GlobalStyle, { hoverScrollbar } from '../style/GlobalStyle'
 import selectDefaultAdventureId from '../utils/adventure'
 import { loadLatest } from '../utils/loadSafely'
@@ -111,7 +113,7 @@ function AdminScreen(): ReactElement {
   const { activeAdventureId } = useContext(ActiveAdventureContext)
   const { activeSceneId } = useContext(ActiveSceneContext)
   const {
-    hasState, snapshot, theme: gameTableTheme, connected, reconnectNow,
+    hasState, snapshot, theme: gameTableTheme, wallOverlay, connected, reconnectNow,
   } = useContext(GameTableContext)
   const { audio } = useContext(GameAudioContext)
   const isMusicPlaying = audio?.playing ?? false
@@ -328,6 +330,10 @@ function AdminScreen(): ReactElement {
     runSave(() => saveTheme(nextTheme))
   }
 
+  const handleWallOverlayChange = (nextWallOverlay: WallOverlay) => {
+    runSave(() => saveWallOverlay(nextWallOverlay))
+  }
+
   const handleMusicToggle = () => {
     const playing = !isMusicPlaying
     runSave(() => saveAudio({ playing }))
@@ -416,6 +422,13 @@ function AdminScreen(): ReactElement {
           onVolumeCommit={handleVolumeCommit}
         />
       ),
+    },
+    {
+      id: 'wall-overlay',
+      label: 'Wall-Overlay',
+      columns: 2,
+      rows: 1,
+      content: <WallOverlayPanel wallOverlay={wallOverlay} onChange={handleWallOverlayChange} />,
     },
     {
       id: 'sounds',

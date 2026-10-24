@@ -213,6 +213,9 @@ export interface components {
         /**
          * GameTableState
          * @description State of the game table shared by Admin, Wall and Ground; `active_scene_id` belongs to the active adventure.
+         *
+         *     `wall_overlay` is what the Walls show above the scene image (`world`: the world map); it is kept in memory only and
+         *     set to `off` whenever the active scene or adventure changes.
          */
         GameTableState: {
             /** Active Adventure Id */
@@ -224,6 +227,11 @@ export interface components {
              * @enum {string}
              */
             theme: "dark" | "tavern";
+            /**
+             * Wall Overlay
+             * @enum {string}
+             */
+            wall_overlay: "world" | "off";
         };
         /**
          * GameTableUpdate
@@ -237,6 +245,11 @@ export interface components {
              * @enum {string}
              */
             theme?: "dark" | "tavern";
+            /**
+             * Wall Overlay
+             * @enum {string}
+             */
+            wall_overlay?: "world" | "off";
         };
         /** HTTPValidationError */
         HTTPValidationError: {

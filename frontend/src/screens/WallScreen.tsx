@@ -6,8 +6,9 @@ import styled from 'styled-components'
 import { mediaUrl } from '../api/mediaUrl'
 import { WallAudioPlayer } from '../audio/wallAudioPlayer'
 import { CONTROL_BAR_CLEARANCE, ScreenControlBar } from '../components/ScreenControlBar'
-import { ActiveSceneContext, GameAudioContext } from '../context/context'
-import { SceneDetail } from '../models/models'
+import { ActiveSceneContext, GameAudioContext, GameTableContext } from '../context/context'
+import { SceneDetail, WallOverlay } from '../models/models'
+import saveWallOverlay from '../service/gameTable'
 import getWallScene from '../service/WallScreen'
 import GlobalStyle from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
@@ -15,6 +16,10 @@ import { loadLatest } from '../utils/loadSafely'
 import MapEnvironmentSrc from '../../public/assets/images/ground_screen/mapOverview.jpg'
 
 const OVERLAY_PANEL_MAX_WIDTH = '1440px'
+
+// Options of the control bar, in the order of its labels
+const OVERLAY_OPTIONS: readonly WallOverlay[] = ['world', 'off']
+const OVERLAY_LABELS = ['WORLD', 'OFF']
 
 const MapEnvironment = styled.img`
     display: block;
@@ -95,24 +100,23 @@ function WallScreen(): ReactElement {
     audio, isAudioOutput, requestAudioOutput, reportTrackEnded, subscribeSound,
   } = useContext(GameAudioContext)
   const [audioPlayer, setAudioPlayer] = useState<WallAudioPlayer | null>(null)
+  const { wallOverlay } = useContext(GameTableContext)
   const [activeScene, setActiveScene] = useState<SceneDetail>()
-  const [worldMapVisibility, setWorldMapVisibility] = useState<boolean>(false)
 
-  const buttonLabels = ['WORLD', 'OFF']
-  const activeButton = worldMapVisibility ? 0 : 1
-
-  const handleMapsVisibility = (option: number) => {
-    setWorldMapVisibility(option === 0)
+  // No local change: the overlay switches with the push of the server, on all Walls at once (a
+  // scene change closes it there as well). Players see no error, the Admin is the remote control.
+  const handleOverlayChange = (option: number) => {
+    saveWallOverlay(OVERLAY_OPTIONS[option])
+      .catch((err) => console.error('Error saving wall overlay:', err))
   }
 
-  // Without an active scene the wall shows only the background, no image and no panel; reset
-  // during render instead of in an effect
+  // Without an active scene the wall shows only the background, no image; reset during render
+  // instead of in an effect
   const [prevActiveSceneId, setPrevActiveSceneId] = useState(activeSceneId)
   if (activeSceneId !== prevActiveSceneId) {
     setPrevActiveSceneId(activeSceneId)
     if (activeSceneId === null) {
       setActiveScene(undefined)
-      setWorldMapVisibility(false)
     }
   }
 
@@ -123,16 +127,11 @@ function WallScreen(): ReactElement {
       return undefined
     }
 
-    const handleWallScene = (scene: SceneDetail) => {
-      setActiveScene(scene)
-      setWorldMapVisibility(false)
-    }
-
     // Players see no error: the screen keeps the last loaded scene, the next scene change loads
     // again.
     loadLatest(
       () => getWallScene(activeSceneId),
-      handleWallScene,
+      setActiveScene,
       (err) => console.error('Error fetching wall scene:', err),
       () => stale,
     )
@@ -173,16 +172,16 @@ function WallScreen(): ReactElement {
           alt=""
         />
       )}
-      <OverlayPanel $isVisible={worldMapVisibility}>
+      <OverlayPanel $isVisible={wallOverlay === 'world'} data-test-id="wall-world-map">
         <PanelHeader>
           <PanelTitle>Weltkarte</PanelTitle>
         </PanelHeader>
         <MapEnvironment src={MapEnvironmentSrc} alt="" />
       </OverlayPanel>
       <ScreenControlBar
-        onVisibilityChange={handleMapsVisibility}
-        buttonLabels={buttonLabels}
-        activeIndex={activeButton}
+        onVisibilityChange={handleOverlayChange}
+        buttonLabels={OVERLAY_LABELS}
+        activeIndex={OVERLAY_OPTIONS.indexOf(wallOverlay)}
         onAudioOutput={requestAudioOutput}
         isAudioOutput={isAudioOutput}
       />

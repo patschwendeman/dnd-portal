@@ -13,8 +13,8 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - Doppelte Mediendatei: `mapOverview.jpg` (Weltkarte im Wall Screen) liegt zusätzlich zu `media/` als Kopie in
   `frontend/public/assets/...`, weil sie fest im Frontend eingebunden ist und an keiner Szene hängt. Ablösen gehört zur
   Weltkarten-/Upload-Thematik. (Die Standardmusik kommt seit DND-26 nur noch aus dem Backend.)
-- Grid-Einstellungen gelten global und werden nicht gespeichert; Wall-Overlay und Grid lassen sich nicht aus dem Admin
-  steuern und werden nicht zwischen Geräten synchronisiert.
+- Grid-Einstellungen gelten global und werden nicht gespeichert; das Grid lässt sich nicht aus dem Admin steuern und
+  wird nicht zwischen Geräten synchronisiert.
 - Der Admin zeigt nicht an, welche Screens verbunden sind (der Server kennt sie).
 - Szenen lassen sich nur über `seed_data.json` pflegen (keine schreibenden Endpoints, Seeder aktualisiert bestehende DB nicht).
 

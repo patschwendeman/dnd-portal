@@ -2,7 +2,7 @@
 
 REST-API, WebSocket und PostgreSQL für das DnD Portal. Liefert Abenteuer (mit Spielern, aktiver Szene und globalem Level) und
 Szenen mit ihren Wall-/Ground-Bildern und Musik-Playlists an das Frontend (`../frontend`), hält den Spieltisch-Zustand
-(aktives Abenteuer, aktive Szene, Theme) und den Musikzustand (im Speicher) und pusht beides per WebSocket (`/ws`) an Admin, Wall, Ground und Player, liefert die Player-URL für den QR-Code im
+(aktives Abenteuer, aktive Szene, Theme; das Wall-Overlay nur im Speicher) und den Musikzustand (im Speicher) und pusht beides per WebSocket (`/ws`) an Admin, Wall, Ground und Player, liefert die Player-URL für den QR-Code im
 Admin (`GET /table/join`, `Settings.player_url`) und die Mediendateien selbst (Ordner `../media`, unter `/media`). Projektübergreifender Kontext (Vision, Screens, Begriffe, bekannte Probleme) liegt
 eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 
@@ -61,7 +61,8 @@ verkürztem `PING_INTERVAL_SECONDS`, Entfernen getrennter Verbindungen, Audioaus
 bei Verbinden, Trennen und fehlgeschlagenem Senden); Nachrichten werden mit Timeout gelesen, damit ein fehlender Push den Test scheitern lässt
 statt ihn zu blockieren. `test_audio.py` prüft `GET`/`PATCH /table/audio`, die Track-Wahl beim Trackende und
 `POST /table/sounds` (Zufall per `monkeypatch` auf `audio.random` gesteuert). Der Musikzustand liegt im Speicher: Die
-Fixture `reset_audio` setzt ihn nach dem Test zurück (`test_audio.py`, `test_ws.py` und alle Tests mit `db`).
+Fixture `reset_audio` setzt ihn nach dem Test zurück (`test_audio.py`, `test_ws.py` und alle Tests mit `db`); das
+ebenfalls im Speicher gehaltene Wall-Overlay setzt die Fixture `db` nach dem Test auf `off` zurück.
 Schreibende Tests (`PATCH` in `test_adventures.py`, `test_table.py`, `test_ws.py`) laufen über die Fixture `db`
 (`tests/conftest.py`): Sie ersetzt `get_db` per `app.dependency_overrides` und die Session des WebSocket-Push
 (`app.realtime.push.SessionLocal`) durch eine Session in einer äußeren, danach zurückgerollten Transaktion (Commits
@@ -96,7 +97,7 @@ app/models/               SQLAlchemy-Models: adventure.py (Adventure), player.py
                           game_table.py (GameTable, genau eine Zeile `GAME_TABLE_ID`),
                           media.py (Media, berechnetes `source`); __init__.py re-exportiert alle (vollständige Base.metadata)
 app/schemas/              Pydantic-Schemas des API-Vertrags: game_table.py (GameTableState, GameTableUpdate, Theme,
-                          JoinInfo),
+                          WallOverlay, JoinInfo),
                           audio.py (AudioState, AudioUpdate, SoundRequest, SoundName),
                           adventure.py (AdventureSummary, AdventureDetail, Player,
                           AdventureUpdate), scene.py (SceneDetail, Image, Track)
@@ -110,13 +111,16 @@ app/services/adventure.py Fachlogik Abenteuer (Liste, Detail, Szenen je Abenteue
 app/services/scene.py     Fachlogik Szenen (get_scene → Scene | None)
 app/services/audio.py     get_playlist: Tracks der aktiven Szene bzw. Standardmusik (Settings.default_music_key)
 app/services/game_table.py Spieltisch-Zustand (get_state inkl. aktiver Szene des aktiven Abenteuers, update_state mit
-                          Prüfung des Abenteuers → AdventureNotFoundError), get_join_info (Settings.player_url)
+                          Prüfung des Abenteuers → AdventureNotFoundError, setzt das Wall-Overlay; Abenteuerwechsel
+                          → `off`), scene_changed (Szenenwechsel des aktiven Abenteuers → Wall-Overlay `off`, von
+                          services/adventure.update_adventure aufgerufen), get_join_info (Settings.player_url)
 app/realtime/             WebSocket: manager.py (ConnectionManager `manager` im Prozess, Connection je Verbindung mit
                           Sende-Lock, Broadcast entfernt Verbindungen bei Sendefehler/Timeout, PING_INTERVAL_SECONDS),
                           audio.py (AudioService `audio`: Musikzustand im Speicher, zufällige Track-Wahl, Ausgabe),
                           push.py (push_state als BackgroundTask nach dem Commit, eigene Session, lädt bei Szenenwechsel
                           die Playlist; send_initial_state, push_audio, send_sound, Ausgabe-Wechsel, reset_audio),
-                          origin.py (is_origin_allowed: ohne Origin, CORS_ORIGINS oder gleicher Host/Port wie `Host`)
+                          origin.py (is_origin_allowed: ohne Origin, CORS_ORIGINS oder gleicher Host/Port wie `Host`),
+                          wall_overlay.py (WallOverlayState `wall_overlay`: Wall-Overlay im Speicher, Default `off`)
 app/api/deps.py           SessionDep
 app/api/routes/*.py       je Ressource ein `router` (adventures inkl. Szenen je Abenteuer, scenes nur
                           Einzelszene, table, audio mit Prefix `/table` und Tag `audio`, ws) – nur HTTP-Mapping

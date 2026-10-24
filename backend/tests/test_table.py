@@ -10,7 +10,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-STATE_FIELDS = {"active_adventure_id", "active_scene_id", "theme"}
+STATE_FIELDS = {"active_adventure_id", "active_scene_id", "theme", "wall_overlay"}
 ADVENTURE_NOT_FOUND = {"detail": "Adventure not found"}
 
 
@@ -35,6 +35,7 @@ def test_get_returns_the_stored_state(client: TestClient, expected_adventures: l
     assert body["active_adventure_id"] in {None, expected_adventures[0]["id"]}
     assert body["active_scene_id"] is None
     assert body["theme"] == "dark"
+    assert body["wall_overlay"] == "off"
 
 
 def test_patch_sets_active_adventure_and_returns_its_active_scene(
@@ -49,6 +50,7 @@ def test_patch_sets_active_adventure_and_returns_its_active_scene(
         "active_adventure_id": other_adventure["id"],
         "active_scene_id": other_adventure["second_scene_id"],
         "theme": "dark",
+        "wall_overlay": "off",
     }
     assert response.json() == expected
     assert client.get("/table").json() == expected
@@ -75,7 +77,12 @@ def test_patch_sets_theme_and_keeps_unset_fields(client: TestClient, db: Session
     response = client.patch("/table", json={"theme": "tavern"})
 
     assert response.status_code == 200
-    assert response.json() == {"active_adventure_id": 1, "active_scene_id": None, "theme": "tavern"}
+    assert response.json() == {
+        "active_adventure_id": 1,
+        "active_scene_id": None,
+        "theme": "tavern",
+        "wall_overlay": "off",
+    }
     assert client.patch("/table", json={"theme": "dark"}).json()["theme"] == "dark"
 
 
@@ -95,7 +102,12 @@ def test_patch_accepts_null_adventure(client: TestClient, db: Session) -> None:
     response = client.patch("/table", json={"active_adventure_id": None})
 
     assert response.status_code == 200
-    assert response.json() == {"active_adventure_id": None, "active_scene_id": None, "theme": "tavern"}
+    assert response.json() == {
+        "active_adventure_id": None,
+        "active_scene_id": None,
+        "theme": "tavern",
+        "wall_overlay": "off",
+    }
 
 
 def test_patch_rejects_unknown_adventure(
@@ -121,6 +133,102 @@ def test_patch_rejects_invalid_theme(client: TestClient, db: Session, theme: Any
     assert response.status_code == 422
     assert response.json()["detail"][0]["loc"] == ["body", "theme"]
     assert client.get("/table").json() == before
+
+
+def test_patch_sets_wall_overlay_and_keeps_unset_fields(client: TestClient, db: Session) -> None:
+    client.patch("/table", json={"active_adventure_id": 1, "theme": "tavern"})
+    client.patch("/adventures/1", json={"active_scene_id": 5})
+
+    response = client.patch("/table", json={"wall_overlay": "world"})
+
+    assert response.status_code == 200
+    expected = {"active_adventure_id": 1, "active_scene_id": 5, "theme": "tavern", "wall_overlay": "world"}
+    assert response.json() == expected
+    assert client.get("/table").json() == expected
+    assert client.patch("/table", json={"theme": "dark"}).json()["wall_overlay"] == "world"
+    assert client.patch("/table", json={"wall_overlay": "off"}).json() == {
+        **expected,
+        "theme": "dark",
+        "wall_overlay": "off",
+    }
+
+
+@pytest.mark.parametrize("wall_overlay", ["map", "WORLD", None, 1])
+def test_patch_rejects_invalid_wall_overlay(client: TestClient, db: Session, wall_overlay: Any) -> None:
+    client.patch("/table", json={"wall_overlay": "world"})
+    before = client.get("/table").json()
+
+    response = client.patch("/table", json={"wall_overlay": wall_overlay})
+
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"] == ["body", "wall_overlay"]
+    assert client.get("/table").json() == before
+
+
+def test_rejected_patch_keeps_wall_overlay(
+    client: TestClient, db: Session, expected_adventures: list[dict[str, Any]]
+) -> None:
+    response = client.patch(
+        "/table", json={"active_adventure_id": unknown_adventure_id(expected_adventures), "wall_overlay": "world"}
+    )
+
+    assert response.status_code == 422
+    assert client.get("/table").json()["wall_overlay"] == "off"
+
+
+def test_scene_change_of_the_active_adventure_closes_the_wall_overlay(client: TestClient, db: Session) -> None:
+    client.patch("/table", json={"active_adventure_id": 1})
+    client.patch("/adventures/1", json={"active_scene_id": 5})
+    client.patch("/table", json={"wall_overlay": "world"})
+
+    client.patch("/adventures/1", json={"active_scene_id": 6})
+
+    assert client.get("/table").json()["wall_overlay"] == "off"
+
+    client.patch("/table", json={"wall_overlay": "world"})
+    client.patch("/adventures/1", json={"active_scene_id": None})
+
+    assert client.get("/table").json()["wall_overlay"] == "off"
+
+
+def test_other_adventure_writes_keep_the_wall_overlay(
+    client: TestClient, db: Session, other_adventure: dict[str, int]
+) -> None:
+    client.patch("/table", json={"active_adventure_id": 1})
+    client.patch("/adventures/1", json={"active_scene_id": 5})
+    client.patch("/table", json={"wall_overlay": "world"})
+
+    # Same scene again, only the level, the scene of an inactive adventure, the same adventure again, the theme.
+    client.patch("/adventures/1", json={"active_scene_id": 5})
+    client.patch("/adventures/1", json={"global_level": 3})
+    client.patch(f"/adventures/{other_adventure['id']}", json={"active_scene_id": other_adventure["first_scene_id"]})
+    client.patch("/table", json={"active_adventure_id": 1})
+    client.patch("/table", json={"theme": "tavern"})
+
+    assert client.get("/table").json()["wall_overlay"] == "world"
+
+
+def test_adventure_change_closes_the_wall_overlay(
+    client: TestClient, db: Session, other_adventure: dict[str, int]
+) -> None:
+    client.patch("/table", json={"active_adventure_id": 1, "wall_overlay": "world"})
+
+    response = client.patch("/table", json={"active_adventure_id": other_adventure["id"]})
+
+    assert response.json()["wall_overlay"] == "off"
+
+    client.patch("/table", json={"wall_overlay": "world"})
+    assert client.patch("/table", json={"active_adventure_id": None}).json()["wall_overlay"] == "off"
+
+
+def test_wall_overlay_set_with_the_adventure_change_wins(
+    client: TestClient, db: Session, other_adventure: dict[str, int]
+) -> None:
+    client.patch("/table", json={"active_adventure_id": 1})
+
+    response = client.patch("/table", json={"active_adventure_id": other_adventure["id"], "wall_overlay": "world"})
+
+    assert response.json()["wall_overlay"] == "world"
 
 
 def test_deleting_the_active_adventure_clears_it(

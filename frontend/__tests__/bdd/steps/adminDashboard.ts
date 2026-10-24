@@ -30,7 +30,9 @@ const SOUND_BUTTON = '[data-test-id="dashboard-panel-sounds"] [data-test-id="sou
 const JOIN_BUTTON = '[data-test-id="join-button"]'
 const FULLSCREEN_TOGGLE = '[data-test-id="fullscreen-toggle"]'
 const JOIN_DIALOG = '[data-test-id="join-dialog"]'
-const PANEL_LABELS = ['Aktive Szene', 'Musik', 'Sounds', 'Screens', 'Level', 'Spieler']
+const PANEL_LABELS = [
+  'Aktive Szene', 'Musik', 'Wall-Overlay', 'Sounds', 'Screens', 'Level', 'Spieler',
+]
 const LEVELING_INDEX = 3
 const SCROLL_TOP = 400
 // Three status waits plus the start of two more browsers, see the scenario
@@ -158,7 +160,8 @@ defineFeature(feature, (test) => {
     })
 
     then(
-      'I see the dashboard with the panels Aktive Szene, Musik, Sounds, Screens, Level, Spieler',
+      'I see the dashboard with the panels Aktive Szene, Musik, Wall-Overlay, Sounds, Screens, '
+        + 'Level, Spieler',
       async () => {
         await waitForElement(driver, DASHBOARD)
         const panels = await driver.findElements(By.css(DASHBOARD_PANELS))
@@ -172,12 +175,13 @@ defineFeature(feature, (test) => {
     )
 
     and(
-      'Aktive Szene spans the full width, below it Musik and Sounds side by side, below them '
-        + 'Screens, Level and Spieler over the full width',
+      'Aktive Szene spans the full width, below it Musik with Wall-Overlay and Sounds stacked on '
+        + 'its right, below them Screens, Level and Spieler over the full width',
       async () => {
         const dashboard = await (await waitForElement(driver, DASHBOARD)).getRect()
         const scene = await (await waitForElement(driver, panel('scene'))).getRect()
         const music = await (await waitForElement(driver, panel('music'))).getRect()
+        const overlay = await (await waitForElement(driver, panel('wall-overlay'))).getRect()
         const sounds = await (await waitForElement(driver, panel('sounds'))).getRect()
         const screens = await (await waitForElement(driver, panel('screens'))).getRect()
         // Without the scroll bar the dashboard gets once it is higher than the main area
@@ -188,10 +192,17 @@ defineFeature(feature, (test) => {
         expect(scene.width).toBe(innerWidth)
         expect(music.y).toBeGreaterThan(scene.y + scene.height)
         expect(music.width).toBeLessThan(innerWidth / 2)
-        expect(sounds.y).toBe(music.y)
-        expect(sounds.x).toBeGreaterThan(music.x + music.width)
-        expect(sounds.height).toBe(music.height)
-        expect(screens.y).toBeGreaterThan(music.y + music.height)
+        // Wall-Overlay (one row) right of the upper row of Musik, Sounds below it; the cell left of
+        // Sounds below Musik stays empty
+        expect(overlay.y).toBe(music.y)
+        expect(overlay.x).toBeGreaterThan(music.x + music.width)
+        expect(overlay.width).toBe(music.width)
+        expect(overlay.height).toBeLessThan(music.height)
+        expect(sounds.x).toBe(overlay.x)
+        expect(sounds.y).toBeGreaterThan(overlay.y + overlay.height)
+        expect(sounds.y).toBeLessThan(music.y + music.height)
+        expect(sounds.width).toBe(music.width)
+        expect(screens.y).toBeGreaterThan(sounds.y + sounds.height)
         expect(screens.width).toBe(innerWidth)
         const level = await (await waitForElement(driver, panel('level'))).getRect()
         const players = await (await waitForElement(driver, panel('players'))).getRect()

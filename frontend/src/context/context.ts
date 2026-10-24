@@ -1,7 +1,7 @@
 import { createContext } from 'react'
 
 import {
-  AudioState, GameTableState, SoundName, Theme,
+  AudioState, GameTableState, SoundName, Theme, WallOverlay,
 } from '../models/models'
 import { ScreenCounts } from '../realtime/messages'
 
@@ -33,6 +33,8 @@ interface GameTableContextType {
   // the Admin can reload what the snapshot does not contain; null until the first one arrived
   snapshot: GameTableState | null
   theme: Theme
+  // Overlay of the Walls; 'off' until the first snapshot arrived
+  wallOverlay: WallOverlay
   connected: boolean
   reconnectNow: () => void
   // Only for the Admin: connected Walls, Grounds and Players; null until the server sent them
@@ -43,6 +45,7 @@ export const GameTableContext = createContext<GameTableContextType>({
   hasState: false,
   snapshot: null,
   theme: 'dark',
+  wallOverlay: 'off',
   connected: true,
   reconnectNow: () => {},
   screens: null,

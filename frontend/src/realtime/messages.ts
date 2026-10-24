@@ -1,6 +1,6 @@
 import { isSoundName } from '../audio/sounds'
 import {
-  AudioState, GameTableState, SoundName, Theme, Track,
+  AudioState, GameTableState, SoundName, Theme, Track, WallOverlay,
 } from '../models/models'
 
 // Number of open connections per screen type, without the Admins
@@ -26,6 +26,7 @@ export type ClientMessage = { type: 'audio_ready' }
   | { type: 'track_ended', payload: { track_id: number } }
 
 const THEMES: readonly Theme[] = ['dark', 'tavern']
+const WALL_OVERLAYS: readonly WallOverlay[] = ['world', 'off']
 
 const isRecord = (value: unknown): value is Record<string, unknown> => (
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -45,14 +46,25 @@ const parseState = (payload: unknown): GameTableState | null => {
     return null
   }
   // The payload follows the API contract, whose fields are snake_case
-  const { active_adventure_id: activeAdventureId, active_scene_id: activeSceneId, theme } = payload
-  if (!isId(activeAdventureId) || !isId(activeSceneId) || !THEMES.includes(theme as Theme)) {
+  const {
+    active_adventure_id: activeAdventureId,
+    active_scene_id: activeSceneId,
+    theme,
+    wall_overlay: wallOverlay,
+  } = payload
+  if (
+    !isId(activeAdventureId)
+    || !isId(activeSceneId)
+    || !THEMES.includes(theme as Theme)
+    || !WALL_OVERLAYS.includes(wallOverlay as WallOverlay)
+  ) {
     return null
   }
   return {
     active_adventure_id: activeAdventureId,
     active_scene_id: activeSceneId,
     theme: theme as Theme,
+    wall_overlay: wallOverlay as WallOverlay,
   }
 }
 

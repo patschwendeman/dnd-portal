@@ -228,7 +228,7 @@ Wechselt mit dem Theme.
 
 | Rolle | Bedeutung | Verwendung |
 |---|---|---|
-| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Navigationsleiste und Panel im Admin, Wall-Panel, Nebenaktion ([2.4](#24-zustände)); Flächen in Dashboard-Panels (Vorschaubilder, Play-Button ohne Musik, Slider-Schiene der Lautstärke, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, Hero-Karte), Ring um das Level-Badge |
+| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Navigationsleiste und Panel im Admin, Wall-Panel, Nebenaktion ([2.4](#24-zustände)); Flächen in Dashboard-Panels (Vorschaubilder, Play-Button ohne Musik, Slider-Schiene der Lautstärke, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, inaktiver Button im Panel „Wall-Overlay“, Hero-Karte), Ring um das Level-Badge |
 | `secondary` | erhöhte Fläche | Karten, Dashboard-Panels, Dialog, Avatar und Chips der Hero-Karte, Nach-oben-Button, Slider-Schiene, Hintergrund der Wall, Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel im Admin, inaktiver Zustand ([2.4](#24-zustände)) |
 | `dark` | tiefste Fläche | schwebende Steuerleiste |
 | `primary` | Akzent, aktiv | Links, Slider-Füllung, Status-Punkt „verbunden“, Level-Badge der Hero-Karte, aktiver Zustand ([2.4](#24-zustände)) |

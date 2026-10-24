@@ -8,7 +8,9 @@ import {
 import { VisibilitySource } from '../../src/realtime/visibility'
 
 // The payload follows the API contract, whose fields are snake_case
-const state = { active_adventure_id: 1, active_scene_id: 5, theme: 'dark' }
+const state = {
+  active_adventure_id: 1, active_scene_id: 5, theme: 'dark', wall_overlay: 'off',
+}
 
 class FakeSocket implements SocketLike {
   onopen: (() => void) | null = null

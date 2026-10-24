@@ -56,11 +56,13 @@ def db(client: TestClient, reset_audio: None, monkeypatch: pytest.MonkeyPatch) -
     """Session in an outer transaction that is rolled back afterwards (commits become savepoints).
 
     Used by the routes (`get_db`) and by the WebSocket push, which otherwise opens its own session and would not see
-    the uncommitted changes. A scene change also changes the music state, so it is reset afterwards (`reset_audio`).
+    the uncommitted changes. A scene change also changes the music state, so it is reset afterwards (`reset_audio`),
+    like the overlay of the Walls, which is kept in memory as well.
     """
     from app.db.session import engine, get_db
     from app.main import app
     from app.realtime import push
+    from app.realtime.wall_overlay import wall_overlay
 
     with engine.connect() as connection:
         transaction = connection.begin()
@@ -73,6 +75,7 @@ def db(client: TestClient, reset_audio: None, monkeypatch: pytest.MonkeyPatch) -
             app.dependency_overrides.pop(get_db, None)
             session.close()
             transaction.rollback()
+            wall_overlay.reset()
 
 
 @pytest.fixture

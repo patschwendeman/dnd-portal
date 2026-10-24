@@ -19,7 +19,7 @@ from starlette.websockets import WebSocketDisconnect
 
 pytestmark = pytest.mark.usefixtures("reset_audio")
 
-STATE_FIELDS = {"active_adventure_id", "active_scene_id", "theme"}
+STATE_FIELDS = {"active_adventure_id", "active_scene_id", "theme", "wall_overlay"}
 AUDIO_FIELDS = {"playing", "track", "volume", "output_ready"}
 POLICY_VIOLATION = 1008
 CONFIGURED_ORIGIN = "http://localhost:5173"
@@ -152,7 +152,7 @@ def test_two_clients_receive_the_push_after_patch_adventure(client: TestClient, 
 
         client.patch("/adventures/1", json={"active_scene_id": 5})
 
-        expected = {"active_adventure_id": 1, "active_scene_id": 5, "theme": "dark"}
+        expected = {"active_adventure_id": 1, "active_scene_id": 5, "theme": "dark", "wall_overlay": "off"}
         assert receive_state(wall) == expected
         assert receive_state(ground) == expected
 
@@ -187,7 +187,56 @@ def test_switching_the_adventure_pushes_its_stored_scene(
             "active_adventure_id": other_adventure["id"],
             "active_scene_id": other_adventure["first_scene_id"],
             "theme": "dark",
+            "wall_overlay": "off",
         }
+
+
+def test_wall_overlay_is_pushed_to_all_walls(client: TestClient, db: Session) -> None:
+    with (
+        client.websocket_connect("/ws?screen=wall") as wall,
+        client.websocket_connect("/ws?screen=wall") as other_wall,
+        client.websocket_connect("/ws?screen=admin") as admin,
+    ):
+        receive_snapshot(wall)
+        receive_snapshot(other_wall)
+        receive_snapshot(admin)
+
+        response = client.patch("/table", json={"wall_overlay": "world"})
+
+        assert response.json()["wall_overlay"] == "world"
+        for websocket in (wall, other_wall, admin):
+            assert receive_state(websocket) == response.json()
+
+        client.patch("/table", json={"wall_overlay": "off"})
+
+        for websocket in (wall, other_wall, admin):
+            assert receive_state(websocket)["wall_overlay"] == "off"
+
+
+def test_new_wall_receives_the_current_wall_overlay(client: TestClient, db: Session) -> None:
+    client.patch("/table", json={"wall_overlay": "world"})
+
+    with client.websocket_connect("/ws?screen=wall") as wall:
+        assert receive_snapshot(wall)["wall_overlay"] == "world"
+
+
+def test_scene_change_pushes_the_closed_wall_overlay_once(client: TestClient, db: Session) -> None:
+    client.patch("/table", json={"active_adventure_id": 1, "wall_overlay": "world"})
+    with client.websocket_connect("/ws?screen=wall") as wall:
+        assert receive_snapshot(wall)["wall_overlay"] == "world"
+
+        client.patch("/adventures/1", json={"active_scene_id": 5})
+
+        # A single push with the new scene and without overlay (then the playlist of the new scene).
+        assert receive_state(wall) == {
+            "active_adventure_id": 1,
+            "active_scene_id": 5,
+            "theme": "dark",
+            "wall_overlay": "off",
+        }
+        receive_audio(wall)
+        client.patch("/table", json={"theme": "tavern"})
+        assert receive_state(wall)["theme"] == "tavern"
 
 
 def test_failed_patch_does_not_push(client: TestClient, db: Session) -> None:

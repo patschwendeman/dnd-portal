@@ -163,7 +163,7 @@
         "type": "object"
       },
       "GameTableState": {
-        "description": "State of the game table shared by Admin, Wall and Ground; `active_scene_id` belongs to the active adventure.",
+        "description": "State of the game table shared by Admin, Wall and Ground; `active_scene_id` belongs to the active adventure.\n\n`wall_overlay` is what the Walls show above the scene image (`world`: the world map); it is kept in memory only and\nset to `off` whenever the active scene or adventure changes.",
         "properties": {
           "active_adventure_id": {
             "anyOf": [
@@ -194,12 +194,21 @@
             ],
             "title": "Theme",
             "type": "string"
+          },
+          "wall_overlay": {
+            "enum": [
+              "world",
+              "off"
+            ],
+            "title": "Wall Overlay",
+            "type": "string"
           }
         },
         "required": [
           "active_adventure_id",
           "active_scene_id",
-          "theme"
+          "theme",
+          "wall_overlay"
         ],
         "title": "GameTableState",
         "type": "object"
@@ -224,6 +233,14 @@
               "tavern"
             ],
             "title": "Theme",
+            "type": "string"
+          },
+          "wall_overlay": {
+            "enum": [
+              "world",
+              "off"
+            ],
+            "title": "Wall Overlay",
             "type": "string"
           }
         },

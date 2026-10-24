@@ -17,10 +17,10 @@ interface GameTableProviderProps {
 }
 
 // Connects the screen to the game table of the server and passes the state on: active adventure,
-// active scene and theme, the audio state and (Admin only) the number of connected screens. Until
-// the first snapshot nothing is active and the theme is dark; after a disconnect the last state
-// stays. A theme override only changes the look of this screen; the contexts keep the theme of the
-// game table.
+// active scene, theme and overlay of the Walls, the audio state and (Admin only) the number of
+// connected screens. Until the first snapshot nothing is active, the theme is dark and there is no
+// overlay; after a disconnect the last state stays. A theme override only changes the look of this
+// screen; the contexts keep the theme of the game table.
 function GameTableProvider({
   screen,
   themeOverride = null,
@@ -41,14 +41,21 @@ function GameTableProvider({
   const activeAdventureId = state?.active_adventure_id ?? null
   const activeSceneId = state?.active_scene_id ?? null
   const theme = state?.theme ?? 'dark'
+  const wallOverlay = state?.wall_overlay ?? 'off'
 
   const adventure = useMemo(() => ({ activeAdventureId }), [activeAdventureId])
   const scene = useMemo(() => ({ activeSceneId }), [activeSceneId])
   const gameTable = useMemo(
     () => ({
-      hasState: state !== null, snapshot: state, theme, connected, reconnectNow, screens,
+      hasState: state !== null,
+      snapshot: state,
+      theme,
+      wallOverlay,
+      connected,
+      reconnectNow,
+      screens,
     }),
-    [state, theme, connected, reconnectNow, screens],
+    [state, theme, wallOverlay, connected, reconnectNow, screens],
   )
   const gameAudio = useMemo(
     () => ({

@@ -1,7 +1,7 @@
 # DND-35: Wall-Overlay vom Admin steuern
 
 **Typ:** feat
-**Status:** Entwurf
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -38,26 +38,34 @@ Admin aus ein und aus, alle Walls folgen.
 
 ### E3: Panel „Wall-Overlay“
 - **Entscheidung:** Panel mit Label „Wall-Overlay“ und zwei Umschalt-Buttons „Weltkarte“ und „Aus“; der aktive Zustand
-  ist hervorgehoben (`aria-pressed`). Fehler beim Speichern zeigen die Speicherfehler-Leiste.
+  ist hervorgehoben (`aria-pressed`). Fehler beim Speichern zeigen die Speicherfehler-Leiste. Größe 2x1, im Raster
+  direkt nach „Musik“: rechts neben „Musik“ in dessen oberer Zeile, „Sounds“ rutscht rechts darunter, links unter
+  „Musik“ bleibt eine Lücke von 2x1 (Entscheidung nach Runde 1). Die Buttons dürfen umbrechen, wenn das Panel zu
+  schmal ist.
+
+### E4: Overlay-Zustand flüchtig
+- **Entscheidung:** `wall_overlay` liegt nur im Speicher des Backends (wie der Musikzustand), keine DB-Spalte und
+  keine Migration; nach einem API-Neustart ist er `"off"`.
+- **Begründung:** Nach einem Neustart ist „keine Weltkarte“ der sinnvolle Startzustand; spart Migration.
 
 ## Subtasks
 
 ### Vertrag
-- [ ] `wall_overlay` in `GameTableState`/`GameTableUpdate` (E1); `openapi.json` und `schema.d.ts` neu erzeugen.
+- [x] `wall_overlay` in `GameTableState`/`GameTableUpdate` (E1); `openapi.json` und `schema.d.ts` neu erzeugen.
 
 ### Backend
-- [ ] Spalte `game_table.wall_overlay` mit Migration (Default `off`) – oder flüchtig im Speicher, siehe offene Fragen.
-- [ ] `PATCH /table` nimmt `wall_overlay` an; Szenen-/Abenteuerwechsel setzt `off` (E2).
-- [ ] Tests: PATCH und Push; Reset beim Szenen- und Abenteuerwechsel; ungültiger Wert → 422.
+- [x] `wall_overlay` flüchtig im Speicher halten, Default `off` (E4).
+- [x] `PATCH /table` nimmt `wall_overlay` an; Szenen-/Abenteuerwechsel setzt `off` (E2).
+- [x] Tests: PATCH und Push; Reset beim Szenen- und Abenteuerwechsel; ungültiger Wert → 422.
 
 ### Frontend
-- [ ] `GameTableProvider`/Context: `wall_overlay` bereitstellen.
-- [ ] Wall: Overlay aus dem Spieltisch-Zustand, Steuerleiste schreibt per PATCH; lokalen Zustand entfernen.
-- [ ] Admin: Panel „Wall-Overlay“ (E3).
-- [ ] E2E: Weltkarte im Admin einblenden → Wall zeigt sie; Szenenwechsel blendet sie aus.
+- [x] `GameTableProvider`/Context: `wall_overlay` bereitstellen.
+- [x] Wall: Overlay aus dem Spieltisch-Zustand, Steuerleiste schreibt per PATCH; lokalen Zustand entfernen.
+- [x] Admin: Panel „Wall-Overlay“ (E3).
+- [x] E2E: Weltkarte im Admin einblenden → Wall zeigt sie; Szenenwechsel blendet sie aus.
 
 ### Doku
-- [ ] `docs/screens.md` (Admin, Wall), `docs/architecture.md` (Spieltisch-Zustand), `docs/domain.md`,
+- [x] `docs/screens.md` (Admin, Wall), `docs/architecture.md` (Spieltisch-Zustand), `docs/domain.md`,
       `frontend/docs/design/` (Panel, Raster).
 
 ## Akzeptanzkriterien
@@ -87,7 +95,7 @@ Admin aus ein und aus, alle Walls folgen.
 ## Teststrategie / Verifikation
 
 **Automatisch**
-- Backend: Tests wie in den Subtasks, ggf. Migrationstest; `ruff`, `mypy`, `pytest` grün.
+- Backend: Tests wie in den Subtasks; `ruff`, `mypy`, `pytest` grün.
 - Frontend: BDD wie in den Subtasks; Lint, Typecheck, Build grün.
 
 **Manuell**
@@ -96,8 +104,7 @@ Admin aus ein und aus, alle Walls folgen.
 2. Szene wechseln (AK3); Backend stoppen und umschalten; neue Wall öffnen (AK4).
 
 ## Offene Fragen
-- Wird der Overlay-Zustand gespeichert (DB, übersteht API-Neustart) oder ist er flüchtig wie die Musik
-  (nach Neustart `off`)?
-- Größe und Position des Panels im Raster (z. B. 2x1 neben „Musik“ oder unter „Screens“).
+
+Keine.
 
 ## Review

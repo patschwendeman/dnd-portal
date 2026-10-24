@@ -24,8 +24,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - Musik ein- und ausschalten.
 - Verschiedene Sounds abspielen.
 - Dashboard rechts neben den Notizen: festes Raster aus Panels, in dem alles gebündelt ist, was der Spielleiter während
-  des Spiels steuert (umgesetzt: „Aktive Szene“, „Musik“, „Sounds“, „Screens“, „Level“, „Spieler“; geplant:
-  „Wall-Overlay“).
+  des Spiels steuert (umgesetzt: „Aktive Szene“, „Musik“, „Wall-Overlay“, „Sounds“, „Screens“, „Level“, „Spieler“).
 
 ### Ist
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Top-Bar und Hauptbereich, keine Bottom-Bar. Im
@@ -33,13 +32,14 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   und unterem Rand), in der Mitte die Notizen (etwa zwei Drittel), rechts das Dashboard (etwa ein Drittel, mindestens
   400px). Die Mitte der Top-Bar ist leer.
 - **Dashboard:** Raster mit vier Spalten und einer Mindest-Zeilenhöhe; die Panels haben feste Größe und Position (kein
-  Verschieben): oben „Aktive Szene“ über die volle Breite (2 Zeilen), darunter „Musik“ und „Sounds“ nebeneinander (je
-  2 Spalten, 2 Zeilen), darunter „Screens“ über die volle Breite (2 Zeilen), darunter „Level“ über die volle Breite
+  Verschieben): oben „Aktive Szene“ über die volle Breite (2 Zeilen), darunter links „Musik“ (2 Spalten, 2 Zeilen),
+  rechts daneben „Wall-Overlay“ (2 Spalten, 1 Zeile) und darunter „Sounds“ (2 Spalten, 2 Zeilen; links unter „Musik“
+  bleibt eine Lücke von einer Zeile), darunter „Screens“ über die volle Breite (2 Zeilen), darunter „Level“ über die volle Breite
   (1 Zeile) und „Spieler“ über die volle Breite (eine Zeile je Spieler). Braucht der Inhalt eines Panels mehr Platz
   (schmales Fenster), wird seine Zeile höher – die Panels scrollen nicht für sich und schneiden keinen Text ab; ist das
   Raster höher als der Hauptbereich, scrollt das Dashboard als Ganzes. Der Icon-Button „Dashboard“ rechts
   in der Top-Bar (links vom Theme-Umschalter, hervorgehoben solange das Dashboard offen ist) blendet es aus – die Notizen
-  nehmen dann die volle Breite, Musik, Sounds, Level und QR-Code sind nicht erreichbar – und wieder ein. Auswahl und
+  nehmen dann die volle Breite, Musik, Wall-Overlay, Sounds, Level und QR-Code sind nicht erreichbar – und wieder ein. Auswahl und
   Scrollposition der Notizen bleiben erhalten; der Zustand wird nicht gespeichert, nach einem Reload ist das Dashboard
   offen.
 - **Navigationsleiste:** schmale Leiste mit Icon-Buttons „Notizen“ und darunter „Szenen“ (Tooltip mit dem Namen);
@@ -61,10 +61,16 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Bestätigungsdialog „Szene wechseln“ mit Wall-Bild, Name und Beschreibung; „Confirm“ speichert die Szene, und alle
   verbundenen Screens (auch andere Admin-Fenster) wechseln, sobald der Server den neuen Stand schickt; „Decline“ bricht
   ab. Klick auf die bereits aktive Szene tut nichts. Ohne Abenteuer oder ohne Szenen steht dort „Keine Szenen“.
+- **Wall-Overlay:** Das Panel „Wall-Overlay“ hat zwei Umschalt-Buttons „Weltkarte“ und „Aus“ (umbrechend, wenn das
+  Panel zu schmal ist); hervorgehoben (`aria-pressed`) ist der Zustand, den der Server zuletzt geschickt hat. Ein Klick
+  auf den anderen Button speichert ihn, alle Walls blenden die Weltkarte ein bzw. aus, sobald der Server den neuen
+  Stand schickt; ein Klick auf den hervorgehobenen tut nichts. Ein Szenen- oder Abenteuerwechsel schaltet auf „Aus“.
 - **Zustand auf dem Server:** Abenteuer, aktive Szene und Theme stehen auf dem Server und gelten für alle
   Spieltisch-Screens, auch in anderen Browsern oder auf anderen Geräten; sie überstehen Reloads und Neustarts der API.
+  Das Wall-Overlay steht ebenfalls auf dem Server, aber nur im Speicher: Reloads übersteht es, nach einem Neustart der
+  API ist es „Aus“.
   Mehrere Admin-Fenster dürfen gleichzeitig schreiben, der letzte Schreibzugriff gewinnt.
-- **Speicherfehler:** Schlägt das Speichern von Szene, Abenteuer, Theme, Level oder ein Musik-Befehl fehl, ändert sich auf keinem Screen etwas,
+- **Speicherfehler:** Schlägt das Speichern von Szene, Abenteuer, Theme, Level, Wall-Overlay oder ein Musik-Befehl fehl, ändert sich auf keinem Screen etwas,
   und unter der Top-Bar erscheint die Hinweisleiste „Änderung konnte nicht gespeichert werden“; „Erneut versuchen“
   wiederholt den zuletzt fehlgeschlagenen Schreibzugriff, bei Erfolg verschwindet sie.
 - **Verbindung:** Bricht die Verbindung zum Server ab (spätestens nach etwa 35 s ohne Nachricht erkannt), zeigt der
@@ -176,15 +182,19 @@ legt der geplante Menüpunkt „Kampf“ im Admin fest.
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Vollbild-Hintergrund = Wall-Bild der aktiven Szene,
   unverzerrt und randlos. Ohne aktive Szene (auch bis der Server den ersten Stand geschickt hat) nur die
   Hintergrundfarbe des Themes, ohne Bild und ohne Panel; die Steuerleiste funktioniert weiter.
-- Folgt dem Spieltisch per WebSocket (aktive Szene, Abenteuer, Theme) und kann damit auch in einem anderen Browser oder
+- Folgt dem Spieltisch per WebSocket (aktive Szene, Abenteuer, Theme, Overlay) und kann damit auch in einem anderen Browser oder
   auf einem anderen Gerät laufen (`http://<IP>:8080/wall`). Nach einem Verbindungsabbruch behält sie das Bild ohne
   Hinweis und verbindet sich selbst neu.
-- Overlay-Panel oben mittig, umschaltbar über eine Steuerleiste, die beim Hover am unteren Rand erscheint (WORLD /
-  OFF, Start: OFF):
+- Overlay-Panel oben mittig; welches Overlay sie zeigt, steht auf dem Server (Spieltisch) und gilt für alle Walls.
+  Umschalten im Admin (Panel „Wall-Overlay“) oder an jeder Wall über eine Steuerleiste, die beim Hover am unteren Rand
+  erscheint (WORLD / OFF, hervorgehoben ist der Zustand des Servers):
   - **WORLD:** „Weltkarte“ mit einer fest eingebundenen Weltkarte (nicht aus dem Backend), vollständig über der
     Steuerleiste.
-  - **OFF:** Overlay ausgeblendet.
-  Ein Szenenwechsel blendet kein Overlay ein; eine offene Weltkarte wird dabei geschlossen.
+  - **OFF:** Overlay ausgeblendet (Start, auch nach einem Neustart der API).
+  Ein Klick auf WORLD oder OFF speichert den Zustand auf dem Server, alle Walls (und das Admin-Panel) wechseln erst mit
+  dessen Push. Schlägt das Speichern fehl, ändert sich nichts; die Wall zeigt keinen Fehler (nur in der Konsole). Eine
+  neu geöffnete Wall zeigt sofort das aktuelle Overlay. Ein Szenen- oder Abenteuerwechsel schließt die Weltkarte auf
+  allen Walls.
 - **AUDIO:** Button in derselben Steuerleiste; ein Klick macht diese Wall zur Audioausgabe für Musik und Soundeffekte
   (die Nutzerinteraktion gibt die Wiedergabe im Browser frei). Er ist hervorgehoben, solange die Wall Ausgabe ist.
   Es spielt immer nur eine Wall: Klickt man auf einer anderen Wall „AUDIO“, verstummt die bisherige. Die Ausgabe folgt

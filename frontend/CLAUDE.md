@@ -79,7 +79,8 @@ src/realtime/        WebSocket-Client des Spieltischs: GameTableProvider (ThemeP
                      ClientMessage), backoff.ts (reconnectDelay), heartbeat.ts (Watchdog 35 s), visibility.ts
                      (VisibilitySource, für Tests ersetzbar)
 src/context/         ActiveAdventureContext, ActiveSceneContext (IDs number | null, nur lesend), GameTableContext
-                     (hasState, snapshot: letzter Spieltisch-Zustand, neues Objekt je Push, theme, connected,
+                     (hasState, snapshot: letzter Spieltisch-Zustand, neues Objekt je Push, theme, wallOverlay,
+                     connected,
                      reconnectNow, screens: Verbindungszahlen nur für den Admin), GameAudioContext (audio, isAudioOutput,
                      requestAudioOutput, reportTrackEnded, subscribeSound)
 src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Panel „Sounds“), wallAudioPlayer.ts
@@ -89,16 +90,16 @@ src/components/      UI-Bausteine (TopBar, JoinDialog, ThemeMenu, NavRail (Navig
                      SideBarLeftElement (Eintrag im Panel, Button), DocumentNavigation (Notizen-Einträge im Panel),
                      SceneNavigation (Szenenliste im Panel), DocumentReader (Notizen des gewählten Eintrags),
                      Dashboard (Raster rechts im Admin) mit DashboardPanel, ActiveScenePanel, MusicControl,
-                     SoundBoard, ScreensPanel, LevelPanel, PlayersPanel (Panels), PlayerHeroCard (Hero-Karte),
+                     WallOverlayPanel, SoundBoard, ScreensPanel, LevelPanel, PlayersPanel (Panels), PlayerHeroCard (Hero-Karte),
                      PanelButton (Icon-Button in Panels), Dialogue, GridOverlay, ScreenControlBar,
                      ResourceBarPlayer …)
 src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
                      getJoinInfo, saveActiveScene, saveGlobalLevel, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
-                     getGroundScreenData …)
+                     getGroundScreenData …); gameTable.ts: saveWallOverlay (von Admin und Wall genutzt)
 src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData/patchData/postData (apiMethods.ts), loadData,
                      saveData/postCommand, mediaUrl (mediaUrl.ts), wsUrl (wsUrl.ts); schema.d.ts generiert
 src/models/models.ts API-Typen AdventureSummary, AdventureDetail, Player, SceneDetail, Image, Track, GameTableState, Theme,
-                     JoinInfo, AudioState, AudioUpdate, SoundName aus src/api/schema.d.ts
+                     WallOverlay, JoinInfo, AudioState, AudioUpdate, SoundName aus src/api/schema.d.ts
 src/utils/utils.ts   Musiktitel (getMusicTitle), filterSceneByKey
 src/utils/navRail.ts nextOpenPanel (welches Panel neben der Navigationsleiste offen ist)
 src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
@@ -116,8 +117,9 @@ public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mec
 
 Datenfluss: Screen → `src/service/*` → `getData()` → Backend. Der Admin lädt die Szenenliste nur über
 `adventures/{id}/scenes` des aktiven Abenteuers (`activeAdventureId`). Der Spieltisch-Zustand (aktives Abenteuer, aktive
-Szene, Theme) kommt nur vom Server: `GameTableProvider` verbindet sich per WebSocket (`/ws?screen=…`) und speist die
-Contexts aus jedem Snapshot. Szenen-, Abenteuer- und Theme-Wechsel schreibt der Admin per REST (`PATCH adventures/{id}`
+Szene, Theme, Wall-Overlay) kommt nur vom Server: `GameTableProvider` verbindet sich per WebSocket (`/ws?screen=…`) und speist die
+Contexts aus jedem Snapshot. Szenen-, Abenteuer-, Theme- und Overlay-Wechsel schreibt der Admin (das Wall-Overlay auch die
+Steuerleiste der Wall) per REST (`PATCH adventures/{id}`
 bzw. `PATCH table`) **ohne lokale Vorwegnahme**; der Server pusht danach den neuen Stand an alle Screens, die die Szene
 per `scenes/{id}` neu laden (ohne aktive Szene kein Request, nur Hintergrund). Nur der Admin zeigt Speicher- und
 Verbindungsfehler. Der Player nutzt vom Snapshot nur das Theme (`Abweichung ?? Spieltisch-Theme`), sendet nichts und
