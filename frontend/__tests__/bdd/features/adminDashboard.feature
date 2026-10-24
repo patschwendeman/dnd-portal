@@ -27,11 +27,12 @@ Scenario: I control music and sounds from the dashboard
     Then no error bar is shown
 
 Scenario: I see which screens are connected
-    Given a wall screen and a ground screen are open
-    And I am on the admin screen
-    Then the panel Screens shows Wall and Ground as connected
+    Given I am on the admin screen
+    And I noted how many wall and ground screens the panel Screens shows as connected
+    When a wall screen and a ground screen are opened
+    Then the panel Screens shows one more Wall and one more Ground as connected
     When the ground screen is closed
-    Then the panel Screens shows Ground as not connected
+    Then the panel Screens shows one Ground less as connected
 
 Scenario: I open the QR code from the panel Screens
     Given I am on the admin screen

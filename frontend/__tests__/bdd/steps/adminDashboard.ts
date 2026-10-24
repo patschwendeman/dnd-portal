@@ -32,6 +32,8 @@ const JOIN_DIALOG = '[data-test-id="join-dialog"]'
 const PANEL_LABELS = ['Aktive Szene', 'Musik', 'Sounds', 'Screens']
 const LEVELING_INDEX = 3
 const SCROLL_TOP = 400
+// Three status waits plus the start of two more browsers, see the scenario
+const SCREENS_SCENARIO_TIMEOUT = 6 * WAIT_TIMEOUT
 
 const entry = (index: number): string => `[data-test-id="notes-entry-${index}"]`
 const panel = (id: string): string => `[data-test-id="dashboard-panel-${id}"]`
@@ -40,16 +42,45 @@ const screenStatus = (screen: string): string => (
   `${panel('screens')} [data-test-id="screen-${screen}-status"]`
 )
 
-const waitForText = async (
+interface ScreenCounts { wall: number | null, ground: number | null }
+
+// Inverse of screenStatusText: "nicht verbunden" 0, "verbunden" 1, "<n> verbunden" n; null while
+// the server has not sent the counts yet ("–") or for an unknown text
+const parseScreenCount = (text: string): number | null => {
+  if (text === 'nicht verbunden') {
+    return 0
+  }
+  if (text === 'verbunden') {
+    return 1
+  }
+  const match = /^(\d+) verbunden$/.exec(text)
+  return match === null ? null : Number(match[1])
+}
+
+const readScreenCounts = async (driver: WebDriver): Promise<ScreenCounts> => {
+  const [wall, ground] = await Promise.all(['wall', 'ground'].map(async (screen) => {
+    const elements = await driver.findElements(By.css(screenStatus(screen)))
+    return elements.length > 0 ? parseScreenCount(await elements[0].getText()) : null
+  }))
+  return { wall, ground }
+}
+
+// Waits until both counts match (or, without expected counts, until the server has sent them) and
+// returns the last seen counts instead of throwing on timeout, so the step's expect shows expected
+// vs. actual
+const waitForScreenCounts = async (
   driver: WebDriver,
-  selector: string,
-  expected: string,
-): Promise<string> => {
-  let actual = ''
+  expected?: ScreenCounts,
+): Promise<ScreenCounts> => {
+  await waitForElement(driver, panel('screens'))
+  let actual: ScreenCounts = { wall: null, ground: null }
   try {
     await driver.wait(async () => {
-      actual = await (await waitForElement(driver, selector)).getText()
-      return actual === expected
+      actual = await readScreenCounts(driver)
+      if (expected === undefined) {
+        return actual.wall !== null && actual.ground !== null
+      }
+      return actual.wall === expected.wall && actual.ground === expected.ground
     }, WAIT_TIMEOUT)
   } catch (err) {
     if (!(err instanceof error.TimeoutError)) {
@@ -87,13 +118,17 @@ const waitForMusicState = async (driver: WebDriver, playing: boolean): Promise<v
 
 defineFeature(feature, (test) => {
   let driver: WebDriver
+  // Wall and ground screens a scenario opens in addition; quit after each scenario, also on failure
+  let screenDrivers: WebDriver[] = []
 
   beforeEach(async () => {
     driver = buildDriver()
   })
 
   afterEach(async () => {
-    await driver.quit()
+    const drivers = [driver, ...screenDrivers]
+    screenDrivers = []
+    await Promise.allSettled(drivers.map((item) => item.quit()))
   })
 
   test('The dashboard shows its panels next to the notes', ({ given, then, and }) => {
@@ -252,45 +287,57 @@ defineFeature(feature, (test) => {
     })
   })
 
+  // Other wall and ground screens may be connected as well (e.g. at the game table), so the
+  // scenario checks the counts relative to the counts before. On failure each of the three status
+  // waits takes WAIT_TIMEOUT and two more browsers start, which exceeds the default testTimeout
   test('I see which screens are connected', ({
     given, and, when, then,
   }) => {
-    let wall: WebDriver
-    let ground: WebDriver | null
+    let before: ScreenCounts = { wall: null, ground: null }
+    let wall: WebDriver | null = null
+    let ground: WebDriver | null = null
 
-    given('a wall screen and a ground screen are open', async () => {
-      wall = buildDriver()
-      ground = buildDriver()
-      await openScreen(wall, '/wall')
-      await openScreen(ground, '/ground')
-    })
-
-    and('I am on the admin screen', async () => {
+    given('I am on the admin screen', async () => {
       await openAdmin(driver)
     })
 
-    then('the panel Screens shows Wall and Ground as connected', async () => {
-      // Other screens may be open as well (e.g. at the game table); then the count is shown
-      expect(await waitForText(driver, screenStatus('wall'), 'verbunden')).toMatch(/verbunden$/)
-      expect(await waitForText(driver, screenStatus('ground'), 'verbunden')).toMatch(/verbunden$/)
-      expect(await (await waitForElement(driver, screenStatus('ground'))).getText())
-        .not.toBe('nicht verbunden')
+    and(
+      'I noted how many wall and ground screens the panel Screens shows as connected',
+      async () => {
+        before = await waitForScreenCounts(driver)
+        expect(before.wall).not.toBeNull()
+        expect(before.ground).not.toBeNull()
+      },
+    )
+
+    when('a wall screen and a ground screen are opened', async () => {
+      wall = buildDriver()
+      ground = buildDriver()
+      screenDrivers.push(wall, ground)
+      await Promise.all([openScreen(wall, '/wall'), openScreen(ground, '/ground')])
     })
+
+    then(
+      'the panel Screens shows one more Wall and one more Ground as connected',
+      async () => {
+        const expected = { wall: Number(before.wall) + 1, ground: Number(before.ground) + 1 }
+        expect(await waitForScreenCounts(driver, expected)).toEqual(expected)
+      },
+    )
 
     when('the ground screen is closed', async () => {
-      await ground?.quit()
+      const closing = ground
       ground = null
+      screenDrivers = screenDrivers.filter((item) => item !== closing)
+      await closing?.quit()
     })
 
-    then('the panel Screens shows Ground as not connected', async () => {
-      try {
-        expect(await waitForText(driver, screenStatus('ground'), 'nicht verbunden'))
-          .toBe('nicht verbunden')
-      } finally {
-        await wall.quit()
-      }
+    then('the panel Screens shows one Ground less as connected', async () => {
+      // The wall screen stays connected
+      const expected = { wall: Number(before.wall) + 1, ground: Number(before.ground) }
+      expect(await waitForScreenCounts(driver, expected)).toEqual(expected)
     })
-  })
+  }, SCREENS_SCENARIO_TIMEOUT)
 
   test('I open the QR code from the panel Screens', ({ given, when, then }) => {
     given('I am on the admin screen', async () => {

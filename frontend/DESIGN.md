@@ -268,5 +268,8 @@ Geprüft nach WCAG 2.1. Ziel AA:
 - **Ausnahme:** `border` im Dark-Theme und die Linien in `secondary` auf `background` (unter der Top-Bar, rechts an
   Navigationsleiste und Panel im Admin) in beiden Themes verfehlen 3:1 bewusst: Trennlinien sind Gestaltung, kein
   Bedienelement, und WCAG verlangt 3:1 nur für die Grenzen von Bedienelementen.
+- **Ausnahme:** Die Flächen in `background` auf `secondary` in den Dashboard-Panels (Buttons, Slider-Schiene, leere
+  Bildfläche) verfehlen 3:1 in beiden Themes bewusst: Die Fläche ist nur ein Zusatzsignal, erkennbar sind die
+  Bedienelemente an Icon, Text bzw. Griff, die das Ziel erreichen.
 
 Messwerte je Farbpaar und Anmerkungen: [contrast.md](docs/design/contrast.md#kontrastmessung).

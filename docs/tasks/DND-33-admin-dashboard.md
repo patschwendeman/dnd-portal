@@ -225,3 +225,58 @@ ergänzen die Panels „Spieler“ und „Level“ (DND-34) und „Wall-Overlay�
 - keine
 
 ## Review
+
+### Runde 1 – 2026-10-24
+**Empfehlung:** Nacharbeiten
+
+Funktional ist alles erfüllt; AK5 und AK6 im Browser nachgeprüft. Blockierend ist nur das neue E2E-Szenario
+„I see which screens are connected“: Es ist im Dev-Stack rot, sobald weitere Wall- oder Ground-Fenster verbunden sind
+(üblicher Zustand; beim Review 2 Walls, 1 Ground). Im isolierten Stack grün. Entspricht dem Befund aus DND-29, Runde 1.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | `AdminScreen.tsx:86-90` Spalten `2fr/1fr`; `:347-383` Szene 4×2, Musik 4×1, Sounds 2×2, Screens 2×2; `Dashboard.tsx` 4 Spalten, 144px, scrollt für sich; `TopBar.tsx` ohne Sounds/Handy; keine Bottom-Bar. Gemessen 1600px: 408/816px, 1920px: 515/1029px. E2E-Szenario 1 grün (isoliert) |
+| AK2 | erfüllt | `AdminScreen.tsx:119` Zustand nur in React; `:424` `DocumentReader` bleibt gemountet; `TopBar.tsx:101-102` `aria-expanded`/`aria-controls`. E2E-Szenario 2 grün |
+| AK3 | erfüllt („Keine Szene aktiv“ nur im Code) | `ActiveScenePanel.tsx:87-101`; `DetailsSideBar.tsx` gelöscht; neuer Schritt in `selectScene` grün; `ActiveScenePanel.tsx:88` ohne automatisierten Test |
+| AK4 | erfüllt | `MusicControl.tsx` Logik unverändert verschoben; `runSave` wie bisher; Sounds über `handleSound` (`AdminScreen.tsx:293`). E2E-Szenario 3 grün |
+| AK5 | erfüllt | Selenium-Check im isolierten Stack: „verbunden \| Audioausgabe \| verbunden \| 2 Spieler verbunden“; Ground getrennt → „nicht verbunden“ < 0,8s ohne Reload; zwei Walls „2 verbunden“. `test_ws.py:466-545` grün |
+| AK6 | erfüllt | `ScreensPanel.tsx:99-108`; 2. Klick öffnet kein weiteres Fenster, auch nach Reload des Admins |
+| AK7 | erfüllt | E2E-Szenario 5 grün: Dialog, Escape, Fokus zurück auf `join-button` |
+| AK8 | erfüllt | E2E `adminNavigation`, `selectScene` grün; Hinweisleiste bleibt; Dark/Tavern unauffällig; Wall/Ground/Player ohne Diff |
+
+**Blockierende Befunde**
+- [x] `npm run test:e2e` im Dev-Stack rot, sobald weitere Wall-/Ground-Fenster verbunden sind
+  (`frontend/__tests__/bdd/steps/adminDashboard.ts:255`)
+  - Reproduziert (2 Walls, 1 Ground): `1 failed, 9 passed`, „Exceeded timeout of 10000 ms“
+  - `waitForText` wartet auf exakt „verbunden“; bei „n verbunden“ je 5s `WAIT_TIMEOUT`, zusammen über 10s `testTimeout`;
+    Ground kann bei fremdem Ground nie „nicht verbunden“ zeigen
+  - Kommentar `:272` (fremde Screens toleriert) stimmt nicht
+  - Driver `wall`/`ground` werden im Fehlerfall nicht beendet (kein `afterEach`); verwaiste chromedriver-Prozesse
+  - `:274` `toMatch(/verbunden$/)` ist auch bei „nicht verbunden“ grün – Wall-Prüfung belegt nichts
+  - Vorschlag: Status relativ zum Vorher-Zustand prüfen (Zahl vor dem Schließen lesen, Abnahme erwarten);
+    zusätzliche Driver in `afterEach`/`finally` beenden
+
+**Hinweise**
+- Abweichungen des Implementers geprüft:
+  - `openWindow.svg`: unkritisch (`fill="currentColor"`)
+  - `window.open('', 'dnd-portal-<screen>', 'popup')`, Laden nur bei `about:blank`: erfüllt AK6, Wall behält
+    Audioausgabe; Nebenwirkung: Popup ohne Adressleiste/Tabs, von Hand geöffnete Wall wird nicht wiederverwendet
+  - Sound-Gruppen ohne Trennlinien: dokumentiert, nicht blockierend
+  - Flächen `background` statt `secondary`: zwingend; in `contrast.md` als „bewusst ✗“; fehlt in Ausnahmeliste
+    `DESIGN.md` §2.6 (Kleinigkeit)
+  - `size.bar.lg` entfernt: im Scope, `DESIGN.md` angepasst
+  - `receive_json` überspringt `screens`: bestehende Assertions nicht aufgeweicht
+  - `release_connection` unter `asyncio.shield`: konsequent; Lock-Reihenfolge `state_lock` → `screens_lock`
+  - 1600px: Umbruch und Scrollen nach E1 erlaubt; auch 1920×1080 scrollt (784 > 722); „QR-Code“ erst nach Scrollen;
+    Hinweis gekürzt „Keine Audioausgabe b…“ – Entscheidung beim User
+- pytest/Dev-DB: betrifft diesen Task nicht; neue Tests mit Rollback-Fixture; frische DB 174 grün
+- `backend/CLAUDE.md` nennt die `screens`-Tests in `test_ws.py` nicht (vom Plan nicht verlangt); übrige Doku stimmt
+- Plan ohne eigenen Commit `docs(DND-33): approve plan` im Runden-Commit, wie bei DND-29
+- Commit `4b3f3e1`: Schema passt, keine KI-Signatur, alle Subtasks abgehakt
+- Nebeneffekt: E2E im Dev-Stack hat aktive Szene von Abenteuer 1 von 5 auf 3 gesetzt (Track geändert)
+
+**Checks**
+- Backend: `ruff`, `ruff format --check`, `mypy`, `make check-quality` (pylint 10.00) grün; `pytest` frische
+  Postgres-17-DB 174 passed; `test_ws.py` 5× je 50 passed; `openapi.json` aktuell
+- Frontend: lint, typecheck, `test:unit` 171, `check:deadcode`, `check:dupes` (5 Altklone), build grün
+- E2E: Dev-Stack 9/10 (Screens-Szenario rot); isolierter Stack 10/10 in 2 Läufen
