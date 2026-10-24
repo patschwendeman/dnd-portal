@@ -29,7 +29,7 @@ import {
   saveAudio,
   saveTheme,
 } from '../service/adminScreen'
-import GlobalStyle from '../style/GlobalStyle'
+import GlobalStyle, { hoverScrollbar } from '../style/GlobalStyle'
 import selectDefaultAdventureId from '../utils/adventure'
 import { loadLatest } from '../utils/loadSafely'
 import nextOpenPanel from '../utils/navRail'
@@ -77,6 +77,7 @@ const Main = styled.div<{ $isPanelOpen: boolean }>`
 const NavPanel = styled.div`
     min-height: 0;
     overflow-y: auto;
+    ${hoverScrollbar}
     padding: ${(props) => props.theme.space[5]} ${(props) => props.theme.space[4]};
     background-color: ${(props) => props.theme.colors.background};
     border-right: ${(props) => props.theme.borderWidth.thin} solid

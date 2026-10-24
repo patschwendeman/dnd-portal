@@ -1,6 +1,8 @@
 import { ReactElement } from 'react'
 import styled from 'styled-components'
 
+import { hoverScrollbar } from '../style/GlobalStyle'
+
 import DashboardPanel from './DashboardPanel'
 
 const DASHBOARD_COLUMNS = 4
@@ -23,6 +25,7 @@ const Grid = styled.aside`
   max-height: 100%;
   /* Scrolls on its own when the grid is higher than the main area; the notes stay where they are */
   overflow-y: auto;
+  ${hoverScrollbar}
 `
 
 interface DashboardItem {

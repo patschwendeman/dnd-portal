@@ -5,6 +5,7 @@ import ReactMarkdown, { Components } from 'react-markdown'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
+import { hoverScrollbar } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 import { loadLatest } from '../utils/loadSafely'
 
@@ -34,14 +35,6 @@ const StoryReaderContainer = styled.div`
   width: 100%;
   height: 100%;
   min-height: 0;
-  ::-webkit-scrollbar {
-    width: ${(props) => props.theme.size.scrollbar};
-  }
-  &:hover {
-    ::-webkit-scrollbar-thumb {
-      background: ${(props) => props.theme.colors.border}; 
-    }
-  }
 `
 
 const TopLink = styled.button<{ $isVisible: boolean }>`
@@ -78,6 +71,7 @@ const Background = styled.div`
   height: 100%;
   overflow-y: auto;
   scroll-behavior: smooth;
+  ${hoverScrollbar}
 `
 
 const Page = styled.div`
