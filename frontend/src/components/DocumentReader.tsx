@@ -70,6 +70,7 @@ const Background = styled.div`
   width: 100%;
   height: 100%;
   overflow-y: auto;
+  padding: ${(props) => props.theme.space[5]} 0;
   scroll-behavior: smooth;
   ${hoverScrollbar}
 `

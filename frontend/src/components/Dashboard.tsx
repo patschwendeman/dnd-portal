@@ -17,6 +17,7 @@ const Grid = styled.aside`
   grid-auto-rows: minmax(${DASHBOARD_ROW_HEIGHT}, auto);
   align-content: start;
   gap: ${(props) => props.theme.space[4]};
+  padding: ${(props) => props.theme.space[5]} 0;
   min-width: 0;
   min-height: 0;
   /* As high as its rows, at most the main area: with a fixed height the rows would only grow
