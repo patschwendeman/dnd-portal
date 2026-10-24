@@ -227,7 +227,6 @@ def test_scene_change_pushes_the_closed_wall_overlay_once(client: TestClient, db
 
         client.patch("/adventures/1", json={"active_scene_id": 5})
 
-        # A single push with the new scene and without overlay (then the playlist of the new scene).
         assert receive_state(wall) == {
             "active_adventure_id": 1,
             "active_scene_id": 5,

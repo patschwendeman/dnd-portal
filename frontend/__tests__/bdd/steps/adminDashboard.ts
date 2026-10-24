@@ -192,8 +192,6 @@ defineFeature(feature, (test) => {
         expect(scene.width).toBe(innerWidth)
         expect(music.y).toBeGreaterThan(scene.y + scene.height)
         expect(music.width).toBeLessThan(innerWidth / 2)
-        // Wall-Overlay (one row) right of the upper row of Musik, Sounds below it; the cell left of
-        // Sounds below Musik stays empty
         expect(overlay.y).toBe(music.y)
         expect(overlay.x).toBeGreaterThan(music.x + music.width)
         expect(overlay.width).toBe(music.width)

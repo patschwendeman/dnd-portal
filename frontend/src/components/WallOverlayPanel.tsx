@@ -29,8 +29,7 @@ interface WallOverlayPanelProps {
   onChange: (wallOverlay: WallOverlay) => void
 }
 
-// Content of the dashboard panel "Wall-Overlay": the highlighted option changes only with the push
-// of the server that follows the write
+// The highlighted option changes only with the push of the server that follows the write
 function WallOverlayPanel({ wallOverlay, onChange }: WallOverlayPanelProps): ReactElement {
   return (
     <Options>

@@ -17,7 +17,6 @@ import MapEnvironmentSrc from '../../public/assets/images/ground_screen/mapOverv
 
 const OVERLAY_PANEL_MAX_WIDTH = '1440px'
 
-// Options of the control bar, in the order of its labels
 const OVERLAY_OPTIONS: readonly WallOverlay[] = ['world', 'off']
 const OVERLAY_LABELS = ['WORLD', 'OFF']
 

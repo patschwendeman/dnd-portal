@@ -198,7 +198,6 @@ def test_other_adventure_writes_keep_the_wall_overlay(
     client.patch("/adventures/1", json={"active_scene_id": 5})
     client.patch("/table", json={"wall_overlay": "world"})
 
-    # Same scene again, only the level, the scene of an inactive adventure, the same adventure again, the theme.
     client.patch("/adventures/1", json={"active_scene_id": 5})
     client.patch("/adventures/1", json={"global_level": 3})
     client.patch(f"/adventures/{other_adventure['id']}", json={"active_scene_id": other_adventure["first_scene_id"]})
