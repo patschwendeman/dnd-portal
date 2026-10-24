@@ -25,7 +25,6 @@ const Buttons = styled.div`
   gap: ${(props) => props.theme.space[1]};
 `
 
-// The sign stands in for an icon
 const StepButton = styled(PanelButton)`
   font-family: inherit;
   ${textStyle('lg')}

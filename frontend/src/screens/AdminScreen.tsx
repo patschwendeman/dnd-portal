@@ -117,7 +117,6 @@ function AdminScreen(): ReactElement {
   const isMusicPlaying = audio?.playing ?? false
   const [adventures, setAdventures] = useState<AdventureSummary[]>()
   const [scenesDetails, setScenesDetails] = useState<SceneDetail[]>([])
-  // Players and level of the active adventure
   const [adventureDetail, setAdventureDetail] = useState<AdventureDetail>()
   const [activeScene, setActiveScene] = useState<SceneDetail>()
 
@@ -443,7 +442,6 @@ function AdminScreen(): ReactElement {
       id: 'players',
       label: 'Spieler',
       columns: 4,
-      // One row per hero card; the rows grow with the cards
       rows: Math.max(1, players.length),
       content: <PlayersPanel players={players} level={level ?? 1} />,
     },

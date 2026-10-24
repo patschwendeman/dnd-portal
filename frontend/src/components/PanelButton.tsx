@@ -1,6 +1,5 @@
 import styled from 'styled-components'
 
-// Icon button on the surface of a dashboard panel
 const PanelButton = styled.button`
   display: grid;
   place-items: center;

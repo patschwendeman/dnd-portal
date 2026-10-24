@@ -100,7 +100,6 @@ const Chip = styled.span`
 
 interface PlayerHeroCardProps {
   player: Player
-  // Level of all players of the adventure
   level: number
 }
 
