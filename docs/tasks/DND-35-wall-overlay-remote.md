@@ -1,7 +1,7 @@
 # DND-35: Wall-Overlay vom Admin steuern
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -108,3 +108,39 @@ Admin aus ein und aus, alle Walls folgen.
 Keine.
 
 ## Review
+
+### Runde 1 – 2026-10-24
+**Empfehlung:** Abnahme
+
+Alle vier AK erfüllt, alle Checks grün, keine blockierenden Befunde. Fehlerfall von AK4 nur im Code und im
+Backend-Test belegt (laut Plan manueller Test).
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | `WallOverlayPanel.tsx` („Weltkarte“/„Aus“, `aria-pressed` nach Server-Zustand), eingebunden 2x1 in `AdminScreen.tsx`, Schreiben über `runSave(() => saveWallOverlay(…))`; Wall zeigt nur Server-Zustand (`WallScreen.tsx:175`). E2E „I show and hide the world map on all walls from the admin“ (zwei Walls): PASS. Backend `test_ws.py::test_wall_overlay_is_pushed_to_all_walls`: grün. |
+| AK2 | erfüllt | Steuerleiste schreibt per `PATCH /table`, lokaler State `worldMapVisibility` entfernt (`WallScreen.tsx:104-107`). E2E „I show the world map from the control bar of a wall“ (beide Walls, Admin-Panel hervorgehoben): PASS. |
+| AK3 | erfüllt | Reset in `services/adventure.py:38-40`, `services/game_table.py:194-210` (nur aktives Abenteuer, nur echter Wechsel), im selben Request, genau ein Push (`test_scene_change_pushes_the_closed_wall_overlay_once`). Weitere Tests in `test_table.py` zu Szenen-/Abenteuerwechsel und Schreibzugriffen ohne Wechsel. E2E „A scene change hides the world map“: PASS. |
+| AK4 | erfüllt | Keine lokale Vorwegnahme; Fehler setzt `failedSave` → Speicherfehler-Leiste (`AdminScreen.tsx:280-298`). Abgelehnter PATCH ändert nichts, kein Push (`test_rejected_patch_keeps_wall_overlay`, `test_patch_rejects_invalid_wall_overlay`). Neue Wall: `test_new_wall_receives_the_current_wall_overlay`. Neustart → `off`: `realtime/wall_overlay.py` (nur im Speicher). Kein E2E für fehlschlagendes Speichern. |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- Entscheidungen des Implementers, alle akzeptabel: Abenteuerwechsel + `wall_overlay` im selben PATCH → mitgeschickter
+  Wert gilt (dokumentiert in `docs/architecture.md`, getestet); Klick auf aktiven Panel-Button schreibt nicht (wie
+  bei der aktiven Szene, in `docs/screens.md`); `docs/known-issues.md` nur um den Overlay-Teil gekürzt, Grid-Teil bleibt.
+- Plan E3 „(Entscheidung nach Runde 1)“: Wortlaut prüfen.
+- Steuerleiste der Wall schickt auch beim Klick auf den schon aktiven Zustand einen PATCH (harmlos, ein Push mehr;
+  anders als im Admin-Panel).
+- Speicherfehler an der Wall nur in der Konsole – entspricht der Konvention „Nur der Admin zeigt Speicher- und
+  Verbindungsfehler“; AK4 auf das Admin-Panel bezogen gelesen.
+- Freigabe ohne eigenen Commit, Statuswechsel im Umsetzungs-Commit (wie bei DND-33/34).
+- Zusätzlich geändert: `backend/CLAUDE.md`, `frontend/CLAUDE.md` (Strukturlisten), `frontend/DESIGN.md` (Farbrolle) –
+  nötige Doku-Pflege, keine Scope-Verletzung.
+- E2E-Läufe ändern den Spieltisch-Zustand der Dev-DB; aktive Szene von Abenteuer 1 wieder auf 3 gesetzt,
+  `global_level` steht jetzt auf 2 (Ausgangswert nicht festgehalten).
+- Konventionen erfüllt: ein Commit `60bbbbb`, Schema, Typ `feat`, Stichpunkt-Body, keine KI-Signatur.
+
+**Checks:** Backend: ruff/format/mypy grün · `make check-quality` grün (pylint 10.00) · pytest 187 passed (frische
+Test-DB) · `openapi.json` aktuell. Frontend: Lint, Typecheck, Build grün (bekannte Chunk-Warnung) · Unit 21 Dateien /
+182 Tests grün · knip, jscpd Exit 0 · `schema.d.ts` aktuell. E2E 5 Suites / 17 Tests grün.

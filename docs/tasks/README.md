@@ -38,4 +38,4 @@
 | DND-32 | refactor | Airbnb-Styleguide als ESLint-Regeln, Frontend-Code angepasst | Fertig | [DND-32-airbnb-eslint.md](DND-32-airbnb-eslint.md) |
 | DND-33 | feat | Admin-Dashboard mit Panel-Raster (Szene, Musik, Sounds, Screens) | Fertig | [DND-33-admin-dashboard.md](DND-33-admin-dashboard.md) |
 | DND-34 | feat | Panels „Spieler“ (Hero-Karte) und „Level“ im Admin-Dashboard | Fertig | [DND-34-admin-players-panel.md](DND-34-admin-players-panel.md) |
-| DND-35 | feat | Wall-Overlay vom Admin steuern | Im Review | [DND-35-wall-overlay-remote.md](DND-35-wall-overlay-remote.md) |
+| DND-35 | feat | Wall-Overlay vom Admin steuern | Fertig | [DND-35-wall-overlay-remote.md](DND-35-wall-overlay-remote.md) |
