@@ -1,6 +1,4 @@
-import {
-  FunctionComponent, ReactElement, useEffect, useState,
-} from 'react'
+import { ReactElement, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 interface GridOverlayProps {
@@ -16,16 +14,26 @@ const Overlay = styled.div`
 `
 // Vertical lines span the full height, horizontal lines the full width of the overlay;
 // the line thickness comes from the theme
-const GridLine = styled.div<{ $orientation: 'vertical' | 'horizontal', $offset: number, $gridColor: string }>`
+interface GridLineProps {
+  $orientation: 'vertical' | 'horizontal'
+  $offset: number
+  $gridColor: string
+}
+
+const GridLine = styled.div<GridLineProps>`
     position: absolute;
     left: ${(props) => (props.$orientation === 'vertical' ? `${props.$offset}px` : '0')};
     top: ${(props) => (props.$orientation === 'horizontal' ? `${props.$offset}px` : '0')};
-    width: ${(props) => (props.$orientation === 'vertical' ? props.theme.borderWidth.thick : '100%')};
-    height: ${(props) => (props.$orientation === 'horizontal' ? props.theme.borderWidth.thick : '100%')};
+    width: ${(props) => (
+      props.$orientation === 'vertical' ? props.theme.borderWidth.thick : '100%'
+    )};
+    height: ${(props) => (
+      props.$orientation === 'horizontal' ? props.theme.borderWidth.thick : '100%'
+    )};
     background-color: ${(props) => props.$gridColor};
 `
 
-const GridOverlay: FunctionComponent<GridOverlayProps> = ({ gridColor, gridOption }): ReactElement => {
+function GridOverlay({ gridColor, gridOption }: GridOverlayProps): ReactElement {
   const [screenSize, setScreenSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -76,4 +84,4 @@ const GridOverlay: FunctionComponent<GridOverlayProps> = ({ gridColor, gridOptio
   )
 }
 
-export { GridOverlay }
+export default GridOverlay

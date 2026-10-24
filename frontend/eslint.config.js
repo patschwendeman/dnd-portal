@@ -33,15 +33,22 @@ export default [
       '@stylistic/semi': ['error', 'never'],
       '@stylistic/member-delimiter-style': [
         'error',
-        { multiline: { delimiter: 'none' }, singleline: { delimiter: 'comma', requireLast: false } },
+        {
+          multiline: { delimiter: 'none' },
+          singleline: { delimiter: 'comma', requireLast: false },
+        },
       ],
       // New JSX transform (react-jsx): React does not need to be in scope.
       'react/react-in-jsx-scope': 'off',
       'react/jsx-uses-react': 'off',
       // Icons are served by Vite from public/ under /assets/… and cannot be resolved as modules.
       'import-x/no-absolute-path': ['error', { ignore: ['^/assets/'] }],
-      'import-x/no-unresolved': ['error', { commonjs: true, caseSensitive: true, ignore: ['^/assets/'] }],
-      // Function components in TypeScript: optional props get default arguments, defaultProps is deprecated.
+      'import-x/no-unresolved': [
+        'error',
+        { commonjs: true, caseSensitive: true, ignore: ['^/assets/'] },
+      ],
+      // Function components in TypeScript: optional props get default arguments, defaultProps is
+      // deprecated for functions.
       'react/require-default-props': [
         'error',
         { forbidDefaultForRequired: true, classes: 'defaultProps', functions: 'defaultArguments' },

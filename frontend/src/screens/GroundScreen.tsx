@@ -1,15 +1,15 @@
 import {
-  useContext, FunctionComponent, ReactElement, useEffect, useState,
+  useContext, ReactElement, useEffect, useState,
 } from 'react'
 import styled from 'styled-components'
 
 import { mediaUrl } from '../api/mediaUrl'
-import { GridOverlay } from '../components/GridOverlay'
+import GridOverlay from '../components/GridOverlay'
 import { ScreenControlBar } from '../components/ScreenControlBar'
 import { ActiveSceneContext } from '../context/context'
 import { SceneDetail } from '../models/models'
-import { getGroundScreenData } from '../service/groundScreen'
-import { GlobalStyle } from '../style/GlobalStyle'
+import getGroundScreenData from '../service/groundScreen'
+import GlobalStyle from '../style/GlobalStyle'
 import { loadLatest } from '../utils/loadSafely'
 
 const Screen = styled.div`
@@ -54,7 +54,7 @@ const determineMediaType = (src: string): 'image' | 'video' | null => {
   return null
 }
 
-const GroundScreen: FunctionComponent = (): ReactElement => {
+function GroundScreen(): ReactElement {
   const { activeSceneId } = useContext(ActiveSceneContext)
   const [mediaSRC, setMediaSRC] = useState<string>('')
   const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null)
@@ -75,14 +75,22 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
     setGridColor(gridColorMap[option] || 'transparent')
   }
 
-  useEffect(() => {
-    let stale = false
-
-    // Without an active scene the ground shows only the background
+  // Without an active scene the ground shows only the background; reset during render instead of
+  // in an effect
+  const [prevActiveSceneId, setPrevActiveSceneId] = useState(activeSceneId)
+  if (activeSceneId !== prevActiveSceneId) {
+    setPrevActiveSceneId(activeSceneId)
     if (activeSceneId === null) {
       setMediaSRC('')
       setMediaType(null)
-      return
+    }
+  }
+
+  useEffect(() => {
+    let stale = false
+
+    if (activeSceneId === null) {
+      return undefined
     }
 
     const handleGroundScreen = (activeScene: SceneDetail) => {
@@ -91,7 +99,8 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
       setMediaType(determineMediaType(src))
     }
 
-    // Players see no error: the screen keeps the last loaded scene, the next scene change loads again.
+    // Players see no error: the screen keeps the last loaded scene, the next scene change loads
+    // again.
     loadLatest(
       () => getGroundScreenData(activeSceneId),
       handleGroundScreen,
@@ -108,10 +117,19 @@ const GroundScreen: FunctionComponent = (): ReactElement => {
     <Screen>
       <GlobalStyle />
       <GridOverlay gridColor={gridColor} gridOption={gridOption} />
-      {mediaType === 'image' && <BackgroundMedia as="img" data-test-id="groundImg" src={mediaSRC} alt="Background" />}
-      {mediaType === 'video' && <BackgroundMedia data-test-id="groundImg" src={mediaSRC} autoPlay loop muted />}
-      <ScreenControlBar onVisibilityChange={handleGridVisibility} onSliderChange={setGridOption} buttonLabels={buttonLabels} label="Raster" />
+      {mediaType === 'image' && (
+        <BackgroundMedia as="img" data-test-id="groundImg" src={mediaSRC} alt="Background" />
+      )}
+      {mediaType === 'video' && (
+        <BackgroundMedia data-test-id="groundImg" src={mediaSRC} autoPlay loop muted />
+      )}
+      <ScreenControlBar
+        onVisibilityChange={handleGridVisibility}
+        onSliderChange={setGridOption}
+        buttonLabels={buttonLabels}
+        label="Raster"
+      />
     </Screen>
   )
 }
-export { GroundScreen }
+export default GroundScreen

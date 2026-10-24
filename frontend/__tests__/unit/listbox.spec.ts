@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 
-import { getListboxNextIndex, getListboxStartIndex, isListboxNavigationKey } from '../../src/utils/listbox'
+import {
+  getListboxNextIndex, getListboxStartIndex, isListboxNavigationKey,
+} from '../../src/utils/listbox'
 
 describe('getListboxStartIndex', () => {
   it('starts at the selected entry', () => {

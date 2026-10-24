@@ -1,7 +1,7 @@
 import React, {
-  FunctionComponent, ReactElement, useEffect, useRef, useState,
+  ReactElement, useEffect, useRef, useState,
 } from 'react'
-import ReactMarkdown from 'react-markdown'
+import ReactMarkdown, { Components } from 'react-markdown'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
@@ -16,7 +16,13 @@ const markdownFilesNoneFight = import.meta.glob('../../public/story/noneFight/*.
 const markdownFilesLeveling = import.meta.glob('../../public/story/leveling/*.md')
 const markdownFilesMechanics = import.meta.glob('../../public/story/mechanics/*.md')
 
-const markdownLists = [markdownFilesMain, markdownFilesFight, markdownFilesNoneFight, markdownFilesLeveling, markdownFilesMechanics]
+const markdownLists = [
+  markdownFilesMain,
+  markdownFilesFight,
+  markdownFilesNoneFight,
+  markdownFilesLeveling,
+  markdownFilesMechanics,
+]
 
 const PAGE_MAX_WIDTH = '880px'
 const LINE_MAX_WIDTH = '68ch'
@@ -86,7 +92,8 @@ const Page = styled.div`
     font-weight: ${(props) => props.theme.fontWeight.bold};
     margin: 0 0 ${(props) => props.theme.space[5]};
     padding-bottom: ${(props) => props.theme.space[3]};
-    border-bottom: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.border};
+    border-bottom: ${(props) => props.theme.borderWidth.thin} solid
+      ${(props) => props.theme.colors.border};
   }
   h2 {
     ${textStyle('xl')}
@@ -152,11 +159,18 @@ const LoadFailedText = styled.p`
   max-width: ${LINE_MAX_WIDTH};
 `
 
-const MarkdownImage: FunctionComponent<{ src?: string, alt?: string }> = ({ src, alt = '' }) => (
-  <a href={src} target="_blank" rel="noopener noreferrer">
-    <img className="markdown-image" src={src} alt={alt} />
-  </a>
-)
+interface MarkdownImageProps {
+  src?: string
+  alt?: string
+}
+
+function MarkdownImage({ src = undefined, alt = '' }: MarkdownImageProps): ReactElement {
+  return (
+    <a href={src} target="_blank" rel="noopener noreferrer">
+      <img className="markdown-image" src={src} alt={alt} />
+    </a>
+  )
+}
 
 function flatten(text: string, child: React.ReactNode): string {
   if (typeof child === 'string') {
@@ -168,11 +182,31 @@ function flatten(text: string, child: React.ReactNode): string {
   return text
 }
 
-function HeadingRenderer(props: { level: number, children: React.ReactNode }): ReactElement {
-  const children = React.Children.toArray(props.children)
-  const text = children.reduce(flatten, '')
+interface HeadingRendererProps {
+  level: number
+  children: React.ReactNode
+}
+
+function HeadingRenderer({ level, children }: HeadingRendererProps): ReactElement {
+  const text = React.Children.toArray(children).reduce(flatten, '')
   const slug = text.toLowerCase().replace(/\W/g, '-')
-  return React.createElement(`h${props.level}`, { id: slug }, props.children)
+  return React.createElement(`h${level}`, { id: slug }, children)
+}
+
+// Defined once, so React keeps the rendered headings and images instead of remounting them
+const markdownComponents: Components = {
+  h1: (props) => <HeadingRenderer {...props} level={1} />,
+  h2: (props) => <HeadingRenderer {...props} level={2} />,
+  h3: (props) => <HeadingRenderer {...props} level={3} />,
+  h4: (props) => <HeadingRenderer {...props} level={4} />,
+  h5: (props) => <HeadingRenderer {...props} level={5} />,
+  h6: (props) => <HeadingRenderer {...props} level={6} />,
+  img: (props) => <MarkdownImage {...props} />,
+}
+
+interface MarkdownFile {
+  path: string
+  text: string
 }
 
 interface DocumentReaderProps {
@@ -180,9 +214,9 @@ interface DocumentReaderProps {
   selectedStoryIndex: number
 }
 
-const DocumentReader: FunctionComponent<DocumentReaderProps> = ({ selectedStoryIndex }): ReactElement => {
+function DocumentReader({ selectedStoryIndex }: DocumentReaderProps): ReactElement {
   const theme = useTheme()
-  const [markdownContent, setMarkdownContent] = useState<string[]>([])
+  const [markdownContent, setMarkdownContent] = useState<MarkdownFile[]>([])
   const [loadFailed, setLoadFailed] = useState<boolean>(false)
   const [isVisible, setIsVisible] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -199,7 +233,7 @@ const DocumentReader: FunctionComponent<DocumentReaderProps> = ({ selectedStoryI
         if (!response.ok) {
           throw new Error(`Loading ${currentPath} failed: HTTP ${response.status}`)
         }
-        return response.text()
+        return { path, text: await response.text() }
       })
       return Promise.all(markdownPromises)
     }
@@ -248,20 +282,10 @@ const DocumentReader: FunctionComponent<DocumentReaderProps> = ({ selectedStoryI
     <StoryReaderContainer data-test-id="notes-view">
       <Background ref={scrollContainerRef} onScroll={handleScroll} data-test-id="notes-scroll">
         {loadFailed && <LoadFailedText>Notizen konnten nicht geladen werden</LoadFailedText>}
-        {!loadFailed && markdownContent.map((content, index) => (
-          <Page key={index}>
-            <ReactMarkdown
-              components={{
-                h1: (props) => <HeadingRenderer {...props} level={1} />,
-                h2: (props) => <HeadingRenderer {...props} level={2} />,
-                h3: (props) => <HeadingRenderer {...props} level={3} />,
-                h4: (props) => <HeadingRenderer {...props} level={4} />,
-                h5: (props) => <HeadingRenderer {...props} level={5} />,
-                h6: (props) => <HeadingRenderer {...props} level={6} />,
-                img: (props) => <MarkdownImage {...props} />,
-              }}
-            >
-              {content || 'Loading...'}
+        {!loadFailed && markdownContent.map(({ path, text }) => (
+          <Page key={path}>
+            <ReactMarkdown components={markdownComponents}>
+              {text || 'Loading...'}
             </ReactMarkdown>
           </Page>
         ))}
@@ -278,4 +302,4 @@ const DocumentReader: FunctionComponent<DocumentReaderProps> = ({ selectedStoryI
   )
 }
 
-export { DocumentReader }
+export default DocumentReader

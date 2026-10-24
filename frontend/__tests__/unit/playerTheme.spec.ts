@@ -45,10 +45,11 @@ describe('readThemeOverride', () => {
   it('follows the game table without or with an invalid value', () => {
     expect(readThemeOverride(storage)).toBeNull()
 
-    for (const value of ['', 'Dark', 'true', 'light', '"tavern"']) {
+    const invalidValues = ['', 'Dark', 'true', 'light', '"tavern"']
+    invalidValues.forEach((value) => {
       storage.setItem(PLAYER_THEME_OVERRIDE_KEY, value)
       expect(readThemeOverride(storage)).toBeNull()
-    }
+    })
   })
 })
 

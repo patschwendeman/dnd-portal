@@ -1,7 +1,7 @@
-import { FunctionComponent, ReactElement, useState } from 'react'
+import { ReactElement, useState } from 'react'
 import styled from 'styled-components'
 
-import { Label } from './Label'
+import Label from './Label'
 import { textStyle } from '../style/tokens'
 
 const ResourceBar = styled.div`
@@ -48,7 +48,8 @@ const Resource = styled.button<{ $variant: ResourceVariant }>`
   font-weight: ${(props) => props.theme.fontWeight.semibold};
   font-variant-numeric: tabular-nums;
   color: ${(props) => props.theme.colors.text.color};
-  border: ${(props) => props.theme.borderWidth.thick} solid ${(props) => props.theme.colors.resource[props.$variant].strong};
+  border: ${(props) => props.theme.borderWidth.thick} solid
+    ${(props) => props.theme.colors.resource[props.$variant].strong};
   border-radius: ${(props) => props.theme.radius.md};
   background-color: ${(props) => props.theme.colors.resource[props.$variant].muted};
   cursor: ${(props) => (props.$variant === 'movement' ? 'default' : 'pointer')};
@@ -76,11 +77,19 @@ const ResourceIcon = styled.svg`
 `
 
 const ActionIcon = styled.circle<{ $action: number }>`
-  fill: ${(props) => (props.$action > 0 ? props.theme.colors.resource.action.strong : props.theme.colors.resource.empty)};
+  fill: ${(props) => (
+    props.$action > 0
+      ? props.theme.colors.resource.action.strong
+      : props.theme.colors.resource.empty
+  )};
 `
 
 const BonusIcon = styled.polygon<{ $bonusAction: number }>`
-  fill: ${(props) => (props.$bonusAction > 0 ? props.theme.colors.resource.bonus.strong : props.theme.colors.resource.empty)};
+  fill: ${(props) => (
+    props.$bonusAction > 0
+      ? props.theme.colors.resource.bonus.strong
+      : props.theme.colors.resource.empty
+  )};
 `
 
 const MovementIcon = styled.span`
@@ -99,10 +108,21 @@ const Slot = styled.span<{ $variant: 'spell' | 'special', $currentSlots: number,
   width: ${SLOT_WIDTH};
   height: ${SLOT_HEIGHT};
   border-radius: ${(props) => props.theme.radius.sm};
-  background-color: ${(props) => (props.$currentSlots < props.$id ? props.theme.colors.resource.empty : props.theme.colors.resource[props.$variant].strong)};
+  background-color: ${(props) => (
+    props.$currentSlots < props.$id
+      ? props.theme.colors.resource.empty
+      : props.theme.colors.resource[props.$variant].strong
+  )};
 `
 
-const ResourceBarPlayer: FunctionComponent = (): ReactElement => {
+type SetResource = React.Dispatch<React.SetStateAction<number>>
+
+// Numbers 1 … count of the slots of a resource
+const slotNumbers = (count: number): number[] => (
+  Array.from({ length: count }, (_, index) => index + 1)
+)
+
+function ResourceBarPlayer(): ReactElement {
   const SpellMax: Record<number, number> = {
     1: 4,
     2: 3,
@@ -121,7 +141,7 @@ const ResourceBarPlayer: FunctionComponent = (): ReactElement => {
 
   const [special, setSpecial] = useState<number>(1)
 
-  const ActionHandler = (resource: number, setResource: React.Dispatch<React.SetStateAction<number>>) => {
+  const ActionHandler = (resource: number, setResource: SetResource) => {
     if (resource === 0) {
       setResource(1)
     } else {
@@ -129,7 +149,7 @@ const ResourceBarPlayer: FunctionComponent = (): ReactElement => {
     }
   }
 
-  const SpellHandler = (resource: number, setResource: React.Dispatch<React.SetStateAction<number>>, maxResource: number) => {
+  const SpellHandler = (resource: number, setResource: SetResource, maxResource: number) => {
     if (resource === 0) {
       setResource(maxResource)
     } else {
@@ -157,7 +177,11 @@ const ResourceBarPlayer: FunctionComponent = (): ReactElement => {
       <ResourceRow>
         <ResourceBarSection>
           <Label>Aktion</Label>
-          <Resource type="button" $variant="action" onClick={() => ActionHandler(action, setAction)}>
+          <Resource
+            type="button"
+            $variant="action"
+            onClick={() => ActionHandler(action, setAction)}
+          >
             <IconSection>
               <ResourceIcon viewBox="0 0 20 20">
                 <ActionIcon cx="10" cy="10" r="10" $action={action} />
@@ -169,7 +193,11 @@ const ResourceBarPlayer: FunctionComponent = (): ReactElement => {
 
         <ResourceBarSection>
           <Label>Bonusaktion</Label>
-          <Resource type="button" $variant="bonus" onClick={() => ActionHandler(bonusAction, setBonusAction)}>
+          <Resource
+            type="button"
+            $variant="bonus"
+            onClick={() => ActionHandler(bonusAction, setBonusAction)}
+          >
             <IconSection>
               <ResourceIcon viewBox="0 0 20 20">
                 <BonusIcon points="10,1 20,19 0,19" $bonusAction={bonusAction} />
@@ -192,10 +220,14 @@ const ResourceBarPlayer: FunctionComponent = (): ReactElement => {
 
         <ResourceBarSection>
           <Label>Spezial</Label>
-          <Resource type="button" $variant="special" onClick={() => SpellHandler(special, setSpecial, specialMax)}>
+          <Resource
+            type="button"
+            $variant="special"
+            onClick={() => SpellHandler(special, setSpecial, specialMax)}
+          >
             <SlotGroup>
-              {[...Array(3)].map((_, i) => (
-                <Slot key={i} $variant="special" $currentSlots={special} $id={i + 1} />
+              {slotNumbers(3).map((slot) => (
+                <Slot key={slot} $variant="special" $currentSlots={special} $id={slot} />
               ))}
             </SlotGroup>
           </Resource>
@@ -207,11 +239,16 @@ const ResourceBarPlayer: FunctionComponent = (): ReactElement => {
         {spellData.map(({
           spell, setSpell, tier, name,
         }) => (
-          <Resource type="button" $variant="spell" key={tier} onClick={() => SpellHandler(spell, setSpell, SpellMax[tier])}>
+          <Resource
+            type="button"
+            $variant="spell"
+            key={tier}
+            onClick={() => SpellHandler(spell, setSpell, SpellMax[tier])}
+          >
             <Numeral>{name}</Numeral>
             <SlotGroup>
-              {[...Array(SpellMax[tier])].map((_, i) => (
-                <Slot key={i} $variant="spell" $currentSlots={spell} $id={i + 1} />
+              {slotNumbers(SpellMax[tier]).map((slot) => (
+                <Slot key={slot} $variant="spell" $currentSlots={spell} $id={slot} />
               ))}
             </SlotGroup>
           </Resource>
@@ -221,4 +258,4 @@ const ResourceBarPlayer: FunctionComponent = (): ReactElement => {
   )
 }
 
-export { ResourceBarPlayer }
+export default ResourceBarPlayer

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
 import { AdventureSummary } from '../../src/models/models'
-import { selectDefaultAdventureId } from '../../src/utils/adventure'
+import selectDefaultAdventureId from '../../src/utils/adventure'
 
 const adventures: AdventureSummary[] = [
   { id: 3, name: 'Erstes Abenteuer', description: null },

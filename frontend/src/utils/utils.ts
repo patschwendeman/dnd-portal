@@ -5,7 +5,7 @@ export const filterSceneByKey = <K extends keyof SceneDetail>(
   value: SceneDetail[K],
   sceneDetails: SceneDetail[],
 ): SceneDetail => {
-  const scene = sceneDetails.find((scene) => scene[key] === value)
+  const scene = sceneDetails.find((candidate) => candidate[key] === value)
   if (!scene) {
     throw new Error(`Scene with ${String(key)} ${value} not found`)
   }

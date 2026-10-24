@@ -1,6 +1,4 @@
-import {
-  FunctionComponent, ReactElement, ReactNode, useMemo,
-} from 'react'
+import { ReactElement, ReactNode, useMemo } from 'react'
 import { ThemeProvider } from 'styled-components'
 
 import { GameTableScreen, useGameTable } from './useGameTable'
@@ -8,7 +6,7 @@ import {
   ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext,
 } from '../context/context'
 import { Theme } from '../models/models'
-import { appTheme } from '../style/appTheme'
+import appTheme from '../style/appTheme'
 import { effectiveTheme } from '../utils/playerTheme'
 
 interface GameTableProviderProps {
@@ -18,14 +16,15 @@ interface GameTableProviderProps {
   children: ReactNode
 }
 
-// Connects the screen to the game table of the server and passes the state on: active adventure, active scene and
-// theme, and the audio state. Until the first snapshot nothing is active and the theme is dark; after a disconnect the
-// last state stays. A theme override only changes the look of this screen; the contexts keep the theme of the game table.
-const GameTableProvider: FunctionComponent<GameTableProviderProps> = ({
+// Connects the screen to the game table of the server and passes the state on: active adventure,
+// active scene and theme, and the audio state. Until the first snapshot nothing is active and the
+// theme is dark; after a disconnect the last state stays. A theme override only changes the look of
+// this screen; the contexts keep the theme of the game table.
+function GameTableProvider({
   screen,
   themeOverride = null,
   children,
-}): ReactElement => {
+}: GameTableProviderProps): ReactElement {
   const {
     state,
     audio,
@@ -55,7 +54,10 @@ const GameTableProvider: FunctionComponent<GameTableProviderProps> = ({
     }),
     [audio, isAudioOutput, requestAudioOutput, reportTrackEnded, subscribeSound],
   )
-  const styledTheme = useMemo(() => appTheme(effectiveTheme(themeOverride, theme)), [themeOverride, theme])
+  const styledTheme = useMemo(
+    () => appTheme(effectiveTheme(themeOverride, theme)),
+    [themeOverride, theme],
+  )
 
   return (
     <ThemeProvider theme={styledTheme}>
@@ -72,4 +74,4 @@ const GameTableProvider: FunctionComponent<GameTableProviderProps> = ({
   )
 }
 
-export { GameTableProvider }
+export default GameTableProvider

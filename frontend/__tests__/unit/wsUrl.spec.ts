@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { wsUrl } from '../../src/api/wsUrl'
+import wsUrl from '../../src/api/wsUrl'
 
 const page = (href: string) => ({ href })
 
@@ -15,12 +15,16 @@ describe('wsUrl', () => {
   })
 
   it('uses /ws on the host of an absolute base ending in /api/', () => {
-    expect(wsUrl('http://table.example:8080/api/', page('http://localhost:5173/'))).toBe('ws://table.example:8080/ws')
+    expect(wsUrl('http://table.example:8080/api/', page('http://localhost:5173/')))
+      .toBe('ws://table.example:8080/ws')
   })
 
   it('appends ws to a direct API URL', () => {
-    expect(wsUrl('http://localhost:8000/', page('http://localhost:5173/admin'))).toBe('ws://localhost:8000/ws')
-    expect(wsUrl('http://localhost:8000', page('http://localhost:5173/admin'))).toBe('ws://localhost:8000/ws')
-    expect(wsUrl('https://example.com/backend/', page('http://localhost:5173/'))).toBe('wss://example.com/backend/ws')
+    expect(wsUrl('http://localhost:8000/', page('http://localhost:5173/admin')))
+      .toBe('ws://localhost:8000/ws')
+    expect(wsUrl('http://localhost:8000', page('http://localhost:5173/admin')))
+      .toBe('ws://localhost:8000/ws')
+    expect(wsUrl('https://example.com/backend/', page('http://localhost:5173/')))
+      .toBe('wss://example.com/backend/ws')
   })
 })

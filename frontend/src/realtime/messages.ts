@@ -4,7 +4,7 @@ import {
 } from '../models/models'
 
 // Messages on /ws, see docs/architecture.md (not part of the OpenAPI contract)
-export type ServerMessage = | { type: 'state', payload: GameTableState }
+export type ServerMessage = { type: 'state', payload: GameTableState }
   | { type: 'audio', payload: AudioState }
   // Only to Walls: whether this connection is the audio output
   | { type: 'audio_output', payload: { active: boolean } }
@@ -13,15 +13,18 @@ export type ServerMessage = | { type: 'state', payload: GameTableState }
   | { type: 'ping' }
 
 // Sent only by the Wall; the server ignores messages of the other screens
-export type ClientMessage = | { type: 'audio_ready' }
-
+export type ClientMessage = { type: 'audio_ready' }
   | { type: 'track_ended', payload: { track_id: number } }
 
 const THEMES: readonly Theme[] = ['dark', 'tavern']
 
-const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value)
+const isRecord = (value: unknown): value is Record<string, unknown> => (
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+)
 
-const isPositiveInteger = (value: unknown): value is number => typeof value === 'number' && Number.isSafeInteger(value) && value > 0
+const isPositiveInteger = (value: unknown): value is number => (
+  typeof value === 'number' && Number.isSafeInteger(value) && value > 0
+)
 
 const isId = (value: unknown): value is number | null => value === null || isPositiveInteger(value)
 
@@ -33,12 +36,15 @@ const parseState = (payload: unknown): GameTableState | null => {
     return null
   }
   // The payload follows the API contract, whose fields are snake_case
-
-  const { active_adventure_id, active_scene_id, theme } = payload
-  if (!isId(active_adventure_id) || !isId(active_scene_id) || !THEMES.includes(theme as Theme)) {
+  const { active_adventure_id: activeAdventureId, active_scene_id: activeSceneId, theme } = payload
+  if (!isId(activeAdventureId) || !isId(activeSceneId) || !THEMES.includes(theme as Theme)) {
     return null
   }
-  return { active_adventure_id, active_scene_id, theme: theme as Theme }
+  return {
+    active_adventure_id: activeAdventureId,
+    active_scene_id: activeSceneId,
+    theme: theme as Theme,
+  }
 }
 
 const parseTrack = (value: unknown): Track | null | undefined => {
@@ -59,12 +65,11 @@ const parseAudio = (payload: unknown): AudioState | null => {
   if (!isRecord(payload)) {
     return null
   }
-
-  const { playing, volume, output_ready } = payload
+  const { playing, volume, output_ready: outputReady } = payload
   const track = parseTrack(payload.track)
   if (
     typeof playing !== 'boolean'
-    || typeof output_ready !== 'boolean'
+    || typeof outputReady !== 'boolean'
     || track === undefined
     || typeof volume !== 'number'
     || !Number.isInteger(volume)
@@ -74,11 +79,12 @@ const parseAudio = (payload: unknown): AudioState | null => {
     return null
   }
   return {
-    playing, track, volume, output_ready,
+    playing, track, volume, output_ready: outputReady,
   }
 }
 
-// Returns null for anything that is not a valid, known message, so a newer server can add message types
+// Returns null for anything that is not a valid, known message, so a newer server can add message
+// types
 export const parseServerMessage = (data: unknown): ServerMessage | null => {
   if (typeof data !== 'string') {
     return null

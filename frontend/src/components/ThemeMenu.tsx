@@ -1,5 +1,5 @@
 import {
-  FunctionComponent, KeyboardEvent, ReactElement, useEffect, useRef, useState,
+  KeyboardEvent, ReactElement, useEffect, useRef, useState,
 } from 'react'
 import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
@@ -48,13 +48,14 @@ const Trigger = styled.button`
   }
 
   &:focus-visible {
-    outline: ${(props) => props.theme.borderWidth.thick} solid ${(props) => props.theme.colors.primary};
+    outline: ${(props) => props.theme.borderWidth.thick} solid
+      ${(props) => props.theme.colors.primary};
     outline-offset: ${(props) => props.theme.borderWidth.thick};
   }
 `
 
-// Positioned without z-index: it lies above the unpositioned resources, the overlay "Handy drehen" comes later in the
-// JSX and still covers it.
+// Positioned without z-index: it lies above the unpositioned resources, the overlay "Handy drehen"
+// comes later in the JSX and still covers it.
 const List = styled.div`
   position: absolute;
   top: calc(100% + ${(props) => props.theme.space[1]});
@@ -78,7 +79,9 @@ const Option = styled.div<{ $isSelected: boolean }>`
   font-weight: ${(props) => props.theme.fontWeight.medium};
   white-space: nowrap;
   background-color: ${(props) => (props.$isSelected ? props.theme.colors.primary : 'transparent')};
-  color: ${(props) => (props.$isSelected ? props.theme.colors.onPrimary : props.theme.colors.text.color)};
+  color: ${(props) => (
+    props.$isSelected ? props.theme.colors.onPrimary : props.theme.colors.text.color
+  )};
   border-radius: ${(props) => props.theme.radius.md};
   cursor: pointer;
 
@@ -88,7 +91,9 @@ const Option = styled.div<{ $isSelected: boolean }>`
 
   &:hover,
   &:focus {
-    background-color: ${(props) => (props.$isSelected ? props.theme.colors.primary : props.theme.colors.background)};
+    background-color: ${(props) => (
+      props.$isSelected ? props.theme.colors.primary : props.theme.colors.background
+    )};
   }
 
   &:focus-visible {
@@ -103,7 +108,7 @@ interface ThemeMenuProps {
   onChangeThemeOverride: (override: Theme | null) => void
 }
 
-const ThemeMenu: FunctionComponent<ThemeMenuProps> = ({ themeOverride, onChangeThemeOverride }): ReactElement => {
+function ThemeMenu({ themeOverride, onChangeThemeOverride }: ThemeMenuProps): ReactElement {
   const theme = useTheme()
   const [isOpen, setIsOpen] = useState(false)
   const [focusIndex, setFocusIndex] = useState(-1)
@@ -121,7 +126,7 @@ const ThemeMenu: FunctionComponent<ThemeMenuProps> = ({ themeOverride, onChangeT
 
   useEffect(() => {
     if (!isOpen) {
-      return
+      return undefined
     }
     // pointerdown instead of mousedown: a tap on a smartphone has to close the menu as well
     const closeOnOutsidePointer = (event: PointerEvent) => {
@@ -220,4 +225,4 @@ const ThemeMenu: FunctionComponent<ThemeMenuProps> = ({ themeOverride, onChangeT
   )
 }
 
-export { ThemeMenu }
+export default ThemeMenu

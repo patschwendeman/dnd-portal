@@ -6,7 +6,8 @@ import { ClientMessage, parseServerMessage, ServerMessage } from './messages'
 import { browserVisibility, VisibilitySource } from './visibility'
 import { GameTableState } from '../models/models'
 
-// connecting: first attempt still running; open: connected; closed: broken or not reachable, a reconnect is planned
+// connecting: first attempt still running; open: connected; closed: broken or not reachable, a
+// reconnect is planned
 export type ConnectionStatus = 'connecting' | 'open' | 'closed'
 
 // The part of the browser WebSocket used here, so tests can pass a fake
@@ -54,9 +55,10 @@ const browserSocket = (url: string): SocketLike => {
   return like
 }
 
-// Keeps a WebSocket to the server open: reconnects with backoff after every disconnect and treats a connection without
-// messages for longer than the heartbeat timeout as broken. When the page becomes visible again (e.g. an unlocked
-// smartphone) without an open connection, it connects at once instead of waiting for the heartbeat or the backoff.
+// Keeps a WebSocket to the server open: reconnects with backoff after every disconnect and treats a
+// connection without messages for longer than the heartbeat timeout as broken. When the page
+// becomes visible again (e.g. an unlocked smartphone) without an open connection, it connects at
+// once instead of waiting for the heartbeat or the backoff.
 export const createGameTableConnection = ({
   url,
   onState,
@@ -73,6 +75,9 @@ export const createGameTableConnection = ({
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null
   let closedForGood = false
 
+  // handleDisconnect, connect and the watchdog call each other (the reconnect cycle), so one of
+  // them has to be referenced before it is defined
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   const watchdog = createHeartbeatWatchdog(() => handleDisconnect(), heartbeatTimeoutMs, timers)
 
   // Handlers are removed first, so a late event of an old socket cannot touch the current state
@@ -105,6 +110,7 @@ export const createGameTableConnection = ({
     cancelReconnect()
     reconnectTimer = timers.setTimeout(() => {
       reconnectTimer = null
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define -- reconnect cycle
       connect()
     }, reconnectDelay(attempt))
     attempt += 1

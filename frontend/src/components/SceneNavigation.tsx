@@ -1,8 +1,8 @@
-import { FunctionComponent, ReactElement, useContext } from 'react'
+import { ReactElement, useContext } from 'react'
 import styled from 'styled-components'
 
-import { Label } from './Label'
-import { SideBarLeftElement } from './SideBarLeftElement'
+import Label from './Label'
+import SideBarLeftElement from './SideBarLeftElement'
 import { ActiveSceneContext } from '../context/context'
 import { SceneDetail } from '../models/models'
 import { textStyle } from '../style/tokens'
@@ -29,7 +29,7 @@ interface SceneNavigationProps {
   onSelectScene: (sceneId: number) => void
 }
 
-const SceneNavigation: FunctionComponent<SceneNavigationProps> = ({ scenes, onSelectScene }): ReactElement => {
+function SceneNavigation({ scenes, onSelectScene }: SceneNavigationProps): ReactElement {
   const { activeSceneId } = useContext(ActiveSceneContext)
 
   return (
@@ -49,4 +49,4 @@ const SceneNavigation: FunctionComponent<SceneNavigationProps> = ({ scenes, onSe
   )
 }
 
-export { SceneNavigation }
+export default SceneNavigation

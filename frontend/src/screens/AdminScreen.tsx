@@ -1,20 +1,20 @@
 import Box from '@mui/material/Box'
 import Slider from '@mui/material/Slider'
 import {
-  useCallback, useContext, FunctionComponent, ReactElement, useEffect, useRef, useState,
+  useCallback, useContext, ReactElement, useEffect, useRef, useState,
 } from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { ReactSVG } from 'react-svg'
-import { DetailsSideBar } from '../components/DetailsSideBar'
-import { Dialogue } from '../components/Dialogue'
-import { DocumentNavigation } from '../components/DocumentNavigation'
-import { DocumentReader } from '../components/DocumentReader'
-import { ErrorBar } from '../components/ErrorBar'
-import { Label } from '../components/Label'
+import DetailsSideBar from '../components/DetailsSideBar'
+import Dialogue from '../components/Dialogue'
+import DocumentNavigation from '../components/DocumentNavigation'
+import DocumentReader from '../components/DocumentReader'
+import ErrorBar from '../components/ErrorBar'
+import Label from '../components/Label'
 import { NavRail, NavRailItem } from '../components/NavRail'
-import { SceneNavigation } from '../components/SceneNavigation'
-import { TopBar } from '../components/TopBar'
+import SceneNavigation from '../components/SceneNavigation'
+import TopBar from '../components/TopBar'
 import {
   ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext,
 } from '../context/context'
@@ -29,11 +29,11 @@ import {
   saveAudio,
   saveTheme,
 } from '../service/adminScreen'
-import { GlobalStyle } from '../style/GlobalStyle'
+import GlobalStyle from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
-import { selectDefaultAdventureId } from '../utils/adventure'
+import selectDefaultAdventureId from '../utils/adventure'
 import { loadLatest } from '../utils/loadSafely'
-import { nextOpenPanel } from '../utils/navRail'
+import nextOpenPanel from '../utils/navRail'
 import { filterSceneByKey, getMusicTitle } from '../utils/utils'
 
 import notesIcon from '/assets/icons/notes.svg'
@@ -57,7 +57,10 @@ const NAV_PANEL_ID = 'admin-nav-panel'
 
 const Screen = styled.div<{ $hasErrorBar: boolean }>`
     display: grid;
-    grid-template-rows: ${(props) => props.theme.size.bar.md} ${(props) => (props.$hasErrorBar ? 'auto ' : '')}1fr ${(props) => props.theme.size.bar.lg};
+    grid-template-rows:
+        ${(props) => props.theme.size.bar.md}
+        ${(props) => (props.$hasErrorBar ? 'auto ' : '')}1fr
+        ${(props) => props.theme.size.bar.lg};
     position: fixed;
     inset: 0;
     background-color: ${(props) => props.theme.colors.background};
@@ -70,7 +73,8 @@ const Screen = styled.div<{ $hasErrorBar: boolean }>`
 // Rail and panel sit flush between Top-Bar and Bottom-Bar; only the content keeps the outer padding
 const Main = styled.div<{ $isPanelOpen: boolean }>`
     display: grid;
-    grid-template-columns: ${NAV_RAIL_WIDTH} ${(props) => (props.$isPanelOpen ? `${LEFT_COLUMN_WIDTH} ` : '')}1fr;
+    grid-template-columns: ${NAV_RAIL_WIDTH}
+      ${(props) => (props.$isPanelOpen ? `${LEFT_COLUMN_WIDTH} ` : '')}1fr;
     min-height: 0;
 `
 
@@ -79,7 +83,8 @@ const NavPanel = styled.div`
     overflow-y: auto;
     padding: ${(props) => props.theme.space[5]} ${(props) => props.theme.space[4]};
     background-color: ${(props) => props.theme.colors.background};
-    border-right: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.secondary};
+    border-right: ${(props) => props.theme.borderWidth.thin} solid
+      ${(props) => props.theme.colors.secondary};
 `
 
 const Content = styled.div`
@@ -121,7 +126,9 @@ const AudioControlButton = styled.div<{ $isMusicPlaying: boolean }>`
     width: ${(props) => props.theme.size.control.md};
     height: ${(props) => props.theme.size.control.md};
     padding: 0;
-    background-color: ${(props) => (props.$isMusicPlaying ? props.theme.colors.primary : props.theme.colors.secondary)};
+    background-color: ${(props) => (
+      props.$isMusicPlaying ? props.theme.colors.primary : props.theme.colors.secondary
+    )};
     color: ${(props) => props.theme.colors.text.color};
     border: none;
     border-radius: ${(props) => props.theme.radius.md};
@@ -179,7 +186,7 @@ const VolumeSlider = styled(Slider)`
 // A write to the API; the screens change only with the push of the server that follows it
 type Save = () => Promise<unknown>
 
-const AdminScreen: FunctionComponent = (): ReactElement => {
+function AdminScreen(): ReactElement {
   const theme = useTheme()
 
   const { activeAdventureId } = useContext(ActiveAdventureContext)
@@ -207,14 +214,35 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
   const [activeSceneFailed, setActiveSceneFailed] = useState<boolean>(false)
   const hasLoadError = adventuresFailed || adminDataFailed || activeSceneFailed
 
-  // The last write that failed (scene, adventure or theme), kept so "Erneut versuchen" can repeat it
+  // The last write that failed (scene, adventure or theme), kept so "Erneut versuchen" can repeat
+  // it
   const [failedSave, setFailedSave] = useState<{ retry: Save } | null>(null)
   const latestSave = useRef<number>(0)
 
-  // Scenes are only loaded once the adventure is in the loaded list, so they are not requested before the list
+  // Scenes are only loaded once the adventure is in the loaded list, so they are not requested
+  // before the list
   const loadedAdventureId = adventures?.some((adventure) => adventure.id === activeAdventureId)
     ? activeAdventureId
     : null
+
+  // Without an adventure or scene the old data is dropped at once, during render instead of in an
+  // effect; a change to another one keeps the old data until the new one is loaded
+  const [prevLoadedAdventureId, setPrevLoadedAdventureId] = useState(loadedAdventureId)
+  if (loadedAdventureId !== prevLoadedAdventureId) {
+    setPrevLoadedAdventureId(loadedAdventureId)
+    if (loadedAdventureId === null) {
+      setScenesDetails([])
+      setAdminDataFailed(false)
+    }
+  }
+  const [prevActiveSceneId, setPrevActiveSceneId] = useState(activeSceneId)
+  if (activeSceneId !== prevActiveSceneId) {
+    setPrevActiveSceneId(activeSceneId)
+    if (activeSceneId === null) {
+      setActiveScene(undefined)
+      setActiveSceneFailed(false)
+    }
+  }
 
   // Retry bumps this counter; all load effects depend on it
   const [reloadCount, setReloadCount] = useState<number>(0)
@@ -228,8 +256,8 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
 
     loadLatest(
       getAdventures,
-      (adventures) => {
-        setAdventures(adventures)
+      (loaded) => {
+        setAdventures(loaded)
         setAdventuresFailed(false)
       },
       (err) => {
@@ -248,15 +276,13 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     let stale = false
 
     if (loadedAdventureId === null) {
-      setScenesDetails([])
-      setAdminDataFailed(false)
-      return
+      return undefined
     }
 
     loadLatest(
       () => getAdminData(loadedAdventureId),
-      (scenesDetails) => {
-        setScenesDetails(scenesDetails)
+      (loaded) => {
+        setScenesDetails(loaded)
         setAdminDataFailed(false)
       },
       (err) => {
@@ -275,15 +301,13 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     let stale = false
 
     if (activeSceneId === null) {
-      setActiveScene(undefined)
-      setActiveSceneFailed(false)
-      return
+      return undefined
     }
 
     loadLatest(
       () => getSceneById(activeSceneId),
-      (activeScene: SceneDetail) => {
-        setActiveScene(activeScene)
+      (loaded: SceneDetail) => {
+        setActiveScene(loaded)
         setActiveSceneFailed(false)
       },
       (err) => {
@@ -298,10 +322,12 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     }
   }, [activeSceneId, reloadCount])
 
-  // Nothing changes locally: Admin, Wall and Ground switch with the push of the server. Only the latest write may
-  // report its result, so an older failure cannot hide a newer success (or the other way round). No automatic retry.
+  // Nothing changes locally: Admin, Wall and Ground switch with the push of the server. Only the
+  // latest write may report its result, so an older failure cannot hide a newer success (or the
+  // other way round). No automatic retry.
   const runSave = useCallback((save: Save) => {
-    const request = ++latestSave.current
+    latestSave.current += 1
+    const request = latestSave.current
     loadLatest(
       save,
       () => setFailedSave(null),
@@ -319,9 +345,9 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     }
   }
 
-  // Without an adventure on the game table the first one of the list is activated, so with a single adventure the
-  // Admin works without any selection. Runs again only when the list or the adventure changes, so a failed write is
-  // repeated only by "Erneut versuchen".
+  // Without an adventure on the game table the first one of the list is activated, so with a single
+  // adventure the Admin works without any selection. Runs again only when the list or the adventure
+  // changes, so a failed write is repeated only by "Erneut versuchen".
   useEffect(() => {
     if (!hasState || adventures === undefined) {
       return
@@ -344,9 +370,12 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     runSave(() => saveTheme(nextTheme))
   }
 
-  useEffect(() => {
+  // A new audio state or a failed write ends the drag, so the slider shows the server's volume
+  const [prevVolumeSource, setPrevVolumeSource] = useState({ audio, failedSave })
+  if (prevVolumeSource.audio !== audio || prevVolumeSource.failedSave !== failedSave) {
+    setPrevVolumeSource({ audio, failedSave })
     setDraggedVolume(null)
-  }, [audio, failedSave])
+  }
 
   const handleMusicToggle = () => {
     const playing = !isMusicPlaying
@@ -358,12 +387,14 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     runSave(() => saveAudio({ volume }))
   }
 
-  // A late sound effect is pointless, so there is no retry; a missing audio output is no error either
+  // A late sound effect is pointless, so there is no retry; a missing audio output is no error
+  // either
   const handleSound = (name: SoundName) => {
     playSound(name).catch((err) => console.error('Error playing sound:', err))
   }
 
-  // The active scene is already on the game table: no dialog, and no write that would only switch the track
+  // The active scene is already on the game table: no dialog, and no write that would only switch
+  // the track
   const handleSceneSelection = (sceneId: number) => {
     if (sceneId === activeSceneId) {
       return
@@ -376,11 +407,11 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
     setSceneOption(scene)
   }
 
-  const handleDialogueOption = (option: boolean, sceneOption: SceneDetail | undefined) => {
+  const handleDialogueOption = (option: boolean, selected: SceneDetail | undefined) => {
     setDialogueVisibility(false)
-    if (option && sceneOption && loadedAdventureId !== null) {
+    if (option && selected && loadedAdventureId !== null) {
       const adventureId = loadedAdventureId
-      runSave(() => saveActiveScene(adventureId, sceneOption.id))
+      runSave(() => saveActiveScene(adventureId, selected.id))
     }
   }
 
@@ -391,7 +422,12 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
       id: 'docs',
       name: 'Notizen',
       icon: notesIcon,
-      panel: <DocumentNavigation selectedStoryIndex={selectedStoryIndex} onSelectStory={setSelectedStoryIndex} />,
+      panel: (
+        <DocumentNavigation
+          selectedStoryIndex={selectedStoryIndex}
+          onSelectStory={setSelectedStoryIndex}
+        />
+      ),
     },
     {
       id: 'scenes',
@@ -454,14 +490,17 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
               <ReactSVG
                 src={isMusicPlaying ? pauseIcon : playIcon}
                 beforeInjection={(svg) => {
-                  svg.setAttribute('style', `fill: ${isMusicPlaying ? theme.colors.onPrimary : theme.colors.text.color}`)
+                  const fill = isMusicPlaying ? theme.colors.onPrimary : theme.colors.text.color
+                  svg.setAttribute('style', `fill: ${fill}`)
                 }}
               />
             </AudioControlButton>
             <Track>
               <Label>Musik</Label>
               <TrackName>{ getMusicTitle(audio?.track?.source ?? '') }</TrackName>
-              {audio !== null && !audio.output_ready && <AudioHint>{ NO_AUDIO_OUTPUT_MESSAGE }</AudioHint>}
+              {audio !== null && !audio.output_ready && (
+                <AudioHint>{ NO_AUDIO_OUTPUT_MESSAGE }</AudioHint>
+              )}
             </Track>
             <Box sx={{ width: VOLUME_SLIDER_WIDTH, margin: 0, flexShrink: 0 }}>
               <VolumeSlider
@@ -482,4 +521,4 @@ const AdminScreen: FunctionComponent = (): ReactElement => {
   )
 }
 
-export { AdminScreen }
+export default AdminScreen

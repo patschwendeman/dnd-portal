@@ -56,7 +56,6 @@ describe('patchData', () => {
 describe('saveActiveScene', () => {
   it('patches the active scene of the adventure', async () => {
     // Request and response follow the API contract, whose fields are snake_case
-
     const body = { active_scene_id: 5 }
     patch.mockResolvedValue({ data: { id: 2, ...body } })
     await expect(saveActiveScene(2, 5)).resolves.toEqual({ id: 2, ...body })
@@ -67,7 +66,8 @@ describe('saveActiveScene', () => {
     patch.mockRejectedValue(networkError())
     const error = await failure(saveActiveScene(1, 5))
     expect(error).toBeInstanceOf(SaveError)
-    expect(error?.message).toMatch(/^Saving active scene of adventure 1 failed: backend not reachable$/)
+    expect(error?.message)
+      .toMatch(/^Saving active scene of adventure 1 failed: backend not reachable$/)
   })
 
   it('reports a timeout', async () => {
@@ -95,7 +95,6 @@ describe('game table writes', () => {
   it('patches the active adventure of the game table', async () => {
     patch.mockResolvedValue({ data: { active_adventure_id: 2 } })
     await saveActiveAdventure(2)
-
     expect(patch).toHaveBeenCalledWith('table', { active_adventure_id: 2 })
   })
 
@@ -136,6 +135,7 @@ describe('audio commands', () => {
     const music = await failure(saveAudio({ playing: true }))
     expect(music).toBeInstanceOf(SaveError)
     expect(music?.message).toMatch(/^Saving music failed: backend not reachable$/)
-    expect((await failure(playSound('lock')))?.message).toMatch(/^Saving sound lock failed: HTTP 422$/)
+    expect((await failure(playSound('lock')))?.message)
+      .toMatch(/^Saving sound lock failed: HTTP 422$/)
   })
 })

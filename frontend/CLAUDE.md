@@ -124,14 +124,23 @@ sich selbst wieder. Der Admin spielt nichts ab, er sendet Befehle (`PATCH table/
 
 ## Konventionen (durch ESLint erzwungen bzw. im Code üblich)
 
-- Einfache Anführungszeichen, **keine Semikolons**, `curly: all`, `prefer-const`, `camelcase` (auch Properties).
-- `import/order`: Gruppen builtin → external → internal, Leerzeile zwischen Gruppen, alphabetisch; `react` zuerst.
-- `no-console` ist `warn`.
-- React-Hooks-Regeln werden erzwungen (`react-hooks/rules-of-hooks`, `react-hooks/exhaustive-deps`, beide `error`).
-  Ladefunktionen liegen im Effect selbst, nicht im Component-Body. Ladevorgänge in Effects laufen über `loadLatest`
+- Basis ist der Airbnb-Styleguide (`eslint-config-airbnb-extended`, ESLint 9: base + react, jeweils recommended und
+  typescript), streng: `npm run lint` muss ohne Fehler und Warnungen durchlaufen. Abweichungen stehen gesammelt und
+  begründet in `eslint.config.js`: **keine Semikolons** (auch nicht als Trenner in Interfaces), alte
+  JSX-Scope-Regeln aus, `/assets/…`-Importe (Vite-`public/`) von `no-absolute-path`/`no-unresolved` ausgenommen,
+  optionale Props per Default-Argument (`react/require-default-props`), `console.error` erlaubt.
+- Darüber hinaus u. a.: einfache Anführungszeichen (JSX: doppelte), Zeilen höchstens 100 Zeichen (auch Kommentare und
+  Strings), `import-x/order`, Variablen camelCase (snake_case nur als Property im API-/WebSocket-Format, beim
+  Destrukturieren umbenennen), `react-hooks` v7 (u. a. `set-state-in-effect`). `eslint-disable` nur gezielt und mit
+  Begründung im Kommentar.
+- Ladefunktionen liegen im Effect selbst, nicht im Component-Body. Ladevorgänge in Effects laufen über `loadLatest`
   (`src/utils/loadSafely.ts`) mit einem `stale`-Flag, das der Cleanup setzt – veraltete Antworten werden verworfen.
-- Komponenten als `const X: FunctionComponent<XProps> = (…): ReactElement => …` mit Props-Interface,
-  **benannter Export am Dateiende** (`export { X }`). Nur `App` ist Default-Export.
+  Zustand, der nur von einem Wert aus dem Context abhängt (z. B. Zurücksetzen ohne aktive Szene), wird beim Rendern
+  angepasst (vorheriger Wert im State), nicht per `setState` im Effect.
+- Komponenten als Funktionsdeklaration `function X({ … }: XProps): ReactElement` mit Props-Interface. Dateien mit nur
+  einem Export exportieren ihn als Default (`export default X`), sonst benannte Exporte.
+- Die Tests unter `__tests__/` werden mitgeprüft; `__tests__/tsconfig.json` gibt ESLint (typbasierte Regeln) und
+  Editoren ein TS-Projekt dafür, `tsc -b` baut es nicht.
 - Styles als styled-components in derselben Datei; Farben über `props.theme.colors.*`, nicht hart codiert.
   Abstände, Schrift, Radien, Größen und `z-index` über die Tokens (`props.theme.space[5]`, `textStyle('sm')`,
   `props.theme.layer.dialog` …), feste px-Werte nur als benannte Layout-Konstante (siehe [DESIGN.md](DESIGN.md)).

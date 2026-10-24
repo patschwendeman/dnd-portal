@@ -22,8 +22,14 @@ export interface WallAudioPlayerOptions {
 
 const SOUND_VOLUME = 1
 
-// Plays the music and sound effects of the server on the Wall that is the audio output. It decides nothing itself: it
-// follows the audio state of the server (track, playing, volume) and reports the end of a track.
+const startPlayback = (audio: PlayableAudio): void => {
+  // e.g. autoplay blocked: the game master clicks "AUDIO" again
+  audio.play().catch((error: unknown) => console.error('Error playing audio:', error))
+}
+
+// Plays the music and sound effects of the server on the Wall that is the audio output. It decides
+// nothing itself: it follows the audio state of the server (track, playing, volume) and reports the
+// end of a track.
 export class WallAudioPlayer {
   private readonly music: PlayableAudio
 
@@ -54,7 +60,8 @@ export class WallAudioPlayer {
     }
   }
 
-  // Applies the state of the server; without the role (or without a state) the music is paused at once
+  // Applies the state of the server; without the role (or without a state) the music is paused at
+  // once
   update(state: AudioState | null, active: boolean): void {
     const becameActive = active && !this.active
     this.active = active
@@ -81,7 +88,7 @@ export class WallAudioPlayer {
     if (!state.playing) {
       this.music.pause()
     } else if (trackChanged || this.music.paused) {
-      this.start(this.music)
+      startPlayback(this.music)
     }
   }
 
@@ -94,17 +101,12 @@ export class WallAudioPlayer {
     sound.loop = false
     sound.volume = SOUND_VOLUME
     sound.src = file
-    this.start(sound)
+    startPlayback(sound)
   }
 
   dispose(): void {
     this.active = false
     this.music.onended = null
     this.music.pause()
-  }
-
-  private start(audio: PlayableAudio): void {
-    // e.g. autoplay blocked: the game master clicks "AUDIO" again
-    audio.play().catch((error: unknown) => console.error('Error playing audio:', error))
   }
 }

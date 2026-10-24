@@ -1,7 +1,7 @@
-import { FunctionComponent, ReactElement } from 'react'
+import { ReactElement } from 'react'
 import styled from 'styled-components'
 
-import { Label } from './Label'
+import Label from './Label'
 import { SceneDetail } from '../models/models'
 import { textStyle } from '../style/tokens'
 
@@ -53,7 +53,8 @@ const DetailContent = styled.div`
     align-items: baseline;
     gap: ${(props) => props.theme.space[3]};
     padding: ${(props) => props.theme.space[3]} 0;
-    border-top: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.border};
+    border-top: ${(props) => props.theme.borderWidth.thin} solid
+      ${(props) => props.theme.colors.border};
     ${textStyle('sm')}
 `
 
@@ -61,30 +62,32 @@ interface DetailsSideBarProps {
   activeScene: SceneDetail | undefined
 }
 
-const DetailsSideBar: FunctionComponent<DetailsSideBarProps> = ({ activeScene }): ReactElement => (
-  <Details>
-    <DetailHeader>
-      <Label>Aktive Szene</Label>
-      {activeScene ? (
-        <>
-          <SceneName>{activeScene.name}</SceneName>
-          <SceneDescription>{activeScene.description}</SceneDescription>
-        </>
-      ) : (
-        <SceneDescription data-test-id="no-active-scene">Keine Szene aktiv</SceneDescription>
-      )}
-    </DetailHeader>
-    <DetailRows>
-      <DetailContent>
-        <Label>Enemies</Label>
-        <span>–</span>
-      </DetailContent>
-      <DetailContent>
-        <Label>Loot</Label>
-        <span>–</span>
-      </DetailContent>
-    </DetailRows>
-  </Details>
-)
+function DetailsSideBar({ activeScene }: DetailsSideBarProps): ReactElement {
+  return (
+    <Details>
+      <DetailHeader>
+        <Label>Aktive Szene</Label>
+        {activeScene ? (
+          <>
+            <SceneName>{activeScene.name}</SceneName>
+            <SceneDescription>{activeScene.description}</SceneDescription>
+          </>
+        ) : (
+          <SceneDescription data-test-id="no-active-scene">Keine Szene aktiv</SceneDescription>
+        )}
+      </DetailHeader>
+      <DetailRows>
+        <DetailContent>
+          <Label>Enemies</Label>
+          <span>–</span>
+        </DetailContent>
+        <DetailContent>
+          <Label>Loot</Label>
+          <span>–</span>
+        </DetailContent>
+      </DetailRows>
+    </Details>
+  )
+}
 
-export { DetailsSideBar }
+export default DetailsSideBar

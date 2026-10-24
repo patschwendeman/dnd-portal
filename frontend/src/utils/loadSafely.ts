@@ -11,8 +11,9 @@ export const loadSafely = async (
   }
 }
 
-// Like loadSafely, but drops the result and the error once isStale() reports that the load was overtaken
-// (e.g. by a newer scene or tab), so a slow, outdated response never overwrites the current one.
+// Like loadSafely, but drops the result and the error once isStale() reports that the load was
+// overtaken (e.g. by a newer scene or tab), so a slow, outdated response never overwrites the
+// current one.
 export const loadLatest = <T>(
   load: () => Promise<T>,
   apply: (result: T) => void,

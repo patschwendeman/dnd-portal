@@ -4,7 +4,8 @@ import { getMusicTitle } from '../../src/utils/utils'
 
 describe('getMusicTitle', () => {
   it('should derive the title from a path with underscores', () => {
-    expect(getMusicTitle('http://localhost:8000/media/music/side/forest/From_Past_To_Present.mp3')).toBe('From Past To Present')
+    expect(getMusicTitle('http://localhost:8000/media/music/side/forest/From_Past_To_Present.mp3'))
+      .toBe('From Past To Present')
   })
 
   it('should remove a hash appended by vite', () => {

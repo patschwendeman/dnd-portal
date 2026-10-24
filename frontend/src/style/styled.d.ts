@@ -1,6 +1,6 @@
 import 'styled-components'
 
-import { darkTheme } from './darkTheme'
+import darkTheme from './darkTheme'
 import { tokens } from './tokens'
 
 type Tokens = typeof tokens

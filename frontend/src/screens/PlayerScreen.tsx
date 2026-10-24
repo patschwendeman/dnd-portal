@@ -1,13 +1,13 @@
-import { FunctionComponent, ReactElement } from 'react'
+import { ReactElement } from 'react'
 import { ReactSVG } from 'react-svg'
 import styled, { useTheme, keyframes } from 'styled-components'
 
 import turnImg from '/assets/icons/phone.svg'
 
-import { ResourceBarPlayer } from '../components/ResourceBarPlayer'
-import { ThemeMenu } from '../components/ThemeMenu'
+import ResourceBarPlayer from '../components/ResourceBarPlayer'
+import ThemeMenu from '../components/ThemeMenu'
 import { Theme } from '../models/models'
-import { GlobalStyle } from '../style/GlobalStyle'
+import GlobalStyle from '../style/GlobalStyle'
 
 const ROTATE_ICON_SIZE = '96px'
 const PORTRAIT_QUERY = '(orientation: portrait)'
@@ -27,7 +27,8 @@ const Background = styled.div`
   flex-direction: column;
   justify-content: center;
   gap: ${(props) => props.theme.space[4]};
-  padding: ${(props) => props.theme.space[4]} max(${(props) => props.theme.space[5]}, env(safe-area-inset-left), env(safe-area-inset-right));
+  padding: ${(props) => props.theme.space[4]}
+    max(${(props) => props.theme.space[5]}, env(safe-area-inset-left), env(safe-area-inset-right));
   background-color: ${(props) => props.theme.colors.background};
   color: ${(props) => props.theme.colors.text.color};
   user-select: none;
@@ -65,7 +66,7 @@ interface PlayerScreenProps {
   onChangeThemeOverride: (override: Theme | null) => void
 }
 
-const PlayerScreen: FunctionComponent<PlayerScreenProps> = ({ themeOverride, onChangeThemeOverride }): ReactElement => {
+function PlayerScreen({ themeOverride, onChangeThemeOverride }: PlayerScreenProps): ReactElement {
   const theme = useTheme()
   return (
     <>
@@ -87,4 +88,4 @@ const PlayerScreen: FunctionComponent<PlayerScreenProps> = ({ themeOverride, onC
   )
 }
 
-export { PlayerScreen }
+export default PlayerScreen

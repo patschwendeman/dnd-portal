@@ -35,3 +35,4 @@
 | DND-29 | feat | Menüpunkt „Szenen“ im Admin, Szenen ohne Kampf-/Nicht-Kampf-Unterscheidung | Fertig | [DND-29-admin-scenes-panel.md](DND-29-admin-scenes-panel.md) |
 | DND-30 | setup | Frontend auf Node 24 | Fertig | [DND-30-node-24.md](DND-30-node-24.md) |
 | DND-31 | setup | Prüfungen auf toten Code, Duplikate und Komplexität | Fertig | [DND-31-quality-checks.md](DND-31-quality-checks.md) |
+| DND-32 | refactor | Airbnb-Styleguide als ESLint-Regeln, Frontend-Code angepasst | Im Review | [DND-32-airbnb-eslint.md](DND-32-airbnb-eslint.md) |

@@ -25,7 +25,9 @@ const TextButton = styled.button<{ $variant: TextButtonVariant }>`
         return props.theme.colors.secondary
     }
   }};
-  color: ${(props) => (props.$variant === 'active' ? props.theme.colors.onPrimary : props.theme.colors.text.color)};
+  color: ${(props) => (
+    props.$variant === 'active' ? props.theme.colors.onPrimary : props.theme.colors.text.color
+  )};
 `
 
 export { TextButton }

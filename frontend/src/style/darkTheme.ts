@@ -1,4 +1,4 @@
-export const darkTheme = {
+const darkTheme = {
   colors: {
     primary: '#4493F8',
     secondary: '#161b23',
@@ -26,3 +26,5 @@ export const darkTheme = {
     },
   },
 }
+
+export default darkTheme

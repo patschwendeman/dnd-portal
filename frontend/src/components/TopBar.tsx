@@ -1,11 +1,11 @@
 import {
-  Fragment, FunctionComponent, ReactElement, useCallback, useRef, useState,
+  Fragment, ReactElement, useCallback, useRef, useState,
 } from 'react'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
-import { AdventureSelect } from './AdventureSelect'
-import { JoinDialog } from './JoinDialog'
+import AdventureSelect from './AdventureSelect'
+import JoinDialog from './JoinDialog'
 import { SOUND_GROUPS } from '../audio/sounds'
 import { AdventureSummary, SoundName } from '../models/models'
 
@@ -20,7 +20,8 @@ const Bar = styled.div`
     align-items: center;
     padding: 0 ${(props) => props.theme.space[5]};
     background-color: ${(props) => props.theme.colors.background};
-    border-bottom: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.secondary};
+    border-bottom: ${(props) => props.theme.borderWidth.thin} solid
+      ${(props) => props.theme.colors.secondary};
 `
 
 const Sounds = styled.div`
@@ -91,13 +92,13 @@ interface TopBarProps {
   onPlaySound: (name: SoundName) => void
 }
 
-const TopBar: FunctionComponent<TopBarProps> = ({
+function TopBar({
   onToggleTheme,
   adventures,
   activeAdventureId,
   onSelectAdventure,
   onPlaySound,
-}): ReactElement => {
+}: TopBarProps): ReactElement {
   const theme = useTheme()
   const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false)
   const joinButtonRef = useRef<HTMLButtonElement>(null)
@@ -116,7 +117,8 @@ const TopBar: FunctionComponent<TopBarProps> = ({
       />
       <Sounds>
         {SOUND_GROUPS.map((sounds, groupIndex) => (
-          <Fragment key={groupIndex}>
+          // Sound names are unique, so the first one identifies the group
+          <Fragment key={sounds[0].name}>
             {groupIndex > 0 && <Separator />}
             <SoundGroup>
               {sounds.map((sound) => (
@@ -164,4 +166,4 @@ const TopBar: FunctionComponent<TopBarProps> = ({
   )
 }
 
-export { TopBar }
+export default TopBar

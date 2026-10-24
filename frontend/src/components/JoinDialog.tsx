@@ -1,6 +1,6 @@
 import { QRCodeSVG } from 'qrcode.react'
 import {
-  FunctionComponent, MouseEvent, ReactElement, useEffect, useRef, useState,
+  MouseEvent, ReactElement, useEffect, useRef, useState,
 } from 'react'
 import styled, { useTheme } from 'styled-components'
 
@@ -8,14 +8,15 @@ import { TextButton } from './TextButton'
 import { getJoinInfo } from '../service/adminScreen'
 import { textStyle } from '../style/tokens'
 import { loadLatest } from '../utils/loadSafely'
-import { selectPlayerUrl } from '../utils/playerUrl'
+import selectPlayerUrl from '../utils/playerUrl'
 
 const JOIN_DIALOG_WIDTH = '360px'
 const QR_CODE_SIZE = 240
 // Quiet zone around the code in modules: cameras need it to find the code
 const QR_CODE_MARGIN = 4
 // Non-breaking space: the command must not be split across lines
-const UNKNOWN_URL_MESSAGE = 'Player-URL unbekannt – Spieltisch mit „dnd\u00a0prod“ starten oder den Admin über die IP des Rechners öffnen'
+const UNKNOWN_URL_MESSAGE = 'Player-URL unbekannt – Spieltisch mit „dnd\u00a0prod“ starten '
+  + 'oder den Admin über die IP des Rechners öffnen'
 
 const LayoutContainer = styled.div`
   display: flex;
@@ -78,9 +79,9 @@ interface JoinDialogProps {
   onClose: () => void
 }
 
-// Shows the URL of the Player Screen as QR code, so the players scan it instead of typing the IP. The URL is loaded
-// every time the dialog opens (it is mounted on open).
-const JoinDialog: FunctionComponent<JoinDialogProps> = ({ onClose }): ReactElement => {
+// Shows the URL of the Player Screen as QR code, so the players scan it instead of typing the IP.
+// The URL is loaded every time the dialog opens (it is mounted on open).
+function JoinDialog({ onClose }: JoinDialogProps): ReactElement {
   const theme = useTheme()
   const [playerUrl, setPlayerUrl] = useState<PlayerUrl>(undefined)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
@@ -125,7 +126,12 @@ const JoinDialog: FunctionComponent<JoinDialogProps> = ({ onClose }): ReactEleme
 
   return (
     <LayoutContainer onClick={closeOnOutsideClick}>
-      <DialogContainer role="dialog" aria-modal="true" aria-labelledby="join-dialog-title" data-test-id="join-dialog">
+      <DialogContainer
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="join-dialog-title"
+        data-test-id="join-dialog"
+      >
         <Title id="join-dialog-title">Spieler verbinden</Title>
         {typeof playerUrl === 'string' && (
           <>
@@ -144,7 +150,12 @@ const JoinDialog: FunctionComponent<JoinDialogProps> = ({ onClose }): ReactEleme
         )}
         {playerUrl === null && <Hint data-test-id="join-hint">{UNKNOWN_URL_MESSAGE}</Hint>}
         <ButtonContainer>
-          <TextButton ref={closeButtonRef} $variant="cancel" data-test-id="join-close" onClick={onClose}>
+          <TextButton
+            ref={closeButtonRef}
+            $variant="cancel"
+            data-test-id="join-close"
+            onClick={onClose}
+          >
             Schließen
           </TextButton>
         </ButtonContainer>
@@ -153,4 +164,4 @@ const JoinDialog: FunctionComponent<JoinDialogProps> = ({ onClose }): ReactEleme
   )
 }
 
-export { JoinDialog }
+export default JoinDialog

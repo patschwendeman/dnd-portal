@@ -9,4 +9,4 @@ const Label = styled.span`
   text-transform: uppercase;
 `
 
-export { Label }
+export default Label

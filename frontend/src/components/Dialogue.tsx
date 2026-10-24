@@ -1,7 +1,7 @@
-import { FunctionComponent, ReactElement } from 'react'
+import { ReactElement } from 'react'
 import styled from 'styled-components'
 
-import { Label } from './Label'
+import Label from './Label'
 import { TextButton } from './TextButton'
 import { mediaUrl } from '../api/mediaUrl'
 import { SceneDetail } from '../models/models'
@@ -75,7 +75,7 @@ const DialogueImage = styled.img`
     object-fit: cover;
 `
 
-const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogueOption, isVisible }): ReactElement => {
+function Dialogue({ sceneOption, handleDialogueOption, isVisible }: DialogueProps): ReactElement {
   const handleConfirm = () => {
     if (!sceneOption) {
       throw new Error('Scene option is undefined')
@@ -90,19 +90,26 @@ const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogu
   return (
     <LayoutContainer $isVisible={isVisible}>
       <DialogueContainer>
-        <DialogueImage src={sceneOption?.wall_image ? mediaUrl(sceneOption.wall_image.source) : undefined} alt={sceneOption?.name || 'Scene Image'} />
+        <DialogueImage
+          src={sceneOption?.wall_image ? mediaUrl(sceneOption.wall_image.source) : undefined}
+          alt={sceneOption?.name || 'Scene Image'}
+        />
         <TextBlock>
           <Label>Szene wechseln</Label>
           <SceneName>{sceneOption?.name}</SceneName>
           <SceneDescription>{sceneOption?.description}</SceneDescription>
         </TextBlock>
         <ButtonContainer>
-          <TextButton $variant="cancel" data-test-id="decline-button" onClick={handleDecline}>Decline</TextButton>
-          <TextButton $variant="active" data-test-id="confirm-button" onClick={handleConfirm}>Confirm</TextButton>
+          <TextButton $variant="cancel" data-test-id="decline-button" onClick={handleDecline}>
+            Decline
+          </TextButton>
+          <TextButton $variant="active" data-test-id="confirm-button" onClick={handleConfirm}>
+            Confirm
+          </TextButton>
         </ButtonContainer>
       </DialogueContainer>
     </LayoutContainer>
   )
 }
 
-export { Dialogue }
+export default Dialogue

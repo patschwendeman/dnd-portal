@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { nextOpenPanel } from '../../src/utils/navRail'
+import nextOpenPanel from '../../src/utils/navRail'
 
 type PanelId = 'docs' | 'scenes'
 

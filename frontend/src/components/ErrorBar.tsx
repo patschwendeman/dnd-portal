@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactElement } from 'react'
+import { ReactElement } from 'react'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
@@ -32,7 +32,8 @@ const RetryButton = styled.button`
   cursor: pointer;
 
   &:focus-visible {
-    outline: ${(props) => props.theme.borderWidth.thick} solid ${(props) => props.theme.colors.onError};
+    outline: ${(props) => props.theme.borderWidth.thick} solid
+      ${(props) => props.theme.colors.onError};
     outline-offset: ${(props) => props.theme.borderWidth.thick};
   }
 
@@ -48,13 +49,18 @@ interface ErrorBarProps {
   onRetry: () => void
 }
 
-const ErrorBar: FunctionComponent<ErrorBarProps> = ({ message, onRetry }): ReactElement => {
+function ErrorBar({ message, onRetry }: ErrorBarProps): ReactElement {
   const theme = useTheme()
 
   return (
     <Bar role="alert">
       <Message>{message}</Message>
-      <RetryButton type="button" onClick={onRetry} aria-label="Erneut versuchen" title="Erneut versuchen">
+      <RetryButton
+        type="button"
+        onClick={onRetry}
+        aria-label="Erneut versuchen"
+        title="Erneut versuchen"
+      >
         <ReactSVG
           src={reloadIcon}
           beforeInjection={(svg) => {
@@ -67,4 +73,4 @@ const ErrorBar: FunctionComponent<ErrorBarProps> = ({ message, onRetry }): React
   )
 }
 
-export { ErrorBar }
+export default ErrorBar

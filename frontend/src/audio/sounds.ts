@@ -30,6 +30,10 @@ export const SOUNDS: readonly Sound[] = SOUND_GROUPS.flat()
 
 export const SOUND_NAMES: readonly SoundName[] = SOUNDS.map((item) => item.name)
 
-export const isSoundName = (value: unknown): value is SoundName => SOUND_NAMES.includes(value as SoundName)
+export const isSoundName = (value: unknown): value is SoundName => (
+  SOUND_NAMES.includes(value as SoundName)
+)
 
-export const soundFile = (name: SoundName): string | undefined => SOUNDS.find((item) => item.name === name)?.file
+export const soundFile = (name: SoundName): string | undefined => (
+  SOUNDS.find((item) => item.name === name)?.file
+)

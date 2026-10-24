@@ -4,7 +4,7 @@ import {
 
 import { ConnectionStatus, createGameTableConnection, GameTableConnection } from './connection'
 import { API_BASE_URL } from '../api/apiClient'
-import { wsUrl } from '../api/wsUrl'
+import wsUrl from '../api/wsUrl'
 import { AudioState, GameTableState, SoundName } from '../models/models'
 
 export type GameTableScreen = 'admin' | 'wall' | 'ground' | 'player'
@@ -18,14 +18,15 @@ export interface GameTable {
   audio: AudioState | null
   // Only for a Wall: whether this connection is the audio output (false while disconnected)
   isAudioOutput: boolean
-  // false once the connection broke or could not be established; the first attempt counts as connected, so the Admin
-  // does not show the hint on every load
+  // false once the connection broke or could not be established; the first attempt counts as
+  // connected, so the Admin does not show the hint on every load
   connected: boolean
   reconnectNow: () => void
   // Wall: become the audio output, also again after every reconnect until another Wall takes over
   requestAudioOutput: () => void
   reportTrackEnded: (trackId: number) => void
-  // Sound effects sent to this connection (only to the audio output); returns the unsubscribe function
+  // Sound effects sent to this connection (only to the audio output); returns the unsubscribe
+  // function
   subscribeSound: (listener: SoundListener) => () => void
 }
 
@@ -54,9 +55,9 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
           soundListeners.current.forEach((listener) => listener(message.payload.name))
         }
       },
-      onStatus: (status) => {
-        setStatus(status)
-        if (status !== 'open') {
+      onStatus: (next) => {
+        setStatus(next)
+        if (next !== 'open') {
           // The server releases the output of a closed connection
           setIsAudioOutput(false)
         } else if (wantsAudioOutput.current) {

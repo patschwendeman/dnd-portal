@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { selectPlayerUrl } from '../../src/utils/playerUrl'
+import selectPlayerUrl from '../../src/utils/playerUrl'
 
 const at = (url: string) => {
   const { origin, hostname } = new URL(url)
@@ -18,7 +18,8 @@ describe('selectPlayerUrl', () => {
   })
 
   it('falls back to the origin of the Admin', () => {
-    expect(selectPlayerUrl(null, at('http://192.168.0.10:8080/admin'))).toBe('http://192.168.0.10:8080/')
+    expect(selectPlayerUrl(null, at('http://192.168.0.10:8080/admin')))
+      .toBe('http://192.168.0.10:8080/')
     expect(selectPlayerUrl(null, at('http://dnd.local:5173/admin'))).toBe('http://dnd.local:5173/')
   })
 

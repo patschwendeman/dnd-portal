@@ -17,8 +17,8 @@ export interface HeartbeatWatchdog {
   stop: () => void
 }
 
-// Calls onTimeout once if reset() is not called within timeoutMs. A silently broken connection (e.g. WLAN of another
-// device gone) is otherwise noticed by the browser only much later.
+// Calls onTimeout once if reset() is not called within timeoutMs. A silently broken connection
+// (e.g. WLAN of another device gone) is otherwise noticed by the browser only much later.
 export const createHeartbeatWatchdog = (
   onTimeout: () => void,
   timeoutMs: number = HEARTBEAT_TIMEOUT_MS,

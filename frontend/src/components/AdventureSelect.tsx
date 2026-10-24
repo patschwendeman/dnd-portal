@@ -1,5 +1,5 @@
 import {
-  FunctionComponent, KeyboardEvent, ReactElement, useEffect, useRef, useState,
+  KeyboardEvent, ReactElement, useEffect, useRef, useState,
 } from 'react'
 import styled from 'styled-components'
 
@@ -37,7 +37,8 @@ const Trigger = styled.button`
     }
 
     &:focus-visible {
-        outline: ${(props) => props.theme.borderWidth.thick} solid ${(props) => props.theme.colors.primary};
+        outline: ${(props) => props.theme.borderWidth.thick} solid
+          ${(props) => props.theme.colors.primary};
         outline-offset: ${(props) => props.theme.borderWidth.thick};
     }
 `
@@ -71,7 +72,8 @@ const List = styled.div`
     overflow-y: auto;
     padding: ${(props) => props.theme.space[1]};
     background-color: ${(props) => props.theme.colors.secondary};
-    border: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.border};
+    border: ${(props) => props.theme.borderWidth.thin} solid
+      ${(props) => props.theme.colors.border};
     border-radius: ${(props) => props.theme.radius.lg};
 `
 
@@ -86,8 +88,12 @@ const Option = styled.div<{ $isSelected: boolean }>`
     font-weight: ${(props) => props.theme.fontWeight.medium};
     text-align: left;
     white-space: nowrap;
-    background-color: ${(props) => (props.$isSelected ? props.theme.colors.primary : 'transparent')};
-    color: ${(props) => (props.$isSelected ? props.theme.colors.onPrimary : props.theme.colors.text.color)};
+    background-color: ${(props) => (
+      props.$isSelected ? props.theme.colors.primary : 'transparent'
+    )};
+    color: ${(props) => (
+      props.$isSelected ? props.theme.colors.onPrimary : props.theme.colors.text.color
+    )};
     border-radius: ${(props) => props.theme.radius.md};
     cursor: pointer;
 
@@ -97,14 +103,19 @@ const Option = styled.div<{ $isSelected: boolean }>`
 
     &:hover,
     &:focus {
-        background-color: ${(props) => (props.$isSelected ? props.theme.colors.primary : props.theme.colors.background)};
+        background-color: ${(props) => (
+          props.$isSelected ? props.theme.colors.primary : props.theme.colors.background
+        )};
     }
 
-    /* Keyboard focus shows an outline on every entry: the background fill alone is too faint, and the selected
-       entry keeps its primary fill. Inset, because the scrolling list would clip an outer outline. */
+    /* Keyboard focus shows an outline on every entry: the background fill alone is too faint,
+       and the selected entry keeps its primary fill. Inset, because the scrolling list would clip
+       an outer outline. */
     &:focus-visible {
         outline: ${(props) => props.theme.borderWidth.thick} solid
-            ${(props) => (props.$isSelected ? props.theme.colors.onPrimary : props.theme.colors.primary)};
+            ${(props) => (
+              props.$isSelected ? props.theme.colors.onPrimary : props.theme.colors.primary
+            )};
         outline-offset: -${(props) => props.theme.borderWidth.thick};
     }
 `
@@ -115,11 +126,11 @@ interface AdventureSelectProps {
   onSelectAdventure: (adventureId: number) => void
 }
 
-const AdventureSelect: FunctionComponent<AdventureSelectProps> = ({
+function AdventureSelect({
   adventures,
   activeAdventureId,
   onSelectAdventure,
-}): ReactElement => {
+}: AdventureSelectProps): ReactElement {
   const [isOpen, setIsOpen] = useState(false)
   const [focusIndex, setFocusIndex] = useState(-1)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -129,7 +140,8 @@ const AdventureSelect: FunctionComponent<AdventureSelectProps> = ({
   const selectedIndex = adventures.findIndex((adventure) => adventure.id === activeAdventureId)
   const activeAdventure = selectedIndex >= 0 ? adventures[selectedIndex] : undefined
 
-  // Moves the real focus, so the browser scrolls the entry into view and screen readers announce it.
+  // Moves the real focus, so the browser scrolls the entry into view and screen readers announce
+  // it.
   useEffect(() => {
     if (isOpen && focusIndex >= 0) {
       optionRefs.current[focusIndex]?.focus()
@@ -138,7 +150,7 @@ const AdventureSelect: FunctionComponent<AdventureSelectProps> = ({
 
   useEffect(() => {
     if (!isOpen) {
-      return
+      return undefined
     }
     const closeOnOutsidePointer = (event: MouseEvent) => {
       if (!wrapperRef.current?.contains(event.target as Node)) {
@@ -234,4 +246,4 @@ const AdventureSelect: FunctionComponent<AdventureSelectProps> = ({
   )
 }
 
-export { AdventureSelect }
+export default AdventureSelect

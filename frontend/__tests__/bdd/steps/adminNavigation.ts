@@ -34,7 +34,9 @@ const openAdmin = async (driver: WebDriver): Promise<void> => {
   await openScreen(driver, '/admin')
 }
 
-const getScrollTop = async (driver: WebDriver): Promise<number> => driver.executeScript(`return document.querySelector('${NOTES_SCROLL}').scrollTop`)
+const getScrollTop = async (driver: WebDriver): Promise<number> => driver.executeScript(
+  `return document.querySelector('${NOTES_SCROLL}').scrollTop`,
+)
 
 defineFeature(feature, (test) => {
   let driver: WebDriver
@@ -67,7 +69,9 @@ defineFeature(feature, (test) => {
     and('the panel shows the notes entries Main, Fight, Side, Leveling, Mechaniken', async () => {
       await waitForElement(driver, PANEL)
       const names = await Promise.all(
-        STORY_NAMES.map(async (_name, index) => (await waitForElement(driver, `${PANEL} ${entry(index)}`)).getText()),
+        STORY_NAMES.map(async (_name, index) => (
+          (await waitForElement(driver, `${PANEL} ${entry(index)}`)).getText()
+        )),
       )
       expect(names).toEqual(STORY_NAMES)
     })
@@ -88,7 +92,8 @@ defineFeature(feature, (test) => {
     })
 
     then('Leveling is selected and the leveling notes are shown', async () => {
-      expect(await waitForAttribute(driver, entry(LEVELING_INDEX), 'data-active', 'true')).toBe('true')
+      expect(await waitForAttribute(driver, entry(LEVELING_INDEX), 'data-active', 'true'))
+        .toBe('true')
       expect(await waitForAttribute(driver, entry(0), 'data-active', 'false')).toBe('false')
       await waitForElement(driver, LEVELING_NOTES)
     })
@@ -131,12 +136,16 @@ defineFeature(feature, (test) => {
       await clickElement(driver, NOTES_ITEM)
     })
 
-    then('the panel is shown again with Leveling selected and the notes at the same scroll position', async () => {
-      await waitForElement(driver, PANEL)
-      expect(await waitForAttribute(driver, NOTES_ITEM, 'aria-pressed', 'true')).toBe('true')
-      expect(await waitForAttribute(driver, entry(LEVELING_INDEX), 'data-active', 'true')).toBe('true')
-      await waitForElement(driver, LEVELING_NOTES)
-      expect(await getScrollTop(driver)).toBe(scrollTop)
-    })
+    then(
+      'the panel is shown again with Leveling selected and the notes at the same scroll position',
+      async () => {
+        await waitForElement(driver, PANEL)
+        expect(await waitForAttribute(driver, NOTES_ITEM, 'aria-pressed', 'true')).toBe('true')
+        expect(await waitForAttribute(driver, entry(LEVELING_INDEX), 'data-active', 'true'))
+          .toBe('true')
+        await waitForElement(driver, LEVELING_NOTES)
+        expect(await getScrollTop(driver)).toBe(scrollTop)
+      },
+    )
   })
 })

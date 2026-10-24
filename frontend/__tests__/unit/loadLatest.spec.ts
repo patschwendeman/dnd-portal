@@ -64,7 +64,9 @@ describe('loadLatest', () => {
 
   it('resolves instead of rejecting, whether the failed load is stale or not', async () => {
     const error = new Error('Backend not reachable')
-    await expect(loadLatest(() => Promise.reject(error), vi.fn(), vi.fn(), () => false)).resolves.toBeUndefined()
-    await expect(loadLatest(() => Promise.reject(error), vi.fn(), vi.fn(), () => true)).resolves.toBeUndefined()
+    await expect(loadLatest(() => Promise.reject(error), vi.fn(), vi.fn(), () => false))
+      .resolves.toBeUndefined()
+    await expect(loadLatest(() => Promise.reject(error), vi.fn(), vi.fn(), () => true))
+      .resolves.toBeUndefined()
   })
 })

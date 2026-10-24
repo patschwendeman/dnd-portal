@@ -8,8 +8,8 @@ import { getData } from '../../src/api/apiMethods'
 import {
   getAdminData, getAdventure, getAdventures, getSceneById,
 } from '../../src/service/adminScreen'
-import { getGroundScreenData } from '../../src/service/groundScreen'
-import { getWallScene } from '../../src/service/WallScreen'
+import getGroundScreenData from '../../src/service/groundScreen'
+import getWallScene from '../../src/service/WallScreen'
 
 vi.mock('../../src/api/apiClient', () => ({
   apiClient: { get: vi.fn() },

@@ -1,4 +1,4 @@
-import { FunctionComponent, ReactElement } from 'react'
+import { ReactElement } from 'react'
 import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
 
@@ -17,7 +17,8 @@ const Rail = styled.nav`
   padding: ${(props) => props.theme.space[5]} 0;
   min-height: 0;
   background-color: ${(props) => props.theme.colors.background};
-  border-right: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.secondary};
+  border-right: ${(props) => props.theme.borderWidth.thin} solid
+    ${(props) => props.theme.colors.secondary};
 `
 
 const RailButton = styled.button<{ $isActive: boolean }>`
@@ -28,17 +29,22 @@ const RailButton = styled.button<{ $isActive: boolean }>`
   padding: 0;
   /* Like the entries in the panel: only the active item has a surface */
   background-color: ${(props) => (props.$isActive ? props.theme.colors.primary : 'transparent')};
-  color: ${(props) => (props.$isActive ? props.theme.colors.onPrimary : props.theme.colors.text.color)};
+  color: ${(props) => (
+    props.$isActive ? props.theme.colors.onPrimary : props.theme.colors.text.color
+  )};
   border: none;
   border-radius: ${(props) => props.theme.radius.md};
   cursor: pointer;
 
   &:hover {
-    background-color: ${(props) => (props.$isActive ? props.theme.colors.primary : props.theme.colors.secondary)};
+    background-color: ${(props) => (
+      props.$isActive ? props.theme.colors.primary : props.theme.colors.secondary
+    )};
   }
 
   &:focus-visible {
-    outline: ${(props) => props.theme.borderWidth.thick} solid ${(props) => props.theme.colors.primary};
+    outline: ${(props) => props.theme.borderWidth.thick} solid
+      ${(props) => props.theme.colors.primary};
     outline-offset: ${(props) => props.theme.borderWidth.thick};
   }
 
@@ -58,9 +64,9 @@ interface NavRailProps {
   onSelect: (id: string) => void
 }
 
-const NavRail: FunctionComponent<NavRailProps> = ({
+function NavRail({
   items, openItemId, panelId, onSelect,
-}): ReactElement => {
+}: NavRailProps): ReactElement {
   const theme = useTheme()
 
   return (
@@ -82,7 +88,8 @@ const NavRail: FunctionComponent<NavRailProps> = ({
             <ReactSVG
               src={item.icon}
               beforeInjection={(svg) => {
-                svg.setAttribute('style', `fill: ${isActive ? theme.colors.onPrimary : theme.colors.text.color}`)
+                const fill = isActive ? theme.colors.onPrimary : theme.colors.text.color
+                svg.setAttribute('style', `fill: ${fill}`)
               }}
             />
           </RailButton>

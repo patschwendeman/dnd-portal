@@ -34,8 +34,16 @@ interface SeedScene {
 
 // Scenes of the seed with their media paths; former battle and non-battle scenes alike
 const SEED_SCENES: SeedScene[] = [
-  { name: 'Shop', wallImage: '/images/wall_screen/shop.jpg', groundImage: '/images/ground_screen/shop.jpg' },
-  { name: 'Tavern', wallImage: '/images/wall_screen/tavern.jpg', groundImage: '/images/ground_screen/tavern.jpg' },
+  {
+    name: 'Shop',
+    wallImage: '/images/wall_screen/shop.jpg',
+    groundImage: '/images/ground_screen/shop.jpg',
+  },
+  {
+    name: 'Tavern',
+    wallImage: '/images/wall_screen/tavern.jpg',
+    groundImage: '/images/ground_screen/tavern.jpg',
+  },
   {
     name: 'Fight 1 [lvl. 6]',
     wallImage: '/images/wall_screen/fight.jpg',
@@ -56,21 +64,30 @@ const openAdmin = async (driver: WebDriver): Promise<void> => {
   await openScreen(driver, '/admin')
 }
 
-// Clicking the active scene does nothing, so the test picks a random scene that is not active
-const pickInactiveScene = async (driver: WebDriver): Promise<SeedScene> => {
-  const candidates = [...SEED_SCENES].sort(() => Math.random() - 0.5)
-  for (const scene of candidates) {
-    const entry = await waitForElement(driver, sceneEntry(scene.name))
-    if ((await entry.getAttribute('data-active')) === 'false') {
-      return scene
-    }
+// Checks the candidates one after another and stops at the first inactive scene
+const findInactiveScene = async (
+  driver: WebDriver,
+  candidates: SeedScene[],
+): Promise<SeedScene> => {
+  if (candidates.length === 0) {
+    throw new Error('No inactive scene found')
   }
-  throw new Error('No inactive scene found')
+  const [scene, ...rest] = candidates
+  const entry = await waitForElement(driver, sceneEntry(scene.name))
+  if ((await entry.getAttribute('data-active')) === 'false') {
+    return scene
+  }
+  return findInactiveScene(driver, rest)
 }
 
-// After a fresh seed no scene is active. The scenario reads the game table state from the server (the Admin learns it
-// only with the push, so the panel alone cannot tell "none active" from "not yet received") and activates a scene
-// through the panel if needed.
+// Clicking the active scene does nothing, so the test picks a random scene that is not active
+const pickInactiveScene = async (driver: WebDriver): Promise<SeedScene> => (
+  findInactiveScene(driver, [...SEED_SCENES].sort(() => Math.random() - 0.5))
+)
+
+// After a fresh seed no scene is active. The scenario reads the game table state from the server
+// (the Admin learns it only with the push, so the panel alone cannot tell "none active" from "not
+// yet received") and activates a scene through the panel if needed.
 const ensureActiveScene = async (driver: WebDriver): Promise<void> => {
   const response = await fetch(`${BASE_URL}/api/table`)
   expect(response.ok).toBe(true)
@@ -156,7 +173,8 @@ defineFeature(feature, (test) => {
     })
 
     then('the scene is highlighted as active', async () => {
-      expect(await waitForAttribute(driver, sceneEntry(scene.name), 'aria-current', 'true')).toBe('true')
+      expect(await waitForAttribute(driver, sceneEntry(scene.name), 'aria-current', 'true'))
+        .toBe('true')
     })
 
     when('I go to wall screen', async () => {
@@ -165,7 +183,8 @@ defineFeature(feature, (test) => {
 
     then('I see the wall image of the scene', async () => {
       const expectedSrc = `${MEDIA_BASE_URL}${scene.wallImage}`
-      expect(await waitForAttribute(driver, '[data-test-id="wallImg"]', 'src', expectedSrc)).toBe(expectedSrc)
+      expect(await waitForAttribute(driver, '[data-test-id="wallImg"]', 'src', expectedSrc))
+        .toBe(expectedSrc)
     })
 
     when('I go to ground screen', async () => {
@@ -174,7 +193,8 @@ defineFeature(feature, (test) => {
 
     then('I see the ground image of the scene', async () => {
       const expectedSrc = `${MEDIA_BASE_URL}${scene.groundImage}`
-      expect(await waitForAttribute(driver, '[data-test-id="groundImg"]', 'src', expectedSrc)).toBe(expectedSrc)
+      expect(await waitForAttribute(driver, '[data-test-id="groundImg"]', 'src', expectedSrc))
+        .toBe(expectedSrc)
     })
   })
 })

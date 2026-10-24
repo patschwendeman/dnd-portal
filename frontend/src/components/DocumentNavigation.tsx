@@ -1,8 +1,8 @@
-import { FunctionComponent, ReactElement } from 'react'
+import { ReactElement } from 'react'
 import styled from 'styled-components'
 
-import { Label } from './Label'
-import { SideBarLeftElement } from './SideBarLeftElement'
+import Label from './Label'
+import SideBarLeftElement from './SideBarLeftElement'
 
 // Order matches the note folders loaded by DocumentReader (index = selectedStoryIndex)
 const STORY_NAMES = ['Main', 'Fight', 'Side', 'Leveling', 'Mechaniken']
@@ -23,22 +23,24 @@ interface DocumentNavigationProps {
   onSelectStory: (index: number) => void
 }
 
-const DocumentNavigation: FunctionComponent<DocumentNavigationProps> = ({
+function DocumentNavigation({
   selectedStoryIndex,
   onSelectStory,
-}): ReactElement => (
-  <Navigation>
-    <NotesLabel>Notizen</NotesLabel>
-    {STORY_NAMES.map((name, index) => (
-      <SideBarLeftElement
-        key={name}
-        name={name}
-        isActive={index === selectedStoryIndex}
-        onSelect={() => onSelectStory(index)}
-        testId={`notes-entry-${index}`}
-      />
-    ))}
-  </Navigation>
-)
+}: DocumentNavigationProps): ReactElement {
+  return (
+    <Navigation>
+      <NotesLabel>Notizen</NotesLabel>
+      {STORY_NAMES.map((name, index) => (
+        <SideBarLeftElement
+          key={name}
+          name={name}
+          isActive={index === selectedStoryIndex}
+          onSelect={() => onSelectStory(index)}
+          testId={`notes-entry-${index}`}
+        />
+      ))}
+    </Navigation>
+  )
+}
 
-export { DocumentNavigation }
+export default DocumentNavigation

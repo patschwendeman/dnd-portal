@@ -1,5 +1,5 @@
 import {
-  FunctionComponent, ReactElement, useContext, useEffect, useState,
+  ReactElement, useContext, useEffect, useState,
 } from 'react'
 import styled from 'styled-components'
 
@@ -8,8 +8,8 @@ import { WallAudioPlayer } from '../audio/wallAudioPlayer'
 import { CONTROL_BAR_CLEARANCE, ScreenControlBar } from '../components/ScreenControlBar'
 import { ActiveSceneContext, GameAudioContext } from '../context/context'
 import { SceneDetail } from '../models/models'
-import { getWallScene } from '../service/WallScreen'
-import { GlobalStyle } from '../style/GlobalStyle'
+import getWallScene from '../service/WallScreen'
+import GlobalStyle from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 import { loadLatest } from '../utils/loadSafely'
 import MapEnvironmentSrc from '../../public/assets/images/ground_screen/mapOverview.jpg'
@@ -45,7 +45,8 @@ const Screen = styled.div`
 `
 
 // Width: smallest of the upper limit, the viewport minus the side margins and the available height
-// converted into a width, so the world map (a single 16:9 image) fits completely above the control bar
+// converted into a width, so the world map (a single 16:9 image) fits completely above the control
+// bar
 const OverlayPanel = styled.div<{ $isVisible: boolean }>`
     display: ${({ $isVisible }) => ($isVisible ? 'flex' : 'none')};
     flex-direction: column;
@@ -54,8 +55,10 @@ const OverlayPanel = styled.div<{ $isVisible: boolean }>`
         ${OVERLAY_PANEL_MAX_WIDTH},
         calc(100vw - 2 * ${(props) => props.theme.space[8]}),
         calc(
-            (100vh - ${(props) => props.theme.space[7]} - ${CONTROL_BAR_CLEARANCE} - 2 * ${(props) => props.theme.space[6]}
-                - ${(props) => props.theme.text.xl.lineHeight} - ${(props) => props.theme.space[5]}) * 16 / 9
+            (100vh - ${(props) => props.theme.space[7]} - ${CONTROL_BAR_CLEARANCE} - 2 *
+              ${(props) => props.theme.space[6]}
+                - ${(props) => props.theme.text.xl.lineHeight} -
+                  ${(props) => props.theme.space[5]}) * 16 / 9
             + 2 * ${(props) => props.theme.space[6]}
         )
     );
@@ -86,7 +89,7 @@ const BackgroundImage = styled.img`
     object-fit: cover;
     z-index: ${(props) => props.theme.layer.media};
 `
-const WallScreen: FunctionComponent = (): ReactElement => {
+function WallScreen(): ReactElement {
   const { activeSceneId } = useContext(ActiveSceneContext)
   const {
     audio, isAudioOutput, requestAudioOutput, reportTrackEnded, subscribeSound,
@@ -98,26 +101,35 @@ const WallScreen: FunctionComponent = (): ReactElement => {
   const buttonLabels = ['WORLD', 'OFF']
   const activeButton = worldMapVisibility ? 0 : 1
 
-  function handleMapsVisibility(option: number) {
+  const handleMapsVisibility = (option: number) => {
     setWorldMapVisibility(option === 0)
+  }
+
+  // Without an active scene the wall shows only the background, no image and no panel; reset
+  // during render instead of in an effect
+  const [prevActiveSceneId, setPrevActiveSceneId] = useState(activeSceneId)
+  if (activeSceneId !== prevActiveSceneId) {
+    setPrevActiveSceneId(activeSceneId)
+    if (activeSceneId === null) {
+      setActiveScene(undefined)
+      setWorldMapVisibility(false)
+    }
   }
 
   useEffect(() => {
     let stale = false
 
-    // Without an active scene the wall shows only the background, no image and no panel
     if (activeSceneId === null) {
-      setActiveScene(undefined)
-      setWorldMapVisibility(false)
-      return
+      return undefined
     }
 
-    const handleWallScene = (activeScene: SceneDetail) => {
-      setActiveScene(activeScene)
+    const handleWallScene = (scene: SceneDetail) => {
+      setActiveScene(scene)
       setWorldMapVisibility(false)
     }
 
-    // Players see no error: the screen keeps the last loaded scene, the next scene change loads again.
+    // Players see no error: the screen keeps the last loaded scene, the next scene change loads
+    // again.
     loadLatest(
       () => getWallScene(activeSceneId),
       handleWallScene,
@@ -132,6 +144,8 @@ const WallScreen: FunctionComponent = (): ReactElement => {
 
   useEffect(() => {
     const player = new WallAudioPlayer({ onTrackEnded: reportTrackEnded })
+    // The player owns audio elements that the cleanup releases, so it is created in the effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAudioPlayer(player)
     return () => {
       player.dispose()
@@ -144,7 +158,7 @@ const WallScreen: FunctionComponent = (): ReactElement => {
 
   useEffect(() => {
     if (audioPlayer === null) {
-      return
+      return undefined
     }
     return subscribeSound((name) => audioPlayer.playSound(name))
   }, [audioPlayer, subscribeSound])
@@ -152,12 +166,18 @@ const WallScreen: FunctionComponent = (): ReactElement => {
   return (
     <Screen>
       <GlobalStyle />
-      {activeScene && <BackgroundImage data-test-id="wallImg" src={mediaUrl(activeScene.wall_image.source)} alt="" />}
+      {activeScene && (
+        <BackgroundImage
+          data-test-id="wallImg"
+          src={mediaUrl(activeScene.wall_image.source)}
+          alt=""
+        />
+      )}
       <OverlayPanel $isVisible={worldMapVisibility}>
         <PanelHeader>
           <PanelTitle>Weltkarte</PanelTitle>
         </PanelHeader>
-        <MapEnvironment src={MapEnvironmentSrc} />
+        <MapEnvironment src={MapEnvironmentSrc} alt="" />
       </OverlayPanel>
       <ScreenControlBar
         onVisibilityChange={handleMapsVisibility}
@@ -169,4 +189,4 @@ const WallScreen: FunctionComponent = (): ReactElement => {
     </Screen>
   )
 }
-export { WallScreen }
+export default WallScreen

@@ -1,9 +1,9 @@
 import Box from '@mui/material/Box'
 import Slider from '@mui/material/Slider'
-import { FunctionComponent, ReactElement, useState } from 'react'
+import { ReactElement, useState } from 'react'
 import styled from 'styled-components'
 
-import { Label } from './Label'
+import Label from './Label'
 import { TextButton } from './TextButton'
 import { textStyle } from '../style/tokens'
 
@@ -112,25 +112,25 @@ interface ScreenControlBarProps {
   isAudioOutput?: boolean
 }
 
-const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({
+function ScreenControlBar({
   onVisibilityChange,
-  onSliderChange,
+  onSliderChange = undefined,
   buttonLabels,
-  label,
-  activeIndex,
-  onAudioOutput,
+  label = undefined,
+  activeIndex = undefined,
+  onAudioOutput = undefined,
   isAudioOutput = false,
-}): ReactElement => {
+}: ScreenControlBarProps): ReactElement {
   const [clickedButton, setClickedButton] = useState<number | null>(null)
   const activeButton = activeIndex !== undefined ? activeIndex : clickedButton
   const [sliderValue, setSliderValue] = useState<number>(100)
 
-  function handleVisibility(option: number) {
+  const handleVisibility = (option: number) => {
     setClickedButton(option)
     onVisibilityChange(option)
   }
 
-  function handleSliderChange(_event: Event, option: number | number[]) {
+  const handleSliderChange = (_event: Event, option: number | number[]) => {
     if (onSliderChange) {
       setSliderValue(option as number)
       onSliderChange(option as number)
@@ -142,13 +142,13 @@ const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({
       <ControlBar>
         {label && <BarLabel>{ label }</BarLabel>}
         <ButtonGroup>
-          {buttonLabels.map((label, index) => (
+          {buttonLabels.map((buttonLabel, index) => (
             <Button
-              key={index}
+              key={buttonLabel}
               onClick={() => handleVisibility(index)}
               $variant={activeButton === index ? 'active' : 'default'}
             >
-              { label }
+              { buttonLabel }
             </Button>
           ))}
         </ButtonGroup>

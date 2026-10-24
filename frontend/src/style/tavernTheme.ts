@@ -1,4 +1,4 @@
-export const tavernTheme = {
+const tavernTheme = {
   colors: {
     primary: '#C05E5E',
     secondary: '#3D271C',
@@ -26,3 +26,5 @@ export const tavernTheme = {
     },
   },
 }
+
+export default tavernTheme

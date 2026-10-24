@@ -443,7 +443,7 @@ startet `uvicorn app.main:app` ohne `--reload`; den Reload setzt nur der Dev-Sta
 
 | | Backend | Frontend |
 |---|---|---|
-| Lint | `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app` (strict, Pydantic-Plugin; Konfig in `pyproject.toml`) | `npm run lint` (ESLint flat config, einfache Quotes, keine Semikolons) |
+| Lint | `uv run ruff check`, `uv run ruff format --check`, `uv run mypy app` (strict, Pydantic-Plugin; Konfig in `pyproject.toml`) | `npm run lint` (ESLint 9, flat config auf Basis von Airbnb (`eslint-config-airbnb-extended`: base + react, jeweils recommended + typescript), keine Semikolons; 0 Fehler und 0 Warnungen) |
 | Unit-Tests | `uv run pytest` – Tests aller Endpoints in `tests/` (Erwartungen aus dem Seed), gegen PostgreSQL (lokal Dev-DB bzw. Dev-Container) | `npm run test:unit` (vitest, `__tests__/unit/*.spec.ts`) |
 | E2E | – | `npm run test:e2e` (jest-cucumber + Selenium/Chrome, braucht laufendes Backend mit Seed-Daten) |
 | Toter Code, Dependencies, Duplikate, Komplexität | `make check-quality` (`backend/Makefile`): vulture (`min_confidence = 60`, Whitelist und Baseline), deptry, xenon (Ränge für `app/`), pylint nur `duplicate-code` (`app/`, ab 8 Zeilen); dazu ruff `C90` (`max-complexity`), `PIE`, `RET` im Lint | `npm run check:deadcode` (knip: Dateien, Exporte, Dependencies) und `npm run check:dupes` (jscpd: `src/`, ab 8 Zeilen, `threshold`) |

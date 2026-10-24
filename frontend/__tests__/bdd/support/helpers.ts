@@ -4,12 +4,13 @@ import {
 
 // Lives outside steps/ so jest (testMatch: __tests__/bdd/steps/*.ts) does not run it as a test file
 const BASE_URL = 'http://localhost:5173'
-// Scene media are served by the backend through the proxy of the frontend (VITE_API_URL default /api/). The src
-// property of an image is resolved against the page.
+// Scene media are served by the backend through the proxy of the frontend (VITE_API_URL default
+// /api/). The src property of an image is resolved against the page.
 const MEDIA_PATH = '/api/media'
 const MEDIA_BASE_URL = `${BASE_URL}${MEDIA_PATH}`
 
-// Must stay below the jest testTimeout (10 s), otherwise jest aborts before the wait reports its failure
+// Must stay below the jest testTimeout (10 s), otherwise jest aborts before the wait reports its
+// failure
 const WAIT_TIMEOUT = 5000
 
 const getRandomNumber = (min: number, max: number): number => {
@@ -24,7 +25,9 @@ const openScreen = async (driver: WebDriver, path: string): Promise<void> => {
   await driver.get(`${BASE_URL}${path}`)
 }
 
-const waitForElement = async (driver: WebDriver, selector: string): Promise<WebElement> => driver.wait(until.elementLocated(By.css(selector)), WAIT_TIMEOUT)
+const waitForElement = async (driver: WebDriver, selector: string): Promise<WebElement> => (
+  driver.wait(until.elementLocated(By.css(selector)), WAIT_TIMEOUT)
+)
 
 const clickElement = async (driver: WebDriver, selector: string): Promise<WebElement> => {
   const element = await waitForElement(driver, selector)
@@ -34,11 +37,14 @@ const clickElement = async (driver: WebDriver, selector: string): Promise<WebEle
 }
 
 const waitForElementGone = async (driver: WebDriver, selector: string): Promise<void> => {
-  await driver.wait(async () => (await driver.findElements(By.css(selector))).length === 0, WAIT_TIMEOUT)
+  await driver.wait(
+    async () => (await driver.findElements(By.css(selector))).length === 0,
+    WAIT_TIMEOUT,
+  )
 }
 
-// The Admin marks the scene entry as active only with the push of the server, so afterwards the scene is saved and
-// other screens receive it when they connect
+// The Admin marks the scene entry as active only with the push of the server, so afterwards the
+// scene is saved and other screens receive it when they connect
 const confirmDialog = async (driver: WebDriver, entrySelector: string): Promise<void> => {
   await clickElement(driver, '[data-test-id="confirm-button"]')
   await driver.wait(async () => {
@@ -47,7 +53,8 @@ const confirmDialog = async (driver: WebDriver, entrySelector: string): Promise<
   }, WAIT_TIMEOUT)
 }
 
-// Returns the last seen value instead of throwing on timeout, so the step's expect shows expected vs. actual
+// Returns the last seen value instead of throwing on timeout, so the step's expect shows expected
+// vs. actual
 const waitForAttribute = async (
   driver: WebDriver,
   selector: string,

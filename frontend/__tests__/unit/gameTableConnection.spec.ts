@@ -2,11 +2,12 @@ import {
   describe, it, expect, vi, beforeEach, afterEach,
 } from 'vitest'
 
-import { ConnectionStatus, createGameTableConnection, SocketLike } from '../../src/realtime/connection'
+import {
+  ConnectionStatus, createGameTableConnection, SocketLike,
+} from '../../src/realtime/connection'
 import { VisibilitySource } from '../../src/realtime/visibility'
 
 // The payload follows the API contract, whose fields are snake_case
-
 const state = { active_adventure_id: 1, active_scene_id: 5, theme: 'dark' }
 
 class FakeSocket implements SocketLike {
@@ -38,29 +39,34 @@ let statuses: ConnectionStatus[]
 let states: unknown[]
 let messages: unknown[]
 
-class FakeVisibility implements VisibilitySource {
-  visible = true
+interface FakeVisibility extends VisibilitySource {
+  listeners: Set<() => void>
+  change: (visible: boolean) => void
+}
 
-  listeners = new Set<() => void>()
-
-  isVisible() {
-    return this.visible
-  }
-
-  subscribe(listener: () => void) {
-    this.listeners.add(listener)
-    return () => {
-      this.listeners.delete(listener)
-    }
-  }
-
-  change(visible: boolean) {
-    this.visible = visible
-    this.listeners.forEach((listener) => listener())
+const createFakeVisibility = (): FakeVisibility => {
+  let visible = true
+  const listeners = new Set<() => void>()
+  return {
+    listeners,
+    isVisible: () => visible,
+    subscribe: (listener) => {
+      listeners.add(listener)
+      return () => {
+        listeners.delete(listener)
+      }
+    },
+    change: (next) => {
+      visible = next
+      listeners.forEach((listener) => listener())
+    },
   }
 }
 
-const connect = (heartbeatTimeoutMs = 35000, visibility: VisibilitySource = new FakeVisibility()) => createGameTableConnection({
+const connect = (
+  heartbeatTimeoutMs = 35000,
+  visibility: VisibilitySource = createFakeVisibility(),
+) => createGameTableConnection({
   url: 'ws://localhost/ws?screen=wall',
   onState: (payload) => states.push(payload),
   onMessage: (message) => messages.push(message),
@@ -219,7 +225,7 @@ describe('createGameTableConnection', () => {
   })
 
   it('reconnects at once when the page becomes visible without an open connection', () => {
-    const visibility = new FakeVisibility()
+    const visibility = createFakeVisibility()
     connect(35000, visibility)
     latest().onopen?.()
     visibility.change(false)
@@ -237,7 +243,7 @@ describe('createGameTableConnection', () => {
   })
 
   it('keeps an open connection when the page becomes visible', () => {
-    const visibility = new FakeVisibility()
+    const visibility = createFakeVisibility()
     connect(35000, visibility)
     latest().onopen?.()
 
@@ -249,7 +255,7 @@ describe('createGameTableConnection', () => {
   })
 
   it('does not reconnect when the page becomes hidden', () => {
-    const visibility = new FakeVisibility()
+    const visibility = createFakeVisibility()
     connect(35000, visibility)
     latest().onclose?.()
 
@@ -259,7 +265,7 @@ describe('createGameTableConnection', () => {
   })
 
   it('stops listening to the visibility after close', () => {
-    const visibility = new FakeVisibility()
+    const visibility = createFakeVisibility()
     const connection = connect(35000, visibility)
     latest().onclose?.()
 

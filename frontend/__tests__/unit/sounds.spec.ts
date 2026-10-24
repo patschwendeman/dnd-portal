@@ -10,7 +10,9 @@ import {
 const FRONTEND_DIR = resolve(__dirname, '../..')
 
 const contractSoundNames = (): string[] => {
-  const openapi = JSON.parse(readFileSync(resolve(FRONTEND_DIR, '../backend/openapi.json'), 'utf-8'))
+  const openapi = JSON.parse(
+    readFileSync(resolve(FRONTEND_DIR, '../backend/openapi.json'), 'utf-8'),
+  )
   return openapi.components.schemas.SoundRequest.properties.name.enum
 }
 
@@ -31,10 +33,10 @@ describe('sound list', () => {
   })
 
   it('points to existing files in public/', () => {
-    for (const sound of SOUNDS) {
+    SOUNDS.forEach((sound) => {
       expect(existsSync(resolve(FRONTEND_DIR, 'public', `.${sound.icon}`)), sound.icon).toBe(true)
       expect(existsSync(resolve(FRONTEND_DIR, 'public', `.${sound.file}`)), sound.file).toBe(true)
-    }
+    })
   })
 
   it('resolves names to files and recognizes only known names', () => {

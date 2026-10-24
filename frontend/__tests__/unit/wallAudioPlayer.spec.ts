@@ -44,7 +44,6 @@ class FakeAudio implements PlayableAudio {
 const first = { id: 1, name: 'First', source: '/media/music/first.mp3' }
 const second = { id: 2, name: 'Second', source: '/media/music/second.mp3' }
 // The payload follows the API contract, whose fields are snake_case
-
 const playing: AudioState = {
   playing: true, track: first, volume: 40, output_ready: true,
 }

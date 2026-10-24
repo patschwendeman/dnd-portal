@@ -2,7 +2,8 @@ import { createContext } from 'react'
 
 import { AudioState, SoundName, Theme } from '../models/models'
 
-// The game table state comes from the server (WebSocket /ws); the contexts only pass it on, changes go through the API.
+// The game table state comes from the server (WebSocket /ws); the contexts only pass it on, changes
+// go through the API.
 
 // null: no scene is active (Wall and Ground show only the background)
 interface ActiveSceneContextType {
