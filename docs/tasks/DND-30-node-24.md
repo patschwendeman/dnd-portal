@@ -1,7 +1,7 @@
 # DND-30: Frontend auf Node 24
 
 **Typ:** setup
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -68,3 +68,30 @@ transitiv da (22.5.4).
 
 ## Offene Fragen
 - keine
+
+## Review
+
+### Runde 1 – 2026-10-24
+**Empfehlung:** Abnahme
+
+Offen ist nur der Teil von AK2, den man erst nach dem Push prüfen kann: Die Frontend-CI muss grün sein. Geprüft wurde Commit `1e08c3d`, die Checks liefen in einem temporären Worktree.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | `frontend/.nvmrc`:1 = `24`. `frontend/Dockerfile`:7 und :22 `node:24-slim` (Stages `dev`, `build`). `package.json`: `"@types/node": "^24.19.2"`, das Lockfile hat 24.19.2 (`npm ls` zeigt nur diese Version, deduped). Doku: `frontend/CLAUDE.md`:53, `frontend/README.md`:31, `docs/architecture.md`:391 und :449. Node 18 steht nur noch in abgeschlossenen Task-Plänen |
+| AK2 | lokal erfüllt, CI nach dem Push prüfen | Node v24.15.0 / npm 11.12.1: `npm ci` ok, das Lockfile bleibt danach unverändert. `build`, `typecheck` und `lint` mit Exit 0. `test:unit` 19 Dateien / 158 Tests grün. `generate:api` ändert `schema.d.ts` nicht. Docker `--target prod` und `--target dev` bauen, im Dev-Image läuft v24.22.1 |
+| AK3 | erfüllt | Kein Code unter `src/` geändert. Im Lockfile ändern sich nur `@types/node` und dessen Abhängigkeit `undici-types` (6.19.8 → 7.24.6). `.github/workflows/frontend.yml` unverändert, alle 4 Jobs lesen `frontend/.nvmrc` |
+
+**Blockierende Befunde**
+- keine
+
+**Nach dem Push prüfen**
+- [ ] Die Frontend-CI ist grün, und das setup-node-Log zeigt v24 (AK2).
+
+**Hinweise**
+- Die Lint-Warnung `styled-components-a11y/alt-text` in `frontend/src/screens/WallScreen.tsx:157` gab es schon vorher (aus DND-29).
+- `undici-types` wurde zwangsläufig mit `@types/node` 24 angehoben. Das zählt nicht als weiteres Dependency-Upgrade.
+- Die Audit-Funde von `npm ci` gab es schon vorher. Sie liegen außerhalb des Scopes.
+- Die alten Task-Pläne (DND-1/2/3/12) nennen weiter Node 18. Sie sind historisch und bleiben bewusst so.
+
+**Checks:** Lint grün (1 Warnung, schon vorher vorhanden), Unit-Tests 158 grün, Build und Typecheck grün, Docker prod/dev bauen. CI erst nach dem Push.
