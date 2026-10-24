@@ -1,7 +1,7 @@
 # DND-33: Admin-Dashboard mit Panel-Raster (Szene, Musik, Sounds, Screens)
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -524,3 +524,47 @@ verlangt keinen abgeschnittenen Text (Ausnahme nur in `components.md`, nicht im 
 - [x] Vollbild-Button für das Admin-Fenster in der Top-Bar bleibt (AK9)
 - [x] Befund AK1 aus Runde 4: Name und Beschreibung in „Aktive Szene“ umbrechen statt kürzen (Grundsatz „kein
   abgeschnittener Text“); veralteten Kommentar `ActiveScenePanel.tsx:9` korrigieren
+
+### Runde 6 – 2026-10-24
+**Empfehlung:** Abnahme
+
+Runde 5 vollständig umgesetzt. Fernsteuerung des Vollbilds von Wall/Ground ohne Reste entfernt: Backend,
+Realtime-Schicht, Context und Unit-Tests identisch mit Runde 2 (`git diff b8243b4 0e81e89 -- backend
+frontend/src/realtime frontend/src/context frontend/src/utils/screenStatus.ts frontend/__tests__/unit` leer); im Panel
+„Screens“ gegenüber Runde 2 nur der QR-Icon-Button (E13). Admin-Vollbild bleibt. „Aktive Szene“ bricht um und wächst
+mit. Nicht beauftragter Fix in `Dashboard.tsx` per Gegenprobe als nötig bestätigt, deckt sich mit AK1.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | 1280×800: Dashboard 400px (Notizen 504px), Szene 385px, Musik/Sounds je 185px, Screens 385px; 1600: 408/816px; 1920: 515/1029px. Seed-Daten ohne Überlauf. `ActiveScenePanel.tsx:38-50` `overflow-wrap: break-word`, `hyphens: auto`, `lang="de"` (`:87`), kein `title`. Langer Text per DOM bei 1280: Panel wächst 304 → 591px, kein Überlauf, Dashboard scrollt als Ganzes; ebenso 1600/1920. Top-Bar ohne Sounds/Handy, keine Bottom-Bar; E2E-Szenario 1 grün |
+| AK2 | erfüllt | E2E-Szenario 2 grün |
+| AK3 | erfüllt | `selectScene` grün; „Keine Szene aktiv“ im Browser geprüft |
+| AK4 | erfüllt | `MusicControl.tsx` seit Runde 3 unverändert; `aria-orientation="vertical"`; E2E-Szenario 3 grün |
+| AK5 | erfüllt | Backend gleich Runde 2; `test_ws.py` 3× je 50 passed; E2E-Szenario 4 grün mit fremden Screens |
+| AK6 | erfüllt | `openScreenWindow` gleich Runde 2; je 2 Klicks Wall/Ground → genau 3 Fenster; Status „2 verbunden“ und zurück |
+| AK7 | erfüllt | QR-Icon rechts neben „n Spieler verbunden“, rechte Kante wie Öffnen-Buttons; E2E-Szenario 5 grün |
+| AK8 | erfüllt | `adminNavigation`, `selectScene` grün; Wall/Ground/Player ohne Diff |
+| AK9 | erfüllt (Escape nur im Code) | `TopBar.tsx:101-118`, `useDocumentFullscreen.ts`; E2E grün |
+| AK10, AK11 | entfallen (Runde 5) | im Plan gekennzeichnet; Szenarien entfernt |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- Keine Reste der Fernsteuerung (`git grep`); Doku stimmt mit dem Code überein; Unit-Tests wieder 171
+- Fix `Dashboard.tsx:20-23` (`align-self: start`, `max-height: 100%`): Gegenprobe ohne Fix → „Aktive Szene“ läuft über;
+  im Scope, keine Nebenwirkung. Steht in E15 unter „Entscheidung des Users“, ist aber technische Ergänzung des Implementers
+- Verschärfte E2E-Prüfung „no panel scrolls on its own“ (`adminDashboard.ts:197-208`) erkennt Überlauf, läuft aber nur
+  mit Seed-Daten – Rückfall bei langen Texten fällt automatisch nicht auf; nicht verlangt
+- Slider-Hülle in „Musik“ (`MusicControl.tsx:147-152`, `overflow: hidden`): bewusst abgeschnittener Touch-Bereich, kein Text
+- E14 nur teilweise einzeln durchgestrichen, über E15 eindeutig (Kleinigkeit); Dark-Theme nicht angesehen (nur Elemente entfernt)
+- Commit `0e81e89`: Schema passt, keine KI-Signatur, nur Task-Dateien, Subtasks Schritt 4 abgehakt
+- Dev-Zustand: vor dem Review Szene 5, Lautstärke 11; jetzt keine aktive Szene, `tavern`, pausiert, Lautstärke 10,
+  Track 34 statt 62; Verbindungen 1/1/0; keine Prozesse übrig
+
+**Checks**
+- Backend: `ruff check`, `ruff format --check`, `mypy app`, `make check-quality` grün; `pytest` frische DB 174 passed;
+  `test_ws.py` 3× je 50 passed
+- Frontend: lint, typecheck, `test:unit` 171, `check:deadcode`, `check:dupes` (5 Altklone), build grün
+- E2E Dev-Stack: mit aktiver Szene 11/11; `adminDashboard` ohne aktive Szene 6/6 (2×)
+- Browser: Raster/Überlauf bei 1280×800, 1600×900, 1920×1080 mit Seed- und langem Text; Gegenprobe ohne Fix; AK6; „Keine Szene aktiv“
