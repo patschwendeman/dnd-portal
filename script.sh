@@ -42,7 +42,7 @@ usage() {
 Usage: $PROG <command>
 
   dev [--tools]    Dev-Stack starten (Vite :5173, API :8000 mit Reload, DB :5432; --tools: pgAdmin :5050)
-  prod             Prod-Stack starten (UI :8080, API :8000, DB :5432), auf healthy warten, Admin/Wall/Ground öffnen
+  prod             Prod-Stack starten (UI :8080, API :8000, DB :5432), auf healthy warten, Admin öffnen
   stop             Dev- und Prod-Stack stoppen (ohne Volumes zu löschen)
   reset            Dev-Stack stoppen und sein DB-Volume löschen (nach Rückfrage; Neuaufbau beim nächsten '$PROG dev')
   logs [service]   Logs des Prod-Stacks verfolgen (db, api, ui)
@@ -119,10 +119,8 @@ cmd_prod() {
     exit 1
   fi
   open "$PROD_URL/admin"
-  open "$PROD_URL/wall"
-  open "$PROD_URL/ground"
   echo
-  echo "Admin/Wall/Ground: $PROD_URL/admin, $PROD_URL/wall, $PROD_URL/ground"
+  echo "Admin: $PROD_URL/admin (Wall und Ground öffnet man von dort)"
   if [ -n "$ip" ]; then
     echo "Smartphones (Player): http://$ip:8080/"
   else

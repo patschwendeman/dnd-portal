@@ -17,7 +17,7 @@ Alles läuft in Docker, Start aus dem Root:
 ```bash
 cp backend/.env.example backend/.env    # einmalig, Platzhalter ersetzen
 ./script.sh dev                         # Entwicklung: UI :5173 (/admin, /wall, /ground, /), API :8000
-./script.sh prod                        # Spieltisch: UI :8080, öffnet Admin/Wall/Ground
+./script.sh prod                        # Spieltisch: UI :8080, öffnet Admin
 ```
 
 Weitere Befehle und Details: [docs/architecture.md](docs/architecture.md#lokal-starten).
