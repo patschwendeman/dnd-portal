@@ -34,3 +34,4 @@
 | DND-28 | feat | Navigationsleiste im Admin Screen mit Menüpunkt „Notizen“ | Fertig | [DND-28-admin-nav-rail.md](DND-28-admin-nav-rail.md) |
 | DND-29 | feat | Menüpunkt „Szenen“ im Admin, Szenen ohne Kampf-/Nicht-Kampf-Unterscheidung | Fertig | [DND-29-admin-scenes-panel.md](DND-29-admin-scenes-panel.md) |
 | DND-30 | setup | Frontend auf Node 24 | Freigegeben | [DND-30-node-24.md](DND-30-node-24.md) |
+| DND-31 | setup | Prüfungen auf toten Code, Duplikate und Komplexität | Freigegeben | [DND-31-quality-checks.md](DND-31-quality-checks.md) |
