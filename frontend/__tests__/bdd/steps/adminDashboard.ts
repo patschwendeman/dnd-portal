@@ -1,6 +1,6 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
 import {
-  By, Key, Origin, WebDriver, error,
+  By, Key, WebDriver, error,
 } from 'selenium-webdriver'
 
 import {
@@ -41,12 +41,6 @@ const panel = (id: string): string => `[data-test-id="dashboard-panel-${id}"]`
 
 const screenStatus = (screen: string): string => (
   `${panel('screens')} [data-test-id="screen-${screen}-status"]`
-)
-const screenFullscreen = (screen: string): string => (
-  `${panel('screens')} [data-test-id="screen-${screen}-fullscreen"]`
-)
-const fullscreenHint = (screen: string): string => (
-  `${panel('screens')} [data-test-id="screen-${screen}-fullscreen-hint"]`
 )
 
 const isFullscreen = async (driver: WebDriver): Promise<boolean> => driver.executeScript(
@@ -201,14 +195,13 @@ defineFeature(feature, (test) => {
     )
 
     and('no panel scrolls on its own', async () => {
-      // Content (last child of each panel) that is larger than its box would scroll or be cut off
+      // Content (last child of each panel) that is larger than its box would scroll or be cut
+      // off; a panel that is larger than its rows would overflow them
       const overflowing: string[] = await driver.executeScript(
-        `return [...document.querySelectorAll('${DASHBOARD_PANELS}')]
-          .filter((item) => {
-            const content = item.lastElementChild
-            return content.scrollHeight > content.clientHeight
-              || content.scrollWidth > content.clientWidth
-          })
+        `const overflows = (box) => box.scrollHeight > box.clientHeight
+          || box.scrollWidth > box.clientWidth
+        return [...document.querySelectorAll('${DASHBOARD_PANELS}')]
+          .filter((item) => overflows(item) || overflows(item.lastElementChild))
           .map((item) => item.getAttribute('aria-label'))`,
       )
       expect(overflowing).toEqual([])
@@ -432,114 +425,4 @@ defineFeature(feature, (test) => {
         .toBe('false')
     })
   })
-
-  // The request goes to all walls; other connected walls (e.g. at the game table) refuse it
-  // without a click and leave full screen with the second click, so the steps check the window of
-  // this test and the button of the Admin
-  test('I switch a wall opened from the admin to full screen', ({
-    given, and, when, then,
-  }) => {
-    let adminWindow = ''
-    let wallWindow = ''
-
-    given('I am on the admin screen', async () => {
-      await openAdmin(driver)
-      adminWindow = await driver.getWindowHandle()
-    })
-
-    and('I opened the wall screen from the panel Screens', async () => {
-      await clickElement(driver, `${panel('screens')} [data-test-id="screen-wall-open"]`)
-      await driver.wait(async () => (await driver.getAllWindowHandles()).length === 2, WAIT_TIMEOUT)
-      wallWindow = (await driver.getAllWindowHandles()).find((handle) => handle !== adminWindow)
-        ?? ''
-      await driver.switchTo().window(wallWindow)
-      // The wall listens for the request of the Admin once it is rendered
-      await waitForElement(driver, '[data-test-id="wallImg"]')
-      await driver.switchTo().window(adminWindow)
-    })
-
-    when('I click on the full screen icon of the Wall', async () => {
-      await clickElement(driver, screenFullscreen('wall'))
-    })
-
-    then('the wall window is in full screen and the icon of the Wall is highlighted', async () => {
-      expect(await waitForAttribute(driver, screenFullscreen('wall'), 'aria-pressed', 'true'))
-        .toBe('true')
-      await driver.switchTo().window(wallWindow)
-      expect(await waitForFullscreen(driver, true)).toBe(true)
-      await driver.switchTo().window(adminWindow)
-    })
-
-    when('I click on the full screen icon of the Wall again', async () => {
-      await clickElement(driver, screenFullscreen('wall'))
-    })
-
-    then('the wall window is no longer in full screen', async () => {
-      expect(await waitForAttribute(driver, screenFullscreen('wall'), 'aria-pressed', 'false'))
-        .toBe('false')
-      await driver.switchTo().window(wallWindow)
-      expect(await waitForFullscreen(driver, false)).toBe(false)
-      await driver.switchTo().window(adminWindow)
-    })
-  })
-
-  test('A ground refuses full screen until I click into it', ({
-    given, and, when, then,
-  }) => {
-    let ground: WebDriver | null = null
-    const groundDriver = (): WebDriver => {
-      if (ground === null) {
-        throw new Error('The ground screen is not open')
-      }
-      return ground
-    }
-
-    given('I am on the admin screen', async () => {
-      await openAdmin(driver)
-    })
-
-    and('a ground screen is open in another browser', async () => {
-      ground = buildDriver()
-      screenDrivers.push(ground)
-      await openScreen(ground, '/ground')
-      await waitForElement(ground, '[data-test-id="groundImg"]')
-      await waitForScreenCounts(driver)
-    })
-
-    when('I click on the full screen icon of the Ground', async () => {
-      await clickElement(driver, screenFullscreen('ground'))
-    })
-
-    then('the panel Screens shows that the browser refused full screen', async () => {
-      const hint = await waitForElement(driver, fullscreenHint('ground'))
-      expect(await hint.getText()).toBe(
-        'Vollbild vom Browser abgelehnt – einmal in das Ground-Fenster klicken',
-      )
-      expect(await isFullscreen(groundDriver())).toBe(false)
-    })
-
-    when('I click into the ground window', async () => {
-      // The body has no size of its own (all content is fixed), so the click goes to a point of the
-      // window
-      await groundDriver().actions().move({ x: 20, y: 20, origin: Origin.VIEWPORT }).click()
-        .perform()
-    })
-
-    then('the ground window is in full screen and the hint is gone', async () => {
-      expect(await waitForFullscreen(groundDriver(), true)).toBe(true)
-      expect(await waitForAttribute(driver, screenFullscreen('ground'), 'aria-pressed', 'true'))
-        .toBe('true')
-      await waitForElementGone(driver, fullscreenHint('ground'))
-    })
-
-    when('I click on the full screen icon of the Ground again', async () => {
-      await clickElement(driver, screenFullscreen('ground'))
-    })
-
-    then('the ground window is no longer in full screen', async () => {
-      expect(await waitForFullscreen(groundDriver(), false)).toBe(false)
-      expect(await waitForAttribute(driver, screenFullscreen('ground'), 'aria-pressed', 'false'))
-        .toBe('false')
-    })
-  }, SCREENS_SCENARIO_TIMEOUT)
 })

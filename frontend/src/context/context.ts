@@ -1,8 +1,7 @@
 import { createContext } from 'react'
 
 import { AudioState, SoundName, Theme } from '../models/models'
-import { FullscreenScreen, ScreenCounts } from '../realtime/messages'
-import { FullscreenHints, NO_FULLSCREEN_HINTS } from '../utils/screenStatus'
+import { ScreenCounts } from '../realtime/messages'
 
 // The game table state comes from the server (WebSocket /ws); the contexts only pass it on, changes
 // go through the API.
@@ -33,11 +32,6 @@ interface GameTableContextType {
   reconnectNow: () => void
   // Only for the Admin: connected Walls, Grounds and Players; null until the server sent them
   screens: ScreenCounts | null
-  // Only for the Admin: whether the browser of a Wall or Ground refused the last full screen
-  // request
-  fullscreenHints: FullscreenHints
-  // Only for the Admin: full screen of all Walls or all Grounds on or off
-  requestScreenFullscreen: (screen: FullscreenScreen, active: boolean) => void
 }
 
 export const GameTableContext = createContext<GameTableContextType>({
@@ -46,8 +40,6 @@ export const GameTableContext = createContext<GameTableContextType>({
   connected: true,
   reconnectNow: () => {},
   screens: null,
-  fullscreenHints: NO_FULLSCREEN_HINTS,
-  requestScreenFullscreen: () => {},
 })
 
 interface GameAudioContextType {

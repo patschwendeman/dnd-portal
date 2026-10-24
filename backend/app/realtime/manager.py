@@ -9,8 +9,6 @@ Screen = Literal["admin", "wall", "ground", "player"]
 SCREENS: tuple[Screen, ...] = ("admin", "wall", "ground", "player")
 # Screens whose connections the Admins see in the dashboard; Admins themselves are not counted.
 COUNTED_SCREENS: tuple[Screen, ...] = ("wall", "ground", "player")
-# Screens the Admins can switch to full screen remotely.
-FULLSCREEN_SCREENS: tuple[Screen, ...] = ("wall", "ground")
 
 # Application-level heartbeat: lets the clients notice a silently broken connection (they reconnect after 35 s
 # without any message). Read at runtime, so tests can shorten it.
@@ -23,7 +21,7 @@ SEND_TIMEOUT_SECONDS = 5.0
 logger = logging.getLogger(__name__)
 
 
-def screens_message(counts: dict[str, Any]) -> dict[str, Any]:
+def screens_message(counts: dict[str, int]) -> dict[str, Any]:
     return {"type": "screens", "payload": counts}
 
 
@@ -31,8 +29,6 @@ def screens_message(counts: dict[str, Any]) -> dict[str, Any]:
 class Connection:
     websocket: WebSocket
     screen: Screen
-    # Reported by the Wall or Ground itself (fullscreen_state); the Admins see how many are in full screen.
-    fullscreen: bool = False
     # Snapshot, broadcast and heartbeat may send at the same time; one message after the other per connection.
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
 
@@ -54,16 +50,9 @@ class ConnectionManager:
         # Counts last pushed to the Admins; a push is only sent when they differ.
         self.pushed_counts = self.screen_counts()
 
-    def screen_counts(self) -> dict[str, Any]:
-        """Number of open connections per screen type, without the Admins, and how many of them are in full screen."""
-        counts: dict[str, Any] = {
-            screen: sum(1 for c in self.connections if c.screen == screen) for screen in COUNTED_SCREENS
-        }
-        counts["fullscreen"] = {
-            screen: sum(1 for c in self.connections if c.screen == screen and c.fullscreen)
-            for screen in FULLSCREEN_SCREENS
-        }
-        return counts
+    def screen_counts(self) -> dict[str, int]:
+        """Number of open connections per screen type, without the Admins."""
+        return {screen: sum(1 for c in self.connections if c.screen == screen) for screen in COUNTED_SCREENS}
 
     def add(self, connection: Connection) -> None:
         self.connections.add(connection)
@@ -99,21 +88,13 @@ class ConnectionManager:
             if counts == self.pushed_counts:
                 return
             self.pushed_counts = counts
-            await self.send_to_screen("admin", screens_message(counts))
+            admins = [connection for connection in self.connections if connection.screen == "admin"]
+            message = screens_message(counts)
+            await asyncio.gather(*(self.send(admin, message) for admin in admins))
 
     async def broadcast(self, message: dict[str, Any]) -> None:
         connections = list(self.connections)
         await asyncio.gather(*(self.send(connection, message) for connection in connections))
-
-    async def send_to_screen(self, screen: Screen, message: dict[str, Any]) -> None:
-        """Sends to all connections of one screen type (e.g. all Walls)."""
-        connections = [connection for connection in self.connections if connection.screen == screen]
-        await asyncio.gather(*(self.send(connection, message) for connection in connections))
-
-    async def set_fullscreen(self, connection: Connection, active: bool) -> None:
-        """Keeps the full screen state a Wall or Ground reported; the Admins receive the new counts."""
-        connection.fullscreen = active
-        await self.push_screens()
 
 
 manager = ConnectionManager()

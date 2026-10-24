@@ -17,6 +17,10 @@ const Grid = styled.aside`
   gap: ${(props) => props.theme.space[4]};
   min-width: 0;
   min-height: 0;
+  /* As high as its rows, at most the main area: with a fixed height the rows would only grow
+     within the free space and a panel with more content would overflow them */
+  align-self: start;
+  max-height: 100%;
   /* Scrolls on its own when the grid is higher than the main area; the notes stay where they are */
   overflow-y: auto;
 `

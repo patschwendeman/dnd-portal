@@ -73,21 +73,16 @@ Server → Client:
 | `{"type": "audio", "payload": AudioState}` | alle | direkt nach dem Verbinden (nach `state`), nach jeder Änderung des Musikzustands (Audio-Endpoints, Wechsel der aktiven Szene nach dem `state`-Push, Ausgabe bereit bzw. getrennt, Trackende) |
 | `{"type": "audio_output", "payload": {"active": bool}}` | betroffene Wall | `true` an die Wall, die per `audio_ready` Ausgabe wird; `false` an die bisherige Ausgabe, die die Rolle verliert |
 | `{"type": "sound", "payload": {"name": SoundName}}` | nur die Ausgabe | nach `POST /table/sounds`; ohne Ausgabe verfällt der Sound |
-| `{"type": "screens", "payload": {"wall": int, "ground": int, "player": int, "fullscreen": {"wall": int, "ground": int}}}` | nur Admins | direkt nach dem Verbinden eines Admins (nach `state` und `audio`) und an alle Admins, sobald sich eine Zahl ändert (Verbinden, Trennen, Entfernen nach fehlgeschlagenem Senden, `fullscreen_state`); Admins werden nicht gezählt; `fullscreen`: wie viele Walls bzw. Grounds im Vollbild sind |
-| `{"type": "fullscreen", "payload": {"active": bool}}` | alle Walls bzw. alle Grounds | nach `fullscreen` eines Admins für diesen Screen-Typ: Vollbild an bzw. aus |
-| `{"type": "fullscreen_rejected", "payload": {"screen": "wall" \| "ground"}}` | nur Admins | eine Wall bzw. ein Ground meldet, dass der Browser das Vollbild abgelehnt hat |
+| `{"type": "screens", "payload": {"wall": int, "ground": int, "player": int}}` | nur Admins | direkt nach dem Verbinden eines Admins (nach `state` und `audio`) und an alle Admins, sobald sich die Zahl der Verbindungen eines Typs ändert (Verbinden, Trennen, Entfernen nach fehlgeschlagenem Senden); Admins werden nicht gezählt |
 | `{"type": "ping"}` | alle | alle 15 s (Heartbeat) |
 
-Client → Server (nur von den genannten Screens ausgewertet; andere Screens, ungültiges JSON bzw. ungültige Payloads und
-unbekannte Typen ignoriert der Server, die Verbindung bleibt bestehen):
+Client → Server (nur von Verbindungen mit `screen=wall` ausgewertet; andere Screens, ungültiges JSON und unbekannte
+Typen ignoriert der Server, die Verbindung bleibt bestehen):
 
-| Nachricht | Von | Wirkung |
-|---|---|---|
-| `{"type": "audio_ready"}` | Wall | diese Verbindung wird die Audioausgabe, eine bisherige verliert die Rolle |
-| `{"type": "track_ended", "payload": {"track_id": int}}` | Wall | nur von der Ausgabe und nur für den aktuellen Track (sonst veraltet bzw. doppelt, ignoriert): der Server wählt den nächsten Track |
-| `{"type": "fullscreen", "payload": {"screen": "wall" \| "ground", "active": bool}}` | Admin | der Server reicht `fullscreen` an alle Verbindungen dieses Typs weiter |
-| `{"type": "fullscreen_state", "payload": {"active": bool}}` | Wall, Ground | Vollbild-Zustand dieser Verbindung (nach jeder Änderung und nach dem Verbinden); ändert er die Zahlen, erhalten die Admins `screens` |
-| `{"type": "fullscreen_rejected"}` | Wall, Ground | der Server schickt `fullscreen_rejected` mit dem Screen-Typ an alle Admins |
+| Nachricht | Wirkung |
+|---|---|
+| `{"type": "audio_ready"}` | diese Verbindung wird die Audioausgabe, eine bisherige verliert die Rolle |
+| `{"type": "track_ended", "payload": {"track_id": int}}` | nur von der Ausgabe und nur für den aktuellen Track (sonst veraltet bzw. doppelt, ignoriert): der Server wählt den nächsten Track |
 
 Ein fehlender oder
 unbekannter `screen` wird mit Close-Code 1008 abgewiesen. **Origin-Prüfung** (CORS greift bei WebSockets nicht): Der
@@ -100,17 +95,7 @@ Nachrichtentypen ignoriert der Client (`parseServerMessage`, `src/realtime/messa
 `screens` zählt der `ConnectionManager` aus seinen offenen Verbindungen (nur im Speicher, nicht in `GameTableState`);
 er merkt sich die zuletzt gepushten Zahlen und sendet nur bei einer Änderung, serialisiert über ein eigenes Lock. Im
 Frontend stellt der `GameTableProvider` sie als `screens` im `GameTableContext` bereit (bis zur ersten Nachricht
-`null`). **Vollbild per Fernsteuerung:** Browser erlauben `requestFullscreen` nur mit einer Nutzeraktion im selben
-Fenster; ein Befehl über den WebSocket hat keine, der Browser lehnt ihn meist ab (in Chrome geprüft: „Permissions
-check failed“). Wall und Ground (`src/realtime/remoteFullscreen.ts`, eingebunden in `useGameTable`, ohne Änderung an
-den Screens selbst) melden dann `fullscreen_rejected` und holen das Vollbild mit dem nächsten Klick in ihr Fenster
-nach (`pointerdown`); `fullscreen` mit `active: false` verwirft einen wartenden Wechsel, `exitFullscreen` braucht
-keine Nutzeraktion. Für ein Fenster, das der Admin selbst geöffnet hat (`window.open` im Panel „Screens“), gibt er die
-Nutzeraktion seines Klicks per `postMessage` mit `delegate: "fullscreen"` (Capability Delegation, Chrome) weiter;
-dieses Fenster wechselt sofort, eine doppelte Anfrage über den Server ignoriert es. Den Hinweis im Admin
-(`fullscreenHints` im `GameTableContext`) setzt `fullscreen_rejected`; er fällt weg, sobald `screens` einen Screen des
-Typs im Vollbild oder keinen mehr zeigt oder der Admin erneut schaltet. Das Vollbild des Admin-Fensters selbst
-schaltet die Top-Bar direkt (Fullscreen API, Zustand über `fullscreenchange`). Der Client sendet nur über
+`null`). Der Client sendet nur über
 eine offene Verbindung, sonst verwirft er die Nachricht.
 
 ### Audio

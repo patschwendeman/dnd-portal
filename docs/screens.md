@@ -70,8 +70,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Admin die Hinweisleiste „Verbindung zum Server getrennt“ und behält den letzten Stand; er verbindet sich selbst neu
   (1 s, 2 s, 4 s … höchstens 10 s), „Erneut versuchen“ verbindet sofort. Danach verschwindet die Leiste.
 - **Aktive Szene:** Panel mit den Vorschaubildern „Wall“ und „Ground“ der aktiven Szene nebeneinander, darunter Name
-  und Beschreibung (höchstens zwei Zeilen, Rest gekürzt, voller Text als Tooltip); fehlt ein Bild, bleibt seine Fläche
-  leer. Ohne aktive Szene der Hinweis „Keine Szene aktiv“.
+  und Beschreibung (umbrechend, nie gekürzt; bei langem Text wird das Panel höher); fehlt ein Bild, bleibt seine
+  Fläche leer. Ohne aktive Szene der Hinweis „Keine Szene aktiv“.
 - **Notizen:** Das Panel „Notizen“ listet die Einträge Main, Fight, Side, Leveling, Mechaniken (Start: Main; per
   Tastatur bedienbar wie die Szenenliste); die Mitte zeigt die Notizen des gewählten Eintrags (Markdown aus `public/story/`), auch bei eingeklapptem Panel.
   Inhaltsverzeichnis-Links, Bilder öffnen in neuem Tab. Eintrag „Side“ ist leer (Ordner fehlt).
@@ -97,19 +97,10 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Player Screens um (außer auf Smartphones, deren Spieler lokal ein anderes Theme gewählt hat).
 - **Screens:** Panel mit je einer Zeile für Wall und Ground: Name, Status-Punkt und „verbunden“ bzw. „nicht
   verbunden“ (bei mehreren Verbindungen „2 verbunden“ usw.), bei der Wall zusätzlich „Audioausgabe“, wenn eine Wall
-  Ausgabe ist, und rechts die Icon-Buttons „Vollbild“ und „In neuem Fenster öffnen“ (`/wall` bzw. `/ground` in einem
-  eigenen Fenster je Screen; ein weiterer Klick holt das offene Fenster nach vorn, ohne es neu zu laden). Darunter
-  „N Spieler verbunden“ und rechts daneben der Icon-Button „QR-Code“. Die Zahlen schickt der Server bei jeder Änderung
-  (Öffnen oder Schließen eines Screens, Vollbild an oder aus); bis zur ersten Meldung steht „–“.
-- **Vollbild von Wall und Ground (Fernsteuerung):** Der Button „Vollbild“ einer Zeile schaltet alle Walls bzw. alle
-  Grounds per WebSocket in den Vollbildmodus und wieder zurück; er ist hervorgehoben, solange mindestens ein Screen
-  des Typs im Vollbild ist. Browser erlauben Vollbild nur nach einer Nutzeraktion im Fenster selbst: Ein Fenster, das
-  der Admin über „In neuem Fenster öffnen“ geöffnet hat, wechselt sofort (der Admin gibt seinen Klick an das Fenster
-  weiter, Chrome; nach einem Reload des Admins kennt er das Fenster nicht mehr). Jedes andere Fenster lehnt ab; dann
-  zeigt die Zeile „Vollbild vom Browser abgelehnt – einmal in das Wall-Fenster klicken“ (bzw. Ground-Fenster), und der
-  nächste Klick in dieses Fenster schaltet es ins Vollbild. Der Hinweis verschwindet, sobald der Screen im Vollbild
-  ist, keiner mehr verbunden ist oder erneut geschaltet wird. Ausschalten klappt immer ohne Klick und verwirft auch
-  einen noch wartenden Wechsel.
+  Ausgabe ist, und rechts der Icon-Button „In neuem Fenster öffnen“ (`/wall` bzw. `/ground` in einem eigenen Fenster
+  je Screen; ein weiterer Klick holt das offene Fenster nach vorn, ohne es neu zu laden). Darunter „N Spieler
+  verbunden“ und rechts daneben der Icon-Button „QR-Code“. Die Zahlen schickt der Server bei jeder Änderung (Öffnen
+  oder Schließen eines Screens); bis zur ersten Meldung steht „–“.
 - **Spieler verbinden:** Der Icon-Button „QR-Code“ im Panel „Screens“ öffnet einen Dialog mit dem QR-Code der
   Player-URL (dunkel auf hellem Grund, unabhängig vom Theme) und der URL als Text; die Spieler scannen ihn mit der
   Smartphone-Kamera. Die URL kommt vom Start-Skript (`dnd prod`: `http://<IP>:8080/`) bzw. ist der Origin des Admins,
@@ -189,9 +180,6 @@ legt der geplante Menüpunkt „Kampf“ im Admin fest.
   das Trackende an den Server; sonst zeigt die Wall nichts an. Nach einem Verbindungsabbruch meldet sie sich ohne
   neuen Klick wieder als Ausgabe. Blockiert der Browser das Abspielen, loggt sie den Fehler; ein erneuter Klick auf
   „AUDIO“ versucht es wieder.
-- **Vollbild:** schaltet der Admin aus dem Panel „Screens“ ein und aus; die Wall meldet ihren Vollbild-Zustand an den
-  Server (auch beim Verlassen per Escape). Lehnt der Browser ab, wechselt die Wall mit dem nächsten Klick in ihr Fenster
-  (siehe Admin, „Vollbild von Wall und Ground“).
 - Eine szenen-/gebietsspezifische Übersichtskarte gibt es noch nicht.
 - **Ladefehler:** kein Hinweis für die Spieler; die Wall behält den zuletzt geladenen Stand, der nächste
   Szenenwechsel lädt erneut.
@@ -212,5 +200,4 @@ optional mit **Grid** als Layout für taktische Kämpfe.
   gespeichert.
 - Verbindung wie auf der Wall: folgt dem Spieltisch per WebSocket, auch auf einem anderen Gerät; nach einem Abbruch
   kein Hinweis, letzter Stand bleibt, Reconnect automatisch.
-- **Vollbild:** wie auf der Wall, vom Admin aus dem Panel „Screens“ geschaltet.
 - **Ladefehler:** wie auf der Wall – kein Hinweis, letzter Stand bleibt, der nächste Szenenwechsel lädt erneut.

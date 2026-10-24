@@ -6,12 +6,9 @@ import styled, { useTheme } from 'styled-components'
 
 import JoinDialog from './JoinDialog'
 import { GameAudioContext, GameTableContext } from '../context/context'
-import { delegateFullscreen } from '../realtime/remoteFullscreen'
 import { textStyle } from '../style/tokens'
-import { fullscreenHintText, playerStatusText, screenStatusText } from '../utils/screenStatus'
+import { playerStatusText, screenStatusText } from '../utils/screenStatus'
 
-import fullscreenIcon from '/assets/icons/fullscreen.svg'
-import fullscreenExitIcon from '/assets/icons/fullscreenExit.svg'
 import openWindowIcon from '/assets/icons/openWindow.svg'
 import qrCodeIcon from '/assets/icons/qrCode.svg'
 
@@ -30,7 +27,7 @@ const Rows = styled.div`
   gap: ${(props) => props.theme.space[3]};
 `
 
-// Text left, icon buttons right; the text wraps instead of being cut off
+// Text left, icon button right; the text wraps instead of being cut off
 const Row = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -56,13 +53,6 @@ const StatusText = styled.span`
   ${textStyle('sm')}
 `
 
-// Wraps in the narrow panel; long German words are hyphenated (lang="de" on the element)
-const Hint = styled.span`
-  ${textStyle('sm')}
-  overflow-wrap: break-word;
-  hyphens: auto;
-`
-
 // Filled while connected, only a ring while not: the state does not depend on the color alone
 const StatusDot = styled.span<{ $isConnected: boolean }>`
   flex-shrink: 0;
@@ -74,24 +64,14 @@ const StatusDot = styled.span<{ $isConnected: boolean }>`
   border-radius: ${(props) => props.theme.radius.pill};
 `
 
-const Buttons = styled.div`
-  display: flex;
-  gap: ${(props) => props.theme.space[1]};
-`
-
-// Highlighted while the screen is in full screen
-const PanelButton = styled.button<{ $isActive?: boolean }>`
+const PanelButton = styled.button`
   display: grid;
   place-items: center;
   width: ${(props) => props.theme.size.control.md};
   height: ${(props) => props.theme.size.control.md};
   padding: 0;
-  background-color: ${(props) => (
-    props.$isActive ? props.theme.colors.primary : props.theme.colors.background
-  )};
-  color: ${(props) => (
-    props.$isActive ? props.theme.colors.onPrimary : props.theme.colors.text.color
-  )};
+  background-color: ${(props) => props.theme.colors.background};
+  color: ${(props) => props.theme.colors.text.color};
   border: none;
   border-radius: ${(props) => props.theme.radius.md};
   cursor: pointer;
@@ -113,10 +93,6 @@ const Players = styled.span`
   ${textStyle('sm')}
 `
 
-// Windows the Admin opened, so a full screen request can pass the activation of the click on to
-// them; lost with a reload of the Admin
-const openedWindows = new Map<TableScreen, Window>()
-
 // One window per screen: a second click (also after a reload of the Admin) brings the open window
 // to the front instead of opening another one or reloading it, so a Wall keeps its audio output
 const openScreenWindow = (screen: TableScreen, path: string): void => {
@@ -127,7 +103,6 @@ const openScreenWindow = (screen: TableScreen, path: string): void => {
   if (opened.location.href === 'about:blank') {
     opened.location.href = path
   }
-  openedWindows.set(screen, opened)
   opened.focus()
 }
 
@@ -148,11 +123,11 @@ function PanelIcon({ src, fill }: PanelIconProps): ReactElement {
   )
 }
 
-// Content of the dashboard panel "Screens": which screens are connected and in full screen, open
-// them, switch their full screen, let players join
+// Content of the dashboard panel "Screens": which screens are connected, open them, let players
+// join
 function ScreensPanel(): ReactElement {
   const theme = useTheme()
-  const { screens, fullscreenHints, requestScreenFullscreen } = useContext(GameTableContext)
+  const { screens } = useContext(GameTableContext)
   const { audio } = useContext(GameAudioContext)
   const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false)
   const joinButtonRef = useRef<HTMLButtonElement>(null)
@@ -162,20 +137,10 @@ function ScreensPanel(): ReactElement {
     joinButtonRef.current?.focus()
   }, [])
 
-  const toggleFullscreen = (screen: TableScreen, active: boolean) => {
-    const opened = openedWindows.get(screen)
-    if (active && opened !== undefined && !opened.closed) {
-      delegateFullscreen(opened)
-    }
-    requestScreenFullscreen(screen, active)
-  }
-
   return (
     <Rows>
       {SCREENS.map(({ screen, name, path }) => {
         const count = screens === null ? null : screens[screen]
-        const isFullscreen = (screens?.fullscreen[screen] ?? 0) > 0
-        const fullscreenLabel = isFullscreen ? 'Vollbild beenden' : 'Vollbild'
         return (
           <Row key={screen} data-test-id={`screen-${screen}`}>
             <ScreenInfo>
@@ -187,37 +152,16 @@ function ScreensPanel(): ReactElement {
               {screen === 'wall' && audio?.output_ready && (
                 <StatusText data-test-id="screen-wall-audio">Audioausgabe</StatusText>
               )}
-              {fullscreenHints[screen] && !isFullscreen && (
-                <Hint role="status" lang="de" data-test-id={`screen-${screen}-fullscreen-hint`}>
-                  {fullscreenHintText(name)}
-                </Hint>
-              )}
             </ScreenInfo>
-            <Buttons>
-              <PanelButton
-                type="button"
-                title={fullscreenLabel}
-                aria-label={`${name}: Vollbild`}
-                aria-pressed={isFullscreen}
-                data-test-id={`screen-${screen}-fullscreen`}
-                $isActive={isFullscreen}
-                onClick={() => toggleFullscreen(screen, !isFullscreen)}
-              >
-                <PanelIcon
-                  src={isFullscreen ? fullscreenExitIcon : fullscreenIcon}
-                  fill={isFullscreen ? theme.colors.onPrimary : theme.colors.text.color}
-                />
-              </PanelButton>
-              <PanelButton
-                type="button"
-                title="In neuem Fenster öffnen"
-                aria-label={`${name} in neuem Fenster öffnen`}
-                data-test-id={`screen-${screen}-open`}
-                onClick={() => openScreenWindow(screen, path)}
-              >
-                <PanelIcon src={openWindowIcon} fill={theme.colors.text.color} />
-              </PanelButton>
-            </Buttons>
+            <PanelButton
+              type="button"
+              title="In neuem Fenster öffnen"
+              aria-label={`${name} in neuem Fenster öffnen`}
+              data-test-id={`screen-${screen}-open`}
+              onClick={() => openScreenWindow(screen, path)}
+            >
+              <PanelIcon src={openWindowIcon} fill={theme.colors.text.color} />
+            </PanelButton>
           </Row>
         )
       })}

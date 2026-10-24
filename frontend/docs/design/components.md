@@ -20,7 +20,7 @@ Größe nach [1.2](../../DESIGN.md#12-tokens) Größen, Icon nach [1.4](../../DE
 | Zentrierung des Icons | `display: grid; place-items: center` |
 | Padding | `0` (Reset bei `<button>`) |
 | Farbe | Hintergrund in der Top-Bar und der Hinweisleiste transparent, sonst nach [2.2](../../DESIGN.md#22-rollen) und [2.4](../../DESIGN.md#24-zustände) |
-| Beispiele | Sound-Buttons, Settings, Dashboard (Top-Bar, aktiv bei offenem Dashboard wie der Menüpunkt der [Navigationsleiste](#navigationsleiste); `aria-expanded`, `aria-controls`), Vollbild (Top-Bar und Panel „Screens“, aktiv im Vollbild; `aria-pressed`), In neuem Fenster öffnen, QR-Code, Play/Pause, Nach oben, Menüpunkte der [Navigationsleiste](#navigationsleiste) (dort abweichend inaktiv ohne eigene Fläche und Icon `size.iconLg`; der allgemeine Icon-Button bleibt gefüllt) |
+| Beispiele | Sound-Buttons, Settings, Dashboard (Top-Bar, aktiv bei offenem Dashboard wie der Menüpunkt der [Navigationsleiste](#navigationsleiste); `aria-expanded`, `aria-controls`), Vollbild (Top-Bar, aktiv im Vollbild; `aria-pressed`), In neuem Fenster öffnen, QR-Code, Play/Pause, Nach oben, Menüpunkte der [Navigationsleiste](#navigationsleiste) (dort abweichend inaktiv ohne eigene Fläche und Icon `size.iconLg`; der allgemeine Icon-Button bleibt gefüllt) |
 | Player | Hintergrund `secondary` (Settings-Button des Theme-Menüs) |
 
 ## Text-Button
@@ -100,9 +100,9 @@ die Liste der Panels (id, Label, Größe, Inhalt) kommt aus dem `AdminScreen`, d
 | Element | `<section>` mit dem Label als `aria-label` |
 | Fläche | wie die [Karte](#karte): `secondary`, `radius.lg`, Innenabstand `space.5` |
 | Größe | Props `columns` und `rows` (`grid-column: span n`, `grid-row: span m`), Mindesthöhe aus `DASHBOARD_ROW_HEIGHT`; braucht der Inhalt mehr, wächst die Zeile |
-| Aufbau | [Label](#label) oben, darunter mit `space.3` der Inhalt; kein Scrollen im Panel, Text bricht um statt abgeschnitten zu werden (Ausnahmen in „Aktive Szene“: Name einzeilig, Beschreibung gekürzt) |
+| Aufbau | [Label](#label) oben, darunter mit `space.3` der Inhalt; kein Scrollen im Panel, Text bricht um statt abgeschnitten zu werden |
 | Flächen im Inhalt | `background` (Fläche auf Fläche, [2.2](../../DESIGN.md#22-rollen)) |
-| Inhalte | „Aktive Szene“ (`ActiveScenePanel`: Vorschaubilder Wall und Ground 16:9 nebeneinander mit Label, `gap` `space.3`, darunter Name `text.lg` `semibold` einzeilig und Beschreibung `text.sm` höchstens `DESCRIPTION_MAX_LINES` Zeilen), „Musik“ (`MusicControl`: Grid, links Play/Pause und darunter Titel und Hinweis `text.sm` umbrechend mit Silbentrennung, rechts über die volle Höhe der senkrechte Lautstärke-Slider, `aria-orientation="vertical"`, Abstand `space.3`), „Sounds“ (`SoundBoard`: Gruppen und Buttons einer Gruppe umbrechend, ohne Trennlinien), „Screens“ (`ScreensPanel`: je Screen Name `text.sm` `semibold`, [Status-Punkt](#status-punkt) mit Text, ggf. Hinweis „Vollbild vom Browser abgelehnt …“ `text.sm` umbrechend (`role="status"`); rechts die Icon-Buttons „Vollbild“ (`fullscreen.svg` bzw. im Vollbild `fullscreenExit.svg` auf `primary`) und „In neuem Fenster öffnen“, `gap` `space.1`; darunter Spielerzahl und rechts gleich ausgerichtet der Icon-Button „QR-Code“ (`qrCode.svg`, `aria-haspopup="dialog"`)) |
+| Inhalte | „Aktive Szene“ (`ActiveScenePanel`: Vorschaubilder Wall und Ground 16:9 nebeneinander mit Label, `gap` `space.3`, darunter Name `text.lg` `semibold` und Beschreibung `text.sm`, beide umbrechend mit Silbentrennung), „Musik“ (`MusicControl`: Grid, links Play/Pause und darunter Titel und Hinweis `text.sm` umbrechend mit Silbentrennung, rechts über die volle Höhe der senkrechte Lautstärke-Slider, `aria-orientation="vertical"`, Abstand `space.3`), „Sounds“ (`SoundBoard`: Gruppen und Buttons einer Gruppe umbrechend, ohne Trennlinien), „Screens“ (`ScreensPanel`: je Screen Name `text.sm` `semibold`, [Status-Punkt](#status-punkt) mit Text; rechts der Icon-Button „In neuem Fenster öffnen“; darunter Spielerzahl und rechts gleich ausgerichtet der Icon-Button „QR-Code“ (`qrCode.svg`, `aria-haspopup="dialog"`)) |
 
 ## Status-Punkt
 

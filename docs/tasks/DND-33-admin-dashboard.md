@@ -132,11 +132,11 @@ ergänzen die Panels „Spieler“ und „Level“ (DND-34) und „Wall-Overlay�
 - **Entscheidung:** Icon-Button mit neuem Icon `qrCode.svg` rechts in der Zeile „n Spieler verbunden“, ausgerichtet wie
   die Buttons bei Wall/Ground; `data-test-id="join-button"`, Fokus kehrt nach dem Schließen zurück.
 
-#### E14: Vollbild
+#### E14: Vollbild (Fernsteuerung von Wall/Ground in Runde 5 entfernt, siehe E15)
 - **Entscheidung:**
   - Admin: Icon-Button „Vollbild“ in der Top-Bar links von „Dashboard“ (Fullscreen API, Zustand über
     `fullscreenchange`, `aria-pressed`, hervorgehoben wie „Dashboard“). Icons `fullscreen.svg`/`fullscreenExit.svg`.
-  - Wall/Ground: Icon-Button „Vollbild“ je Zeile im Panel „Screens“ (an/aus für alle Screens des Typs, hervorgehoben,
+  - ~~Wall/Ground~~ (entfernt in Runde 5): Icon-Button „Vollbild“ je Zeile im Panel „Screens“ (an/aus für alle Screens des Typs, hervorgehoben,
     solange mindestens einer im Vollbild ist). Protokoll: Admin → `fullscreen {screen, active}`; Server → alle
     Walls bzw. Grounds `fullscreen {active}`; Wall/Ground → `fullscreen_state {active}` (nach jeder Änderung und nach
     dem Verbinden; Server zählt ihn in `screens.fullscreen`) und `fullscreen_rejected` (Server → Admins
@@ -152,6 +152,20 @@ ergänzen die Panels „Spieler“ und „Level“ (DND-34) und „Wall-Overlay�
     eingebunden in `useGameTable`; `WallScreen`/`GroundScreen` unverändert.
 - **Verworfene Alternativen:** nur Hinweis ohne Fernsteuerung; Fernsteuerung je einzelner Verbindung (Protokoll
   schlanker je Typ).
+
+### Runde 5 (Entscheidung des Users)
+
+#### E15: Keine Fernsteuerung des Vollbilds; Szenentext umbrechen
+- **Entscheidung:**
+  - Die Fernsteuerung des Vollbilds von Wall und Ground (E14, zweiter bis vierter Punkt) entfällt vollständig:
+    keine Vollbild-Buttons und kein Hinweis im Panel „Screens“, keine Delegation, keine Nachrichten `fullscreen`,
+    `fullscreen_state`, `fullscreen_rejected`, kein Feld `screens.fullscreen`, kein `remoteFullscreen.ts`. Panel
+    „Screens“, Protokoll und Backend wie nach Runde 2 (QR-Icon-Button aus E13 bleibt). AK10 und AK11 entfallen.
+  - Der Vollbild-Button des Admin-Fensters in der Top-Bar bleibt (AK9).
+  - „Aktive Szene“: Name und Beschreibung brechen um (Silbentrennung), nichts wird gekürzt (ersetzt den Teil
+    „gekürzt“ aus E3). Damit die Zeilen dafür wirklich wachsen, ist das Dashboard so hoch wie sein Raster, höchstens so
+    hoch wie der Hauptbereich (`align-self: start`, `max-height: 100%`); mit fester Höhe wuchsen die Zeilen nur im
+    freien Platz, ein Panel mit mehr Inhalt lief über seine Zeilen hinaus.
 
 ## Subtasks
 
@@ -194,27 +208,46 @@ ergänzen die Panels „Spieler“ und „Level“ (DND-34) und „Wall-Overlay�
 ### Schritt 3 (Runde 3): Rückmeldung des Users
 
 #### Vertrag
-- [x] `docs/architecture.md`: `screens.fullscreen`, `fullscreen`, `fullscreen_state`, `fullscreen_rejected`;
-      Ablauf der Fernsteuerung (E14).
+- [x] ~~`docs/architecture.md`: `screens.fullscreen`, `fullscreen`, `fullscreen_state`, `fullscreen_rejected`;
+      Ablauf der Fernsteuerung (E14)~~ (in Runde 5 entfernt).
 
 #### Backend
-- [x] `Connection.fullscreen`, `screen_counts` mit `fullscreen`, `send_to_screen`, `set_fullscreen`; Nachrichten in
-      `ws.py` (E14).
-- [x] Tests in `tests/test_ws.py`: Weiterleitung an alle Screens des Typs, ungültige und fremde Nachrichten,
-      Zustand in `screens`, Trennen im Vollbild, `fullscreen_rejected` an alle Admins.
+- [x] ~~`Connection.fullscreen`, `screen_counts` mit `fullscreen`, `send_to_screen`, `set_fullscreen`; Nachrichten in
+      `ws.py` (E14)~~ (in Runde 5 entfernt).
+- [x] ~~Tests in `tests/test_ws.py`: Weiterleitung an alle Screens des Typs, ungültige und fremde Nachrichten,
+      Zustand in `screens`, Trennen im Vollbild, `fullscreen_rejected` an alle Admins~~ (in Runde 5 entfernt).
 
 #### Frontend
 - [x] Raster neu (E11), `MusicControl` senkrecht (E12), Sounds umbrechend.
-- [x] Panel „Screens“: QR-Icon-Button (E13), Vollbild-Buttons und Hinweis (E14).
+- [x] Panel „Screens“: QR-Icon-Button (E13), ~~Vollbild-Buttons und Hinweis (E14)~~ (in Runde 5 entfernt).
 - [x] Top-Bar: Vollbild des Admins (E14).
-- [x] `messages.ts`, `remoteFullscreen.ts`, `useGameTable`/Context (E14).
-- [x] Unit: Parsen der neuen Nachrichten, `createRemoteFullscreen`, `updateFullscreenHints`.
-- [x] E2E: Anordnung und „kein Panel scrollt“, QR-Icon, Vollbild Admin, Vollbild einer aus dem Admin geöffneten
-      Wall, abgelehntes Vollbild eines Grounds mit Klick.
+- [x] ~~`messages.ts`, `remoteFullscreen.ts`, `useGameTable`/Context (E14)~~ (in Runde 5 entfernt).
+- [x] Unit: ~~Parsen der neuen Nachrichten, `createRemoteFullscreen`, `updateFullscreenHints`~~ (in Runde 5 entfernt).
+- [x] E2E: Anordnung und „kein Panel scrollt“, QR-Icon, Vollbild Admin, ~~Vollbild einer aus dem Admin geöffneten
+      Wall, abgelehntes Vollbild eines Grounds mit Klick~~ (in Runde 5 entfernt).
 
 #### Doku
 - [x] `docs/screens.md`, `frontend/DESIGN.md`, `components.md`, `screen-layouts.md`, `contrast.md`,
       `frontend/CLAUDE.md`, `backend/CLAUDE.md`.
+
+### Schritt 4 (Runde 5): Entscheidung des Users
+
+#### Backend
+- [x] Fernsteuerung des Vollbilds entfernen: `manager.py` (`FULLSCREEN_SCREENS`, `Connection.fullscreen`,
+      `screens.fullscreen`, `send_to_screen`, `set_fullscreen`), `ws.py` (Nachrichten), Tests in `test_ws.py` (E15).
+
+#### Frontend
+- [x] `messages.ts`, `useGameTable.ts`, `GameTableProvider`, `context.ts`, `screenStatus.ts` ohne Vollbild;
+      `remoteFullscreen.ts` und `remoteFullscreen.spec.ts` gelöscht; Unit-Tests der Nachrichten und Hinweise entfernt.
+- [x] Panel „Screens“ ohne Vollbild-Buttons, Hinweis und `openedWindows`; Öffnen wie nach Runde 2, QR-Icon bleibt.
+- [x] E2E: Szenarien „Vollbild einer Wall“ und „abgelehntes Vollbild eines Grounds“ entfernt; „kein Panel scrollt“
+      prüft auch, ob ein Panel über seine Zeilen hinausläuft.
+- [x] „Aktive Szene“: Name und Beschreibung umbrechend, `DESCRIPTION_MAX_LINES` und Tooltip entfallen; Dashboard
+      `align-self: start`, `max-height: 100%`, damit die Zeilen wachsen (E15).
+
+#### Doku
+- [x] `docs/architecture.md`, `docs/screens.md`, `frontend/DESIGN.md`, `components.md`, `screen-layouts.md`,
+      `contrast.md`, `frontend/CLAUDE.md`, `backend/CLAUDE.md`: Fernsteuerung und Kürzung entfernt.
 
 ## Akzeptanzkriterien
 
@@ -222,7 +255,8 @@ ergänzen die Panels „Spieler“ und „Level“ (DND-34) und „Wall-Overlay�
 - **Given** der Admin Screen ist geöffnet
 - **Then** zeigt der rechte Bereich (etwa ein Drittel der Breite, mindestens 400px) die Panels „Aktive Szene“ über
   die volle Breite, darunter „Musik“ und „Sounds“ nebeneinander, darunter „Screens“ über die volle Breite (Runde 3)
-- **And** kein Panel hat eine eigene Scrollbar oder abgeschnittenen Text, auch bei 1280×800 (Runde 3)
+- **And** kein Panel hat eine eigene Scrollbar oder abgeschnittenen Text, auch bei 1280×800 (Runde 3); auch Name und
+  Beschreibung in „Aktive Szene“ brechen um, statt gekürzt zu werden (Runde 5)
 - **And** es gibt keine Bottom-Bar, keine Sound-Buttons und keinen Handy-Button in der Top-Bar
 
 ### AK2: Ein- und Ausklappen
@@ -278,12 +312,12 @@ ergänzen die Panels „Spieler“ und „Level“ (DND-34) und „Wall-Overlay�
 - **When** der Spielleiter in der Top-Bar auf „Vollbild“ klickt
 - **Then** ist das Admin-Fenster im Vollbild und der Button hervorgehoben; ein weiterer Klick (oder Escape) beendet es
 
-### AK10 (Runde 3): Vollbild einer aus dem Admin geöffneten Wall
+### ~~AK10 (Runde 3): Vollbild einer aus dem Admin geöffneten Wall~~ (entfällt, Runde 5)
 - **Given** die Wall wurde über „In neuem Fenster öffnen“ geöffnet
 - **When** der Spielleiter bei Wall auf „Vollbild“ klickt
 - **Then** ist das Wall-Fenster ohne weiteren Klick im Vollbild, der Button hervorgehoben; erneuter Klick beendet es
 
-### AK11 (Runde 3): Abgelehntes Vollbild
+### ~~AK11 (Runde 3): Abgelehntes Vollbild~~ (entfällt, Runde 5)
 - **Given** ein Ground läuft in einem anderen Fenster/Browser
 - **When** der Spielleiter bei Ground auf „Vollbild“ klickt
 - **Then** zeigt „Screens“ „Vollbild vom Browser abgelehnt – einmal in das Ground-Fenster klicken“
@@ -420,3 +454,73 @@ Ground, Driver-Aufräumen in `afterEach`, eigenes Timeout 30 s. Gegenprobe mit a
     verständlichen Hinweis im Admin anzeigen (vom User so entschieden)
 - [x] Auf kleinem Bildschirm zeigen die Panels „Sounds“ und „Screens“ eigene Scrollbars und abgeschnittenen Text
   („verbunde…“); Panels ohne innere Scrollbars, Text nicht abschneiden
+
+### Runde 4 – 2026-10-24
+**Empfehlung:** Nacharbeiten
+
+Wünsche aus Runde 3 fachlich umgesetzt: Raster, senkrechter Regler, QR-Icon und Vollbild (Admin, Delegation,
+Ablehnung mit Hinweis und Klick) laufen im Browser; Protokoll sauber abgesichert. Zwei Punkte blockieren: die
+Vollbild-E2E-Szenarien von Wall/Ground sind ohne aktive Szene rot; „Aktive Szene“ kürzt Name und Beschreibung, AK1
+verlangt keinen abgeschnittenen Text (Ausnahme nur in `components.md`, nicht im Plan).
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | nicht erfüllt (nur „Aktive Szene“, nur bei längeren Texten) | Anordnung stimmt (Dashboard 400px bei 1280×800; Szene 385px, Musik/Sounds je 185px, Screens 385px; `AdminScreen.tsx:91-93`, `:357-383`; `Dashboard.tsx:15`); keine inneren Scrollbars/kein abgeschnittener Text in Musik, Sounds, Screens bei 1280×800, 1600, 1920, auch mit Hinweis; E2E „no panel scrolls on its own“ grün. Aber `ActiveScenePanel.tsx:40-56`: Name `nowrap`/`ellipsis`, Beschreibung `line-clamp: 2`; mit längerem Text bei 1280 abgeschnitten (Seed-Daten nicht betroffen) |
+| AK2 | erfüllt | E2E-Szenario 2 grün |
+| AK3 | erfüllt („Keine Szene aktiv“ nur im Code) | `selectScene` grün |
+| AK4 | erfüllt | `MusicControl.tsx:147-152` `orientation="vertical"`, `aria-orientation="vertical"`, Höhe 212px; `onChangeCommitted` unverändert; E2E-Szenario 3 grün |
+| AK5 | erfüllt | E2E-Szenario 4 grün mit fremder Wall; `test_ws.py` grün |
+| AK6 | erfüllt | `ScreensPanel.tsx:121-133` Logik unverändert, nur `openedWindows.set` neu |
+| AK7 | erfüllt | Icon-Button neben „n Spieler verbunden“, rechte Kante wie Öffnen-Buttons (`ScreensPanel.tsx:371-384`); E2E-Szenario 5 grün |
+| AK8 | erfüllt | `adminNavigation`, `selectScene` grün; Wall/Ground/Player-Screen ohne Diff; `useGameTable.ts:823-830` Vollbild nur Wall/Ground |
+| AK9 | erfüllt (Escape nur im Code) | `TopBar.tsx:102-118`, `useDocumentFullscreen.ts` (`fullscreenchange`); E2E grün |
+| AK10 | erfüllt | `ScreensPanel.tsx:165-171`, `remoteFullscreen.ts:759-770`; E2E grün mit aktiver Szene |
+| AK11 | erfüllt | E2E grün mit aktiver Szene; Selenium: Hinweistext exakt, Klick ins Ground-Fenster → Vollbild, Hinweis weg, `aria-pressed=true`; „Aus“ beendet |
+
+**Blockierende Befunde**
+- [x] (entfallen mit Runde 5) Vollbild-E2E-Szenarien hängen von einer aktiven Szene ab: `adminDashboard.ts:457` wartet auf `wallImg`, `:505`
+  auf `groundImg` (nur mit aktiver Szene, `WallScreen.tsx:168-174`, `GroundScreen.tsx:119-125`). Ohne aktive Szene
+  2 failed, 11 passed; Seed setzt keine aktive Szene. Vorschlag: auf szenenunabhängiges warten (z. B. Zählung +1 per
+  `waitForScreenCounts`)
+- [x] AK1: „Aktive Szene“ schneidet Text ab (`ActiveScenePanel.tsx:40-56`); Ausnahme nur in `components.md`, nicht in
+  E11/AK1; Kommentar `:9` („fixed height of the panel“) veraltet. Entweder umbrechen lassen oder Ausnahme vom User in
+  E11/AK1 aufnehmen
+
+**Hinweise**
+- Implementer-Entscheidungen: Mindestbreite 400px (E11; Notizen bei 1280×800 504px), `minmax(144px, auto)`, „Screens“
+  4×2 mit Leerraum, Vollbild-Buttons ohne verbundenen Screen ohne Rückmeldung, Delegation nur Chrome/selbst geöffnete
+  Fenster – vertretbar bzw. im Plan begründet
+- Wartender Wechsel lässt sich nur verwerfen, wenn mind. ein Screen des Typs im Vollbild ist, sonst sendet der Button
+  erneut `active: true` (`ScreensPanel.tsx:299-341`); bei Vollbild wird der Hinweis ausgeblendet (`:311`) – eine fremde
+  Wall, die abgelehnt hat, wechselt dann unsichtbar beim nächsten Klick (z. B. auf „AUDIO“). Kein AK verletzt
+- E2E und fremde Fenster: normal keine bleibende Änderung; schlägt das Szenario nach dem ersten Klick fehl, bleibt ein
+  wartender Wechsel; ist eine fremde Wall/Ground per Fullscreen API im Vollbild, sendet der erste Klick „Aus“ – fremdes
+  Fenster verlässt dauerhaft das Vollbild, Szenario rot (belegt). F11 zählt nicht. Dokumentieren oder vorab auf
+  `fullscreen` = 0 prüfen
+- Protokoll: Admin → nur `fullscreen` mit `screen` ∈ {wall, ground}, `active: bool`; Wall/Ground →
+  `fullscreen_state`/`fullscreen_rejected`; Rest ignoriert (`ws.py:36-70`, Tests). Rolle aus `?screen=` ohne
+  Anmeldung wie im Rest der App; `message`-Listener prüft `event.origin`; Reconnect sendet Zustand erneut
+- Dashboard scrollt als Ganzes (944/696px bei 1280×800); nach E1 erlaubt
+- Teststrategie/Manuell im Plan nennt AK9–AK11 nicht (Kleinigkeit); Theme `dark` nicht angesehen
+- Commit `4001bdd`: Schema passt, keine KI-Signatur, im Scope, Subtasks abgehakt
+- Dev-Zustand: vorher keine aktive Szene, `tavern`, pausiert, Lautstärke 33, Track 40, 1 Wall; E2E aktivierte Szene 5,
+  per `PATCH` auf `null` zurück; Track jetzt 34; Vollbild 0; keine Prozesse übrig
+
+**Checks**
+- Backend: `ruff check`, `ruff format --check`, `mypy app`, `make check-quality` grün; `pytest` frische DB 197 passed
+  (Dev-DB 6 failed wegen Theme `tavern`, nicht durch den Task)
+- Frontend: lint, typecheck, `test:unit` 196, `check:deadcode`, `check:dupes` (5 Altklone), build grün
+- E2E Dev-Stack: ohne aktive Szene 11/13; mit aktiver Szene `adminDashboard` 8/8, `adminNavigation`, `selectScene` grün;
+  Gegenprobe fremde Wall im Vollbild: Szenario rot, Fenster verlässt Vollbild
+
+### Runde 5 – Rückmeldung User – 2026-10-24
+**Empfehlung:** Nacharbeiten (Entscheidung des Users)
+
+**Blockierende Befunde**
+- [x] Fernsteuerung des Vollbilds von Wall und Ground aus dem Admin wieder vollständig entfernen (Buttons im Panel
+  „Screens“, Hinweis bei Ablehnung, Delegation, WebSocket-Nachrichten `fullscreen`/`fullscreen_state`/
+  `fullscreen_rejected`, `screens.fullscreen`, `remoteFullscreen.ts`, zugehörige Tests, Doku und Plan-Teile wie
+  E14/AK10/AK11). Damit entfällt auch der Befund zu den Vollbild-E2E-Szenarien aus Runde 4
+- [x] Vollbild-Button für das Admin-Fenster in der Top-Bar bleibt (AK9)
+- [x] Befund AK1 aus Runde 4: Name und Beschreibung in „Aktive Szene“ umbrechen statt kürzen (Grundsatz „kein
+  abgeschnittener Text“); veralteten Kommentar `ActiveScenePanel.tsx:9` korrigieren

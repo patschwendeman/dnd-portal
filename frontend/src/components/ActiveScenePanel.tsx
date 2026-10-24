@@ -6,9 +6,6 @@ import { mediaUrl } from '../api/mediaUrl'
 import { Image, SceneDetail } from '../models/models'
 import { textStyle } from '../style/tokens'
 
-// Lines of the description that fit below the previews in the fixed height of the panel
-const DESCRIPTION_MAX_LINES = 2
-
 const Previews = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -42,17 +39,14 @@ const SceneName = styled.strong`
   margin-top: ${(props) => props.theme.space[3]};
   ${textStyle('lg')}
   font-weight: ${(props) => props.theme.fontWeight.semibold};
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: break-word;
+  hyphens: auto;
 `
 
 const SceneDescription = styled.p`
   ${textStyle('sm')}
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: ${DESCRIPTION_MAX_LINES};
-  overflow: hidden;
+  overflow-wrap: break-word;
+  hyphens: auto;
 `
 
 const NoScene = styled.p`
@@ -82,13 +76,15 @@ interface ActiveScenePanelProps {
   activeScene: SceneDetail | undefined
 }
 
-// Content of the dashboard panel "Aktive Szene": what Wall and Ground show, without looking at them
+// Content of the dashboard panel "Aktive Szene": what Wall and Ground show, without looking at
+// them. Name and description wrap (long German words hyphenated, lang="de"); the row of the panel
+// grows instead of cutting them off
 function ActiveScenePanel({ activeScene }: ActiveScenePanelProps): ReactElement {
   if (!activeScene) {
     return <NoScene data-test-id="no-active-scene">Keine Szene aktiv</NoScene>
   }
   return (
-    <>
+    <div lang="de">
       <Previews>
         <ScenePreview label="Wall" image={activeScene.wall_image} testId="active-scene-wall" />
         <ScenePreview
@@ -98,8 +94,8 @@ function ActiveScenePanel({ activeScene }: ActiveScenePanelProps): ReactElement 
         />
       </Previews>
       <SceneName data-test-id="active-scene-name">{activeScene.name}</SceneName>
-      <SceneDescription title={activeScene.description}>{activeScene.description}</SceneDescription>
-    </>
+      <SceneDescription>{activeScene.description}</SceneDescription>
+    </div>
   )
 }
 

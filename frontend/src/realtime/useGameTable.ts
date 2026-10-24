@@ -3,21 +3,14 @@ import {
 } from 'react'
 
 import { ConnectionStatus, createGameTableConnection, GameTableConnection } from './connection'
-import { FullscreenScreen, ScreenCounts } from './messages'
-import { bindRemoteFullscreen, isDocumentFullscreen } from './remoteFullscreen'
+import { ScreenCounts } from './messages'
 import { API_BASE_URL } from '../api/apiClient'
 import wsUrl from '../api/wsUrl'
 import { AudioState, GameTableState, SoundName } from '../models/models'
-import { FullscreenHints, NO_FULLSCREEN_HINTS, updateFullscreenHints } from '../utils/screenStatus'
 
 export type GameTableScreen = 'admin' | 'wall' | 'ground' | 'player'
 
 export type SoundListener = (name: SoundName) => void
-
-// Screens whose full screen the Admin switches remotely
-const isFullscreenScreen = (screen: GameTableScreen): boolean => (
-  screen === 'wall' || screen === 'ground'
-)
 
 export interface GameTable {
   // null until the first snapshot of the server arrived
@@ -28,11 +21,6 @@ export interface GameTable {
   isAudioOutput: boolean
   // Only for the Admin: connected screens per type; null until the first counts arrived
   screens: ScreenCounts | null
-  // Only for the Admin: per screen whether the browser refused the last full screen request; reset
-  // once the screen is in full screen, gone or requested again
-  fullscreenHints: FullscreenHints
-  // Only for the Admin: switches full screen of all Walls or all Grounds on or off
-  requestScreenFullscreen: (screen: FullscreenScreen, active: boolean) => void
   // false once the connection broke or could not be established; the first attempt counts as
   // connected, so the Admin does not show the hint on every load
   connected: boolean
@@ -50,7 +38,6 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
   const [audio, setAudio] = useState<AudioState | null>(null)
   const [isAudioOutput, setIsAudioOutput] = useState<boolean>(false)
   const [screens, setScreens] = useState<ScreenCounts | null>(null)
-  const [fullscreenHints, setFullscreenHints] = useState<FullscreenHints>(NO_FULLSCREEN_HINTS)
   const [status, setStatus] = useState<ConnectionStatus>('connecting')
   const connection = useRef<GameTableConnection | null>(null)
   // Set by "AUDIO", cleared when another Wall takes over
@@ -59,14 +46,6 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
 
   useEffect(() => {
     const url = `${wsUrl(API_BASE_URL, window.location)}?screen=${screen}`
-    const fullscreen = isFullscreenScreen(screen)
-      ? bindRemoteFullscreen({
-        onRejected: () => connection.current?.send({ type: 'fullscreen_rejected' }),
-        onChange: (active) => connection.current?.send({
-          type: 'fullscreen_state', payload: { active },
-        }),
-      })
-      : null
     const current = createGameTableConnection({
       url,
       onState: setState,
@@ -78,11 +57,6 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
           setIsAudioOutput(message.payload.active)
         } else if (message.type === 'screens') {
           setScreens(message.payload)
-          setFullscreenHints((hints) => updateFullscreenHints(hints, message.payload))
-        } else if (message.type === 'fullscreen') {
-          fullscreen?.handleRequest(message.payload.active)
-        } else if (message.type === 'fullscreen_rejected') {
-          setFullscreenHints((hints) => ({ ...hints, [message.payload.screen]: true }))
         } else {
           soundListeners.current.forEach((listener) => listener(message.payload.name))
         }
@@ -92,23 +66,14 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
         if (next !== 'open') {
           // The server releases the output of a closed connection
           setIsAudioOutput(false)
-          return
-        }
-        if (wantsAudioOutput.current) {
+        } else if (wantsAudioOutput.current) {
           // The page already had a user interaction, so playback is allowed without a new click
           connection.current?.send({ type: 'audio_ready' })
-        }
-        if (fullscreen !== null) {
-          // After a reconnect the server knows nothing about this screen
-          connection.current?.send({
-            type: 'fullscreen_state', payload: { active: isDocumentFullscreen() },
-          })
         }
       },
     })
     connection.current = current
     return () => {
-      fullscreen?.unbind()
       current.close()
       connection.current = null
     }
@@ -128,11 +93,6 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
     connection.current?.send({ type: 'track_ended', payload: { track_id: trackId } })
   }, [])
 
-  const requestScreenFullscreen = useCallback((target: FullscreenScreen, active: boolean) => {
-    setFullscreenHints((hints) => ({ ...hints, [target]: false }))
-    connection.current?.send({ type: 'fullscreen', payload: { screen: target, active } })
-  }, [])
-
   const subscribeSound = useCallback((listener: SoundListener) => {
     soundListeners.current.add(listener)
     return () => {
@@ -145,8 +105,6 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
     audio,
     isAudioOutput,
     screens,
-    fullscreenHints,
-    requestScreenFullscreen,
     connected: status !== 'closed',
     reconnectNow,
     requestAudioOutput,

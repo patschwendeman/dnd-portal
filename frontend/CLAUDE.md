@@ -73,16 +73,13 @@ src/app/App.tsx      Routing; alle vier Screens je im GameTableProvider; Theme-A
                      (localStorage playerThemeOverride, Prop themeOverride), entfernt den Altschlüssel isDarkTheme
 src/realtime/        WebSocket-Client des Spieltischs: GameTableProvider (ThemeProvider + Contexts aus dem Snapshot,
                      optional themeOverride),
-                     useGameTable(screen) → { state, audio, isAudioOutput, screens, fullscreenHints,
-                     requestScreenFullscreen, connected, reconnectNow, requestAudioOutput,
-                     reportTrackEnded, subscribeSound }, remoteFullscreen.ts (Vollbild von Wall/Ground per
-                     Fernsteuerung: Ablehnung melden, mit dem nächsten Klick nachholen, Delegation aus dem
-                     Admin-Fenster), connection.ts (Reconnect, Heartbeat, send nur bei offener Verbindung,
-                     sofortiger Reconnect beim Sichtbarwerden), messages.ts (parseServerMessage, ClientMessage), backoff.ts (reconnectDelay), heartbeat.ts (Watchdog 35 s), visibility.ts
+                     useGameTable(screen) → { state, audio, isAudioOutput, screens, connected, reconnectNow, requestAudioOutput,
+                     reportTrackEnded, subscribeSound }, connection.ts (Reconnect, Heartbeat, send nur bei offener
+                     Verbindung, sofortiger Reconnect beim Sichtbarwerden), messages.ts (parseServerMessage,
+                     ClientMessage), backoff.ts (reconnectDelay), heartbeat.ts (Watchdog 35 s), visibility.ts
                      (VisibilitySource, für Tests ersetzbar)
 src/context/         ActiveAdventureContext, ActiveSceneContext (IDs number | null, nur lesend), GameTableContext
-                     (hasState, theme, connected, reconnectNow, screens: Verbindungs- und Vollbildzahlen,
-                     fullscreenHints, requestScreenFullscreen – nur für den Admin), GameAudioContext (audio, isAudioOutput,
+                     (hasState, theme, connected, reconnectNow, screens: Verbindungszahlen nur für den Admin), GameAudioContext (audio, isAudioOutput,
                      requestAudioOutput, reportTrackEnded, subscribeSound)
 src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Panel „Sounds“), wallAudioPlayer.ts
                      (WallAudioPlayer: Wiedergabe auf der Wall nach dem AudioState, Audio-Fabrik injizierbar für vitest)
@@ -104,8 +101,7 @@ src/utils/utils.ts   Musiktitel (getMusicTitle), filterSceneByKey
 src/utils/navRail.ts nextOpenPanel (welches Panel neben der Navigationsleiste offen ist)
 src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
 src/utils/playerTheme.ts Theme-Abweichung des Players lesen/schreiben, effectiveTheme, Altschlüssel verwerfen
-src/utils/screenStatus.ts Statustexte des Panels „Screens“ aus der Anzahl (screenStatusText, playerStatusText),
-                     Vollbild-Hinweis (updateFullscreenHints, fullscreenHintText)
+src/utils/screenStatus.ts Statustexte des Panels „Screens“ aus der Anzahl (screenStatusText, playerStatusText)
 src/utils/useDocumentFullscreen.ts Vollbild des eigenen Fensters (Admin, Top-Bar), Zustand über fullscreenchange
 src/utils/playerUrl.ts selectPlayerUrl (URL der API, sonst Origin des Admins, nicht bei localhost/127.0.0.1/[::1])
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }), appTheme(theme),
@@ -123,8 +119,7 @@ bzw. `PATCH table`) **ohne lokale Vorwegnahme**; der Server pusht danach den neu
 per `scenes/{id}` neu laden (ohne aktive Szene kein Request, nur Hintergrund). Nur der Admin zeigt Speicher- und
 Verbindungsfehler. Der Player nutzt vom Snapshot nur das Theme (`Abweichung ?? Spieltisch-Theme`), sendet nichts und
 zeigt keinen Verbindungsstatus. Der QR-Code-Dialog im Admin (`JoinDialog`, geöffnet aus dem Panel „Screens“) lädt beim Öffnen `table/join`. Nur an
-Admins schickt der Server die Zahl der verbundenen Wall-, Ground- und Player-Verbindungen und der Walls/Grounds im
-Vollbild (`screens`); Vollbild von Wall und Ground schaltet der Admin per WebSocket (`fullscreen`).
+Admins schickt der Server die Zahl der verbundenen Wall-, Ground- und Player-Verbindungen (`screens`).
 Details: `../docs/architecture.md#synchronisation`.
 
 Audio: Der Server hält den Musikzustand und pusht ihn als `audio` an alle Screens. Die Wall, auf der „AUDIO“ geklickt

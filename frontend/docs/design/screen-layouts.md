@@ -22,7 +22,6 @@ Regel: [1.3](../../DESIGN.md#13-layout-konstanten).
 | 360px · 240px · 4 Module | Breite des Dialogs „Spieler verbinden“, Kantenlänge und Ruhezone des QR-Codes (`JOIN_DIALOG_WIDTH`, `QR_CODE_SIZE`, `QR_CODE_MARGIN`) | `JoinDialog` |
 | 200px · 16px · 3ch | Breite des Sliders, Größe des Griffs, Mindestbreite der Wertanzeige (`SLIDER_WIDTH`, `SLIDER_THUMB_SIZE`, `SLIDER_VALUE_MIN_WIDTH`) | `ScreenControlBar` |
 | 96px · 16px | Mindesthöhe (sonst volle Höhe des Inhalts) und Griffgröße des senkrechten Lautstärke-Sliders im Panel „Musik“ (`VOLUME_SLIDER_MIN_HEIGHT`, `VOLUME_SLIDER_THUMB_SIZE`) | `MusicControl` |
-| 2 Zeilen | Beschreibung im Panel „Aktive Szene“, Rest gekürzt (`DESCRIPTION_MAX_LINES`) | `ActiveScenePanel` |
 | 8px | Status-Punkt im Panel „Screens“ (`STATUS_DOT_SIZE`) | `ScreensPanel` |
 | 64px | Höhe der Ressourcen-Buttons (`RESOURCE_HEIGHT`) | `ResourceBarPlayer` |
 | 8px · 24px | Breite und Höhe eines Zauber- oder Spezialplatzes (`SLOT_WIDTH`, `SLOT_HEIGHT`) | `ResourceBarPlayer` |

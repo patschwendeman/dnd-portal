@@ -3,18 +3,11 @@ import {
   AudioState, GameTableState, SoundName, Theme, Track,
 } from '../models/models'
 
-// Screens the Admin can switch to full screen remotely
-export type FullscreenScreen = 'wall' | 'ground'
-
-const FULLSCREEN_SCREENS: readonly FullscreenScreen[] = ['wall', 'ground']
-
-// Number of open connections per screen type, without the Admins, and how many Walls and Grounds
-// are in full screen
+// Number of open connections per screen type, without the Admins
 export interface ScreenCounts {
   wall: number
   ground: number
   player: number
-  fullscreen: Record<FullscreenScreen, number>
 }
 
 // Messages on /ws, see docs/architecture.md (not part of the OpenAPI contract)
@@ -26,21 +19,11 @@ export type ServerMessage = { type: 'state', payload: GameTableState }
   | { type: 'sound', payload: { name: SoundName } }
   // Only to Admins: sent after connecting and whenever a count changes
   | { type: 'screens', payload: ScreenCounts }
-  // Only to Walls and Grounds: request of an Admin to switch full screen on or off
-  | { type: 'fullscreen', payload: { active: boolean } }
-  // Only to Admins: a Wall or Ground could not switch to full screen (the browser refused)
-  | { type: 'fullscreen_rejected', payload: { screen: FullscreenScreen } }
   | { type: 'ping' }
 
-// The server evaluates each message only from the screens named here and ignores the rest; the
-// first two only from Walls
+// Sent only by the Wall; the server ignores messages of the other screens
 export type ClientMessage = { type: 'audio_ready' }
   | { type: 'track_ended', payload: { track_id: number } }
-  // Wall and Ground
-  | { type: 'fullscreen_state', payload: { active: boolean } }
-  | { type: 'fullscreen_rejected' }
-  // Admin
-  | { type: 'fullscreen', payload: { screen: FullscreenScreen, active: boolean } }
 
 const THEMES: readonly Theme[] = ['dark', 'tavern']
 
@@ -114,30 +97,15 @@ const isCount = (value: unknown): value is number => (
 )
 
 const parseScreens = (payload: unknown): ScreenCounts | null => {
-  if (!isRecord(payload) || !isRecord(payload.fullscreen)) {
+  if (!isRecord(payload)) {
     return null
   }
-  const {
-    wall, ground, player, fullscreen,
-  } = payload
-  const { wall: wallFullscreen, ground: groundFullscreen } = fullscreen
-  if (
-    !isCount(wall)
-    || !isCount(ground)
-    || !isCount(player)
-    || !isCount(wallFullscreen)
-    || !isCount(groundFullscreen)
-  ) {
+  const { wall, ground, player } = payload
+  if (!isCount(wall) || !isCount(ground) || !isCount(player)) {
     return null
   }
-  return {
-    wall, ground, player, fullscreen: { wall: wallFullscreen, ground: groundFullscreen },
-  }
+  return { wall, ground, player }
 }
-
-const isFullscreenScreen = (value: unknown): value is FullscreenScreen => (
-  FULLSCREEN_SCREENS.includes(value as FullscreenScreen)
-)
 
 // Returns null for anything that is not a valid, known message, so a newer server can add message
 // types
@@ -176,14 +144,6 @@ export const parseServerMessage = (data: unknown): ServerMessage | null => {
   if (message.type === 'screens') {
     const payload = parseScreens(message.payload)
     return payload === null ? null : { type: 'screens', payload }
-  }
-  if (message.type === 'fullscreen') {
-    const active = isRecord(message.payload) ? message.payload.active : undefined
-    return typeof active === 'boolean' ? { type: 'fullscreen', payload: { active } } : null
-  }
-  if (message.type === 'fullscreen_rejected') {
-    const screen = isRecord(message.payload) ? message.payload.screen : undefined
-    return isFullscreenScreen(screen) ? { type: 'fullscreen_rejected', payload: { screen } } : null
   }
   return null
 }
