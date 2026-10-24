@@ -1,7 +1,7 @@
 # DND-34: Panels „Spieler“ (Hero-Karte) und „Level“ im Admin-Dashboard
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -116,3 +116,40 @@ Spieltisch sieht er die Gruppe auf einen Blick und hebt nach einem Level-Up das 
 - Keine (Position „Level“ in E3 und E4 vom User bestätigt).
 
 ## Review
+
+### Runde 1 – 2026-10-24
+**Empfehlung:** Abnahme
+
+Alle vier AK erfüllt, alle Checks grün, keine blockierenden Befunde. AK4 (Abenteuerwechsel) nur im Code belegt, da
+der Seed nur ein Abenteuer hat.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | E2E `adminPlayers.feature` Szenario 1: vier Karten (Aragorn, Legolas, Gimli, Gandalf) in API-Reihenfolge mit Spielername, Charaktername, Volk, Klasse, Initialen, Level-Badge. Avatar-Bild (`PlayerHeroCard.tsx:115`) und „Keine Spieler“ (`PlayersPanel.tsx:26-27`, `AdminScreen.tsx:396`) nur im Code belegt (Seed ohne Avatare / ohne leeres Abenteuer). |
+| AK2 | erfüllt | E2E Szenario 2: „−“ bei 1 deaktiviert; nach „+“ zeigen Panel und alle Badges 2 in beiden Admin-Fenstern, Backend `global_level` 2; zurück auf 1. Szenario 3: „+“ bei 20 deaktiviert. Grenzen `steppedLevel` in `utils/player.ts` mit Unit-Test. |
+| AK3 | erfüllt | Temporäres Selenium-Skript (nicht im Repo): `*/api/adventures/*` per CDP blockiert, „+“ geklickt → Level bleibt 1, Badges 1, Speicherfehler-Leiste sichtbar, Backend unverändert. HTTP-Ablehnung über `saveData` → `SaveError` (Unit, 422) → `runSave` ohne Vorwegnahme. |
+| AK4 | erfüllt | Effekt `AdminScreen.tsx:224-249` lädt `getAdventure(loadedAdventureId)` bei Änderung von `loadedAdventureId`, `snapshot`, `reloadCount`; `loadLatest` verwirft veraltete Antworten. Kontraste in `contrast.md` aus den Themes nachgerechnet, alle Ziele erreicht (außer dokumentiertem ✗ Rand Dark 1,52). |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- Gemeldete Abweichungen, alle nicht blockierend: `PanelButton` aus `ScreensPanel` extrahiert (CSS unverändert);
+  `adminDashboard`-E2E erweitert, nicht aufgeweicht; Initialen 32px und Badge-Offset 8px mangels Token;
+  „–“ mit deaktivierten Buttons ohne Abenteuer schlüssig; `docs/architecture.md`-Ergänzung konsistent mit E4;
+  `snapshot` im `GameTableContext` nötig für E4, keine zusätzlichen Re-Renders.
+- Karten-Innenabstand 24px (`space.5`) statt 32px: `space.6` existiert, Abweichung vom Mockup also gewählt –
+  Gestaltungsfrage für den User.
+- Zeitfenster beim Abenteuerwechsel: `handleLevelChange` (`AdminScreen.tsx:319-324`) nutzt `adventureDetail.id`;
+  bis das neue Detail geladen ist, würde ein Klick das Level des vorigen Abenteuers speichern. Gleiches Muster wie
+  bei den Szenen; Verbesserung: Buttons deaktivieren, solange `adventureDetail.id !== loadedAdventureId`.
+- Beim ersten Laden kurz „Keine Spieler“ / „–“ bis zur Antwort (kosmetisch).
+- Jeder `state`-Push löst `GET /adventures/{id}` aus, auch bei Szenen-/Theme-Wechsel – wie in E4 geplant.
+- Freigabe ohne eigenen Commit, Statuswechsel im Umsetzungs-Commit (wie bei DND-33).
+- Konventionen erfüllt: ein Commit `e70722b`, Schema, Typ `feat`, Stichpunkt-Body, keine KI-Signatur; Backend
+  unverändert.
+- E2E-Suite `selectScene` setzt die aktive Szene des Dev-Spieltischs um (bestehendes Verhalten); Level wird von
+  `adminPlayers` wiederhergestellt.
+
+**Checks:** Lint grün · Typecheck grün · Build grün (bekannte Chunk-Warnung) · Unit 21 Dateien / 180 Tests grün ·
+E2E 4 Suites / 14 Tests grün · knip ohne Befund · jscpd unter Schwellwert (nur bestehende Klone)
