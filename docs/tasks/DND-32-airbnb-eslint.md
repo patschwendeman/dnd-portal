@@ -1,7 +1,7 @@
 # DND-32: Airbnb-Styleguide als ESLint-Regeln, Frontend-Code angepasst
 
 **Typ:** refactor
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -160,3 +160,59 @@ Rest Einzelfälle.
 - keine
 
 ## Review
+
+### Runde 1 – 2026-10-24
+**Empfehlung:** Abnahme
+
+Geprüft habe ich die drei Commits `955252b`, `d14958b` und `e71d863` gegen `051a23b`. Einen Commit `docs(DND-32): approve plan` gibt es nicht. Die Plan-Datei kommt erst mit Commit 3 ins Repo, so wie es in E5 steht und vom User bestätigt ist. Gegengeprüft habe ich in einem temporären Worktree im Scratchpad: Autofix nachgestellt, Baselines gemessen, `npm ci` auf leerem Stand. Der Worktree ist wieder entfernt, der Arbeitsbaum des Repos ist unverändert und sauber.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | `frontend/eslint.config.js`:10-20 nutzt `configs.base.recommended`, `configs.react.recommended`, `configs.base.typescript` und `configs.react.typescript`. `frontend/package.json`:35/41/42 setzt `eslint` und `@eslint/js` auf ^9.39.5 und pinnt `eslint-config-airbnb-extended` exakt auf `3.3.0`. Der Abweichungsblock steht unter :29-58, jede Regel hat einen Kommentar: `@stylistic/semi` never (:33), `member-delimiter-style` (:34, in E4 ergänzt), JSX-Scope aus (:42-43), `/assets/` als Ignore-Muster (:45-49), `require-default-props` mit `functions: 'defaultArguments'` (:52-55), `no-console` erlaubt `error` (:57). Abgeglichen mit den Airbnb-Quellen in `node_modules/eslint-config-airbnb-extended/dist/rules`: Bei `no-unresolved` kommt nur `ignore` dazu, bei `require-default-props` ändert sich nur `functions`, alle anderen Optionen sind identisch. Die `naming-convention`-Ausnahme fehlt korrekt; Airbnb schaltet `camelcase` für TS ab (`typescriptEslint.mjs`:49). Der Block `styled-components-a11y` ist keine Abweichung, das Plugin bleibt laut Scope. |
+| AK2 | erfüllt | `npm run lint` endet mit Exit 0 und ohne Ausgabe. Laut `eslint . --format json`: 81 Dateien, 0 Fehler, 0 Warnungen. Geprüft werden `src/`, alle 22 Dateien in `__tests__/`, `eslint.config.js` und `vite.config.ts`. Die frühere Warnung `styled-components-a11y/alt-text` in WallScreen (aus DND-29) ist mit `alt=""` behoben. |
+| AK3 | erfüllt | Es bleiben 3 Disables, alle mit Begründung: `src/screens/WallScreen.tsx`:148 (Kommentar :147, der Player besitzt Audio-Elemente und der Cleanup gibt sie frei), `src/realtime/connection.ts`:80 (Kommentar :78-79, Reconnect-Zyklus) und :113 (`-- reconnect cycle`). Vorher waren es 11 Disables in `src`/`__tests__`. In `__tests__/` ist keins mehr übrig. |
+| AK4 | erfüllt | Siehe die Prüfung auf Verhaltensänderungen unten. Routen (`/`, `/wall`, `/ground`, `/admin`), API-Pfade (12 Aufrufe von `loadData`/`saveData`/`postCommand`, Pfade gleich) und alle 24 `data-test-id` sind gleich geblieben (Vergleich mit `051a23b`, nur die JSX-Quotes haben sich geändert). Das Wire-Format bleibt snake_case (`src/realtime/messages.ts`: Umbenennung nur beim Destrukturieren, das Rückgabeobjekt hat dieselben Felder). `.github/`, `backend/`, `media/`, `knip.jsonc`, `.jscpd.json`, die `tsconfig*.json` und `jest.config.json` sind unverändert. Keine Semikolons, auch nicht in Interfaces. |
+| AK5 | erfüllt | Grün sind typecheck, build, test:unit (19 Dateien, 158 Tests, so viele wie bei `051a23b`), `check:deadcode` und `check:dupes` (2,03 %, Schwelle 2,09), lokal und nach `npm ci` auf leerem Stand. Die knip-Funde ohne Baseline sind identisch mit der DND-31-Baseline (1 Dependency, 5 Exporte, 4 Typen), es gibt keine neuen Baseline-Einträge. Die Tests sind in den Assertions und Testdaten unverändert. Das Umschreiben von Schleifen und Fake entspricht der dokumentierten User-Entscheidung (E4) und verhält sich gleich, Details unten. |
+| AK6 | erfüllt | Drei Commits nach E5: Tooling (`955252b`, nur `eslint.config.js`, `package.json`, Lockfile, `__tests__/tsconfig.json`), Autofix (`d14958b`), Handarbeit plus Doku (`e71d863`). `d14958b` ist reiner Autofix: `npx eslint . --fix` auf `955252b` ergibt im Worktree exakt den Baum von `d14958b` (`git diff --quiet` ohne Unterschied). `.git-blame-ignore-revs` enthält den vollen Hash `d14958be2bb4738cdca6d04b76eba28d123ccd72`. |
+
+**Prüfung auf Verhaltensänderungen (refactor)**
+- **Zurücksetzen beim Rendern statt im Effekt:**
+  - Stellen: `AdminScreen.tsx`:230-245 und :374-378, `WallScreen.tsx`:110-118, `GroundScreen.tsx`:80-88.
+  - Gleichwertig, weil die Anfangswerte des States schon den Reset-Werten entsprechen: `scenesDetails` `[]`, `activeScene` `undefined`, `*Failed` `false`, `worldMapVisibility` `false`, `mediaSRC` `''`, `mediaType` `null`, `draggedVolume` `null`. Den Reset beim Mount, den der alte Effekt machte, braucht es deshalb nicht.
+  - Erneutes Auslösen über `reloadCount` bei `null`-Id: Das war vorher ein No-op. Der Lade-Effekt läuft dann nicht, und die `stale`-Flag aus `loadLatest` verwirft späte Antworten.
+  - Der Lautstärke-Reset vergleicht `audio` und `failedSave` per Referenz, so wie die Dependency-Liste vorher.
+  - Einziger Unterschied: Der Reset passiert im selben Render und nicht erst nach dem Commit, also einen Frame früher. Das ist nicht sichtbar.
+  - Die Lade-Effekte geben bei `null` jetzt `undefined` zurück (`consistent-return`), ohne Auswirkung.
+- **Autofix:**
+  - Fixbare Regeln an `955252b`: Großteils Einrückung, Klammern und Quotes.
+  - Inhaltlich relevante Fixes, alle geprüft und sicher: `prefer-template` (1, Test), `prefer-destructuring` (`wallAudioPlayer.ts`), `consistent-type-definitions` (4× `type` → `interface` in `context.ts`), `import-x/order` (`react-svg` vor die lokalen Importe in AdminScreen, ohne Nebenwirkungen), `no-useless-path-segments` (Bildpfad in WallScreen).
+  - Dazu entfernt ESLint 9 per `--fix` die 12 unnötigen Disable-Kommentare.
+  - Typecheck, Build und Unit-Tests sind auch auf `d14958b` grün.
+- **Handarbeit, sonst gleichwertig:**
+  - Komponenten als Funktionsdeklaration, Default-Exporte, Umbenennungen gegen Shadowing, `++` → `+= 1`, Zeilenumbrüche in styled-components-Templates (nur Leerraum; `calc` in `WallScreen.tsx` OverlayPanel geprüft, die `-` haben Leerraum auf beiden Seiten), `UNKNOWN_URL_MESSAGE` zusammengesetzt (ergibt denselben String), private Methode `start` → Modulfunktion `startPlayback`.
+  - Stabile Keys: Labels in `ScreenControlBar` (eindeutig: WORLD/OFF bzw. BLACK/WHITE/OFF), `sounds[0].name` in `TopBar` (keine Gruppe ist leer), Pfad in `DocumentReader`.
+- **Test-Umbau:**
+  - `for…of` → `forEach` (synchrone Assertions, gleiche Werte).
+  - `findInactiveScene` prüft weiterhin nacheinander, bricht bei der ersten inaktiven Szene ab und wirft denselben Fehler, wenn keine gefunden wird.
+  - `createFakeVisibility()` hat dieselbe Schnittstelle. `listeners` bleibt erreichbar (genutzt in `gameTableConnection.spec.ts`:275); `visible` war von außen nie in Gebrauch.
+
+**Blockierende Befunde**
+- keine
+
+**Nach dem Push prüfen**
+- [ ] Die Frontend-CI ist grün, vor allem die Jobs `lint` und `quality` mit `npm ci` (lokal auf leerem Stand nachgestellt und grün).
+- [ ] E2E (`npm run test:e2e`) und die manuellen Schritte 1–4 aus dem Plan; beides wurde nicht ausgeführt, Restrisiko siehe Hinweise.
+
+**Hinweise**
+- **Restrisiko durch fehlende E2E- und Browser-Checks:** aus meiner Sicht gering. Die einzigen echten Logikänderungen sind die Render-Resets (s. o., gleichwertig) und `DocumentReader`. Dort werden Überschriften und Bilder des Markdowns nicht mehr bei jedem Render neu gemountet (die Komponenten sind ausgelagert), und Seiten haben als Key den Pfad statt des Index. Sichtbar sollte das nicht sein. Ein E2E-Fall berührt den Bereich aber direkt (`adminNavigation`: Scroll-Position der Notizen nach Zu- und Aufklappen), deshalb vor der Abnahme durch den User einmal laufen lassen. Weniger sicher absichern lassen sich ohne Browser: React-Warnungen in der Konsole (Plan, manuell Schritt 4) und die CSS-Umbrüche (Annahme: rein Leerraum, im Code geprüft, nicht gerendert).
+- **Kleine Abweichungen im Verhalten, die die Lint-Regeln erzwingen:**
+  - `WallScreen.tsx` Weltkarte bekommt `alt=""`. Sie gilt damit für Screenreader als dekorativ. Lädt das Bild nicht, fehlt nur das Symbol für ein kaputtes Bild.
+  - `src/utils/listbox.ts`: Der neue `default`-Zweig mit `never` gibt bei einer Taste, die es laut Typ nicht geben kann, zur Laufzeit diese Taste zurück statt `undefined`. Über die Typen und `isListboxNavigationKey` ist das nicht erreichbar.
+- **`__tests__/tsconfig.json` ist als TS-Projekt nicht fehlerfrei:** `tsc -p __tests__/tsconfig.json --noEmit` meldet 9 Fehler: `selenium-webdriver` ohne Typen (3×), implizite `any` in `selectScene.ts` (5×), `import.meta.env` in `src/api/apiClient.ts`, weil `src/vite-env.d.ts` nicht eingebunden ist. Auf Lint (0 Funde) und CI hat das keinen Einfluss. Der Kommentar in der Datei und `frontend/CLAUDE.md` versprechen aber auch Editoren ein Projekt; dort erscheinen diese Fehler.
+- **Veraltete Zahlen:** `docs/known-issues.md`:57-59 nennt noch die jscpd-Werte der DND-31-Baseline (88 von 4221 Zeilen, 2,08 %; NavRail↔SideBarLeftElement 11 Zeilen, darkTheme↔tavernTheme 17 Zeilen). Jetzt sind es 92 von 4543 Zeilen (2,03 %), 13 bzw. 19 Zeilen, weiterhin 6 Klone. Die Datei lag nicht im Doku-Scope; Nachziehen per Kurzweg möglich.
+- **Gelockerte Lint-Regeln:** Durch den Wechsel auf Airbnb gelten einige frühere eigene Regeln nicht mehr so streng: `curly` von `all` auf `multi-line`, `camelcase` mit `properties: 'always'` entfällt (für TS nur noch `naming-convention` ohne Properties), `import/order` ohne alphabetische Sortierung und Leerzeilen zwischen Gruppen. Das entspricht dem Plan („eigene Regeln, die Airbnb abdeckt, entfallen“) und steht hier nur zur Kenntnis.
+- **ESLint-Version:** npm meldet `eslint@9.39.5` als „no longer supported“. Das ist planmäßig (E1, ESLint 10 wird noch nicht unterstützt); umsteigen, sobald airbnb-extended ESLint 10 unterstützt.
+- **Blame-Hash:** `.git-blame-ignore-revs` hängt am Hash von `d14958b`. Vor dem Push nicht rebasen oder amenden. Lokal wirkt die Datei nur mit `git config blame.ignoreRevsFile .git-blame-ignore-revs`; GitHub liest sie automatisch.
+- **Commit-Typ:** Alle drei Commits sind `refactor` wie der Plan-Typ, obwohl Commit 1 reines Tooling ist. Das passt zum Schema „Commit-Typ = Plan-Typ“ und ist kein Befund. Die Bodies bestehen nur aus `*`-Stichpunkten, es gibt keine KI-Signaturen.
+
+**Checks:** Frontend (Node v24.15.0), lokal und nach frischem `npm ci` im temporären Worktree: `npm run lint` Exit 0 (0 Fehler, 0 Warnungen, 81 Dateien), `typecheck` Exit 0, `test:unit` 158/158 grün (19 Dateien), `build` Exit 0 (nur der bekannte Hinweis zur Chunk-Größe), `check:deadcode` Exit 0, `check:dupes` Exit 0 (2,03 % < 2,09). Autofix-Commit auf `955252b` nachgestellt: kein Unterschied zu `d14958b`, dort Typecheck, Build und 158 Unit-Tests grün. E2E und manuelle Prüfung nicht ausgeführt; CI erst nach dem Push.
