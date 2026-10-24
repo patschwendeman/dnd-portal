@@ -21,6 +21,10 @@ const WINDOW_RECT = { width: 1600, height: 1000 }
 const SCENES_ITEM = '[data-test-id="nav-item-scenes"]'
 const SCENE_NAVIGATION = '[data-test-id="nav-panel"] [data-test-id="scene-navigation"]'
 const SCENE_ENTRIES = `${SCENE_NAVIGATION} button`
+const ACTIVE_SCENE_PANEL = '[data-test-id="dashboard-panel-scene"]'
+const ACTIVE_SCENE_WALL = `${ACTIVE_SCENE_PANEL} [data-test-id="active-scene-wall"]`
+const ACTIVE_SCENE_GROUND = `${ACTIVE_SCENE_PANEL} [data-test-id="active-scene-ground"]`
+const ACTIVE_SCENE_NAME = `${ACTIVE_SCENE_PANEL} [data-test-id="active-scene-name"]`
 
 // Seed data (backend/app/db/data/seed_data.json): 29 scenes, created in this order
 const SEED_SCENE_COUNT = 29
@@ -175,6 +179,16 @@ defineFeature(feature, (test) => {
     then('the scene is highlighted as active', async () => {
       expect(await waitForAttribute(driver, sceneEntry(scene.name), 'aria-current', 'true'))
         .toBe('true')
+    })
+
+    and('the dashboard panel Aktive Szene shows its name and images', async () => {
+      const wallSrc = `${MEDIA_BASE_URL}${scene.wallImage}`
+      const groundSrc = `${MEDIA_BASE_URL}${scene.groundImage}`
+      expect(await waitForAttribute(driver, ACTIVE_SCENE_WALL, 'src', wallSrc)).toBe(wallSrc)
+      expect(await waitForAttribute(driver, ACTIVE_SCENE_GROUND, 'src', groundSrc))
+        .toBe(groundSrc)
+      const name = await waitForElement(driver, ACTIVE_SCENE_NAME)
+      await driver.wait(async () => (await name.getText()) === scene.name, WAIT_TIMEOUT)
     })
 
     when('I go to wall screen', async () => {

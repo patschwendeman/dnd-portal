@@ -13,6 +13,7 @@ Scenario: I select a scene to see its images at the wall and ground screen
     And I click on a scene that is not active
     And I click the Confirm button
     Then the scene is highlighted as active
+    And the dashboard panel Aktive Szene shows its name and images
     When I go to wall screen
     Then I see the wall image of the scene
     When I go to ground screen

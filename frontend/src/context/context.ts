@@ -1,6 +1,7 @@
 import { createContext } from 'react'
 
 import { AudioState, SoundName, Theme } from '../models/models'
+import { ScreenCounts } from '../realtime/messages'
 
 // The game table state comes from the server (WebSocket /ws); the contexts only pass it on, changes
 // go through the API.
@@ -29,6 +30,8 @@ interface GameTableContextType {
   theme: Theme
   connected: boolean
   reconnectNow: () => void
+  // Only for the Admin: connected Walls, Grounds and Players; null until the server sent them
+  screens: ScreenCounts | null
 }
 
 export const GameTableContext = createContext<GameTableContextType>({
@@ -36,6 +39,7 @@ export const GameTableContext = createContext<GameTableContextType>({
   theme: 'dark',
   connected: true,
   reconnectNow: () => {},
+  screens: null,
 })
 
 interface GameAudioContextType {

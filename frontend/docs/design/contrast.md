@@ -37,8 +37,8 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | Paar | Verwendung | Ziel | Dark | Tavern | Ergebnis |
 |---|---|---|---|---|---|
 | `text.color` auf `background` | Notizen, Wall-Panel, inaktive Panel-Einträge (Admin, ohne eigene Fläche) | 4,5 | 17,4 | 9,2 | ✓ beide |
-| `text.color` auf `secondary` | Karten, Dialog, inaktive Buttons, Panel-Einträge bei Hover (Admin) | 4,5 | 15,9 | 6,5 | ✓ beide |
-| `text.color` auf `dark` | Bottom-Bar, Steuerleiste | 4,5 | 18,8 | 9,8 | ✓ beide |
+| `text.color` auf `secondary` | Karten, Dashboard-Panels, Dialog, inaktive Buttons, Panel-Einträge bei Hover (Admin) | 4,5 | 15,9 | 6,5 | ✓ beide |
+| `text.color` auf `dark` | Steuerleiste | 4,5 | 18,8 | 9,8 | ✓ beide |
 | `onPrimary` auf `primary` | aktive Buttons (auch in der Steuerleiste von Wall und Ground) und Navigation, Confirm (14px) | 4,5 | 6,1 | 4,7 | ✓ beide |
 | `onPrimary` auf `primary` | Fokus-Outline des gewählten Eintrags der Auswahlliste | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `background` | Links in den Notizen (16px) | 4,5 | 6,1 | 4,7 | ✓ beide |
@@ -51,6 +51,10 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `text.color` auf `secondary` | Icon des inaktiven Menüpunkts der Navigationsleiste bei Hover | 3,0 | 15,9 | 6,5 | ✓ beide |
 | `onPrimary` auf `primary` | Icon des aktiven Menüpunkts der Navigationsleiste | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `background` | Fokus-Outline der Menüpunkte der Navigationsleiste und der Panel-Einträge (Notizen, Szenen) | 3,0 | 6,1 | 4,7 | ✓ beide |
+| `text.color` auf `background` | Icons auf Flächen in Dashboard-Panels (Play-Button ohne Musik, „In neuem Fenster öffnen“), Text des Buttons „QR-Code“ | 4,5 | 17,4 | 9,2 | ✓ beide |
+| `primary` auf `secondary` | Status-Punkt „verbunden“ im Panel „Screens“ | 3,0 | 5,6 | 3,3 | ✓ beide |
+| `text.color` auf `secondary` | Ring des Status-Punkts „nicht verbunden“ | 3,0 | 15,9 | 6,5 | ✓ beide |
+| `background` auf `secondary` | Flächen in Dashboard-Panels (Buttons, Slider-Schiene, leere Bildfläche) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide, siehe Anmerkung |
 | `onError` auf `error` | Text der Hinweisleiste (14px) | 4,5 | 9,0 | 9,0 | ✓ |
 | `qr.foreground` auf `qr.background` | QR-Code im Dialog „Spieler verbinden“ | 3,0 | 21,0 | 21,0 | ✓ |
 | `onError` auf `error` | Icon-Button und Fokus-Outline der Hinweisleiste | 3,0 | 9,0 | 9,0 | ✓ |
@@ -69,3 +73,7 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
   auf `secondary` erreichen. Die Linien in `secondary` sind
   Gestaltung wie die Linie unter der Top-Bar (Ausnahme in [2.6](../../DESIGN.md#26-kontrast)).
 - **Ressourcen (Player):** Die Spannen reichen über alle fünf Ressourcen.
+- **Flächen in Dashboard-Panels (Admin):** Buttons und Slider-Schiene haben die Fläche `background` auf dem Panel in
+  `secondary` (wie Decline im Dialog); die Fläche hebt sich nur schwach ab und ist nur ein Zusatzsignal, erkennbar sind
+  die Bedienelemente an Icon, Text bzw. Griff, die das Ziel erreichen. Der Status-Punkt trägt den Zustand zusätzlich über
+  die Form (gefüllt bzw. Ring) und den Text daneben.

@@ -137,3 +137,28 @@ describe('parseServerMessage for audio', () => {
     expect(parseServerMessage(JSON.stringify(message))).toBeNull()
   })
 })
+
+describe('parseServerMessage for screens', () => {
+  const screens = { wall: 1, ground: 0, player: 2 }
+
+  it('parses the number of connected screens', () => {
+    expect(parseServerMessage(JSON.stringify({ type: 'screens', payload: screens })))
+      .toEqual({ type: 'screens', payload: screens })
+  })
+
+  it('keeps only the known counts', () => {
+    const payload = { ...screens, admin: 3 }
+    expect(parseServerMessage(JSON.stringify({ type: 'screens', payload })))
+      .toEqual({ type: 'screens', payload: screens })
+  })
+
+  it.each([
+    ['a missing payload', { type: 'screens' }],
+    ['a missing count', { type: 'screens', payload: { wall: 1, ground: 0 } }],
+    ['a negative count', { type: 'screens', payload: { ...screens, wall: -1 } }],
+    ['a fractional count', { type: 'screens', payload: { ...screens, player: 1.5 } }],
+    ['a count as string', { type: 'screens', payload: { ...screens, ground: '1' } }],
+  ])('rejects screens with %s', (_case, message) => {
+    expect(parseServerMessage(JSON.stringify(message))).toBeNull()
+  })
+})

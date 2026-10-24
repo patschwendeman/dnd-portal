@@ -13,7 +13,7 @@ const sound = (name: SoundName, icon: string, file: string): Sound => ({
   file: `/assets/sounds/${file}`,
 })
 
-// Groups as shown in the TopBar of the Admin
+// Groups as shown in the dashboard panel "Sounds" of the Admin
 export const SOUND_GROUPS: readonly (readonly Sound[])[] = [
   [sound('heal', 'heart.svg', 'heal.wav'), sound('bottle', 'bottle.svg', 'bottle.wav')],
   [

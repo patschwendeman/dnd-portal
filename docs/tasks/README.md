@@ -36,3 +36,4 @@
 | DND-30 | setup | Frontend auf Node 24 | Fertig | [DND-30-node-24.md](DND-30-node-24.md) |
 | DND-31 | setup | Prüfungen auf toten Code, Duplikate und Komplexität | Fertig | [DND-31-quality-checks.md](DND-31-quality-checks.md) |
 | DND-32 | refactor | Airbnb-Styleguide als ESLint-Regeln, Frontend-Code angepasst | Fertig | [DND-32-airbnb-eslint.md](DND-32-airbnb-eslint.md) |
+| DND-33 | feat | Admin-Dashboard mit Panel-Raster (Szene, Musik, Sounds, Screens) | Im Review | [DND-33-admin-dashboard.md](DND-33-admin-dashboard.md) |

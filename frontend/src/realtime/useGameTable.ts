@@ -3,6 +3,7 @@ import {
 } from 'react'
 
 import { ConnectionStatus, createGameTableConnection, GameTableConnection } from './connection'
+import { ScreenCounts } from './messages'
 import { API_BASE_URL } from '../api/apiClient'
 import wsUrl from '../api/wsUrl'
 import { AudioState, GameTableState, SoundName } from '../models/models'
@@ -18,6 +19,8 @@ export interface GameTable {
   audio: AudioState | null
   // Only for a Wall: whether this connection is the audio output (false while disconnected)
   isAudioOutput: boolean
+  // Only for the Admin: connected screens per type; null until the first counts arrived
+  screens: ScreenCounts | null
   // false once the connection broke or could not be established; the first attempt counts as
   // connected, so the Admin does not show the hint on every load
   connected: boolean
@@ -34,6 +37,7 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
   const [state, setState] = useState<GameTableState | null>(null)
   const [audio, setAudio] = useState<AudioState | null>(null)
   const [isAudioOutput, setIsAudioOutput] = useState<boolean>(false)
+  const [screens, setScreens] = useState<ScreenCounts | null>(null)
   const [status, setStatus] = useState<ConnectionStatus>('connecting')
   const connection = useRef<GameTableConnection | null>(null)
   // Set by "AUDIO", cleared when another Wall takes over
@@ -51,6 +55,8 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
         } else if (message.type === 'audio_output') {
           wantsAudioOutput.current = message.payload.active
           setIsAudioOutput(message.payload.active)
+        } else if (message.type === 'screens') {
+          setScreens(message.payload)
         } else {
           soundListeners.current.forEach((listener) => listener(message.payload.name))
         }
@@ -98,6 +104,7 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
     state,
     audio,
     isAudioOutput,
+    screens,
     connected: status !== 'closed',
     reconnectNow,
     requestAudioOutput,

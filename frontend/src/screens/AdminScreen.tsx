@@ -1,19 +1,19 @@
-import Box from '@mui/material/Box'
-import Slider from '@mui/material/Slider'
 import {
   useCallback, useContext, ReactElement, useEffect, useRef, useState,
 } from 'react'
-import styled, { useTheme } from 'styled-components'
+import styled from 'styled-components'
 
-import { ReactSVG } from 'react-svg'
-import DetailsSideBar from '../components/DetailsSideBar'
+import ActiveScenePanel from '../components/ActiveScenePanel'
+import { Dashboard, DashboardItem } from '../components/Dashboard'
 import Dialogue from '../components/Dialogue'
 import DocumentNavigation from '../components/DocumentNavigation'
 import DocumentReader from '../components/DocumentReader'
 import ErrorBar from '../components/ErrorBar'
-import Label from '../components/Label'
+import MusicControl from '../components/MusicControl'
 import { NavRail, NavRailItem } from '../components/NavRail'
 import SceneNavigation from '../components/SceneNavigation'
+import ScreensPanel from '../components/ScreensPanel'
+import SoundBoard from '../components/SoundBoard'
 import TopBar from '../components/TopBar'
 import {
   ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext,
@@ -30,37 +30,30 @@ import {
   saveTheme,
 } from '../service/adminScreen'
 import GlobalStyle from '../style/GlobalStyle'
-import { textStyle } from '../style/tokens'
 import selectDefaultAdventureId from '../utils/adventure'
 import { loadLatest } from '../utils/loadSafely'
 import nextOpenPanel from '../utils/navRail'
-import { filterSceneByKey, getMusicTitle } from '../utils/utils'
+import { filterSceneByKey } from '../utils/utils'
 
 import notesIcon from '/assets/icons/notes.svg'
-import playIcon from '/assets/icons/play.svg'
-import pauseIcon from '/assets/icons/pause.svg'
 import scenesIcon from '/assets/icons/scenes.svg'
 
 // Icon button (size.control.md, 40px) plus space.3 on both sides
 const NAV_RAIL_WIDTH = '64px'
 const LEFT_COLUMN_WIDTH = '240px'
-const RIGHT_COLUMN_WIDTH = '400px'
-const VOLUME_SLIDER_WIDTH = '120px'
-const VOLUME_SLIDER_THUMB_SIZE = '16px'
 
 const LOAD_ERROR_MESSAGE = 'Backend nicht erreichbar'
 const SAVE_ERROR_MESSAGE = 'Änderung konnte nicht gespeichert werden'
 const CONNECTION_ERROR_MESSAGE = 'Verbindung zum Server getrennt'
-const NO_AUDIO_OUTPUT_MESSAGE = 'Keine Audioausgabe bereit'
 
 const NAV_PANEL_ID = 'admin-nav-panel'
+const DASHBOARD_ID = 'admin-dashboard'
 
 const Screen = styled.div<{ $hasErrorBar: boolean }>`
     display: grid;
     grid-template-rows:
         ${(props) => props.theme.size.bar.md}
-        ${(props) => (props.$hasErrorBar ? 'auto ' : '')}1fr
-        ${(props) => props.theme.size.bar.lg};
+        ${(props) => (props.$hasErrorBar ? 'auto ' : '')}1fr;
     position: fixed;
     inset: 0;
     background-color: ${(props) => props.theme.colors.background};
@@ -70,7 +63,8 @@ const Screen = styled.div<{ $hasErrorBar: boolean }>`
     };
 `
 
-// Rail and panel sit flush between Top-Bar and Bottom-Bar; only the content keeps the outer padding
+// Rail and panel sit flush between Top-Bar and bottom edge; only the content keeps the outer
+// padding
 const Main = styled.div<{ $isPanelOpen: boolean }>`
     display: grid;
     grid-template-columns: ${NAV_RAIL_WIDTH}
@@ -87,108 +81,23 @@ const NavPanel = styled.div`
       ${(props) => props.theme.colors.secondary};
 `
 
-const Content = styled.div`
+// Notes about two thirds, dashboard one third of the width; without the dashboard the notes take
+// all of it
+const Content = styled.div<{ $isDashboardOpen: boolean }>`
     display: grid;
-    grid-template-columns: 1fr ${RIGHT_COLUMN_WIDTH};
+    grid-template-columns: ${(props) => (
+      props.$isDashboardOpen ? 'minmax(0, 2fr) minmax(0, 1fr)' : 'minmax(0, 1fr)'
+    )};
     gap: ${(props) => props.theme.space[5]};
     padding: ${(props) => props.theme.space[5]};
     min-width: 0;
     min-height: 0;
 `
 
-const SidebarRight = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: ${(props) => props.theme.space[5]};
-    min-height: 0;
-`
-
-const BottomBar = styled.div`
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    padding: 0 ${(props) => props.theme.space[5]};
-    background-color: ${(props) => props.theme.colors.dark};
-`
-
-const Music = styled.div`
-    display: flex;
-    align-items: center;
-    gap: ${(props) => props.theme.space[3]};
-    min-width: 0;
-    padding-right: ${(props) => props.theme.space[5]};
-`
-
-const AudioControlButton = styled.div<{ $isMusicPlaying: boolean }>`
-    display: grid;
-    place-items: center;
-    width: ${(props) => props.theme.size.control.md};
-    height: ${(props) => props.theme.size.control.md};
-    padding: 0;
-    background-color: ${(props) => (
-      props.$isMusicPlaying ? props.theme.colors.primary : props.theme.colors.secondary
-    )};
-    color: ${(props) => props.theme.colors.text.color};
-    border: none;
-    border-radius: ${(props) => props.theme.radius.md};
-    cursor: pointer;
-    svg {
-      display: block;
-      width: ${(props) => props.theme.size.icon};
-      height: ${(props) => props.theme.size.icon};
-    }
-`
-
-const Track = styled.div`
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    min-width: 0;
-`
-
-const TrackName = styled.span`
-    ${textStyle('sm')}
-    font-weight: ${(props) => props.theme.fontWeight.medium};
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-`
-
-const AudioHint = styled.span`
-    ${textStyle('sm')}
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-`
-
-const VolumeSlider = styled(Slider)`
-  & .MuiSlider-thumb {
-    width: ${VOLUME_SLIDER_THUMB_SIZE};
-    height: ${VOLUME_SLIDER_THUMB_SIZE};
-    background-color: ${(props) => props.theme.colors.text.color};
-    &:focus,
-    &:hover,
-    &:active {
-      box-shadow: none;
-    }
-  }
-  & .MuiSlider-rail {
-    background-color: ${(props) => props.theme.colors.secondary};
-    border-radius: ${(props) => props.theme.radius.pill};
-  }
-  & .MuiSlider-track {
-    background-color: ${(props) => props.theme.colors.primary};
-    border: none;
-  }
-`
-
 // A write to the API; the screens change only with the push of the server that follows it
 type Save = () => Promise<unknown>
 
 function AdminScreen(): ReactElement {
-  const theme = useTheme()
-
   const { activeAdventureId } = useContext(ActiveAdventureContext)
   const { activeSceneId } = useContext(ActiveSceneContext)
   const {
@@ -196,8 +105,6 @@ function AdminScreen(): ReactElement {
   } = useContext(GameTableContext)
   const { audio } = useContext(GameAudioContext)
   const isMusicPlaying = audio?.playing ?? false
-  // Only while the slider is dragged; afterwards it shows the volume pushed by the server
-  const [draggedVolume, setDraggedVolume] = useState<number | null>(null)
   const [adventures, setAdventures] = useState<AdventureSummary[]>()
   const [scenesDetails, setScenesDetails] = useState<SceneDetail[]>([])
   const [activeScene, setActiveScene] = useState<SceneDetail>()
@@ -208,6 +115,8 @@ function AdminScreen(): ReactElement {
   // Neither kept on the server nor in localStorage: after a reload the notes panel is open again
   const [openPanel, setOpenPanel] = useState<string | null>('docs')
   const [selectedStoryIndex, setSelectedStoryIndex] = useState<number>(0)
+  // Not kept either: after a reload the dashboard is shown again
+  const [isDashboardOpen, setIsDashboardOpen] = useState<boolean>(true)
 
   const [adventuresFailed, setAdventuresFailed] = useState<boolean>(false)
   const [adminDataFailed, setAdminDataFailed] = useState<boolean>(false)
@@ -370,20 +279,12 @@ function AdminScreen(): ReactElement {
     runSave(() => saveTheme(nextTheme))
   }
 
-  // A new audio state or a failed write ends the drag, so the slider shows the server's volume
-  const [prevVolumeSource, setPrevVolumeSource] = useState({ audio, failedSave })
-  if (prevVolumeSource.audio !== audio || prevVolumeSource.failedSave !== failedSave) {
-    setPrevVolumeSource({ audio, failedSave })
-    setDraggedVolume(null)
-  }
-
   const handleMusicToggle = () => {
     const playing = !isMusicPlaying
     runSave(() => saveAudio({ playing }))
   }
 
-  const handleVolumeCommit = (_event: unknown, value: number | number[]) => {
-    const volume = value as number
+  const handleVolumeCommit = (volume: number) => {
     runSave(() => saveAudio({ volume }))
   }
 
@@ -442,6 +343,45 @@ function AdminScreen(): ReactElement {
     setOpenPanel((open) => nextOpenPanel(open, id))
   }
 
+  // Fixed order and size; the panels cannot be moved or resized
+  const dashboardPanels: DashboardItem[] = [
+    {
+      id: 'scene',
+      label: 'Aktive Szene',
+      columns: 4,
+      rows: 2,
+      content: <ActiveScenePanel activeScene={activeScene} />,
+    },
+    {
+      id: 'music',
+      label: 'Musik',
+      columns: 4,
+      rows: 1,
+      content: (
+        <MusicControl
+          audio={audio}
+          failedSave={failedSave}
+          onToggle={handleMusicToggle}
+          onVolumeCommit={handleVolumeCommit}
+        />
+      ),
+    },
+    {
+      id: 'sounds',
+      label: 'Sounds',
+      columns: 2,
+      rows: 2,
+      content: <SoundBoard onPlaySound={handleSound} />,
+    },
+    {
+      id: 'screens',
+      label: 'Screens',
+      columns: 2,
+      rows: 2,
+      content: <ScreensPanel />,
+    },
+  ]
+
   return (
     <>
       <GlobalStyle />
@@ -456,7 +396,9 @@ function AdminScreen(): ReactElement {
           adventures={adventures ?? []}
           activeAdventureId={activeAdventureId}
           onSelectAdventure={handleAdventureSelection}
-          onPlaySound={handleSound}
+          isDashboardOpen={isDashboardOpen}
+          dashboardId={DASHBOARD_ID}
+          onToggleDashboard={() => setIsDashboardOpen((open) => !open)}
         />
         {hasErrorBar && (
         <div>
@@ -477,45 +419,11 @@ function AdminScreen(): ReactElement {
               {openNavItem.panel}
             </NavPanel>
           )}
-          <Content>
+          <Content $isDashboardOpen={isDashboardOpen}>
             <DocumentReader selectedStoryIndex={selectedStoryIndex} />
-            <SidebarRight>
-              <DetailsSideBar activeScene={activeScene} />
-            </SidebarRight>
+            {isDashboardOpen && <Dashboard id={DASHBOARD_ID} panels={dashboardPanels} />}
           </Content>
         </Main>
-        <BottomBar>
-          <Music>
-            <AudioControlButton $isMusicPlaying={isMusicPlaying} onClick={handleMusicToggle}>
-              <ReactSVG
-                src={isMusicPlaying ? pauseIcon : playIcon}
-                beforeInjection={(svg) => {
-                  const fill = isMusicPlaying ? theme.colors.onPrimary : theme.colors.text.color
-                  svg.setAttribute('style', `fill: ${fill}`)
-                }}
-              />
-            </AudioControlButton>
-            <Track>
-              <Label>Musik</Label>
-              <TrackName>{ getMusicTitle(audio?.track?.source ?? '') }</TrackName>
-              {audio !== null && !audio.output_ready && (
-                <AudioHint>{ NO_AUDIO_OUTPUT_MESSAGE }</AudioHint>
-              )}
-            </Track>
-            <Box sx={{ width: VOLUME_SLIDER_WIDTH, margin: 0, flexShrink: 0 }}>
-              <VolumeSlider
-                aria-label="Lautstärke"
-                value={draggedVolume ?? audio?.volume ?? 0}
-                onChange={(_event, value) => setDraggedVolume(value as number)}
-                onChangeCommitted={handleVolumeCommit}
-                min={0}
-                max={100}
-              />
-            </Box>
-          </Music>
-          <div />
-          <div />
-        </BottomBar>
       </Screen>
     </>
   )

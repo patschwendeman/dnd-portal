@@ -8,7 +8,7 @@ from app.core.config import settings
 from app.realtime import manager as realtime
 from app.realtime.manager import SCREENS, Connection, manager
 from app.realtime.origin import is_origin_allowed
-from app.realtime.push import make_audio_output, release_audio_output, report_track_ended, send_initial_state
+from app.realtime.push import make_audio_output, release_connection, report_track_ended, send_initial_state
 
 router = APIRouter()
 
@@ -46,7 +46,9 @@ async def _handle_message(connection: Connection, text: str) -> None:
 @router.websocket("")
 async def game_table_socket(websocket: WebSocket, screen: str | None = None) -> None:
     """Pushes the game table state (`{"type": "state", "payload": GameTableState}`), the audio state
-    (`{"type": "audio", "payload": AudioState}`) and `{"type": "ping"}`; to Walls also `audio_output` and `sound`.
+    (`{"type": "audio", "payload": AudioState}`) and `{"type": "ping"}`; to Walls also `audio_output` and `sound`, to
+    Admins also the number of connected screens per type (`{"type": "screens", "payload": {"wall": n, "ground": n,
+    "player": n}}`).
 
     Walls send `audio_ready` and `track_ended`; other messages are ignored (see docs/architecture.md).
     """
@@ -74,5 +76,6 @@ async def game_table_socket(websocket: WebSocket, screen: str | None = None) -> 
         if heartbeat is not None:
             heartbeat.cancel()
         manager.remove(connection)
-        # Shielded: also when the handler is cancelled (e.g. on shutdown), the others learn that the output is gone.
-        await asyncio.shield(release_audio_output(connection))
+        # Shielded: also when the handler is cancelled (e.g. on shutdown), the others learn that the output is gone and
+        # the Admins that the screen is.
+        await asyncio.shield(release_connection(connection))

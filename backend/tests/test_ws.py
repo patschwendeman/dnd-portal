@@ -1,6 +1,6 @@
 """Tests for the WebSocket /ws: snapshot on connect, push after PATCH /table and PATCH /adventures/{id}, screen and
 origin checks, heartbeat and removal of broken connections; audio output of the Walls (audio_ready, track_ended,
-audio_output, sound).
+audio_output, sound); number of connected screens for the Admins (screens).
 
 Changing tests use the fixture `db` (tests/conftest.py), which also serves the push. A client always reads its initial
 snapshot before the test continues, so the shared test session is never used by two threads at once.
@@ -27,7 +27,7 @@ FOREIGN_ORIGIN = "http://evil.example"
 RECEIVE_TIMEOUT_SECONDS = 2.0
 
 
-def receive_json(websocket: WebSocketTestSession) -> Any:
+def receive_any(websocket: WebSocketTestSession) -> Any:
     """Like `websocket.receive_json()`, but fails after a timeout instead of blocking forever when nothing is sent."""
 
     async def receive() -> Any:
@@ -38,6 +38,16 @@ def receive_json(websocket: WebSocketTestSession) -> Any:
     message = websocket.portal.call(receive)
     assert message["type"] == "websocket.send", message
     return json.loads(message["text"])
+
+
+def receive_json(websocket: WebSocketTestSession) -> Any:
+    """The next message except `screens`: Admins receive it whenever a screen connects or disconnects, which the tests
+    of state and audio do not care about. The `screens` tests read with `receive_any`.
+    """
+    message = receive_any(websocket)
+    while message["type"] == "screens":
+        message = receive_any(websocket)
+    return message
 
 
 def receive_state(websocket: WebSocketTestSession) -> dict[str, Any]:
@@ -442,3 +452,95 @@ def test_invalid_messages_do_not_break_the_connection(client: TestClient, text: 
         wall.send_bytes(b"\x00")
 
         assert become_output(wall)["output_ready"] is True
+
+
+def receive_screens(websocket: WebSocketTestSession) -> dict[str, int]:
+    message = receive_any(websocket)
+    assert message["type"] == "screens", message
+    assert set(message) == {"type", "payload"}
+    payload: dict[str, int] = message["payload"]
+    assert set(payload) == {"wall", "ground", "player"}
+    return payload
+
+
+def test_admin_receives_the_counts_after_the_snapshot(client: TestClient) -> None:
+    with client.websocket_connect("/ws?screen=wall") as wall:
+        receive_snapshot(wall)
+        with client.websocket_connect("/ws?screen=admin") as admin:
+            assert receive_state(admin)
+            assert receive_audio(admin)
+            assert receive_screens(admin) == {"wall": 1, "ground": 0, "player": 0}
+
+
+@pytest.mark.parametrize("screen", ["wall", "ground", "player"])
+def test_connect_and_disconnect_of_a_screen_is_pushed_to_admins(client: TestClient, screen: str) -> None:
+    zero = {"wall": 0, "ground": 0, "player": 0}
+    with (
+        client.websocket_connect("/ws?screen=admin") as first,
+        client.websocket_connect("/ws?screen=admin") as second,
+    ):
+        receive_snapshot(first)
+        assert receive_screens(first) == zero
+        receive_snapshot(second)
+        assert receive_screens(second) == zero
+
+        with client.websocket_connect(f"/ws?screen={screen}") as other:
+            receive_snapshot(other)
+            assert receive_screens(first) == {**zero, screen: 1}
+            assert receive_screens(second) == {**zero, screen: 1}
+            with client.websocket_connect(f"/ws?screen={screen}") as another:
+                receive_snapshot(another)
+                assert receive_screens(first) == {**zero, screen: 2}
+                assert receive_screens(second) == {**zero, screen: 2}
+
+            assert receive_screens(first) == {**zero, screen: 1}
+            assert receive_screens(second) == {**zero, screen: 1}
+
+        assert receive_screens(first) == zero
+        assert receive_screens(second) == zero
+
+
+def test_admins_are_not_counted(client: TestClient, db: Session) -> None:
+    with client.websocket_connect("/ws?screen=admin") as admin:
+        receive_snapshot(admin)
+        assert receive_screens(admin) == {"wall": 0, "ground": 0, "player": 0}
+        with client.websocket_connect("/ws?screen=admin") as other:
+            receive_snapshot(other)
+            assert receive_screens(other) == {"wall": 0, "ground": 0, "player": 0}
+
+        client.patch("/table", json={"theme": "tavern"})
+
+        # Neither the connect nor the disconnect of the second Admin was pushed: the next message is the state.
+        assert receive_any(admin)["type"] == "state"
+
+
+@pytest.mark.parametrize("screen", ["wall", "ground", "player"])
+def test_other_screens_do_not_receive_the_counts(client: TestClient, db: Session, screen: str) -> None:
+    with client.websocket_connect(f"/ws?screen={screen}") as websocket:
+        receive_snapshot(websocket)
+        with client.websocket_connect("/ws?screen=wall") as wall:
+            receive_snapshot(wall)
+
+        client.patch("/table", json={"theme": "tavern"})
+
+        # The connect and disconnect of the Wall changed the counts; still the next message is the state.
+        assert receive_any(websocket)["type"] == "state"
+
+
+def test_failed_send_to_a_screen_is_pushed_to_admins() -> None:
+    from app.realtime.manager import Connection, ConnectionManager
+
+    async def scenario() -> list[dict[str, Any]]:
+        connections = ConnectionManager()
+        admin = RecordingWebSocket()
+        connections.add(Connection(websocket=admin, screen="admin"))  # type: ignore[arg-type]
+        connections.add(Connection(websocket=BrokenWebSocket(), screen="ground"))  # type: ignore[arg-type]
+        await connections.push_screens()
+
+        await connections.broadcast({"type": "ping"})
+        return admin.messages
+
+    messages = asyncio.run(scenario())
+
+    screens = [message["payload"] for message in messages if message["type"] == "screens"]
+    assert screens == [{"wall": 0, "ground": 1, "player": 0}, {"wall": 0, "ground": 0, "player": 0}]

@@ -69,7 +69,6 @@ Die Werte stehen nur in [tokens.ts](src/style/tokens.ts).
 | `size.scrollbar` | Breite der Scrollleiste (Notizen im Admin) |
 | `size.button.minWidth` | Mindestbreite von Text-Buttons |
 | `size.bar.md` | Top-Bar, Höhe der schwebenden Steuerleiste |
-| `size.bar.lg` | Bottom-Bar im Admin |
 
 **Ebenen (`z-index`):** `z-index` nur über `layer.*`, nie als freie Zahl. Was im Grid-Layout ohnehin richtig
 liegt, bekommt keinen `z-index`. `layer.raised` gilt nur innerhalb einer Komponente mit eigenem Stapelkontext.
@@ -101,8 +100,8 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 |---|---|---|
 | `space.1` | innerhalb einer Gruppe | Icon-Gruppe, Navigationseinträge, Button-Gruppe, Label über Überschrift |
 | `space.2` | Label vor Inhalt in derselben Zeile, Menüpunkte untereinander | Menüpunkte der Navigationsleiste; sonst als Teil zusammengesetzter Abstände, z. B. am Label der Panel-Listen |
-| `space.3` | zusammengehörige Elemente, Label → Inhalt darunter | Musik-Button → Titel, Zeilen der Details, Dialog-Buttons, „Notizen“ bzw. „Szenen“ → Navigation (`padding-bottom: space.2` am Label plus `gap` `space.1` der Spalte) |
-| `space.4` | Gruppen in einer Leiste, Elemente im Dialog | Sound-Gruppen in der Top-Bar, Bild → Text → Buttons |
+| `space.3` | zusammengehörige Elemente, Label → Inhalt darunter | Musik-Button → Titel, Label → Inhalt im Dashboard-Panel, Zeilen im Panel „Screens“, Dialog-Buttons, „Notizen“ bzw. „Szenen“ → Navigation (`padding-bottom: space.2` am Label plus `gap` `space.1` der Spalte) |
+| `space.4` | Gruppen in einer Leiste, Elemente im Dialog | Sound-Gruppen im Panel „Sounds“ (nebeneinander; umbrochene Zeilen `space.2`), Panels im Dashboard, Bild → Text → Buttons |
 | `space.5` | Bereiche | Spalten im Admin, Karten, Notizseiten, Gruppen in der Steuerleiste |
 | `space.6`–`space.8` | große Flächen | Abstand zum Bildschirmrand, Innenabstände nach der nächsten Tabelle |
 
@@ -111,7 +110,7 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 | Fläche | Innenabstand |
 |---|---|
 | schwebende Steuerleiste | `space.2` |
-| Karte | `space.5` |
+| Karte, Dashboard-Panel | `space.5` |
 | Dialog | `space.5` seitlich und unten |
 | Leisten (seitlich) | `space.5` |
 | Navigationsleiste im Admin | `space.5` oben/unten (seitlich aus `NAV_RAIL_WIDTH`) |
@@ -149,7 +148,9 @@ Titel und normale Texte wie „Confirm“.
 | Weltkarte | `radius.md` |
 | Bedienelemente (Buttons, Navigation, Icon-Buttons, Ressourcen-Buttons im Player) | `radius.md` |
 | Zauber- und Spezialplatz (Player) | `radius.sm` |
-| Karte, Notizseite, Wall-Panel, Dialog | `radius.lg` |
+| Karte, Dashboard-Panel, Notizseite, Wall-Panel, Dialog | `radius.lg` |
+| Vorschaubild im Panel „Aktive Szene“ | `radius.md` |
+| Status-Punkt im Panel „Screens“ | `radius.pill` |
 | schwebende Leiste | `radius.xl` |
 | Slider-Schiene | `radius.pill` |
 
@@ -188,16 +189,16 @@ gemeinsame Komponenten gibt es `TextButton` ([TextButton.tsx](src/components/Tex
 Aufbau je Baustein in [components.md](docs/design/components.md): [Icon-Button](docs/design/components.md#icon-button),
 [Text-Button](docs/design/components.md#text-button), [Button-Gruppe](docs/design/components.md#button-gruppe),
 [Navigationseintrag](docs/design/components.md#navigationseintrag), [Navigationsleiste](docs/design/components.md#navigationsleiste) (Admin), [Label](docs/design/components.md#label),
-[Karte](docs/design/components.md#karte), [Ressourcen-Button](docs/design/components.md#ressourcen-button) (Player),
+[Karte](docs/design/components.md#karte), [Dashboard-Panel](docs/design/components.md#dashboard-panel) (Admin), [Status-Punkt](docs/design/components.md#status-punkt) (Admin), [Ressourcen-Button](docs/design/components.md#ressourcen-button) (Player),
 [Overlay-Panel](docs/design/components.md#overlay-panel) (Wall), [Schwebende Steuerleiste](docs/design/components.md#schwebende-steuerleiste)
 (Wall, Ground),
 [Dialog](docs/design/components.md#dialog), [Dialog „Spieler verbinden“](docs/design/components.md#dialog-spieler-verbinden) (Admin), [Top-Bar](docs/design/components.md#top-bar),
-[Theme-Menü](docs/design/components.md#theme-menü) (Player), [Bottom-Bar](docs/design/components.md#bottom-bar) (Admin), [Hinweisleiste](docs/design/components.md#hinweisleiste) (Admin),
+[Theme-Menü](docs/design/components.md#theme-menü) (Player), [Hinweisleiste](docs/design/components.md#hinweisleiste) (Admin),
 [Slider](docs/design/components.md#slider) (Ground).
 
 ### 1.6 Screen-Layouts
 
-Aufbau von Admin (Grid aus Top-Bar, Navigationsleiste mit Panel, Notizen und rechter Spalte, Bottom-Bar), Wall (Vollbild mit Overlay-Panel und Steuerleiste),
+Aufbau von Admin (Grid aus Top-Bar, Navigationsleiste mit Panel, Notizen und Dashboard), Wall (Vollbild mit Overlay-Panel und Steuerleiste),
 Ground (Vollbild-Medium mit Raster und Steuerleiste) und Player (Smartphone im Querformat, Karte mit
 Ressourcen-Buttons): [screen-layouts.md](docs/design/screen-layouts.md#screen-layouts).
 
@@ -221,13 +222,13 @@ Wechselt mit dem Theme.
 
 | Rolle | Bedeutung | Verwendung |
 |---|---|---|
-| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Navigationsleiste und Panel im Admin, Wall-Panel, Nebenaktion ([2.4](#24-zustände)) |
-| `secondary` | erhöhte Fläche | Karten, Dialog, Nach-oben-Button, Slider-Schiene, Hintergrund der Wall, Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel im Admin, inaktiver Zustand ([2.4](#24-zustände)) |
-| `dark` | tiefste Fläche | Bottom-Bar, schwebende Steuerleiste |
-| `primary` | Akzent, aktiv | Links, Slider-Füllung, aktiver Zustand ([2.4](#24-zustände)) |
+| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Navigationsleiste und Panel im Admin, Wall-Panel, Nebenaktion ([2.4](#24-zustände)); Flächen in Dashboard-Panels (Vorschaubilder, Play-Button ohne Musik, Slider-Schiene der Lautstärke, Button „In neuem Fenster öffnen“, Button „QR-Code“) |
+| `secondary` | erhöhte Fläche | Karten, Dashboard-Panels, Dialog, Nach-oben-Button, Slider-Schiene, Hintergrund der Wall, Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel im Admin, inaktiver Zustand ([2.4](#24-zustände)) |
+| `dark` | tiefste Fläche | schwebende Steuerleiste |
+| `primary` | Akzent, aktiv | Links, Slider-Füllung, Status-Punkt „verbunden“, aktiver Zustand ([2.4](#24-zustände)) |
 | `border` | Linien | Trennlinien in Karten und Top-Bar, Ränder von Notizseiten, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |
 | `overlay` | Abdunklung | Hintergrund hinter dem Dialog |
-| `text.color` | Vordergrund | Text, Icon-Füllung, Slider-Griff |
+| `text.color` | Vordergrund | Text, Icon-Füllung, Slider-Griff, Ring des Status-Punkts „nicht verbunden“ |
 | `onPrimary` | Vordergrund auf Akzent | aktiver Zustand ([2.4](#24-zustände)) |
 | `error` | Fläche für Fehler | Hinweisleiste im Admin |
 | `onError` | Vordergrund auf `error` | Text, Icon und Fokus-Outline der Hinweisleiste |
@@ -246,8 +247,8 @@ gleich, weil sie Bedeutung tragen, nicht Stimmung. Die `resource.*`-Töne sind s
 
 | Zustand | Rolle | Beispiele |
 |---|---|---|
-| aktiv / ausgewählt | Fläche `primary`, Text und Icons `onPrimary` | aktive Buttons und Navigation, aktiver Menüpunkt der Navigationsleiste, aktive Szene im Panel „Szenen“, Confirm, Play-Button während die Musik läuft |
-| inaktiv / normal | `secondary` | inaktive Buttons und Navigation, Play-Button ohne Musik; Ausnahme: inaktive Menüpunkte der Navigationsleiste und Panel-Einträge im Admin ohne eigene Fläche, `secondary` nur bei Hover ([Navigationsleiste](docs/design/components.md#navigationsleiste), [Navigationseintrag](docs/design/components.md#navigationseintrag)) |
+| aktiv / ausgewählt | Fläche `primary`, Text und Icons `onPrimary` | aktive Buttons und Navigation, aktiver Menüpunkt der Navigationsleiste, aktive Szene im Panel „Szenen“, Icon-Button „Dashboard“ bei offenem Dashboard, Confirm, Play-Button während die Musik läuft |
+| inaktiv / normal | `secondary` | inaktive Buttons und Navigation; in Dashboard-Panels (Fläche `secondary`) stattdessen `background`, z. B. Play-Button ohne Musik; Ausnahme: inaktive Menüpunkte der Navigationsleiste und Panel-Einträge im Admin ohne eigene Fläche, `secondary` nur bei Hover ([Navigationsleiste](docs/design/components.md#navigationsleiste), [Navigationseintrag](docs/design/components.md#navigationseintrag)) |
 | Abbrechen, Nebenaktion | `background` | Decline-Button |
 | Fläche auf Fläche | `background` → `secondary` → `dark` | welche Fläche welche Rolle hat: [2.2](#22-rollen) |
 | Linie | `border`, nie `text.color` | Ausnahme: `secondary` für die Linie unter der Top-Bar und die Linien rechts an Navigationsleiste und Panel im Admin ([2.2](#22-rollen)) |

@@ -3,6 +3,13 @@ import {
   AudioState, GameTableState, SoundName, Theme, Track,
 } from '../models/models'
 
+// Number of open connections per screen type, without the Admins
+export interface ScreenCounts {
+  wall: number
+  ground: number
+  player: number
+}
+
 // Messages on /ws, see docs/architecture.md (not part of the OpenAPI contract)
 export type ServerMessage = { type: 'state', payload: GameTableState }
   | { type: 'audio', payload: AudioState }
@@ -10,6 +17,8 @@ export type ServerMessage = { type: 'state', payload: GameTableState }
   | { type: 'audio_output', payload: { active: boolean } }
   // Only to the audio output
   | { type: 'sound', payload: { name: SoundName } }
+  // Only to Admins: sent after connecting and whenever a count changes
+  | { type: 'screens', payload: ScreenCounts }
   | { type: 'ping' }
 
 // Sent only by the Wall; the server ignores messages of the other screens
@@ -83,6 +92,21 @@ const parseAudio = (payload: unknown): AudioState | null => {
   }
 }
 
+const isCount = (value: unknown): value is number => (
+  typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+)
+
+const parseScreens = (payload: unknown): ScreenCounts | null => {
+  if (!isRecord(payload)) {
+    return null
+  }
+  const { wall, ground, player } = payload
+  if (!isCount(wall) || !isCount(ground) || !isCount(player)) {
+    return null
+  }
+  return { wall, ground, player }
+}
+
 // Returns null for anything that is not a valid, known message, so a newer server can add message
 // types
 export const parseServerMessage = (data: unknown): ServerMessage | null => {
@@ -116,6 +140,10 @@ export const parseServerMessage = (data: unknown): ServerMessage | null => {
   if (message.type === 'sound') {
     const name = isRecord(message.payload) ? message.payload.name : undefined
     return isSoundName(name) ? { type: 'sound', payload: { name } } : null
+  }
+  if (message.type === 'screens') {
+    const payload = parseScreens(message.payload)
+    return payload === null ? null : { type: 'screens', payload }
   }
   return null
 }

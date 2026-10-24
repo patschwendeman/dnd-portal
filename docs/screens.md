@@ -23,12 +23,23 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   „Kampf“ (Kampf starten). Die Mitte zeigt dabei weiter die Notizen.
 - Musik ein- und ausschalten.
 - Verschiedene Sounds abspielen.
+- Dashboard rechts neben den Notizen: festes Raster aus Panels, in dem alles gebündelt ist, was der Spielleiter während
+  des Spiels steuert (umgesetzt: „Aktive Szene“, „Musik“, „Sounds“, „Screens“; geplant: „Spieler“, „Level“,
+  „Wall-Overlay“).
 
 ### Ist
-- **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Top-Bar, Hauptbereich, Bottom-Bar. Im Hauptbereich
-  ganz links die Navigationsleiste, daneben das Panel des aktiven Menüpunkts (beide bündig zwischen Top-Bar und
-  Bottom-Bar), in der Mitte die Notizen, rechts die Karte „Aktive Szene“. Die Bottom-Bar zeigt links die Musik, Mitte und rechte
-  Seite sind leer.
+- **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Top-Bar und Hauptbereich, keine Bottom-Bar. Im
+  Hauptbereich ganz links die Navigationsleiste, daneben das Panel des aktiven Menüpunkts (beide bündig zwischen Top-Bar
+  und unterem Rand), in der Mitte die Notizen (etwa zwei Drittel), rechts das Dashboard (etwa ein Drittel). Die Mitte
+  der Top-Bar ist leer.
+- **Dashboard:** Raster mit vier Spalten und fester Zeilenhöhe; die Panels haben feste Größe und Position (kein
+  Verschieben): oben „Aktive Szene“ über die volle Breite (2 Zeilen), darunter „Musik“ über die volle Breite (1 Zeile),
+  darunter „Sounds“ und „Screens“ nebeneinander (je 2 Spalten, 2 Zeilen). Inhalt, der nicht in ein Panel passt, scrollt
+  darin; ist das Raster höher als der Hauptbereich, scrollt das Dashboard für sich. Der Icon-Button „Dashboard“ rechts
+  in der Top-Bar (links vom Theme-Umschalter, hervorgehoben solange das Dashboard offen ist) blendet es aus – die Notizen
+  nehmen dann die volle Breite, Musik, Sounds und QR-Code sind nicht erreichbar – und wieder ein. Auswahl und
+  Scrollposition der Notizen bleiben erhalten; der Zustand wird nicht gespeichert, nach einem Reload ist das Dashboard
+  offen.
 - **Navigationsleiste:** schmale Leiste mit Icon-Buttons „Notizen“ und darunter „Szenen“ (Tooltip mit dem Namen);
   beim Laden ist „Notizen“ aktiv und hervorgehoben. Klick (oder Enter/Leertaste) auf einen anderen Menüpunkt wechselt
   das Panel, die Mitte zeigt dabei weiter die Notizen. Klick auf den aktiven Menüpunkt klappt das Panel ein,
@@ -57,14 +68,15 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Verbindung:** Bricht die Verbindung zum Server ab (spätestens nach etwa 35 s ohne Nachricht erkannt), zeigt der
   Admin die Hinweisleiste „Verbindung zum Server getrennt“ und behält den letzten Stand; er verbindet sich selbst neu
   (1 s, 2 s, 4 s … höchstens 10 s), „Erneut versuchen“ verbindet sofort. Danach verschwindet die Leiste.
-- **Szenen-Details:** Karte „Aktive Szene“ mit Name und Beschreibung, ohne aktive Szene der Hinweis „Keine Szene
-  aktiv“; „Enemies“ und „Loot“ sind nur Platzhalter („–“).
+- **Aktive Szene:** Panel mit den Vorschaubildern „Wall“ und „Ground“ der aktiven Szene nebeneinander, darunter Name
+  und Beschreibung (höchstens zwei Zeilen, Rest gekürzt, voller Text als Tooltip); fehlt ein Bild, bleibt seine Fläche
+  leer. Ohne aktive Szene der Hinweis „Keine Szene aktiv“.
 - **Notizen:** Das Panel „Notizen“ listet die Einträge Main, Fight, Side, Leveling, Mechaniken (Start: Main; per
   Tastatur bedienbar wie die Szenenliste); die Mitte zeigt die Notizen des gewählten Eintrags (Markdown aus `public/story/`), auch bei eingeklapptem Panel.
   Inhaltsverzeichnis-Links, Bilder öffnen in neuem Tab. Eintrag „Side“ ist leer (Ordner fehlt).
 - **Musik (Fernbedienung):** Der Admin spielt selbst nichts ab; Musik und Soundeffekte kommen aus der Wall, die
-  Audioausgabe ist (siehe Wall Screen). Bottom-Bar links Play/Pause, „Musik“ mit dem Titel des aktuellen
-  Tracks und ein Lautstärke-Slider (gesendet beim Loslassen). Die Anzeige folgt dem Zustand auf dem
+  Audioausgabe ist (siehe Wall Screen). Panel „Musik“ mit Play/Pause, dem Titel des aktuellen
+  Tracks und einem Lautstärke-Slider (gesendet beim Loslassen). Die Anzeige folgt dem Zustand auf dem
   Server, auch für mehrere Admin-Fenster. Der Server spielt zufällige Tracks aus der Playlist der aktiven Szene; nach
   einem Trackende folgt ein anderer Track (bei nur einem derselbe von vorne), die Musik stoppt nur durch Pause. Beim
   Szenenwechsel wechselt sofort der Track – lief die Musik, spielt er direkt weiter, sonst bleibt sie pausiert. Ohne
@@ -72,16 +84,24 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   bereit“; die Befehle ändern trotzdem den Zustand, und eine Wall, die Ausgabe wird, setzt damit ein. Nach einem
   API-Neustart ist die Musik pausiert. Fehler bei Musik-Befehlen zeigt die Hinweisleiste „Änderung konnte nicht
   gespeichert werden“.
-- **Sounds:** Top-Bar mittig mit Buttons für Soundeffekte in Gruppen (Heilung/Trank, Buff, Zauber, Debuff, Lock); die
+- **Sounds:** Panel „Sounds“ mit Buttons für Soundeffekte in Gruppen (Heilung/Trank, Buff, Zauber, Debuff, Lock; die
+  Gruppen brechen im Panel um und sind durch Abstand getrennt); die
   Wall, die Audioausgabe ist, spielt sie über der Musik. Ohne Ausgabe passiert nichts (kein Fehler), Fehler beim Senden
   werden nur geloggt.
 - Theme-Umschalter (Settings-Icon rechts in der Top-Bar): schaltet das Theme global für Admin, Wall, Ground und die
   Player Screens um (außer auf Smartphones, deren Spieler lokal ein anderes Theme gewählt hat).
-- **Spieler verbinden:** Ein Button mit Handy-Icon rechts in der Top-Bar öffnet einen Dialog mit dem QR-Code der
+- **Screens:** Panel mit je einer Zeile für Wall und Ground: Name, Status-Punkt und „verbunden“ bzw. „nicht
+  verbunden“ (bei mehreren Verbindungen „2 verbunden“ usw.), bei der Wall zusätzlich „Audioausgabe“, wenn eine Wall
+  Ausgabe ist, und ein Icon-Button „In neuem Fenster öffnen“ (`/wall` bzw. `/ground` in einem eigenen Fenster je
+  Screen; ein weiterer Klick holt das offene Fenster nach vorn, ohne es neu zu laden). Darunter „N Spieler verbunden“
+  und der Button „QR-Code“. Die Zahlen schickt der Server bei jeder Änderung (Öffnen oder Schließen eines Screens); bis
+  zur ersten Meldung steht „–“.
+- **Spieler verbinden:** Der Button „QR-Code“ im Panel „Screens“ öffnet einen Dialog mit dem QR-Code der
   Player-URL (dunkel auf hellem Grund, unabhängig vom Theme) und der URL als Text; die Spieler scannen ihn mit der
   Smartphone-Kamera. Die URL kommt vom Start-Skript (`dnd prod`: `http://<IP>:8080/`) bzw. ist der Origin des Admins,
   wenn dieser über die IP geöffnet ist; sonst zeigt der Dialog „Player-URL unbekannt – Spieltisch mit „dnd prod“
-  starten oder den Admin über die IP des Rechners öffnen“. Schließen per Button, Escape oder Klick außerhalb.
+  starten oder den Admin über die IP des Rechners öffnen“. Schließen per Button, Escape oder Klick außerhalb; der Fokus
+  kehrt danach zum Button zurück.
 - **Ladefehler:** Lassen sich Abenteuer oder Szenen nicht laden (Backend nicht erreichbar, Timeout, HTTP-Fehler), erscheint unter der
   Top-Bar die Hinweisleiste „Backend nicht erreichbar“ mit Button „Erneut versuchen“; bei Erfolg verschwindet sie.
   Keine automatischen Wiederholungen. Kann eine Notizdatei nicht geladen werden, zeigt der Notizbereich „Notizen

@@ -65,7 +65,6 @@ const size = {
   },
   bar: {
     md: '56px',
-    lg: '80px',
   },
 }
 

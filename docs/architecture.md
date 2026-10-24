@@ -6,7 +6,7 @@
  │ /admin   │  │ /wall    │  │ /ground  │                            │ /        │ × n
  └────┬─────┘  └────┬─────┘  └────┬─────┘                            └────┬─────┘
       │ HTTP GET/PATCH/POST (axios, /api/...)                             │ nur WebSocket (Theme)
-      │ WebSocket /ws?screen=… (Snapshots, Audio, Ping; Wall → Server: Audio-Meldungen)
+      │ WebSocket /ws?screen=… (Snapshots, Audio, Ping, an Admins Screen-Zahlen; Wall → Server: Audio-Meldungen)
       └─────────────┴─────────────┴──────────────────────────────────────┘
                     │ gleicher Origin: Vite-Proxy (Dev :5173) bzw. nginx (Prod :8080)
                     │ /api/… → API (Präfix entfernt), /ws → API
@@ -73,6 +73,7 @@ Server → Client:
 | `{"type": "audio", "payload": AudioState}` | alle | direkt nach dem Verbinden (nach `state`), nach jeder Änderung des Musikzustands (Audio-Endpoints, Wechsel der aktiven Szene nach dem `state`-Push, Ausgabe bereit bzw. getrennt, Trackende) |
 | `{"type": "audio_output", "payload": {"active": bool}}` | betroffene Wall | `true` an die Wall, die per `audio_ready` Ausgabe wird; `false` an die bisherige Ausgabe, die die Rolle verliert |
 | `{"type": "sound", "payload": {"name": SoundName}}` | nur die Ausgabe | nach `POST /table/sounds`; ohne Ausgabe verfällt der Sound |
+| `{"type": "screens", "payload": {"wall": int, "ground": int, "player": int}}` | nur Admins | direkt nach dem Verbinden eines Admins (nach `state` und `audio`) und an alle Admins, sobald sich die Zahl der Verbindungen eines Typs ändert (Verbinden, Trennen, Entfernen nach fehlgeschlagenem Senden); Admins werden nicht gezählt |
 | `{"type": "ping"}` | alle | alle 15 s (Heartbeat) |
 
 Client → Server (nur von Verbindungen mit `screen=wall` ausgewertet; andere Screens, ungültiges JSON und unbekannte
@@ -90,7 +91,11 @@ und Port des `Origin` dem `Host`-Header entsprechen (gleicher Origin über den P
 (HTTP 403). Der Push läuft als async `BackgroundTask` der Schreib-Route nach dem Commit mit eigener DB-Session; das
 Lesen und Senden der Snapshots ist serialisiert, damit jeder Client sie in Lesereihenfolge erhält. Schlägt das Senden
 fehl (oder dauert länger als 5 s), entfernt der Manager die Verbindung, der Client verbindet sich neu. Unbekannte
-Nachrichtentypen ignoriert der Client (`parseServerMessage`, `src/realtime/messages.ts`). Der Client sendet nur über
+Nachrichtentypen ignoriert der Client (`parseServerMessage`, `src/realtime/messages.ts`). Die Verbindungszahlen für
+`screens` zählt der `ConnectionManager` aus seinen offenen Verbindungen (nur im Speicher, nicht in `GameTableState`);
+er merkt sich die zuletzt gepushten Zahlen und sendet nur bei einer Änderung, serialisiert über ein eigenes Lock. Im
+Frontend stellt der `GameTableProvider` sie als `screens` im `GameTableContext` bereit (bis zur ersten Nachricht
+`null`). Der Client sendet nur über
 eine offene Verbindung, sonst verwirft er die Nachricht.
 
 ### Audio
@@ -118,10 +123,10 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
   sofort. Soundeffekte spielt sie bei voller Lautstärke parallel (Dateien aus `public/assets/sounds`, Liste in
   `src/audio/sounds.ts`). Scheitert `play()` (Autoplay), loggt sie per `console.error`. Nach einem Reconnect meldet
   sich eine Wall, die vorher Ausgabe war, von selbst wieder mit `audio_ready`, bis eine andere Wall übernimmt.
-- **Admin als Fernbedienung:** zeigt `playing`, den Tracktitel (`getMusicTitle(track.source)`) und ohne Ausgabe den
+- **Admin als Fernbedienung** (Panels „Musik“ und „Sounds“ im Dashboard): zeigt `playing`, den Tracktitel (`getMusicTitle(track.source)`) und ohne Ausgabe den
   Hinweis „Keine Audioausgabe bereit“; Play/Pause (`PATCH /table/audio {playing}`), Lautstärke-Slider
   (`PATCH /table/audio {volume}` beim Loslassen) – ohne lokale Vorwegnahme, Fehler in der Speicherfehler-Leiste mit
-  „Erneut versuchen“. Die Sound-Buttons der Top-Bar senden `POST /table/sounds`; Fehler werden nur geloggt (kein
+  „Erneut versuchen“. Die Sound-Buttons senden `POST /table/sounds`; Fehler werden nur geloggt (kein
   Retry). Im Admin wird nichts abgespielt.
 
 ## Backend (`backend`)
@@ -419,8 +424,8 @@ oben: `backend/.env`.
 
 UI unter http://localhost:8080/admin, `/wall` und `/ground`; Wall und Ground können auch in anderen Browsern oder auf
 anderen Geräten laufen (`http://<IP des Rechners>:8080/wall`). Smartphones öffnen den Player Screen über
-`http://<IP des Rechners>:8080/` (gleicher Build, kein Sonder-Build): am einfachsten per QR-Code im Admin (Top-Bar,
-„Spieler verbinden“) oder über die URL, die `dnd prod` ausgibt. Der Dialog nimmt `player_url` aus `GET /table/join`;
+`http://<IP des Rechners>:8080/` (gleicher Build, kein Sonder-Build): am einfachsten per QR-Code im Admin (Dashboard,
+Panel „Screens“, Button „QR-Code“) oder über die URL, die `dnd prod` ausgibt. Der Dialog nimmt `player_url` aus `GET /table/join`;
 ist sie `null` (Stack ohne Skript gestartet), nimmt er den Origin des Admins, sofern dieser nicht über `localhost`,
 `127.0.0.1` oder `[::1]` geöffnet ist (`selectPlayerUrl`, `src/utils/playerUrl.ts`), sonst zeigt er den Hinweis
 „Player-URL unbekannt …“. nginx (`frontend/nginx.conf`) leitet `/api/` an die API weiter (Präfix entfernt,

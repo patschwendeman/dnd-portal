@@ -68,11 +68,17 @@ async def update_audio(update: AudioUpdate) -> AudioState:
 
 
 async def send_initial_state(connection: Connection) -> bool:
-    """Registers the connection and sends it the current state and audio state; False if a send failed."""
+    """Registers the connection and sends it the current state and audio state, to an Admin also the connection
+    counts; False if a send failed. A new Wall, Ground or Player changes the counts the Admins see.
+    """
     async with manager.state_lock:
         manager.add(connection)
         state = await run_in_threadpool(_read_state)
-        return await manager.send(connection, state_message(state)) and await manager.send(connection, audio_message())
+        sent = await manager.send(connection, state_message(state)) and await manager.send(connection, audio_message())
+        if connection.screen == "admin":
+            return sent and await manager.send_screens(connection)
+        await manager.push_screens()
+        return sent
 
 
 async def send_sound(name: SoundName) -> None:
@@ -100,3 +106,9 @@ async def release_audio_output(connection: Connection) -> None:
     async with manager.state_lock:
         if audio.release_output(connection):
             await manager.broadcast(audio_message())
+
+
+async def release_connection(connection: Connection) -> None:
+    """After a disconnect (the connection is already removed): releases its audio output and pushes the new counts."""
+    await release_audio_output(connection)
+    await manager.push_screens()
