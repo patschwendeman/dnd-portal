@@ -1,6 +1,7 @@
 """Tests for the WebSocket /ws: snapshot on connect, push after PATCH /table and PATCH /adventures/{id}, screen and
 origin checks, heartbeat and removal of broken connections; audio output of the Walls (audio_ready, track_ended,
-audio_output, sound); number of connected screens for the Admins (screens).
+audio_output, sound); number of connected screens for the Admins (screens); full screen of Walls and Grounds controlled
+by the Admins (fullscreen, fullscreen_state, fullscreen_rejected).
 
 Changing tests use the fixture `db` (tests/conftest.py), which also serves the push. A client always reads its initial
 snapshot before the test continues, so the shared test session is never used by two threads at once.
@@ -454,13 +455,24 @@ def test_invalid_messages_do_not_break_the_connection(client: TestClient, text: 
         assert become_output(wall)["output_ready"] is True
 
 
-def receive_screens(websocket: WebSocketTestSession) -> dict[str, int]:
+NO_FULLSCREEN = {"wall": 0, "ground": 0}
+
+
+def receive_screens_payload(websocket: WebSocketTestSession) -> dict[str, Any]:
     message = receive_any(websocket)
     assert message["type"] == "screens", message
     assert set(message) == {"type", "payload"}
-    payload: dict[str, int] = message["payload"]
-    assert set(payload) == {"wall", "ground", "player"}
+    payload: dict[str, Any] = message["payload"]
+    assert set(payload) == {"wall", "ground", "player", "fullscreen"}
+    assert set(payload["fullscreen"]) == {"wall", "ground"}
     return payload
+
+
+def receive_screens(websocket: WebSocketTestSession) -> dict[str, int]:
+    """The connection counts; the tests of the counts expect no screen in full screen."""
+    payload = receive_screens_payload(websocket)
+    assert payload["fullscreen"] == NO_FULLSCREEN
+    return {screen: payload[screen] for screen in ("wall", "ground", "player")}
 
 
 def test_admin_receives_the_counts_after_the_snapshot(client: TestClient) -> None:
@@ -543,4 +555,159 @@ def test_failed_send_to_a_screen_is_pushed_to_admins() -> None:
     messages = asyncio.run(scenario())
 
     screens = [message["payload"] for message in messages if message["type"] == "screens"]
-    assert screens == [{"wall": 0, "ground": 1, "player": 0}, {"wall": 0, "ground": 0, "player": 0}]
+    assert screens == [
+        {"wall": 0, "ground": 1, "player": 0, "fullscreen": NO_FULLSCREEN},
+        {"wall": 0, "ground": 0, "player": 0, "fullscreen": NO_FULLSCREEN},
+    ]
+
+
+def receive_fullscreen(websocket: WebSocketTestSession) -> bool:
+    message = receive_json(websocket)
+    assert message == {"type": "fullscreen", "payload": {"active": message["payload"]["active"]}}, message
+    active: bool = message["payload"]["active"]
+    return active
+
+
+@pytest.mark.parametrize("screen", ["wall", "ground"])
+@pytest.mark.parametrize("active", [True, False])
+def test_fullscreen_request_of_an_admin_reaches_all_screens_of_the_type(
+    client: TestClient, db: Session, screen: str, active: bool
+) -> None:
+    other = "ground" if screen == "wall" else "wall"
+    with (
+        client.websocket_connect("/ws?screen=admin") as admin,
+        client.websocket_connect(f"/ws?screen={screen}") as first,
+        client.websocket_connect(f"/ws?screen={screen}") as second,
+        client.websocket_connect(f"/ws?screen={other}") as unrelated,
+        client.websocket_connect("/ws?screen=player") as player,
+    ):
+        for websocket in (admin, first, second, unrelated, player):
+            receive_snapshot(websocket)
+
+        admin.send_json({"type": "fullscreen", "payload": {"screen": screen, "active": active}})
+
+        assert receive_fullscreen(first) is active
+        assert receive_fullscreen(second) is active
+        client.patch("/table", json={"theme": "tavern"})
+        # The other screen type, the Player and the Admin itself received no fullscreen: the next message is the state.
+        for websocket in (unrelated, player, admin):
+            assert receive_json(websocket)["type"] == "state"
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        None,
+        {"screen": "wall"},
+        {"screen": "wall", "active": "yes"},
+        {"screen": "player", "active": True},
+        {"screen": "admin", "active": True},
+        {"active": True},
+    ],
+)
+def test_invalid_fullscreen_requests_are_ignored(client: TestClient, db: Session, payload: Any) -> None:
+    with (
+        client.websocket_connect("/ws?screen=admin") as admin,
+        client.websocket_connect("/ws?screen=wall") as wall,
+    ):
+        receive_snapshot(admin)
+        receive_snapshot(wall)
+
+        admin.send_json({"type": "fullscreen", "payload": payload})
+        client.patch("/table", json={"theme": "tavern"})
+
+        assert receive_json(wall)["type"] == "state"
+
+
+@pytest.mark.parametrize("screen", ["wall", "ground", "player"])
+def test_fullscreen_requests_of_other_screens_are_ignored(client: TestClient, db: Session, screen: str) -> None:
+    with (
+        client.websocket_connect(f"/ws?screen={screen}") as sender,
+        client.websocket_connect("/ws?screen=wall") as wall,
+    ):
+        receive_snapshot(sender)
+        receive_snapshot(wall)
+
+        sender.send_json({"type": "fullscreen", "payload": {"screen": "wall", "active": True}})
+        client.patch("/table", json={"theme": "tavern"})
+
+        assert receive_json(wall)["type"] == "state"
+
+
+@pytest.mark.parametrize("screen", ["wall", "ground"])
+def test_fullscreen_state_of_a_screen_is_pushed_to_admins(client: TestClient, screen: str) -> None:
+    with client.websocket_connect("/ws?screen=admin") as admin:
+        receive_snapshot(admin)
+        assert receive_screens(admin) == {"wall": 0, "ground": 0, "player": 0}
+        with client.websocket_connect(f"/ws?screen={screen}") as websocket:
+            receive_snapshot(websocket)
+            assert receive_screens(admin)[screen] == 1
+
+            websocket.send_json({"type": "fullscreen_state", "payload": {"active": True}})
+            assert receive_screens_payload(admin)["fullscreen"] == {**NO_FULLSCREEN, screen: 1}
+
+            # The same state again changes no count, so nothing is pushed; the next change is.
+            websocket.send_json({"type": "fullscreen_state", "payload": {"active": True}})
+            websocket.send_json({"type": "fullscreen_state", "payload": {"active": False}})
+            assert receive_screens_payload(admin)["fullscreen"] == NO_FULLSCREEN
+
+            websocket.send_json({"type": "fullscreen_state", "payload": {"active": True}})
+            assert receive_screens_payload(admin)["fullscreen"] == {**NO_FULLSCREEN, screen: 1}
+
+        # A screen in full screen that disconnects is no longer counted.
+        payload = receive_screens_payload(admin)
+        assert payload[screen] == 0
+        assert payload["fullscreen"] == NO_FULLSCREEN
+
+
+@pytest.mark.parametrize("payload", [None, {}, {"active": "yes"}, {"active": 1}])
+def test_invalid_fullscreen_state_is_ignored(client: TestClient, db: Session, payload: Any) -> None:
+    with client.websocket_connect("/ws?screen=admin") as admin:
+        receive_snapshot(admin)
+        receive_screens(admin)
+        with client.websocket_connect("/ws?screen=wall") as wall:
+            receive_snapshot(wall)
+            receive_screens(admin)
+
+            wall.send_json({"type": "fullscreen_state", "payload": payload})
+            client.patch("/table", json={"theme": "tavern"})
+
+            assert receive_any(admin)["type"] == "state"
+
+
+@pytest.mark.parametrize("screen", ["admin", "player"])
+def test_fullscreen_state_of_other_screens_is_ignored(client: TestClient, db: Session, screen: str) -> None:
+    with client.websocket_connect("/ws?screen=admin") as admin:
+        receive_snapshot(admin)
+        receive_screens(admin)
+        with client.websocket_connect(f"/ws?screen={screen}") as sender:
+            receive_snapshot(sender)
+            if screen == "player":
+                receive_screens(admin)
+
+            sender.send_json({"type": "fullscreen_state", "payload": {"active": True}})
+            sender.send_json({"type": "fullscreen_rejected"})
+            client.patch("/table", json={"theme": "tavern"})
+
+            assert receive_any(admin)["type"] == "state"
+
+
+@pytest.mark.parametrize("screen", ["wall", "ground"])
+def test_fullscreen_rejected_is_passed_on_to_all_admins(client: TestClient, db: Session, screen: str) -> None:
+    with (
+        client.websocket_connect("/ws?screen=admin") as first,
+        client.websocket_connect("/ws?screen=admin") as second,
+        client.websocket_connect(f"/ws?screen={screen}") as websocket,
+        client.websocket_connect("/ws?screen=player") as player,
+    ):
+        for client_socket in (first, second, websocket, player):
+            receive_snapshot(client_socket)
+
+        websocket.send_json({"type": "fullscreen_rejected"})
+
+        expected = {"type": "fullscreen_rejected", "payload": {"screen": screen}}
+        assert receive_json(first) == expected
+        assert receive_json(second) == expected
+        client.patch("/table", json={"theme": "tavern"})
+        for client_socket in (websocket, player):
+            assert receive_json(client_socket)["type"] == "state"

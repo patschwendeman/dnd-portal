@@ -1,6 +1,15 @@
 import { describe, it, expect } from 'vitest'
 
-import { NO_STATUS, playerStatusText, screenStatusText } from '../../src/utils/screenStatus'
+import { ScreenCounts } from '../../src/realtime/messages'
+import {
+  FullscreenHints,
+  NO_FULLSCREEN_HINTS,
+  NO_STATUS,
+  fullscreenHintText,
+  playerStatusText,
+  screenStatusText,
+  updateFullscreenHints,
+} from '../../src/utils/screenStatus'
 
 describe('screenStatusText', () => {
   it('shows no status before the server sent the counts', () => {
@@ -29,5 +38,41 @@ describe('playerStatusText', () => {
   it('reports the number of connected players', () => {
     expect(playerStatusText(0)).toBe('0 Spieler verbunden')
     expect(playerStatusText(2)).toBe('2 Spieler verbunden')
+  })
+})
+
+describe('updateFullscreenHints', () => {
+  const counts = (
+    wall: number,
+    ground: number,
+    fullscreen: { wall: number, ground: number },
+  ): ScreenCounts => ({
+    wall, ground, player: 0, fullscreen,
+  })
+  const both: FullscreenHints = { wall: true, ground: true }
+
+  it('keeps the hints while the screens are connected but not in full screen', () => {
+    expect(updateFullscreenHints(both, counts(1, 2, { wall: 0, ground: 0 }))).toEqual(both)
+  })
+
+  it('drops the hint once a screen of the type is in full screen', () => {
+    expect(updateFullscreenHints(both, counts(2, 1, { wall: 1, ground: 0 })))
+      .toEqual({ wall: false, ground: true })
+  })
+
+  it('drops the hint once no screen of the type is connected', () => {
+    expect(updateFullscreenHints(both, counts(1, 0, { wall: 0, ground: 0 })))
+      .toEqual({ wall: true, ground: false })
+  })
+
+  it('never sets a hint itself', () => {
+    expect(updateFullscreenHints(NO_FULLSCREEN_HINTS, counts(1, 1, { wall: 0, ground: 0 })))
+      .toEqual(NO_FULLSCREEN_HINTS)
+  })
+
+  it('names the window to click into', () => {
+    expect(fullscreenHintText('Wall')).toBe(
+      'Vollbild vom Browser abgelehnt – einmal in das Wall-Fenster klicken',
+    )
   })
 })

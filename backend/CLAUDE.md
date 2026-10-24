@@ -58,7 +58,8 @@ Transaktion) sowie `test_migration_0002.py` bis `test_migration_0005.py` (Migrat
 `TestClient.websocket_connect` (Snapshot, Push nach `PATCH`, `screen`- und Origin-Prüfung, Ping mit per `monkeypatch`
 verkürztem `PING_INTERVAL_SECONDS`, Entfernen getrennter Verbindungen, Audioausgabe per `audio_ready`/`track_ended`,
 `sound` nur an die Ausgabe, `screens`: Verbindungszahlen je Screen-Typ nur an Admins, Admins nicht gezählt, Push
-bei Verbinden, Trennen und fehlgeschlagenem Senden); Nachrichten werden mit Timeout gelesen, damit ein fehlender Push den Test scheitern lässt
+bei Verbinden, Trennen und fehlgeschlagenem Senden; Vollbild: `fullscreen` eines Admins an alle Walls bzw. Grounds,
+`fullscreen_state` in den Zahlen, `fullscreen_rejected` an die Admins, ungültige bzw. fremde Nachrichten ignoriert); Nachrichten werden mit Timeout gelesen, damit ein fehlender Push den Test scheitern lässt
 statt ihn zu blockieren. `test_audio.py` prüft `GET`/`PATCH /table/audio`, die Track-Wahl beim Trackende und
 `POST /table/sounds` (Zufall per `monkeypatch` auf `audio.random` gesteuert). Der Musikzustand liegt im Speicher: Die
 Fixture `reset_audio` setzt ihn nach dem Test zurück (`test_audio.py`, `test_ws.py` und alle Tests mit `db`).
@@ -112,7 +113,7 @@ app/services/audio.py     get_playlist: Tracks der aktiven Szene bzw. Standardmu
 app/services/game_table.py Spieltisch-Zustand (get_state inkl. aktiver Szene des aktiven Abenteuers, update_state mit
                           Prüfung des Abenteuers → AdventureNotFoundError), get_join_info (Settings.player_url)
 app/realtime/             WebSocket: manager.py (ConnectionManager `manager` im Prozess, Connection je Verbindung mit
-                          Sende-Lock, Broadcast entfernt Verbindungen bei Sendefehler/Timeout, PING_INTERVAL_SECONDS),
+                          Sende-Lock und gemeldetem Vollbild-Zustand, send_to_screen, Broadcast entfernt Verbindungen bei Sendefehler/Timeout, PING_INTERVAL_SECONDS),
                           audio.py (AudioService `audio`: Musikzustand im Speicher, zufällige Track-Wahl, Ausgabe),
                           push.py (push_state als BackgroundTask nach dem Commit, eigene Session, lädt bei Szenenwechsel
                           die Playlist; send_initial_state, push_audio, send_sound, Ausgabe-Wechsel, reset_audio),

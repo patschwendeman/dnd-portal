@@ -4,8 +4,11 @@ import { ReactSVG } from 'react-svg'
 
 import AdventureSelect from './AdventureSelect'
 import { AdventureSummary } from '../models/models'
+import useDocumentFullscreen from '../utils/useDocumentFullscreen'
 
 import dashboardIcon from '/assets/icons/dashboard.svg'
+import fullscreenIcon from '/assets/icons/fullscreen.svg'
+import fullscreenExitIcon from '/assets/icons/fullscreenExit.svg'
 import settingsIcon from '/assets/icons/settings.svg'
 
 const OUTER_COLUMN_WIDTH = '240px'
@@ -45,7 +48,8 @@ const IconButton = styled.button`
     }
 `
 
-// Highlighted like the active menu item of the navigation rail while the dashboard is shown
+// Highlighted like the active menu item of the navigation rail while the dashboard is shown (or
+// the window is in full screen)
 const ToggleButton = styled(IconButton)<{ $isActive: boolean }>`
     background-color: ${(props) => (props.$isActive ? props.theme.colors.primary : 'transparent')};
 
@@ -84,6 +88,7 @@ function TopBar({
   onToggleDashboard,
 }: TopBarProps): ReactElement {
   const theme = useTheme()
+  const { isFullscreen, toggle: toggleFullscreen } = useDocumentFullscreen()
 
   return (
     <Bar data-test-id="top-bar">
@@ -94,6 +99,23 @@ function TopBar({
       />
       <div />
       <Actions>
+        <ToggleButton
+          type="button"
+          title={isFullscreen ? 'Vollbild beenden' : 'Vollbild'}
+          aria-label="Vollbild"
+          aria-pressed={isFullscreen}
+          data-test-id="fullscreen-toggle"
+          $isActive={isFullscreen}
+          onClick={toggleFullscreen}
+        >
+          <ReactSVG
+            src={isFullscreen ? fullscreenExitIcon : fullscreenIcon}
+            beforeInjection={(svg) => {
+              const fill = isFullscreen ? theme.colors.onPrimary : theme.colors.text.color
+              svg.setAttribute('style', `fill: ${fill}`)
+            }}
+          />
+        </ToggleButton>
         <ToggleButton
           type="button"
           title="Dashboard"

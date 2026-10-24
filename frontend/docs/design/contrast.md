@@ -49,9 +49,9 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `secondary` auf `background` | Hover-Fläche der Menüpunkte der Navigationsleiste und der Panel-Einträge (Admin) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide, siehe Anmerkung |
 | `text.color` auf `background` | Icon des inaktiven Menüpunkts der Navigationsleiste (ohne eigene Fläche) | 3,0 | 17,4 | 9,2 | ✓ beide |
 | `text.color` auf `secondary` | Icon des inaktiven Menüpunkts der Navigationsleiste bei Hover | 3,0 | 15,9 | 6,5 | ✓ beide |
-| `onPrimary` auf `primary` | Icon des aktiven Menüpunkts der Navigationsleiste | 3,0 | 6,1 | 4,7 | ✓ beide |
+| `onPrimary` auf `primary` | Icon des aktiven Menüpunkts der Navigationsleiste und der aktiven Icon-Buttons „Dashboard“ und „Vollbild“ | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `background` | Fokus-Outline der Menüpunkte der Navigationsleiste und der Panel-Einträge (Notizen, Szenen) | 3,0 | 6,1 | 4,7 | ✓ beide |
-| `text.color` auf `background` | Icons auf Flächen in Dashboard-Panels (Play-Button ohne Musik, „In neuem Fenster öffnen“), Text des Buttons „QR-Code“ | 4,5 | 17,4 | 9,2 | ✓ beide |
+| `text.color` auf `background` | Icons auf Flächen in Dashboard-Panels (Play-Button ohne Musik, „Vollbild“ außerhalb des Vollbilds, „In neuem Fenster öffnen“, „QR-Code“) | 4,5 | 17,4 | 9,2 | ✓ beide |
 | `primary` auf `secondary` | Status-Punkt „verbunden“ im Panel „Screens“ | 3,0 | 5,6 | 3,3 | ✓ beide |
 | `text.color` auf `secondary` | Ring des Status-Punkts „nicht verbunden“ | 3,0 | 15,9 | 6,5 | ✓ beide |
 | `background` auf `secondary` | Flächen in Dashboard-Panels (Buttons, Slider-Schiene, leere Bildfläche) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide, siehe Anmerkung |

@@ -11,15 +11,22 @@ import { getMusicTitle } from '../utils/utils'
 import pauseIcon from '/assets/icons/pause.svg'
 import playIcon from '/assets/icons/play.svg'
 
-const VOLUME_SLIDER_WIDTH = '120px'
+// Lowest height of the vertical slider; in the panel it takes the full height of the content
+const VOLUME_SLIDER_MIN_HEIGHT = '96px'
 const VOLUME_SLIDER_THUMB_SIZE = '16px'
 
 const NO_AUDIO_OUTPUT_MESSAGE = 'Keine Audioausgabe bereit'
 
+// Button and title on the left, the vertical volume slider on the right over the full height
 const Music = styled.div`
-    display: flex;
-    align-items: center;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+        "toggle volume"
+        "track volume";
     gap: ${(props) => props.theme.space[3]};
+    height: 100%;
     min-width: 0;
 `
 
@@ -37,6 +44,7 @@ const AudioControlButton = styled.div<{ $isMusicPlaying: boolean }>`
     border: none;
     border-radius: ${(props) => props.theme.radius.md};
     cursor: pointer;
+    grid-area: toggle;
     svg {
       display: block;
       width: ${(props) => props.theme.size.icon};
@@ -44,26 +52,24 @@ const AudioControlButton = styled.div<{ $isMusicPlaying: boolean }>`
     }
 `
 
+// The panel is narrow: title and hint wrap instead of being cut off; long German words are
+// hyphenated (lang="de" on the element)
 const Track = styled.div`
     display: flex;
-    flex: 1;
     flex-direction: column;
+    grid-area: track;
     min-width: 0;
+    overflow-wrap: break-word;
+    hyphens: auto;
 `
 
 const TrackName = styled.span`
     ${textStyle('sm')}
     font-weight: ${(props) => props.theme.fontWeight.medium};
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 `
 
 const AudioHint = styled.span`
     ${textStyle('sm')}
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 `
 
 const VolumeSlider = styled(Slider)`
@@ -128,7 +134,7 @@ function MusicControl({
           }}
         />
       </AudioControlButton>
-      <Track>
+      <Track lang="de">
         <TrackName data-test-id="music-track">
           { getMusicTitle(audio?.track?.source ?? '') }
         </TrackName>
@@ -136,9 +142,19 @@ function MusicControl({
           <AudioHint data-test-id="music-no-output">{ NO_AUDIO_OUTPUT_MESSAGE }</AudioHint>
         )}
       </Track>
-      <Box sx={{ width: VOLUME_SLIDER_WIDTH, margin: 0, flexShrink: 0 }}>
+      {/* Half a thumb above and below, so the thumb stays inside the panel at 0 and 100; the
+          invisible touch area around the thumb is cut off instead of overflowing the panel */}
+      <Box sx={{
+        gridArea: 'volume',
+        minHeight: VOLUME_SLIDER_MIN_HEIGHT,
+        margin: 0,
+        paddingBlock: `calc(${VOLUME_SLIDER_THUMB_SIZE} / 2)`,
+        overflow: 'hidden',
+      }}
+      >
         <VolumeSlider
           aria-label="Lautstärke"
+          orientation="vertical"
           value={draggedVolume ?? audio?.volume ?? 0}
           onChange={(_event, value) => setDraggedVolume(value as number)}
           onChangeCommitted={(_event, value) => onVolumeCommit(value as number)}

@@ -139,26 +139,69 @@ describe('parseServerMessage for audio', () => {
 })
 
 describe('parseServerMessage for screens', () => {
-  const screens = { wall: 1, ground: 0, player: 2 }
+  const screens = {
+    wall: 1, ground: 0, player: 2, fullscreen: { wall: 1, ground: 0 },
+  }
 
-  it('parses the number of connected screens', () => {
+  it('parses the number of connected screens and of those in full screen', () => {
     expect(parseServerMessage(JSON.stringify({ type: 'screens', payload: screens })))
       .toEqual({ type: 'screens', payload: screens })
   })
 
   it('keeps only the known counts', () => {
-    const payload = { ...screens, admin: 3 }
+    const payload = { ...screens, admin: 3, fullscreen: { ...screens.fullscreen, player: 1 } }
     expect(parseServerMessage(JSON.stringify({ type: 'screens', payload })))
       .toEqual({ type: 'screens', payload: screens })
   })
 
   it.each([
     ['a missing payload', { type: 'screens' }],
-    ['a missing count', { type: 'screens', payload: { wall: 1, ground: 0 } }],
+    ['a missing count', { type: 'screens', payload: { ...screens, player: undefined } }],
     ['a negative count', { type: 'screens', payload: { ...screens, wall: -1 } }],
     ['a fractional count', { type: 'screens', payload: { ...screens, player: 1.5 } }],
     ['a count as string', { type: 'screens', payload: { ...screens, ground: '1' } }],
+    [
+      'missing full screen counts',
+      { type: 'screens', payload: { ...screens, fullscreen: undefined } },
+    ],
+    ['full screen counts as list', { type: 'screens', payload: { ...screens, fullscreen: [1] } }],
+    [
+      'a missing full screen count',
+      { type: 'screens', payload: { ...screens, fullscreen: { wall: 1 } } },
+    ],
+    [
+      'a negative full screen count',
+      { type: 'screens', payload: { ...screens, fullscreen: { wall: 1, ground: -1 } } },
+    ],
   ])('rejects screens with %s', (_case, message) => {
+    expect(parseServerMessage(JSON.stringify(message))).toBeNull()
+  })
+})
+
+describe('parseServerMessage for full screen', () => {
+  it.each([true, false])('parses the request of the Admin with active %s', (active) => {
+    expect(parseServerMessage(JSON.stringify({ type: 'fullscreen', payload: { active } })))
+      .toEqual({ type: 'fullscreen', payload: { active } })
+  })
+
+  it.each([
+    ['a missing payload', { type: 'fullscreen' }],
+    ['a missing flag', { type: 'fullscreen', payload: {} }],
+    ['a flag as string', { type: 'fullscreen', payload: { active: 'true' } }],
+  ])('rejects fullscreen with %s', (_case, message) => {
+    expect(parseServerMessage(JSON.stringify(message))).toBeNull()
+  })
+
+  it.each(['wall', 'ground'])('parses a refusal of the %s', (screen) => {
+    expect(parseServerMessage(JSON.stringify({ type: 'fullscreen_rejected', payload: { screen } })))
+      .toEqual({ type: 'fullscreen_rejected', payload: { screen } })
+  })
+
+  it.each([
+    ['a missing payload', { type: 'fullscreen_rejected' }],
+    ['the player', { type: 'fullscreen_rejected', payload: { screen: 'player' } }],
+    ['the admin', { type: 'fullscreen_rejected', payload: { screen: 'admin' } }],
+  ])('rejects fullscreen_rejected with %s', (_case, message) => {
     expect(parseServerMessage(JSON.stringify(message))).toBeNull()
   })
 })

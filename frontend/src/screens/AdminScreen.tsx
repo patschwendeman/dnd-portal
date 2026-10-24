@@ -41,6 +41,8 @@ import scenesIcon from '/assets/icons/scenes.svg'
 // Icon button (size.control.md, 40px) plus space.3 on both sides
 const NAV_RAIL_WIDTH = '64px'
 const LEFT_COLUMN_WIDTH = '240px'
+// Below this width the two-column panels of the dashboard get too narrow for their content
+const DASHBOARD_MIN_WIDTH = '400px'
 
 const LOAD_ERROR_MESSAGE = 'Backend nicht erreichbar'
 const SAVE_ERROR_MESSAGE = 'Änderung konnte nicht gespeichert werden'
@@ -81,13 +83,13 @@ const NavPanel = styled.div`
       ${(props) => props.theme.colors.secondary};
 `
 
-// Notes about two thirds, dashboard one third of the width; without the dashboard the notes take
-// all of it
+// Notes about two thirds, dashboard one third of the width (at least DASHBOARD_MIN_WIDTH); without
+// the dashboard the notes take all of it
 const Content = styled.div<{ $isDashboardOpen: boolean }>`
     display: grid;
-    grid-template-columns: ${(props) => (
-      props.$isDashboardOpen ? 'minmax(0, 2fr) minmax(0, 1fr)' : 'minmax(0, 1fr)'
-    )};
+    grid-template-columns: ${(props) => (props.$isDashboardOpen
+      ? `minmax(0, 2fr) minmax(${DASHBOARD_MIN_WIDTH}, 1fr)`
+      : 'minmax(0, 1fr)')};
     gap: ${(props) => props.theme.space[5]};
     padding: ${(props) => props.theme.space[5]};
     min-width: 0;
@@ -355,8 +357,8 @@ function AdminScreen(): ReactElement {
     {
       id: 'music',
       label: 'Musik',
-      columns: 4,
-      rows: 1,
+      columns: 2,
+      rows: 2,
       content: (
         <MusicControl
           audio={audio}
@@ -376,7 +378,7 @@ function AdminScreen(): ReactElement {
     {
       id: 'screens',
       label: 'Screens',
-      columns: 2,
+      columns: 4,
       rows: 2,
       content: <ScreensPanel />,
     },

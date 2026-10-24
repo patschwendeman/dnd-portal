@@ -3,7 +3,8 @@ Feature: Dashboard in the admin screen
 Scenario: The dashboard shows its panels next to the notes
     Given I am on the admin screen
     Then I see the dashboard with the panels Aktive Szene, Musik, Sounds, Screens
-    And Aktive Szene and Musik span the full width, below them Sounds and Screens side by side
+    And Aktive Szene spans the full width, below it Musik and Sounds side by side, below them Screens over the full width
+    And no panel scrolls on its own
     And there is no bottom bar, no sound button and no join button in the top bar
 
 Scenario: I collapse and expand the dashboard
@@ -36,7 +37,32 @@ Scenario: I see which screens are connected
 
 Scenario: I open the QR code from the panel Screens
     Given I am on the admin screen
-    When I click on the button QR-Code in the panel Screens
+    When I click on the QR code icon next to the players in the panel Screens
     Then the dialog with the QR code and the player URL is shown
     When I press Escape
-    Then the dialog is closed and the focus is back on the button QR-Code
+    Then the dialog is closed and the focus is back on the QR code icon
+
+Scenario: I switch the admin window to full screen
+    Given I am on the admin screen
+    When I click on the full screen icon in the top bar
+    Then the admin window is in full screen and the icon is highlighted
+    When I click on the full screen icon again
+    Then the admin window is no longer in full screen
+
+Scenario: I switch a wall opened from the admin to full screen
+    Given I am on the admin screen
+    And I opened the wall screen from the panel Screens
+    When I click on the full screen icon of the Wall
+    Then the wall window is in full screen and the icon of the Wall is highlighted
+    When I click on the full screen icon of the Wall again
+    Then the wall window is no longer in full screen
+
+Scenario: A ground refuses full screen until I click into it
+    Given I am on the admin screen
+    And a ground screen is open in another browser
+    When I click on the full screen icon of the Ground
+    Then the panel Screens shows that the browser refused full screen
+    When I click into the ground window
+    Then the ground window is in full screen and the hint is gone
+    When I click on the full screen icon of the Ground again
+    Then the ground window is no longer in full screen

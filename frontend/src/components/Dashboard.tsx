@@ -4,13 +4,15 @@ import styled from 'styled-components'
 import DashboardPanel from './DashboardPanel'
 
 const DASHBOARD_COLUMNS = 4
-// Two rows fit the previews, name and description of the active scene at common widths
+// Two rows fit the previews, name and description of the active scene at common widths. Only the
+// lowest height: a row grows when the content of a panel needs more (narrow window), so the panels
+// never scroll or cut off their content
 const DASHBOARD_ROW_HEIGHT = '144px'
 
 const Grid = styled.aside`
   display: grid;
   grid-template-columns: repeat(${DASHBOARD_COLUMNS}, minmax(0, 1fr));
-  grid-auto-rows: ${DASHBOARD_ROW_HEIGHT};
+  grid-auto-rows: minmax(${DASHBOARD_ROW_HEIGHT}, auto);
   align-content: start;
   gap: ${(props) => props.theme.space[4]};
   min-width: 0;

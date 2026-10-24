@@ -18,6 +18,7 @@ const Sounds = styled.div`
 
 const SoundGroup = styled.div`
     display: flex;
+    flex-wrap: wrap;
     gap: ${(props) => props.theme.space[1]};
 `
 

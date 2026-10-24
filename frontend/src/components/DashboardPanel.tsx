@@ -16,11 +16,9 @@ const Panel = styled.section<{ $columns: number, $rows: number }>`
   border-radius: ${(props) => props.theme.radius.lg};
 `
 
-// The panel has a fixed height (rows of the dashboard); content that does not fit scrolls here
+// The rows of the dashboard grow with the content, so it never scrolls here
 const Content = styled.div`
   flex: 1;
-  min-height: 0;
-  overflow-y: auto;
 `
 
 interface DashboardPanelProps {

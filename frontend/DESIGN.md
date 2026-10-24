@@ -100,7 +100,7 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 |---|---|---|
 | `space.1` | innerhalb einer Gruppe | Icon-Gruppe, Navigationseinträge, Button-Gruppe, Label über Überschrift |
 | `space.2` | Label vor Inhalt in derselben Zeile, Menüpunkte untereinander | Menüpunkte der Navigationsleiste; sonst als Teil zusammengesetzter Abstände, z. B. am Label der Panel-Listen |
-| `space.3` | zusammengehörige Elemente, Label → Inhalt darunter | Musik-Button → Titel, Label → Inhalt im Dashboard-Panel, Zeilen im Panel „Screens“, Dialog-Buttons, „Notizen“ bzw. „Szenen“ → Navigation (`padding-bottom: space.2` am Label plus `gap` `space.1` der Spalte) |
+| `space.3` | zusammengehörige Elemente, Label → Inhalt darunter | Musik-Button → Titel, Titel → senkrechter Lautstärke-Slider, Label → Inhalt im Dashboard-Panel, Zeilen im Panel „Screens“, Dialog-Buttons, „Notizen“ bzw. „Szenen“ → Navigation (`padding-bottom: space.2` am Label plus `gap` `space.1` der Spalte) |
 | `space.4` | Gruppen in einer Leiste, Elemente im Dialog | Sound-Gruppen im Panel „Sounds“ (nebeneinander; umbrochene Zeilen `space.2`), Panels im Dashboard, Bild → Text → Buttons |
 | `space.5` | Bereiche | Spalten im Admin, Karten, Notizseiten, Gruppen in der Steuerleiste |
 | `space.6`–`space.8` | große Flächen | Abstand zum Bildschirmrand, Innenabstände nach der nächsten Tabelle |
@@ -222,7 +222,7 @@ Wechselt mit dem Theme.
 
 | Rolle | Bedeutung | Verwendung |
 |---|---|---|
-| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Navigationsleiste und Panel im Admin, Wall-Panel, Nebenaktion ([2.4](#24-zustände)); Flächen in Dashboard-Panels (Vorschaubilder, Play-Button ohne Musik, Slider-Schiene der Lautstärke, Button „In neuem Fenster öffnen“, Button „QR-Code“) |
+| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Navigationsleiste und Panel im Admin, Wall-Panel, Nebenaktion ([2.4](#24-zustände)); Flächen in Dashboard-Panels (Vorschaubilder, Play-Button ohne Musik, Slider-Schiene der Lautstärke, Buttons „Vollbild“ außerhalb des Vollbilds, „In neuem Fenster öffnen“ und „QR-Code“) |
 | `secondary` | erhöhte Fläche | Karten, Dashboard-Panels, Dialog, Nach-oben-Button, Slider-Schiene, Hintergrund der Wall, Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel im Admin, inaktiver Zustand ([2.4](#24-zustände)) |
 | `dark` | tiefste Fläche | schwebende Steuerleiste |
 | `primary` | Akzent, aktiv | Links, Slider-Füllung, Status-Punkt „verbunden“, aktiver Zustand ([2.4](#24-zustände)) |
@@ -247,7 +247,7 @@ gleich, weil sie Bedeutung tragen, nicht Stimmung. Die `resource.*`-Töne sind s
 
 | Zustand | Rolle | Beispiele |
 |---|---|---|
-| aktiv / ausgewählt | Fläche `primary`, Text und Icons `onPrimary` | aktive Buttons und Navigation, aktiver Menüpunkt der Navigationsleiste, aktive Szene im Panel „Szenen“, Icon-Button „Dashboard“ bei offenem Dashboard, Confirm, Play-Button während die Musik läuft |
+| aktiv / ausgewählt | Fläche `primary`, Text und Icons `onPrimary` | aktive Buttons und Navigation, aktiver Menüpunkt der Navigationsleiste, aktive Szene im Panel „Szenen“, Icon-Button „Dashboard“ bei offenem Dashboard, Icon-Buttons „Vollbild“ im Vollbild, Confirm, Play-Button während die Musik läuft |
 | inaktiv / normal | `secondary` | inaktive Buttons und Navigation; in Dashboard-Panels (Fläche `secondary`) stattdessen `background`, z. B. Play-Button ohne Musik; Ausnahme: inaktive Menüpunkte der Navigationsleiste und Panel-Einträge im Admin ohne eigene Fläche, `secondary` nur bei Hover ([Navigationsleiste](docs/design/components.md#navigationsleiste), [Navigationseintrag](docs/design/components.md#navigationseintrag)) |
 | Abbrechen, Nebenaktion | `background` | Decline-Button |
 | Fläche auf Fläche | `background` → `secondary` → `dark` | welche Fläche welche Rolle hat: [2.2](#22-rollen) |

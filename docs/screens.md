@@ -30,12 +30,13 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 ### Ist
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Top-Bar und Hauptbereich, keine Bottom-Bar. Im
   Hauptbereich ganz links die Navigationsleiste, daneben das Panel des aktiven Menüpunkts (beide bündig zwischen Top-Bar
-  und unterem Rand), in der Mitte die Notizen (etwa zwei Drittel), rechts das Dashboard (etwa ein Drittel). Die Mitte
-  der Top-Bar ist leer.
-- **Dashboard:** Raster mit vier Spalten und fester Zeilenhöhe; die Panels haben feste Größe und Position (kein
-  Verschieben): oben „Aktive Szene“ über die volle Breite (2 Zeilen), darunter „Musik“ über die volle Breite (1 Zeile),
-  darunter „Sounds“ und „Screens“ nebeneinander (je 2 Spalten, 2 Zeilen). Inhalt, der nicht in ein Panel passt, scrollt
-  darin; ist das Raster höher als der Hauptbereich, scrollt das Dashboard für sich. Der Icon-Button „Dashboard“ rechts
+  und unterem Rand), in der Mitte die Notizen (etwa zwei Drittel), rechts das Dashboard (etwa ein Drittel, mindestens
+  400px). Die Mitte der Top-Bar ist leer.
+- **Dashboard:** Raster mit vier Spalten und einer Mindest-Zeilenhöhe; die Panels haben feste Größe und Position (kein
+  Verschieben): oben „Aktive Szene“ über die volle Breite (2 Zeilen), darunter „Musik“ und „Sounds“ nebeneinander (je
+  2 Spalten, 2 Zeilen), darunter „Screens“ über die volle Breite (2 Zeilen). Braucht der Inhalt eines Panels mehr Platz
+  (schmales Fenster), wird seine Zeile höher – die Panels scrollen nicht für sich und schneiden keinen Text ab; ist das
+  Raster höher als der Hauptbereich, scrollt das Dashboard als Ganzes. Der Icon-Button „Dashboard“ rechts
   in der Top-Bar (links vom Theme-Umschalter, hervorgehoben solange das Dashboard offen ist) blendet es aus – die Notizen
   nehmen dann die volle Breite, Musik, Sounds und QR-Code sind nicht erreichbar – und wieder ein. Auswahl und
   Scrollposition der Notizen bleiben erhalten; der Zustand wird nicht gespeichert, nach einem Reload ist das Dashboard
@@ -75,8 +76,9 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Tastatur bedienbar wie die Szenenliste); die Mitte zeigt die Notizen des gewählten Eintrags (Markdown aus `public/story/`), auch bei eingeklapptem Panel.
   Inhaltsverzeichnis-Links, Bilder öffnen in neuem Tab. Eintrag „Side“ ist leer (Ordner fehlt).
 - **Musik (Fernbedienung):** Der Admin spielt selbst nichts ab; Musik und Soundeffekte kommen aus der Wall, die
-  Audioausgabe ist (siehe Wall Screen). Panel „Musik“ mit Play/Pause, dem Titel des aktuellen
-  Tracks und einem Lautstärke-Slider (gesendet beim Loslassen). Die Anzeige folgt dem Zustand auf dem
+  Audioausgabe ist (siehe Wall Screen). Panel „Musik“ mit Play/Pause, darunter dem Titel des aktuellen
+  Tracks und rechts über die volle Höhe einem senkrechten Lautstärke-Slider (gesendet beim Loslassen; per Tastatur mit
+  den Pfeiltasten bedienbar). Titel und Hinweis brechen im schmalen Panel um. Die Anzeige folgt dem Zustand auf dem
   Server, auch für mehrere Admin-Fenster. Der Server spielt zufällige Tracks aus der Playlist der aktiven Szene; nach
   einem Trackende folgt ein anderer Track (bei nur einem derselbe von vorne), die Musik stoppt nur durch Pause. Beim
   Szenenwechsel wechselt sofort der Track – lief die Musik, spielt er direkt weiter, sonst bleibt sie pausiert. Ohne
@@ -88,15 +90,27 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Gruppen brechen im Panel um und sind durch Abstand getrennt); die
   Wall, die Audioausgabe ist, spielt sie über der Musik. Ohne Ausgabe passiert nichts (kein Fehler), Fehler beim Senden
   werden nur geloggt.
+- **Vollbild (Admin):** Icon-Button „Vollbild“ rechts in der Top-Bar (links vom Icon-Button „Dashboard“) schaltet das
+  Admin-Fenster in den Vollbildmodus des Browsers und wieder zurück; hervorgehoben, solange das Fenster im Vollbild ist
+  (auch wenn es per Escape verlassen wird, folgt die Anzeige).
 - Theme-Umschalter (Settings-Icon rechts in der Top-Bar): schaltet das Theme global für Admin, Wall, Ground und die
   Player Screens um (außer auf Smartphones, deren Spieler lokal ein anderes Theme gewählt hat).
 - **Screens:** Panel mit je einer Zeile für Wall und Ground: Name, Status-Punkt und „verbunden“ bzw. „nicht
   verbunden“ (bei mehreren Verbindungen „2 verbunden“ usw.), bei der Wall zusätzlich „Audioausgabe“, wenn eine Wall
-  Ausgabe ist, und ein Icon-Button „In neuem Fenster öffnen“ (`/wall` bzw. `/ground` in einem eigenen Fenster je
-  Screen; ein weiterer Klick holt das offene Fenster nach vorn, ohne es neu zu laden). Darunter „N Spieler verbunden“
-  und der Button „QR-Code“. Die Zahlen schickt der Server bei jeder Änderung (Öffnen oder Schließen eines Screens); bis
-  zur ersten Meldung steht „–“.
-- **Spieler verbinden:** Der Button „QR-Code“ im Panel „Screens“ öffnet einen Dialog mit dem QR-Code der
+  Ausgabe ist, und rechts die Icon-Buttons „Vollbild“ und „In neuem Fenster öffnen“ (`/wall` bzw. `/ground` in einem
+  eigenen Fenster je Screen; ein weiterer Klick holt das offene Fenster nach vorn, ohne es neu zu laden). Darunter
+  „N Spieler verbunden“ und rechts daneben der Icon-Button „QR-Code“. Die Zahlen schickt der Server bei jeder Änderung
+  (Öffnen oder Schließen eines Screens, Vollbild an oder aus); bis zur ersten Meldung steht „–“.
+- **Vollbild von Wall und Ground (Fernsteuerung):** Der Button „Vollbild“ einer Zeile schaltet alle Walls bzw. alle
+  Grounds per WebSocket in den Vollbildmodus und wieder zurück; er ist hervorgehoben, solange mindestens ein Screen
+  des Typs im Vollbild ist. Browser erlauben Vollbild nur nach einer Nutzeraktion im Fenster selbst: Ein Fenster, das
+  der Admin über „In neuem Fenster öffnen“ geöffnet hat, wechselt sofort (der Admin gibt seinen Klick an das Fenster
+  weiter, Chrome; nach einem Reload des Admins kennt er das Fenster nicht mehr). Jedes andere Fenster lehnt ab; dann
+  zeigt die Zeile „Vollbild vom Browser abgelehnt – einmal in das Wall-Fenster klicken“ (bzw. Ground-Fenster), und der
+  nächste Klick in dieses Fenster schaltet es ins Vollbild. Der Hinweis verschwindet, sobald der Screen im Vollbild
+  ist, keiner mehr verbunden ist oder erneut geschaltet wird. Ausschalten klappt immer ohne Klick und verwirft auch
+  einen noch wartenden Wechsel.
+- **Spieler verbinden:** Der Icon-Button „QR-Code“ im Panel „Screens“ öffnet einen Dialog mit dem QR-Code der
   Player-URL (dunkel auf hellem Grund, unabhängig vom Theme) und der URL als Text; die Spieler scannen ihn mit der
   Smartphone-Kamera. Die URL kommt vom Start-Skript (`dnd prod`: `http://<IP>:8080/`) bzw. ist der Origin des Admins,
   wenn dieser über die IP geöffnet ist; sonst zeigt der Dialog „Player-URL unbekannt – Spieltisch mit „dnd prod“
@@ -175,6 +189,9 @@ legt der geplante Menüpunkt „Kampf“ im Admin fest.
   das Trackende an den Server; sonst zeigt die Wall nichts an. Nach einem Verbindungsabbruch meldet sie sich ohne
   neuen Klick wieder als Ausgabe. Blockiert der Browser das Abspielen, loggt sie den Fehler; ein erneuter Klick auf
   „AUDIO“ versucht es wieder.
+- **Vollbild:** schaltet der Admin aus dem Panel „Screens“ ein und aus; die Wall meldet ihren Vollbild-Zustand an den
+  Server (auch beim Verlassen per Escape). Lehnt der Browser ab, wechselt die Wall mit dem nächsten Klick in ihr Fenster
+  (siehe Admin, „Vollbild von Wall und Ground“).
 - Eine szenen-/gebietsspezifische Übersichtskarte gibt es noch nicht.
 - **Ladefehler:** kein Hinweis für die Spieler; die Wall behält den zuletzt geladenen Stand, der nächste
   Szenenwechsel lädt erneut.
@@ -195,4 +212,5 @@ optional mit **Grid** als Layout für taktische Kämpfe.
   gespeichert.
 - Verbindung wie auf der Wall: folgt dem Spieltisch per WebSocket, auch auf einem anderen Gerät; nach einem Abbruch
   kein Hinweis, letzter Stand bleibt, Reconnect automatisch.
+- **Vollbild:** wie auf der Wall, vom Admin aus dem Panel „Screens“ geschaltet.
 - **Ladefehler:** wie auf der Wall – kein Hinweis, letzter Stand bleibt, der nächste Szenenwechsel lädt erneut.

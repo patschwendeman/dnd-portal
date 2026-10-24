@@ -110,6 +110,49 @@ ergänzen die Panels „Spieler“ und „Level“ (DND-34) und „Wall-Overlay�
   Hauptbereich. Navigationsleiste und Nav-Panel reichen bis zum unteren Rand.
 - **Begründung:** Nach E6 ist sie leer.
 
+### Runde 3 (Änderungswünsche des Users nach manueller Prüfung)
+
+#### E11: Neue Anordnung, wachsende Zeilen, Mindestbreite (ersetzt E2 und Teile von E1/E3)
+- **Entscheidung:** Von oben: „Aktive Szene“ 4x2; „Musik“ 2x2 und „Sounds“ 2x2 nebeneinander; „Screens“ 4x2
+  (Spieler aus DND-34 darunter). Keine Lücken. Zeilen `minmax(DASHBOARD_ROW_HEIGHT, auto)`: braucht ein Panel mehr
+  Platz, wächst seine Zeile; Panels scrollen nie für sich, Text bricht um (deutsche Texte mit Silbentrennung).
+  Das Dashboard ist mindestens `DASHBOARD_MIN_WIDTH` = 400px breit (`minmax(400px, 1fr)`), sonst ist ein
+  2-Spalten-Panel bei 1280px mit offenem Nav-Panel nur ~135px breit.
+- **Verworfene Alternativen:** „Musik“ | „Screens“ nebeneinander, „Sounds“ voll breit (Screens-Zeile mit zwei
+  Icon-Buttons passt nicht in 2 Spalten); feste Zeilenhöhe mit Scrollen im Panel (vom User abgelehnt).
+- **Begründung:** Musik und Sounds gehören zusammen; „Screens“ braucht Breite für Status und Buttons.
+  Nebenwirkung: Bei 1280px mit offenem Nav-Panel sind die Notizen ~100px schmaler als vorher.
+
+#### E12: Senkrechter Lautstärke-Regler
+- **Entscheidung:** „Musik“ als Grid: links Play/Pause, darunter Titel und Hinweis (umbrechend), rechts über die volle
+  Höhe der MUI-Slider mit `orientation="vertical"` (`aria-orientation="vertical"`, Pfeiltasten), Mindesthöhe
+  `VOLUME_SLIDER_MIN_HEIGHT`. Verhalten (Senden beim Loslassen) unverändert.
+
+#### E13: QR-Code als Icon-Button
+- **Entscheidung:** Icon-Button mit neuem Icon `qrCode.svg` rechts in der Zeile „n Spieler verbunden“, ausgerichtet wie
+  die Buttons bei Wall/Ground; `data-test-id="join-button"`, Fokus kehrt nach dem Schließen zurück.
+
+#### E14: Vollbild
+- **Entscheidung:**
+  - Admin: Icon-Button „Vollbild“ in der Top-Bar links von „Dashboard“ (Fullscreen API, Zustand über
+    `fullscreenchange`, `aria-pressed`, hervorgehoben wie „Dashboard“). Icons `fullscreen.svg`/`fullscreenExit.svg`.
+  - Wall/Ground: Icon-Button „Vollbild“ je Zeile im Panel „Screens“ (an/aus für alle Screens des Typs, hervorgehoben,
+    solange mindestens einer im Vollbild ist). Protokoll: Admin → `fullscreen {screen, active}`; Server → alle
+    Walls bzw. Grounds `fullscreen {active}`; Wall/Ground → `fullscreen_state {active}` (nach jeder Änderung und nach
+    dem Verbinden; Server zählt ihn in `screens.fullscreen`) und `fullscreen_rejected` (Server → Admins
+    `fullscreen_rejected {screen}`).
+  - Browser-Prüfung (Chrome 156 per Selenium): `requestFullscreen` nach einer WS-Nachricht ohne Klick im Zielfenster
+    → „Permissions check failed“; Aufruf aus dem Admin auf das Popup-Dokument → ebenso abgelehnt; `postMessage` mit
+    `delegate: "fullscreen"` an ein vom Admin geöffnetes Popup → klappt; erneuter Versuch beim nächsten Klick im
+    Zielfenster → klappt; `exitFullscreen` per WS → klappt immer.
+  - Daher: Ein vom Admin geöffnetes Fenster erhält zusätzlich die Delegation (sofort Vollbild, solange der Admin nicht
+    neu geladen wurde). Andere Fenster lehnen ab, melden das und holen das Vollbild mit dem nächsten Klick in ihr
+    Fenster nach; der Admin zeigt in der Zeile „Vollbild vom Browser abgelehnt – einmal in das Wall-Fenster klicken“
+    (bzw. Ground). „Aus“ verwirft einen wartenden Wechsel. Wall/Ground-Logik in `src/realtime/remoteFullscreen.ts`,
+    eingebunden in `useGameTable`; `WallScreen`/`GroundScreen` unverändert.
+- **Verworfene Alternativen:** nur Hinweis ohne Fernsteuerung; Fernsteuerung je einzelner Verbindung (Protokoll
+  schlanker je Typ).
+
 ## Subtasks
 
 ### Schritt 1: Dashboard mit Szene, Musik und Sounds (nur Frontend)
@@ -148,12 +191,38 @@ ergänzen die Panels „Spieler“ und „Level“ (DND-34) und „Wall-Overlay�
       `screen-layouts.md` (Admin-Layout, Raster, Konstanten), `contrast.md` bei neuen Farbkombinationen.
 - [x] `frontend/CLAUDE.md`: neue Komponenten.
 
+### Schritt 3 (Runde 3): Rückmeldung des Users
+
+#### Vertrag
+- [x] `docs/architecture.md`: `screens.fullscreen`, `fullscreen`, `fullscreen_state`, `fullscreen_rejected`;
+      Ablauf der Fernsteuerung (E14).
+
+#### Backend
+- [x] `Connection.fullscreen`, `screen_counts` mit `fullscreen`, `send_to_screen`, `set_fullscreen`; Nachrichten in
+      `ws.py` (E14).
+- [x] Tests in `tests/test_ws.py`: Weiterleitung an alle Screens des Typs, ungültige und fremde Nachrichten,
+      Zustand in `screens`, Trennen im Vollbild, `fullscreen_rejected` an alle Admins.
+
+#### Frontend
+- [x] Raster neu (E11), `MusicControl` senkrecht (E12), Sounds umbrechend.
+- [x] Panel „Screens“: QR-Icon-Button (E13), Vollbild-Buttons und Hinweis (E14).
+- [x] Top-Bar: Vollbild des Admins (E14).
+- [x] `messages.ts`, `remoteFullscreen.ts`, `useGameTable`/Context (E14).
+- [x] Unit: Parsen der neuen Nachrichten, `createRemoteFullscreen`, `updateFullscreenHints`.
+- [x] E2E: Anordnung und „kein Panel scrollt“, QR-Icon, Vollbild Admin, Vollbild einer aus dem Admin geöffneten
+      Wall, abgelehntes Vollbild eines Grounds mit Klick.
+
+#### Doku
+- [x] `docs/screens.md`, `frontend/DESIGN.md`, `components.md`, `screen-layouts.md`, `contrast.md`,
+      `frontend/CLAUDE.md`, `backend/CLAUDE.md`.
+
 ## Akzeptanzkriterien
 
 ### AK1: Dashboard-Raster
 - **Given** der Admin Screen ist geöffnet
-- **Then** zeigt der rechte Bereich (etwa ein Drittel der Breite) die Panels „Aktive Szene“ über die volle Breite,
-  darunter „Musik“ über die volle Breite, darunter „Sounds“ und „Screens“ nebeneinander
+- **Then** zeigt der rechte Bereich (etwa ein Drittel der Breite, mindestens 400px) die Panels „Aktive Szene“ über
+  die volle Breite, darunter „Musik“ und „Sounds“ nebeneinander, darunter „Screens“ über die volle Breite (Runde 3)
+- **And** kein Panel hat eine eigene Scrollbar oder abgeschnittenen Text, auch bei 1280×800 (Runde 3)
 - **And** es gibt keine Bottom-Bar, keine Sound-Buttons und keinen Handy-Button in der Top-Bar
 
 ### AK2: Ein- und Ausklappen
@@ -195,7 +264,7 @@ ergänzen die Panels „Spieler“ und „Level“ (DND-34) und „Wall-Overlay�
 
 ### AK7: QR-Code
 - **Given** das Panel „Screens“ ist sichtbar
-- **When** der Spielleiter auf „QR-Code“ klickt
+- **When** der Spielleiter auf den QR-Code-Icon-Button rechts neben „n Spieler verbunden“ klickt (Runde 3)
 - **Then** öffnet sich der bisherige Dialog mit QR-Code und Player-URL; Schließen per Button, Escape oder Klick
   außerhalb wie bisher
 
@@ -204,6 +273,22 @@ ergänzen die Panels „Spieler“ und „Level“ (DND-34) und „Wall-Overlay�
 - **When** der Spielleiter Notizen liest, die Navigationsleiste nutzt, Szene, Abenteuer oder Theme wechselt
 - **Then** verhält sich alles wie vor dem Task, in beiden Themes; Hinweisleisten erscheinen unter der Top-Bar wie
   bisher
+
+### AK9 (Runde 3): Vollbild des Admins
+- **When** der Spielleiter in der Top-Bar auf „Vollbild“ klickt
+- **Then** ist das Admin-Fenster im Vollbild und der Button hervorgehoben; ein weiterer Klick (oder Escape) beendet es
+
+### AK10 (Runde 3): Vollbild einer aus dem Admin geöffneten Wall
+- **Given** die Wall wurde über „In neuem Fenster öffnen“ geöffnet
+- **When** der Spielleiter bei Wall auf „Vollbild“ klickt
+- **Then** ist das Wall-Fenster ohne weiteren Klick im Vollbild, der Button hervorgehoben; erneuter Klick beendet es
+
+### AK11 (Runde 3): Abgelehntes Vollbild
+- **Given** ein Ground läuft in einem anderen Fenster/Browser
+- **When** der Spielleiter bei Ground auf „Vollbild“ klickt
+- **Then** zeigt „Screens“ „Vollbild vom Browser abgelehnt – einmal in das Ground-Fenster klicken“
+- **When** jemand in das Ground-Fenster klickt
+- **Then** ist es im Vollbild, der Hinweis verschwindet, der Button ist hervorgehoben
 
 ## Teststrategie / Verifikation
 
@@ -280,3 +365,58 @@ Funktional ist alles erfüllt; AK5 und AK6 im Browser nachgeprüft. Blockierend 
   Postgres-17-DB 174 passed; `test_ws.py` 5× je 50 passed; `openapi.json` aktuell
 - Frontend: lint, typecheck, `test:unit` 171, `check:deadcode`, `check:dupes` (5 Altklone), build grün
 - E2E: Dev-Stack 9/10 (Screens-Szenario rot); isolierter Stack 10/10 in 2 Läufen
+
+### Runde 2 – 2026-10-24
+**Empfehlung:** Abnahme
+
+Blockierender Befund aus Runde 1 behoben: Das Szenario „I see which screens are connected“ ist im Dev-Stack grün,
+auch mit bereits verbundenen 2 Walls und 1 Ground. Vergleich gegen den Vorher-Stand, exakte Prüfung von Wall und
+Ground, Driver-Aufräumen in `afterEach`, eigenes Timeout 30 s. Gegenprobe mit absichtlich falschen Erwartungen rot
+(klare Meldung, ~6,9 s), danach keine verwaisten chromedriver-Prozesse. Kein Produktivcode geändert
+(`git diff 4b3f3e1 b8243b4 -- frontend/src backend/app` leer); Belege aus Runde 1 für AK1–AK8 gelten weiter.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | Code unverändert; E2E-Szenario 1 im Dev-Stack grün |
+| AK2 | erfüllt | Code unverändert; E2E-Szenario 2 grün |
+| AK3 | erfüllt („Keine Szene aktiv“ nur im Code) | Code unverändert; `selectScene` grün |
+| AK4 | erfüllt | Code unverändert; E2E-Szenario 3 grün |
+| AK5 | erfüllt | `adminDashboard.feature:29-35`, `adminDashboard.ts:290-340`: Wall/Ground nach Öffnen je +1, Ground nach Schließen auf Vorher-Wert, ohne Reload; `parseScreenCount` (`:49-58`) nur die drei Formen aus `screenStatusText`; Gegenproben rot; „Audioausgabe“/„2 Spieler verbunden“ manuell (Runde 1); `test_ws.py` 50 passed |
+| AK6 | erfüllt | Code unverändert (Beleg Runde 1) |
+| AK7 | erfüllt | E2E-Szenario 5 grün |
+| AK8 | erfüllt | E2E `adminNavigation`, `selectScene` grün; Wall/Ground/Player ohne Diff |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- Befund Runde 1: fremde Screens per `waitForScreenCounts` (`:71-91`) gelöst, Kommentar `:290-292` stimmt;
+  Wall-Prüfung auf `before.wall + 1` (`:323`, `:337`); `screenDrivers` per `Promise.allSettled` in `afterEach`
+  (`:128-132`), Ground nicht doppelt beendet (`:328-333`); `SCREENS_SCENARIO_TIMEOUT` (`:36`, `:340`) begründet
+- Kleinigkeit: `parseScreenCount` liest auch ein falsches „1 verbunden“ als 1 (Text durch Unit-Tests abgedeckt)
+- Verbindet/trennt ein fremder Screen während des Szenarios, kann es rot werden; selten, nicht blockierend
+- `frontend/DESIGN.md` §2.6 (`:271-273`) passt zu `contrast.md:57`, `:76-79`; `backend/CLAUDE.md:60-61` passt zu `test_ws.py`
+- Commit `b8243b4`: Schema passt, keine KI-Signatur, nur im Scope, alle Subtasks abgehakt
+- Dev-Zustand: aktive Szene von Abenteuer 1 durch E2E auf 6, per `PATCH` zurück auf 3; Theme `dark`; Musik pausiert,
+  Lautstärke 8; Track jetzt id 42 statt 40 (zufällige Wahl beim Szenenwechsel); Verbindungen wie vorher
+
+**Checks**
+- Frontend: lint, typecheck, `test:unit` 171, `check:deadcode`, `check:dupes` (5 Altklone) grün; build nicht erneut
+- E2E Dev-Stack (2 Walls, 1 Ground verbunden): 10/10; `adminDashboard` einzeln 5/5; Gegenproben je 1× rot
+- Backend (Code unverändert): `ruff check`, `ruff format --check`, `mypy app` grün; `pytest tests/test_ws.py` 50 passed
+
+### Runde 3 – Rückmeldung User – 2026-10-24
+**Empfehlung:** Nacharbeiten (Änderungswünsche nach manueller Prüfung)
+
+**Blockierende Befunde**
+- [x] Panel „Musik“ halb so breit (2 statt 4 Spalten); Lautstärke als senkrechter Regler. Raster so neu anordnen,
+  dass keine Lücken entstehen
+- [x] Panel „Screens“: Button „QR-Code“ durch ein QR-Code-Icon-Button ersetzen, rechts hinter der Spieler-Zeile –
+  gleiche Anordnung wie die Öffnen-Buttons bei Wall und Ground
+- [x] Vollbild-Buttons:
+  - Admin: eigener Button (Vollbild an/aus) für das Admin-Fenster
+  - Wall und Ground: Buttons im Panel „Screens“, die den jeweiligen Screen per WebSocket fernsteuern (an/aus).
+    Browser erlauben Vollbild nur nach Nutzeraktion im Zielfenster; wenn der Browser es ablehnt, einen
+    verständlichen Hinweis im Admin anzeigen (vom User so entschieden)
+- [x] Auf kleinem Bildschirm zeigen die Panels „Sounds“ und „Screens“ eigene Scrollbars und abgeschnittenen Text
+  („verbunde…“); Panels ohne innere Scrollbars, Text nicht abschneiden
