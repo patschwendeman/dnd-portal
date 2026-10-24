@@ -1,4 +1,6 @@
-import { FunctionComponent, ReactElement, useEffect, useState } from 'react'
+import {
+  FunctionComponent, ReactElement, useEffect, useState,
+} from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 
 import { Theme } from '../models/models'
@@ -19,7 +21,7 @@ const PlayerRoute: FunctionComponent = (): ReactElement => {
   }
 
   return (
-    <GameTableProvider screen='player' themeOverride={themeOverride}>
+    <GameTableProvider screen="player" themeOverride={themeOverride}>
       <PlayerScreen themeOverride={themeOverride} onChangeThemeOverride={changeThemeOverride} />
     </GameTableProvider>
   )
@@ -32,12 +34,12 @@ function App() {
 
   return (
     <Router>
-      <div className='app'>
+      <div className="app">
         <Routes>
-          <Route path='/' element={ <PlayerRoute /> } />
-          <Route path='/wall' element={ <GameTableProvider screen='wall'><WallScreen /></GameTableProvider> } />
-          <Route path='/ground' element={ <GameTableProvider screen='ground'><GroundScreen /></GameTableProvider> } />
-          <Route path='/admin' element={ <GameTableProvider screen='admin'><AdminScreen /></GameTableProvider> } />
+          <Route path="/" element={<PlayerRoute />} />
+          <Route path="/wall" element={<GameTableProvider screen="wall"><WallScreen /></GameTableProvider>} />
+          <Route path="/ground" element={<GameTableProvider screen="ground"><GroundScreen /></GameTableProvider>} />
+          <Route path="/admin" element={<GameTableProvider screen="admin"><AdminScreen /></GameTableProvider>} />
         </Routes>
       </div>
     </Router>

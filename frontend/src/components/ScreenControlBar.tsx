@@ -100,84 +100,84 @@ const StyledSlider = styled(Slider)`
 `
 
 interface ScreenControlBarProps {
-    onVisibilityChange: (option: number) => void
-    onSliderChange?: (option: number) => void
-    buttonLabels: string[]
-    // Optional caption in front of the button group (e.g. "Raster" on the ground screen)
-    label?: string
-    // Controlled active button; if omitted, the bar tracks the last clicked button itself
-    activeIndex?: number | null
-    // Wall: button "AUDIO" makes this screen the audio output, highlighted while it is
-    onAudioOutput?: () => void
-    isAudioOutput?: boolean
+  onVisibilityChange: (option: number) => void
+  onSliderChange?: (option: number) => void
+  buttonLabels: string[]
+  // Optional caption in front of the button group (e.g. "Raster" on the ground screen)
+  label?: string
+  // Controlled active button; if omitted, the bar tracks the last clicked button itself
+  activeIndex?: number | null
+  // Wall: button "AUDIO" makes this screen the audio output, highlighted while it is
+  onAudioOutput?: () => void
+  isAudioOutput?: boolean
 }
 
 const ScreenControlBar: FunctionComponent<ScreenControlBarProps> = ({
-    onVisibilityChange,
-    onSliderChange,
-    buttonLabels,
-    label,
-    activeIndex,
-    onAudioOutput,
-    isAudioOutput = false,
+  onVisibilityChange,
+  onSliderChange,
+  buttonLabels,
+  label,
+  activeIndex,
+  onAudioOutput,
+  isAudioOutput = false,
 }): ReactElement => {
-    const [clickedButton, setClickedButton] = useState<number | null>(null)
-    const activeButton = activeIndex !== undefined ? activeIndex : clickedButton
-    const [sliderValue, setSliderValue] = useState<number>(100)
+  const [clickedButton, setClickedButton] = useState<number | null>(null)
+  const activeButton = activeIndex !== undefined ? activeIndex : clickedButton
+  const [sliderValue, setSliderValue] = useState<number>(100)
 
-    function handleVisibility(option: number) {
-        setClickedButton(option)
-        onVisibilityChange(option)
+  function handleVisibility(option: number) {
+    setClickedButton(option)
+    onVisibilityChange(option)
+  }
+
+  function handleSliderChange(_event: Event, option: number | number[]) {
+    if (onSliderChange) {
+      setSliderValue(option as number)
+      onSliderChange(option as number)
     }
+  }
 
-    function handleSliderChange(_event: Event, option: number | number[]) {
-        if(onSliderChange) {
-            setSliderValue(option as number)
-            onSliderChange(option as number)
-        }
-    }
-
-    return(
-        <Overlay>
-            <ControlBar>
-                {label && <BarLabel>{ label }</BarLabel>}
-                <ButtonGroup>
-                    {buttonLabels.map( (label, index) => (
-                        <Button 
-                            key={index} 
-                            onClick={() => handleVisibility(index)} 
-                            $variant={activeButton === index ? 'active' : 'default'}
-                        >
-                            { label }
-                        </Button>
-                    ))}
-                </ButtonGroup>
-                {onAudioOutput && (
-                    <Button onClick={onAudioOutput} $variant={isAudioOutput ? 'active' : 'default'}>
-                        AUDIO
-                    </Button>
-                )}
-                {onSliderChange && (
-                    <SliderGroup>
-                        <Label>Zelle</Label>
-                        <Box sx={{ width: SLIDER_WIDTH, margin: 0 }}>
-                            <StyledSlider
-                                aria-label="DPI"
-                                defaultValue={100}
-                                value={sliderValue}
-                                onChange={handleSliderChange}
-                                shiftStep={100}
-                                step={10}
-                                min={100}
-                                max={200}
-                            />
-                        </Box>
-                        <SliderValue>{ sliderValue }</SliderValue>
-                    </SliderGroup>
-                )}
-            </ControlBar>
-        </Overlay>
-    )
+  return (
+    <Overlay>
+      <ControlBar>
+        {label && <BarLabel>{ label }</BarLabel>}
+        <ButtonGroup>
+          {buttonLabels.map((label, index) => (
+            <Button
+              key={index}
+              onClick={() => handleVisibility(index)}
+              $variant={activeButton === index ? 'active' : 'default'}
+            >
+              { label }
+            </Button>
+          ))}
+        </ButtonGroup>
+        {onAudioOutput && (
+        <Button onClick={onAudioOutput} $variant={isAudioOutput ? 'active' : 'default'}>
+          AUDIO
+        </Button>
+        )}
+        {onSliderChange && (
+        <SliderGroup>
+          <Label>Zelle</Label>
+          <Box sx={{ width: SLIDER_WIDTH, margin: 0 }}>
+            <StyledSlider
+              aria-label="DPI"
+              defaultValue={100}
+              value={sliderValue}
+              onChange={handleSliderChange}
+              shiftStep={100}
+              step={10}
+              min={100}
+              max={200}
+            />
+          </Box>
+          <SliderValue>{ sliderValue }</SliderValue>
+        </SliderGroup>
+        )}
+      </ControlBar>
+    </Overlay>
+  )
 }
 
 export { CONTROL_BAR_CLEARANCE, ScreenControlBar }

@@ -21,5 +21,4 @@ const asSave = async <T>(what: string, request: () => Promise<T>): Promise<T> =>
 
 export const saveData = async (what: string, path: string, body: object) => asSave(what, () => patchData(path, body))
 
-export const postCommand = async (what: string, path: string, body?: object) =>
-  asSave(what, () => postData(path, body))
+export const postCommand = async (what: string, path: string, body?: object) => asSave(what, () => postData(path, body))

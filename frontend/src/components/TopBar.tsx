@@ -1,4 +1,6 @@
-import { Fragment, FunctionComponent, ReactElement, useCallback, useRef, useState } from 'react'
+import {
+  Fragment, FunctionComponent, ReactElement, useCallback, useRef, useState,
+} from 'react'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
@@ -134,11 +136,11 @@ const TopBar: FunctionComponent<TopBarProps> = ({
       <Actions>
         <IconButton
           ref={joinButtonRef}
-          type='button'
-          title='Spieler verbinden'
-          aria-label='Spieler verbinden'
-          aria-haspopup='dialog'
-          data-test-id='join-button'
+          type="button"
+          title="Spieler verbinden"
+          aria-label="Spieler verbinden"
+          aria-haspopup="dialog"
+          data-test-id="join-button"
           onClick={() => setIsJoinDialogOpen(true)}
         >
           <ReactSVG

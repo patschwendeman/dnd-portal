@@ -1,4 +1,6 @@
-import { FunctionComponent, KeyboardEvent, ReactElement, useEffect, useRef, useState } from 'react'
+import {
+  FunctionComponent, KeyboardEvent, ReactElement, useEffect, useRef, useState,
+} from 'react'
 import styled from 'styled-components'
 
 import { AdventureSummary } from '../models/models'
@@ -193,29 +195,29 @@ const AdventureSelect: FunctionComponent<AdventureSelectProps> = ({
     <Wrapper ref={wrapperRef}>
       <Trigger
         ref={triggerRef}
-        type='button'
-        data-test-id='adventure-select'
-        aria-label='Abenteuer'
-        aria-haspopup='listbox'
+        type="button"
+        data-test-id="adventure-select"
+        aria-label="Abenteuer"
+        aria-haspopup="listbox"
         aria-expanded={isOpen}
         disabled={adventures.length === 0}
         onClick={() => (isOpen ? setIsOpen(false) : open())}
         onKeyDown={handleTriggerKeyDown}
       >
         <TriggerLabel>{activeAdventure?.name ?? ''}</TriggerLabel>
-        <Chevron $isOpen={isOpen} viewBox='0 0 20 20' aria-hidden='true'>
-          <polygon points='5,7 15,7 10,13' />
+        <Chevron $isOpen={isOpen} viewBox="0 0 20 20" aria-hidden="true">
+          <polygon points="5,7 15,7 10,13" />
         </Chevron>
       </Trigger>
       {isOpen && (
-        <List role='listbox' aria-label='Abenteuer' onKeyDown={handleListKeyDown}>
+        <List role="listbox" aria-label="Abenteuer" onKeyDown={handleListKeyDown}>
           {adventures.map((adventure, index) => (
             <Option
               key={adventure.id}
               ref={(element) => {
                 optionRefs.current[index] = element
               }}
-              role='option'
+              role="option"
               tabIndex={-1}
               aria-selected={index === selectedIndex}
               data-test-id={`adventure-option-${adventure.id}`}

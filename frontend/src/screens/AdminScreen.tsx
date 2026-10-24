@@ -1,8 +1,11 @@
 import Box from '@mui/material/Box'
 import Slider from '@mui/material/Slider'
-import { useCallback, useContext, FunctionComponent, ReactElement, useEffect, useRef, useState } from 'react'
+import {
+  useCallback, useContext, FunctionComponent, ReactElement, useEffect, useRef, useState,
+} from 'react'
 import styled, { useTheme } from 'styled-components'
 
+import { ReactSVG } from 'react-svg'
 import { DetailsSideBar } from '../components/DetailsSideBar'
 import { Dialogue } from '../components/Dialogue'
 import { DocumentNavigation } from '../components/DocumentNavigation'
@@ -12,17 +15,19 @@ import { Label } from '../components/Label'
 import { NavRail, NavRailItem } from '../components/NavRail'
 import { SceneNavigation } from '../components/SceneNavigation'
 import { TopBar } from '../components/TopBar'
-import { ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext } from '../context/context'
+import {
+  ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext,
+} from '../context/context'
 import { AdventureSummary, SceneDetail, SoundName } from '../models/models'
 import {
-    getAdminData,
-    getAdventures,
-    getSceneById,
-    playSound,
-    saveActiveAdventure,
-    saveActiveScene,
-    saveAudio,
-    saveTheme,
+  getAdminData,
+  getAdventures,
+  getSceneById,
+  playSound,
+  saveActiveAdventure,
+  saveActiveScene,
+  saveAudio,
+  saveTheme,
 } from '../service/adminScreen'
 import { GlobalStyle } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
@@ -30,8 +35,6 @@ import { selectDefaultAdventureId } from '../utils/adventure'
 import { loadLatest } from '../utils/loadSafely'
 import { nextOpenPanel } from '../utils/navRail'
 import { filterSceneByKey, getMusicTitle } from '../utils/utils'
-
-import { ReactSVG } from 'react-svg'
 
 import notesIcon from '/assets/icons/notes.svg'
 import playIcon from '/assets/icons/play.svg'
@@ -112,7 +115,7 @@ const Music = styled.div`
     padding-right: ${(props) => props.theme.space[5]};
 `
 
-const AudioControlButton = styled.div<{$isMusicPlaying: boolean}>`
+const AudioControlButton = styled.div<{ $isMusicPlaying: boolean }>`
     display: grid;
     place-items: center;
     width: ${(props) => props.theme.size.control.md};
@@ -177,304 +180,306 @@ const VolumeSlider = styled(Slider)`
 type Save = () => Promise<unknown>
 
 const AdminScreen: FunctionComponent = (): ReactElement => {
-    const theme = useTheme()
+  const theme = useTheme()
 
-    const { activeAdventureId } = useContext(ActiveAdventureContext)
-    const { activeSceneId } = useContext(ActiveSceneContext)
-    const { hasState, theme: gameTableTheme, connected, reconnectNow } = useContext(GameTableContext)
-    const { audio } = useContext(GameAudioContext)
-    const isMusicPlaying = audio?.playing ?? false
-    // Only while the slider is dragged; afterwards it shows the volume pushed by the server
-    const [draggedVolume, setDraggedVolume] = useState<number | null>(null)
-    const [adventures, setAdventures] = useState<AdventureSummary[]>()
-    const [scenesDetails, setScenesDetails] = useState<SceneDetail[]>([])
-    const [activeScene, setActiveScene] = useState<SceneDetail>()
+  const { activeAdventureId } = useContext(ActiveAdventureContext)
+  const { activeSceneId } = useContext(ActiveSceneContext)
+  const {
+    hasState, theme: gameTableTheme, connected, reconnectNow,
+  } = useContext(GameTableContext)
+  const { audio } = useContext(GameAudioContext)
+  const isMusicPlaying = audio?.playing ?? false
+  // Only while the slider is dragged; afterwards it shows the volume pushed by the server
+  const [draggedVolume, setDraggedVolume] = useState<number | null>(null)
+  const [adventures, setAdventures] = useState<AdventureSummary[]>()
+  const [scenesDetails, setScenesDetails] = useState<SceneDetail[]>([])
+  const [activeScene, setActiveScene] = useState<SceneDetail>()
 
-    const [dialogueVisibility, setDialogueVisibility] = useState<boolean>(false)
-    const [sceneOption, setSceneOption] = useState<SceneDetail | undefined>()
+  const [dialogueVisibility, setDialogueVisibility] = useState<boolean>(false)
+  const [sceneOption, setSceneOption] = useState<SceneDetail | undefined>()
 
-    // Neither kept on the server nor in localStorage: after a reload the notes panel is open again
-    const [openPanel, setOpenPanel] = useState<string | null>('docs')
-    const [selectedStoryIndex, setSelectedStoryIndex] = useState<number>(0)
+  // Neither kept on the server nor in localStorage: after a reload the notes panel is open again
+  const [openPanel, setOpenPanel] = useState<string | null>('docs')
+  const [selectedStoryIndex, setSelectedStoryIndex] = useState<number>(0)
 
-    const [adventuresFailed, setAdventuresFailed] = useState<boolean>(false)
-    const [adminDataFailed, setAdminDataFailed] = useState<boolean>(false)
-    const [activeSceneFailed, setActiveSceneFailed] = useState<boolean>(false)
-    const hasLoadError = adventuresFailed || adminDataFailed || activeSceneFailed
+  const [adventuresFailed, setAdventuresFailed] = useState<boolean>(false)
+  const [adminDataFailed, setAdminDataFailed] = useState<boolean>(false)
+  const [activeSceneFailed, setActiveSceneFailed] = useState<boolean>(false)
+  const hasLoadError = adventuresFailed || adminDataFailed || activeSceneFailed
 
-    // The last write that failed (scene, adventure or theme), kept so "Erneut versuchen" can repeat it
-    const [failedSave, setFailedSave] = useState<{ retry: Save } | null>(null)
-    const latestSave = useRef<number>(0)
+  // The last write that failed (scene, adventure or theme), kept so "Erneut versuchen" can repeat it
+  const [failedSave, setFailedSave] = useState<{ retry: Save } | null>(null)
+  const latestSave = useRef<number>(0)
 
-    // Scenes are only loaded once the adventure is in the loaded list, so they are not requested before the list
-    const loadedAdventureId = adventures?.some((adventure) => adventure.id === activeAdventureId)
-        ? activeAdventureId
-        : null
+  // Scenes are only loaded once the adventure is in the loaded list, so they are not requested before the list
+  const loadedAdventureId = adventures?.some((adventure) => adventure.id === activeAdventureId)
+    ? activeAdventureId
+    : null
 
-    // Retry bumps this counter; all load effects depend on it
-    const [reloadCount, setReloadCount] = useState<number>(0)
+  // Retry bumps this counter; all load effects depend on it
+  const [reloadCount, setReloadCount] = useState<number>(0)
 
-    const retryLoading = () => {
-        setReloadCount((count) => count + 1)
-    }
+  const retryLoading = () => {
+    setReloadCount((count) => count + 1)
+  }
 
-    useEffect(() => {
-        let stale = false
+  useEffect(() => {
+    let stale = false
 
-        loadLatest(
-            getAdventures,
-            (adventures) => {
-                setAdventures(adventures)
-                setAdventuresFailed(false)
-            },
-            (err) => {
-                console.error('Error fetching adventures:', err)
-                setAdventuresFailed(true)
-            },
-            () => stale
-        )
-
-        return () => {
-            stale = true
-        }
-    }, [reloadCount])
-
-    useEffect(() => {
-        let stale = false
-
-        if (loadedAdventureId === null) {
-            setScenesDetails([])
-            setAdminDataFailed(false)
-            return
-        }
-
-        loadLatest(
-            () => getAdminData(loadedAdventureId),
-            (scenesDetails) => {
-                setScenesDetails(scenesDetails)
-                setAdminDataFailed(false)
-            },
-            (err) => {
-                console.error('Error fetching admin data:', err)
-                setAdminDataFailed(true)
-            },
-            () => stale
-        )
-
-        return () => {
-            stale = true
-        }
-    }, [loadedAdventureId, reloadCount])
-
-    useEffect(() => {
-        let stale = false
-
-        if (activeSceneId === null) {
-            setActiveScene(undefined)
-            setActiveSceneFailed(false)
-            return
-        }
-
-        loadLatest(
-            () => getSceneById(activeSceneId),
-            (activeScene: SceneDetail) => {
-                setActiveScene(activeScene)
-                setActiveSceneFailed(false)
-            },
-            (err) => {
-                console.error('Error fetching active scene data:', err)
-                setActiveSceneFailed(true)
-            },
-            () => stale
-        )
-
-        return () => {
-            stale = true
-        }
-    }, [activeSceneId, reloadCount])
-
-    // Nothing changes locally: Admin, Wall and Ground switch with the push of the server. Only the latest write may
-    // report its result, so an older failure cannot hide a newer success (or the other way round). No automatic retry.
-    const runSave = useCallback((save: Save) => {
-        const request = ++latestSave.current
-        loadLatest(
-            save,
-            () => setFailedSave(null),
-            (err) => {
-                console.error('Error saving:', err)
-                setFailedSave({ retry: save })
-            },
-            () => request !== latestSave.current
-        )
-    }, [])
-
-    const retrySaving = () => {
-        if (failedSave) {
-            runSave(failedSave.retry)
-        }
-    }
-
-    // Without an adventure on the game table the first one of the list is activated, so with a single adventure the
-    // Admin works without any selection. Runs again only when the list or the adventure changes, so a failed write is
-    // repeated only by "Erneut versuchen".
-    useEffect(() => {
-        if (!hasState || adventures === undefined) {
-            return
-        }
-        const defaultAdventureId = selectDefaultAdventureId(adventures, activeAdventureId)
-        if (defaultAdventureId !== null && defaultAdventureId !== activeAdventureId) {
-            runSave(() => saveActiveAdventure(defaultAdventureId))
-        }
-    }, [hasState, adventures, activeAdventureId, runSave])
-
-    const handleAdventureSelection = (adventureId: number) => {
-        if (adventureId === activeAdventureId) {
-            return
-        }
-        runSave(() => saveActiveAdventure(adventureId))
-    }
-
-    const handleThemeToggle = () => {
-        const nextTheme = gameTableTheme === 'dark' ? 'tavern' : 'dark'
-        runSave(() => saveTheme(nextTheme))
-    }
-
-    useEffect(() => {
-        setDraggedVolume(null)
-    }, [audio, failedSave])
-
-    const handleMusicToggle = () => {
-        const playing = !isMusicPlaying
-        runSave(() => saveAudio({ playing }))
-    }
-
-    const handleVolumeCommit = (_event: unknown, value: number | number[]) => {
-        const volume = value as number
-        runSave(() => saveAudio({ volume }))
-    }
-
-    // A late sound effect is pointless, so there is no retry; a missing audio output is no error either
-    const handleSound = (name: SoundName) => {
-        playSound(name).catch((err) => console.error('Error playing sound:', err))
-    }
-
-    // The active scene is already on the game table: no dialog, and no write that would only switch the track
-    const handleSceneSelection = (sceneId: number) => {
-        if (sceneId === activeSceneId) {
-            return
-        }
-        const scene = filterSceneByKey('id', sceneId, scenesDetails)
-        if (!scene) {
-            throw new Error('No Scene to select not found')
-        }
-        setDialogueVisibility(true)
-        setSceneOption(scene)
-    }
-
-    const handleDialogueOption = (option: boolean, sceneOption: SceneDetail | undefined) => {
-        setDialogueVisibility(false)
-        if (option && sceneOption && loadedAdventureId !== null) {
-            const adventureId = loadedAdventureId
-            runSave(() => saveActiveScene(adventureId, sceneOption.id))
-        }
-    }
-
-    const hasErrorBar = !connected || hasLoadError || failedSave !== null
-
-    const navItems: (NavRailItem & { panel: ReactElement })[] = [
-        {
-            id: 'docs',
-            name: 'Notizen',
-            icon: notesIcon,
-            panel: <DocumentNavigation selectedStoryIndex={selectedStoryIndex} onSelectStory={setSelectedStoryIndex} />,
-        },
-        {
-            id: 'scenes',
-            name: 'Szenen',
-            icon: scenesIcon,
-            panel: <SceneNavigation scenes={scenesDetails} onSelectScene={handleSceneSelection} />,
-        },
-    ]
-    const openNavItem = navItems.find((item) => item.id === openPanel)
-
-    const handleNavSelect = (id: string) => {
-        setOpenPanel((open) => nextOpenPanel(open, id))
-    }
-
-    return(
-        <>
-            <GlobalStyle />
-            <Dialogue
-                sceneOption={sceneOption}
-                handleDialogueOption={handleDialogueOption}
-                isVisible={dialogueVisibility}
-            />
-            <Screen $hasErrorBar={hasErrorBar}>
-                <TopBar
-                    onToggleTheme={handleThemeToggle}
-                    adventures={adventures ?? []}
-                    activeAdventureId={activeAdventureId}
-                    onSelectAdventure={handleAdventureSelection}
-                    onPlaySound={handleSound}
-                />
-                {hasErrorBar && (
-                    <div>
-                        {!connected && <ErrorBar message={CONNECTION_ERROR_MESSAGE} onRetry={reconnectNow} />}
-                        {hasLoadError && <ErrorBar message={LOAD_ERROR_MESSAGE} onRetry={retryLoading} />}
-                        {failedSave !== null && <ErrorBar message={SAVE_ERROR_MESSAGE} onRetry={retrySaving} />}
-                    </div>
-                )}
-                <Main $isPanelOpen={openNavItem !== undefined}>
-                    <NavRail
-                        items={navItems}
-                        openItemId={openNavItem?.id ?? null}
-                        panelId={NAV_PANEL_ID}
-                        onSelect={handleNavSelect}
-                    />
-                    {openNavItem && (
-                        <NavPanel id={NAV_PANEL_ID} aria-label={openNavItem.name} data-test-id='nav-panel'>
-                            {openNavItem.panel}
-                        </NavPanel>
-                    )}
-                    <Content>
-                        <DocumentReader selectedStoryIndex={selectedStoryIndex} />
-                        <SidebarRight>
-                            <DetailsSideBar activeScene={ activeScene }/>
-                        </SidebarRight>
-                    </Content>
-                </Main>
-                <BottomBar>
-                    <Music>
-                        <AudioControlButton $isMusicPlaying={ isMusicPlaying } onClick={ handleMusicToggle }>
-                            <ReactSVG
-                                src={isMusicPlaying ? pauseIcon : playIcon}
-                                beforeInjection={(svg) => {
-                                svg.setAttribute('style', `fill: ${isMusicPlaying ? theme.colors.onPrimary : theme.colors.text.color}`)
-                                }}
-                            />
-                        </AudioControlButton>
-                        <Track>
-                            <Label>Musik</Label>
-                            <TrackName>{ getMusicTitle(audio?.track?.source ?? '') }</TrackName>
-                            {audio !== null && !audio.output_ready && <AudioHint>{ NO_AUDIO_OUTPUT_MESSAGE }</AudioHint>}
-                        </Track>
-                        <Box sx={{ width: VOLUME_SLIDER_WIDTH, margin: 0, flexShrink: 0 }}>
-                            <VolumeSlider
-                                aria-label='Lautstärke'
-                                value={draggedVolume ?? audio?.volume ?? 0}
-                                onChange={(_event, value) => setDraggedVolume(value as number)}
-                                onChangeCommitted={handleVolumeCommit}
-                                min={0}
-                                max={100}
-                            />
-                        </Box>
-                    </Music>
-                    <div />
-                    <div />
-                </BottomBar>
-            </Screen>
-        </>
+    loadLatest(
+      getAdventures,
+      (adventures) => {
+        setAdventures(adventures)
+        setAdventuresFailed(false)
+      },
+      (err) => {
+        console.error('Error fetching adventures:', err)
+        setAdventuresFailed(true)
+      },
+      () => stale,
     )
+
+    return () => {
+      stale = true
+    }
+  }, [reloadCount])
+
+  useEffect(() => {
+    let stale = false
+
+    if (loadedAdventureId === null) {
+      setScenesDetails([])
+      setAdminDataFailed(false)
+      return
+    }
+
+    loadLatest(
+      () => getAdminData(loadedAdventureId),
+      (scenesDetails) => {
+        setScenesDetails(scenesDetails)
+        setAdminDataFailed(false)
+      },
+      (err) => {
+        console.error('Error fetching admin data:', err)
+        setAdminDataFailed(true)
+      },
+      () => stale,
+    )
+
+    return () => {
+      stale = true
+    }
+  }, [loadedAdventureId, reloadCount])
+
+  useEffect(() => {
+    let stale = false
+
+    if (activeSceneId === null) {
+      setActiveScene(undefined)
+      setActiveSceneFailed(false)
+      return
+    }
+
+    loadLatest(
+      () => getSceneById(activeSceneId),
+      (activeScene: SceneDetail) => {
+        setActiveScene(activeScene)
+        setActiveSceneFailed(false)
+      },
+      (err) => {
+        console.error('Error fetching active scene data:', err)
+        setActiveSceneFailed(true)
+      },
+      () => stale,
+    )
+
+    return () => {
+      stale = true
+    }
+  }, [activeSceneId, reloadCount])
+
+  // Nothing changes locally: Admin, Wall and Ground switch with the push of the server. Only the latest write may
+  // report its result, so an older failure cannot hide a newer success (or the other way round). No automatic retry.
+  const runSave = useCallback((save: Save) => {
+    const request = ++latestSave.current
+    loadLatest(
+      save,
+      () => setFailedSave(null),
+      (err) => {
+        console.error('Error saving:', err)
+        setFailedSave({ retry: save })
+      },
+      () => request !== latestSave.current,
+    )
+  }, [])
+
+  const retrySaving = () => {
+    if (failedSave) {
+      runSave(failedSave.retry)
+    }
+  }
+
+  // Without an adventure on the game table the first one of the list is activated, so with a single adventure the
+  // Admin works without any selection. Runs again only when the list or the adventure changes, so a failed write is
+  // repeated only by "Erneut versuchen".
+  useEffect(() => {
+    if (!hasState || adventures === undefined) {
+      return
+    }
+    const defaultAdventureId = selectDefaultAdventureId(adventures, activeAdventureId)
+    if (defaultAdventureId !== null && defaultAdventureId !== activeAdventureId) {
+      runSave(() => saveActiveAdventure(defaultAdventureId))
+    }
+  }, [hasState, adventures, activeAdventureId, runSave])
+
+  const handleAdventureSelection = (adventureId: number) => {
+    if (adventureId === activeAdventureId) {
+      return
+    }
+    runSave(() => saveActiveAdventure(adventureId))
+  }
+
+  const handleThemeToggle = () => {
+    const nextTheme = gameTableTheme === 'dark' ? 'tavern' : 'dark'
+    runSave(() => saveTheme(nextTheme))
+  }
+
+  useEffect(() => {
+    setDraggedVolume(null)
+  }, [audio, failedSave])
+
+  const handleMusicToggle = () => {
+    const playing = !isMusicPlaying
+    runSave(() => saveAudio({ playing }))
+  }
+
+  const handleVolumeCommit = (_event: unknown, value: number | number[]) => {
+    const volume = value as number
+    runSave(() => saveAudio({ volume }))
+  }
+
+  // A late sound effect is pointless, so there is no retry; a missing audio output is no error either
+  const handleSound = (name: SoundName) => {
+    playSound(name).catch((err) => console.error('Error playing sound:', err))
+  }
+
+  // The active scene is already on the game table: no dialog, and no write that would only switch the track
+  const handleSceneSelection = (sceneId: number) => {
+    if (sceneId === activeSceneId) {
+      return
+    }
+    const scene = filterSceneByKey('id', sceneId, scenesDetails)
+    if (!scene) {
+      throw new Error('No Scene to select not found')
+    }
+    setDialogueVisibility(true)
+    setSceneOption(scene)
+  }
+
+  const handleDialogueOption = (option: boolean, sceneOption: SceneDetail | undefined) => {
+    setDialogueVisibility(false)
+    if (option && sceneOption && loadedAdventureId !== null) {
+      const adventureId = loadedAdventureId
+      runSave(() => saveActiveScene(adventureId, sceneOption.id))
+    }
+  }
+
+  const hasErrorBar = !connected || hasLoadError || failedSave !== null
+
+  const navItems: (NavRailItem & { panel: ReactElement })[] = [
+    {
+      id: 'docs',
+      name: 'Notizen',
+      icon: notesIcon,
+      panel: <DocumentNavigation selectedStoryIndex={selectedStoryIndex} onSelectStory={setSelectedStoryIndex} />,
+    },
+    {
+      id: 'scenes',
+      name: 'Szenen',
+      icon: scenesIcon,
+      panel: <SceneNavigation scenes={scenesDetails} onSelectScene={handleSceneSelection} />,
+    },
+  ]
+  const openNavItem = navItems.find((item) => item.id === openPanel)
+
+  const handleNavSelect = (id: string) => {
+    setOpenPanel((open) => nextOpenPanel(open, id))
+  }
+
+  return (
+    <>
+      <GlobalStyle />
+      <Dialogue
+        sceneOption={sceneOption}
+        handleDialogueOption={handleDialogueOption}
+        isVisible={dialogueVisibility}
+      />
+      <Screen $hasErrorBar={hasErrorBar}>
+        <TopBar
+          onToggleTheme={handleThemeToggle}
+          adventures={adventures ?? []}
+          activeAdventureId={activeAdventureId}
+          onSelectAdventure={handleAdventureSelection}
+          onPlaySound={handleSound}
+        />
+        {hasErrorBar && (
+        <div>
+          {!connected && <ErrorBar message={CONNECTION_ERROR_MESSAGE} onRetry={reconnectNow} />}
+          {hasLoadError && <ErrorBar message={LOAD_ERROR_MESSAGE} onRetry={retryLoading} />}
+          {failedSave !== null && <ErrorBar message={SAVE_ERROR_MESSAGE} onRetry={retrySaving} />}
+        </div>
+        )}
+        <Main $isPanelOpen={openNavItem !== undefined}>
+          <NavRail
+            items={navItems}
+            openItemId={openNavItem?.id ?? null}
+            panelId={NAV_PANEL_ID}
+            onSelect={handleNavSelect}
+          />
+          {openNavItem && (
+            <NavPanel id={NAV_PANEL_ID} aria-label={openNavItem.name} data-test-id="nav-panel">
+              {openNavItem.panel}
+            </NavPanel>
+          )}
+          <Content>
+            <DocumentReader selectedStoryIndex={selectedStoryIndex} />
+            <SidebarRight>
+              <DetailsSideBar activeScene={activeScene} />
+            </SidebarRight>
+          </Content>
+        </Main>
+        <BottomBar>
+          <Music>
+            <AudioControlButton $isMusicPlaying={isMusicPlaying} onClick={handleMusicToggle}>
+              <ReactSVG
+                src={isMusicPlaying ? pauseIcon : playIcon}
+                beforeInjection={(svg) => {
+                  svg.setAttribute('style', `fill: ${isMusicPlaying ? theme.colors.onPrimary : theme.colors.text.color}`)
+                }}
+              />
+            </AudioControlButton>
+            <Track>
+              <Label>Musik</Label>
+              <TrackName>{ getMusicTitle(audio?.track?.source ?? '') }</TrackName>
+              {audio !== null && !audio.output_ready && <AudioHint>{ NO_AUDIO_OUTPUT_MESSAGE }</AudioHint>}
+            </Track>
+            <Box sx={{ width: VOLUME_SLIDER_WIDTH, margin: 0, flexShrink: 0 }}>
+              <VolumeSlider
+                aria-label="Lautstärke"
+                value={draggedVolume ?? audio?.volume ?? 0}
+                onChange={(_event, value) => setDraggedVolume(value as number)}
+                onChangeCommitted={handleVolumeCommit}
+                min={0}
+                max={100}
+              />
+            </Box>
+          </Music>
+          <div />
+          <div />
+        </BottomBar>
+      </Screen>
+    </>
+  )
 }
 
 export { AdminScreen }

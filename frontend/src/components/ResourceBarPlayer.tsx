@@ -40,9 +40,9 @@ const Resource = styled.button<{ $variant: ResourceVariant }>`
   height: ${RESOURCE_HEIGHT};
   display: flex;
   align-items: center;
-  justify-content: ${(props) => props.$variant === 'spell' ? 'space-between' : 'center'};
+  justify-content: ${(props) => (props.$variant === 'spell' ? 'space-between' : 'center')};
   gap: ${(props) => props.theme.space[3]};
-  padding: ${(props) => props.$variant === 'spell' ? `0 ${props.theme.space[4]}` : '0'};
+  padding: ${(props) => (props.$variant === 'spell' ? `0 ${props.theme.space[4]}` : '0')};
   font: inherit;
   ${textStyle('xl')}
   font-weight: ${(props) => props.theme.fontWeight.semibold};
@@ -51,7 +51,7 @@ const Resource = styled.button<{ $variant: ResourceVariant }>`
   border: ${(props) => props.theme.borderWidth.thick} solid ${(props) => props.theme.colors.resource[props.$variant].strong};
   border-radius: ${(props) => props.theme.radius.md};
   background-color: ${(props) => props.theme.colors.resource[props.$variant].muted};
-  cursor: ${(props) => props.$variant === 'movement' ? 'default' : 'pointer'};
+  cursor: ${(props) => (props.$variant === 'movement' ? 'default' : 'pointer')};
 `
 
 const Numeral = styled.span`
@@ -76,11 +76,11 @@ const ResourceIcon = styled.svg`
 `
 
 const ActionIcon = styled.circle<{ $action: number }>`
-  fill: ${(props) => props.$action > 0 ? props.theme.colors.resource.action.strong : props.theme.colors.resource.empty};
+  fill: ${(props) => (props.$action > 0 ? props.theme.colors.resource.action.strong : props.theme.colors.resource.empty)};
 `
 
 const BonusIcon = styled.polygon<{ $bonusAction: number }>`
-  fill: ${(props) => props.$bonusAction > 0 ? props.theme.colors.resource.bonus.strong : props.theme.colors.resource.empty};
+  fill: ${(props) => (props.$bonusAction > 0 ? props.theme.colors.resource.bonus.strong : props.theme.colors.resource.empty)};
 `
 
 const MovementIcon = styled.span`
@@ -95,123 +95,130 @@ const SlotGroup = styled.span`
   gap: ${(props) => props.theme.space[1]};
 `
 
-const Slot = styled.span<{ $variant: 'spell' | 'special'; $currentSlots: number; $id: number }>`
+const Slot = styled.span<{ $variant: 'spell' | 'special', $currentSlots: number, $id: number }>`
   width: ${SLOT_WIDTH};
   height: ${SLOT_HEIGHT};
   border-radius: ${(props) => props.theme.radius.sm};
-  background-color: ${(props) => props.$currentSlots < props.$id ? props.theme.colors.resource.empty : props.theme.colors.resource[props.$variant].strong};
+  background-color: ${(props) => (props.$currentSlots < props.$id ? props.theme.colors.resource.empty : props.theme.colors.resource[props.$variant].strong)};
 `
 
 const ResourceBarPlayer: FunctionComponent = (): ReactElement => {
+  const SpellMax: Record<number, number> = {
+    1: 4,
+    2: 3,
+    3: 3,
+    4: 2,
+  }
+  const specialMax = 3
 
-    const SpellMax: Record<number, number> = {
-        1: 4,
-        2: 3,
-        3: 3,
-        4: 2,
-      }
-      const specialMax = 3
-    
-      const [action, setAction] = useState<number>(1)
-      const [bonusAction, setBonusAction] = useState<number>(1)
-    
-      const [spell1, setSpell1] = useState<number>(SpellMax[1])
-      const [spell2, setSpell2] = useState<number>(SpellMax[2])
-      const [spell3, setSpell3] = useState<number>(SpellMax[3])
-      const [spell4, setSpell4] = useState<number>(SpellMax[4])
-    
-      const [special, setSpecial] = useState<number>(1)
-    
-      const ActionHandler = (resource: number, setResource: React.Dispatch<React.SetStateAction<number>>) => {
-        if(resource === 0) {
-          setResource(1)
-        }
-        else {
-          setResource(0)
-        }
-      }
-    
-      const SpellHandler = (resource: number, setResource: React.Dispatch<React.SetStateAction<number>>, maxResource: number) => {
-        if(resource === 0) {
-          setResource(maxResource)
-        }
-        else {
-          setResource(resource - 1)
-        }
-      }
-    
-      const spellData = [
-        { spell: spell1, setSpell: setSpell1, tier: 1, name: 'I', max: 4 },
-        { spell: spell2, setSpell: setSpell2, tier: 2, name: 'II', max: 4 },
-        { spell: spell3, setSpell: setSpell3, tier: 3, name: 'III', max: 3 },
-        { spell: spell4, setSpell: setSpell4, tier: 4, name: 'IV', max: 2 },
-      ]
+  const [action, setAction] = useState<number>(1)
+  const [bonusAction, setBonusAction] = useState<number>(1)
 
-    return(
-        <ResourceBar>
-            <ResourceRow>
-                <ResourceBarSection>
-                    <Label>Aktion</Label>
-                    <Resource type='button' $variant='action' onClick={() => ActionHandler(action, setAction)}>
-                        <IconSection>
-                            <ResourceIcon viewBox='0 0 20 20'>
-                                <ActionIcon cx='10' cy='10' r='10' $action={action} />
-                            </ResourceIcon>
-                        </IconSection>
-                        <span>{action}</span>
-                    </Resource>
-                </ResourceBarSection>
+  const [spell1, setSpell1] = useState<number>(SpellMax[1])
+  const [spell2, setSpell2] = useState<number>(SpellMax[2])
+  const [spell3, setSpell3] = useState<number>(SpellMax[3])
+  const [spell4, setSpell4] = useState<number>(SpellMax[4])
 
-                <ResourceBarSection>
-                    <Label>Bonusaktion</Label>
-                    <Resource type='button' $variant='bonus' onClick={() => ActionHandler(bonusAction, setBonusAction)}>
-                        <IconSection>
-                            <ResourceIcon viewBox='0 0 20 20'>
-                                <BonusIcon points='10,1 20,19 0,19' $bonusAction={bonusAction} />
-                            </ResourceIcon>
-                        </IconSection>
-                        <span>{bonusAction}</span>
-                    </Resource>
-                </ResourceBarSection>
+  const [special, setSpecial] = useState<number>(1)
 
-                <ResourceBarSection>
-                    <Label>Bewegung</Label>
-                    <Resource as='div' $variant='movement'>
-                        <IconSection>
-                            <MovementIcon />
-                            <MovementIcon />
-                        </IconSection>
-                        <span>9.5</span>
-                    </Resource>
-                </ResourceBarSection>
+  const ActionHandler = (resource: number, setResource: React.Dispatch<React.SetStateAction<number>>) => {
+    if (resource === 0) {
+      setResource(1)
+    } else {
+      setResource(0)
+    }
+  }
 
-                <ResourceBarSection>
-                    <Label>Spezial</Label>
-                    <Resource type='button' $variant='special' onClick={() => SpellHandler(special, setSpecial, specialMax)}>
-                        <SlotGroup>
-                            {[...Array(3)].map((_, i) => (
-                                <Slot key={i} $variant='special' $currentSlots={special} $id={i+1} />
-                            ))}
-                        </SlotGroup>
-                    </Resource>
-                </ResourceBarSection>
-            </ResourceRow>
+  const SpellHandler = (resource: number, setResource: React.Dispatch<React.SetStateAction<number>>, maxResource: number) => {
+    if (resource === 0) {
+      setResource(maxResource)
+    } else {
+      setResource(resource - 1)
+    }
+  }
 
-            <ResourceRow>
-                <RowLabel>Zauberplätze</RowLabel>
-                {spellData.map(({ spell, setSpell, tier, name }) => (
-                    <Resource type='button' $variant='spell' key={tier} onClick={() => SpellHandler(spell, setSpell, SpellMax[tier])}>
-                        <Numeral>{name}</Numeral>
-                        <SlotGroup>
-                            {[...Array(SpellMax[tier])].map((_, i) => (
-                                <Slot key={i} $variant='spell' $currentSlots={spell} $id={i+1} />
-                            ))}
-                        </SlotGroup>
-                    </Resource>
-                ))}
-            </ResourceRow>
-        </ResourceBar>
-    )
+  const spellData = [
+    {
+      spell: spell1, setSpell: setSpell1, tier: 1, name: 'I', max: 4,
+    },
+    {
+      spell: spell2, setSpell: setSpell2, tier: 2, name: 'II', max: 4,
+    },
+    {
+      spell: spell3, setSpell: setSpell3, tier: 3, name: 'III', max: 3,
+    },
+    {
+      spell: spell4, setSpell: setSpell4, tier: 4, name: 'IV', max: 2,
+    },
+  ]
+
+  return (
+    <ResourceBar>
+      <ResourceRow>
+        <ResourceBarSection>
+          <Label>Aktion</Label>
+          <Resource type="button" $variant="action" onClick={() => ActionHandler(action, setAction)}>
+            <IconSection>
+              <ResourceIcon viewBox="0 0 20 20">
+                <ActionIcon cx="10" cy="10" r="10" $action={action} />
+              </ResourceIcon>
+            </IconSection>
+            <span>{action}</span>
+          </Resource>
+        </ResourceBarSection>
+
+        <ResourceBarSection>
+          <Label>Bonusaktion</Label>
+          <Resource type="button" $variant="bonus" onClick={() => ActionHandler(bonusAction, setBonusAction)}>
+            <IconSection>
+              <ResourceIcon viewBox="0 0 20 20">
+                <BonusIcon points="10,1 20,19 0,19" $bonusAction={bonusAction} />
+              </ResourceIcon>
+            </IconSection>
+            <span>{bonusAction}</span>
+          </Resource>
+        </ResourceBarSection>
+
+        <ResourceBarSection>
+          <Label>Bewegung</Label>
+          <Resource as="div" $variant="movement">
+            <IconSection>
+              <MovementIcon />
+              <MovementIcon />
+            </IconSection>
+            <span>9.5</span>
+          </Resource>
+        </ResourceBarSection>
+
+        <ResourceBarSection>
+          <Label>Spezial</Label>
+          <Resource type="button" $variant="special" onClick={() => SpellHandler(special, setSpecial, specialMax)}>
+            <SlotGroup>
+              {[...Array(3)].map((_, i) => (
+                <Slot key={i} $variant="special" $currentSlots={special} $id={i + 1} />
+              ))}
+            </SlotGroup>
+          </Resource>
+        </ResourceBarSection>
+      </ResourceRow>
+
+      <ResourceRow>
+        <RowLabel>Zauberplätze</RowLabel>
+        {spellData.map(({
+          spell, setSpell, tier, name,
+        }) => (
+          <Resource type="button" $variant="spell" key={tier} onClick={() => SpellHandler(spell, setSpell, SpellMax[tier])}>
+            <Numeral>{name}</Numeral>
+            <SlotGroup>
+              {[...Array(SpellMax[tier])].map((_, i) => (
+                <Slot key={i} $variant="spell" $currentSlots={spell} $id={i + 1} />
+              ))}
+            </SlotGroup>
+          </Resource>
+        ))}
+      </ResourceRow>
+    </ResourceBar>
+  )
 }
 
 export { ResourceBarPlayer }

@@ -22,7 +22,7 @@ export interface HeartbeatWatchdog {
 export const createHeartbeatWatchdog = (
   onTimeout: () => void,
   timeoutMs: number = HEARTBEAT_TIMEOUT_MS,
-  timers: Timers = browserTimers
+  timers: Timers = browserTimers,
 ): HeartbeatWatchdog => {
   let timer: ReturnType<typeof setTimeout> | null = null
 

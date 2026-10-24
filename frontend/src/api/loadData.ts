@@ -28,7 +28,7 @@ export const describeFailure = (error: unknown): string => {
 export const loadData = async (
   what: string,
   path: string,
-  params?: { [key: string]: boolean }
+  params?: Record<string, boolean>,
 ) => {
   let data
   try {

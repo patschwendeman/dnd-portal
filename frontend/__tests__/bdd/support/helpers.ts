@@ -1,4 +1,6 @@
-import { Builder, By, error, until, WebDriver, WebElement } from 'selenium-webdriver'
+import {
+  Builder, By, error, until, WebDriver, WebElement,
+} from 'selenium-webdriver'
 
 // Lives outside steps/ so jest (testMatch: __tests__/bdd/steps/*.ts) does not run it as a test file
 const BASE_URL = 'http://localhost:5173'
@@ -22,8 +24,7 @@ const openScreen = async (driver: WebDriver, path: string): Promise<void> => {
   await driver.get(`${BASE_URL}${path}`)
 }
 
-const waitForElement = async (driver: WebDriver, selector: string): Promise<WebElement> =>
-  driver.wait(until.elementLocated(By.css(selector)), WAIT_TIMEOUT)
+const waitForElement = async (driver: WebDriver, selector: string): Promise<WebElement> => driver.wait(until.elementLocated(By.css(selector)), WAIT_TIMEOUT)
 
 const clickElement = async (driver: WebDriver, selector: string): Promise<WebElement> => {
   const element = await waitForElement(driver, selector)
@@ -51,7 +52,7 @@ const waitForAttribute = async (
   driver: WebDriver,
   selector: string,
   attribute: string,
-  expected: string
+  expected: string,
 ): Promise<string | null> => {
   await waitForElement(driver, selector)
   let actual: string | null = null

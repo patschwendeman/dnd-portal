@@ -58,36 +58,33 @@ const DetailContent = styled.div`
 `
 
 interface DetailsSideBarProps {
-    activeScene: SceneDetail | undefined;
-  }
-
-const DetailsSideBar: FunctionComponent<DetailsSideBarProps> = ({ activeScene }): ReactElement => {
-
-    return (
-        <Details>
-            <DetailHeader>
-                <Label>Aktive Szene</Label>
-                {activeScene ? (
-                    <>
-                        <SceneName>{activeScene.name}</SceneName>
-                        <SceneDescription>{activeScene.description}</SceneDescription>
-                    </>
-                ) : (
-                    <SceneDescription data-test-id='no-active-scene'>Keine Szene aktiv</SceneDescription>
-                )}
-            </DetailHeader>
-            <DetailRows>
-                <DetailContent>
-                    <Label>Enemies</Label>
-                    <span>–</span>
-                </DetailContent>
-                <DetailContent>
-                    <Label>Loot</Label>
-                    <span>–</span>
-                </DetailContent>
-            </DetailRows>
-        </Details>
-    )
+  activeScene: SceneDetail | undefined
 }
+
+const DetailsSideBar: FunctionComponent<DetailsSideBarProps> = ({ activeScene }): ReactElement => (
+  <Details>
+    <DetailHeader>
+      <Label>Aktive Szene</Label>
+      {activeScene ? (
+        <>
+          <SceneName>{activeScene.name}</SceneName>
+          <SceneDescription>{activeScene.description}</SceneDescription>
+        </>
+      ) : (
+        <SceneDescription data-test-id="no-active-scene">Keine Szene aktiv</SceneDescription>
+      )}
+    </DetailHeader>
+    <DetailRows>
+      <DetailContent>
+        <Label>Enemies</Label>
+        <span>–</span>
+      </DetailContent>
+      <DetailContent>
+        <Label>Loot</Label>
+        <span>–</span>
+      </DetailContent>
+    </DetailRows>
+  </Details>
+)
 
 export { DetailsSideBar }

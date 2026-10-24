@@ -1,9 +1,13 @@
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import {
+  describe, it, expect, vi, beforeEach,
+} from 'vitest'
 
 import { apiClient } from '../../src/api/apiClient'
 import { getData } from '../../src/api/apiMethods'
-import { getAdminData, getAdventure, getAdventures, getSceneById } from '../../src/service/adminScreen'
+import {
+  getAdminData, getAdventure, getAdventures, getSceneById,
+} from '../../src/service/adminScreen'
 import { getGroundScreenData } from '../../src/service/groundScreen'
 import { getWallScene } from '../../src/service/WallScreen'
 
@@ -15,14 +19,15 @@ const get = vi.mocked(apiClient.get)
 
 const networkError = () => new AxiosError('Network Error', AxiosError.ERR_NETWORK)
 const timeoutError = () => new AxiosError('timeout of 5000ms exceeded', AxiosError.ECONNABORTED)
-const httpError = (status: number) =>
-  new AxiosError(
-    `Request failed with status code ${status}`,
-    AxiosError.ERR_BAD_RESPONSE,
-    undefined,
-    undefined,
-    { status, statusText: '', data: {}, headers: {}, config: {} as InternalAxiosRequestConfig } as AxiosResponse
-  )
+const httpError = (status: number) => new AxiosError(
+  `Request failed with status code ${status}`,
+  AxiosError.ERR_BAD_RESPONSE,
+  undefined,
+  undefined,
+  {
+    status, statusText: '', data: {}, headers: {}, config: {} as InternalAxiosRequestConfig,
+  } as AxiosResponse,
+)
 
 beforeEach(() => {
   get.mockReset()

@@ -26,10 +26,15 @@ const SOUND_VOLUME = 1
 // follows the audio state of the server (track, playing, volume) and reports the end of a track.
 export class WallAudioPlayer {
   private readonly music: PlayableAudio
+
   private readonly createAudio: () => PlayableAudio
+
   private readonly resolveSource: (source: string) => string
+
   private readonly onTrackEnded: (trackId: number) => void
+
   private active = false
+
   private trackId: number | null = null
 
   constructor({
@@ -59,7 +64,7 @@ export class WallAudioPlayer {
     }
     this.music.volume = state.volume / 100
 
-    const track = state.track
+    const { track } = state
     if (track === null) {
       this.trackId = null
       this.music.pause()

@@ -1,16 +1,25 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import {
+  describe, it, expect, vi, beforeEach, afterEach,
+} from 'vitest'
 
 import { PlayableAudio, WallAudioPlayer } from '../../src/audio/wallAudioPlayer'
 import { AudioState } from '../../src/models/models'
 
 class FakeAudio implements PlayableAudio {
   src = ''
+
   currentTime = 0
+
   loop = true
+
   volume = 1
+
   paused = true
+
   onended: ((event: Event) => void) | null = null
+
   playCalls = 0
+
   rejectPlay = false
 
   play() {
@@ -35,8 +44,10 @@ class FakeAudio implements PlayableAudio {
 const first = { id: 1, name: 'First', source: '/media/music/first.mp3' }
 const second = { id: 2, name: 'Second', source: '/media/music/second.mp3' }
 // The payload follows the API contract, whose fields are snake_case
-// eslint-disable-next-line camelcase
-const playing: AudioState = { playing: true, track: first, volume: 40, output_ready: true }
+
+const playing: AudioState = {
+  playing: true, track: first, volume: 40, output_ready: true,
+}
 const paused: AudioState = { ...playing, playing: false }
 
 let audios: FakeAudio[]

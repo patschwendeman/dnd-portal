@@ -2,7 +2,7 @@
 // unhandled promise rejection.
 export const loadSafely = async (
   load: () => Promise<void>,
-  onError: (error: unknown) => void
+  onError: (error: unknown) => void,
 ): Promise<void> => {
   try {
     await load()
@@ -17,7 +17,7 @@ export const loadLatest = <T>(
   load: () => Promise<T>,
   apply: (result: T) => void,
   onError: (error: unknown) => void,
-  isStale: () => boolean
+  isStale: () => boolean,
 ): Promise<void> => loadSafely(
   async () => {
     const result = await load()
@@ -29,5 +29,5 @@ export const loadLatest = <T>(
     if (!isStale()) {
       onError(error)
     }
-  }
+  },
 )

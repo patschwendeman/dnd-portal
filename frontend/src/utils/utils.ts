@@ -3,7 +3,7 @@ import { SceneDetail } from '../models/models'
 export const filterSceneByKey = <K extends keyof SceneDetail>(
   key: K,
   value: SceneDetail[K],
-  sceneDetails: SceneDetail[]
+  sceneDetails: SceneDetail[],
 ): SceneDetail => {
   const scene = sceneDetails.find((scene) => scene[key] === value)
   if (!scene) {

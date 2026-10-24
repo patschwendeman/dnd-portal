@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  useCallback, useEffect, useRef, useState,
+} from 'react'
 
 import { ConnectionStatus, createGameTableConnection, GameTableConnection } from './connection'
 import { API_BASE_URL } from '../api/apiClient'
@@ -81,7 +83,6 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
   }, [])
 
   const reportTrackEnded = useCallback((trackId: number) => {
-    // eslint-disable-next-line camelcase
     connection.current?.send({ type: 'track_ended', payload: { track_id: trackId } })
   }, [])
 

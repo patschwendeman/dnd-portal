@@ -1,5 +1,7 @@
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import {
+  describe, it, expect, vi, beforeEach,
+} from 'vitest'
 
 import { apiClient } from '../../src/api/apiClient'
 import { patchData } from '../../src/api/apiMethods'
@@ -21,14 +23,15 @@ const post = vi.mocked(apiClient.post)
 
 const networkError = () => new AxiosError('Network Error', AxiosError.ERR_NETWORK)
 const timeoutError = () => new AxiosError('timeout of 5000ms exceeded', AxiosError.ECONNABORTED)
-const httpError = (status: number) =>
-  new AxiosError(
-    `Request failed with status code ${status}`,
-    AxiosError.ERR_BAD_RESPONSE,
-    undefined,
-    undefined,
-    { status, statusText: '', data: {}, headers: {}, config: {} as InternalAxiosRequestConfig } as AxiosResponse
-  )
+const httpError = (status: number) => new AxiosError(
+  `Request failed with status code ${status}`,
+  AxiosError.ERR_BAD_RESPONSE,
+  undefined,
+  undefined,
+  {
+    status, statusText: '', data: {}, headers: {}, config: {} as InternalAxiosRequestConfig,
+  } as AxiosResponse,
+)
 
 const failure = (promise: Promise<unknown>) => promise.then(() => undefined, (err: Error) => err)
 
@@ -53,7 +56,7 @@ describe('patchData', () => {
 describe('saveActiveScene', () => {
   it('patches the active scene of the adventure', async () => {
     // Request and response follow the API contract, whose fields are snake_case
-    // eslint-disable-next-line camelcase
+
     const body = { active_scene_id: 5 }
     patch.mockResolvedValue({ data: { id: 2, ...body } })
     await expect(saveActiveScene(2, 5)).resolves.toEqual({ id: 2, ...body })
@@ -90,10 +93,9 @@ describe('saveActiveScene', () => {
 
 describe('game table writes', () => {
   it('patches the active adventure of the game table', async () => {
-    // eslint-disable-next-line camelcase
     patch.mockResolvedValue({ data: { active_adventure_id: 2 } })
     await saveActiveAdventure(2)
-    // eslint-disable-next-line camelcase
+
     expect(patch).toHaveBeenCalledWith('table', { active_adventure_id: 2 })
   })
 

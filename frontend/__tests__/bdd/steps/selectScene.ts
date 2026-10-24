@@ -96,7 +96,9 @@ defineFeature(feature, (test) => {
     await driver.quit()
   })
 
-  test('The scenes panel lists all scenes of the adventure', ({ given, when, then, and }) => {
+  test('The scenes panel lists all scenes of the adventure', ({
+    given, when, then, and,
+  }) => {
     given('a scene is active', async () => {
       await ensureActiveScene(driver)
     })
@@ -113,7 +115,7 @@ defineFeature(feature, (test) => {
       await waitForElement(driver, SCENE_NAVIGATION)
       await driver.wait(
         async () => (await driver.findElements(By.css(SCENE_ENTRIES))).length === SEED_SCENE_COUNT,
-        WAIT_TIMEOUT
+        WAIT_TIMEOUT,
       )
       const entries = await driver.findElements(By.css(SCENE_ENTRIES))
       const names = await Promise.all(entries.map((entry) => entry.getAttribute('title')))
@@ -131,7 +133,9 @@ defineFeature(feature, (test) => {
     })
   })
 
-  test('I select a scene to see its images at the wall and ground screen', ({ given, when, then, and }) => {
+  test('I select a scene to see its images at the wall and ground screen', ({
+    given, when, then, and,
+  }) => {
     let scene: SeedScene
 
     given('I am on the admin screen', async () => {

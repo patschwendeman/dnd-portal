@@ -1,5 +1,7 @@
 import { reconnectDelay } from './backoff'
-import { browserTimers, createHeartbeatWatchdog, HEARTBEAT_TIMEOUT_MS, Timers } from './heartbeat'
+import {
+  browserTimers, createHeartbeatWatchdog, HEARTBEAT_TIMEOUT_MS, Timers,
+} from './heartbeat'
 import { ClientMessage, parseServerMessage, ServerMessage } from './messages'
 import { browserVisibility, VisibilitySource } from './visibility'
 import { GameTableState } from '../models/models'

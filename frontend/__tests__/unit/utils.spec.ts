@@ -30,7 +30,7 @@ describe('should return scene by key', () => {
 
   it('should throw error', () => {
     expect(() => filterSceneByKey(key, 9999, SceneDetailMock)).toThrow(
-      'Scene with ' + key + ' 9999 not found'
+      `Scene with ${key} 9999 not found`,
     )
   })
 })

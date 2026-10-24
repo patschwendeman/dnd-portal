@@ -1,4 +1,6 @@
-import React, { FunctionComponent, ReactElement, useEffect, useRef, useState } from 'react'
+import React, {
+  FunctionComponent, ReactElement, useEffect, useRef, useState,
+} from 'react'
 import ReactMarkdown from 'react-markdown'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
@@ -150,7 +152,7 @@ const LoadFailedText = styled.p`
   max-width: ${LINE_MAX_WIDTH};
 `
 
-const MarkdownImage: FunctionComponent<{ src?: string; alt?: string }> = ({ src, alt = '' }) => (
+const MarkdownImage: FunctionComponent<{ src?: string, alt?: string }> = ({ src, alt = '' }) => (
   <a href={src} target="_blank" rel="noopener noreferrer">
     <img className="markdown-image" src={src} alt={alt} />
   </a>
@@ -166,8 +168,7 @@ function flatten(text: string, child: React.ReactNode): string {
   return text
 }
 
-
-function HeadingRenderer(props: { level: number; children: React.ReactNode }): ReactElement {
+function HeadingRenderer(props: { level: number, children: React.ReactNode }): ReactElement {
   const children = React.Children.toArray(props.children)
   const text = children.reduce(flatten, '')
   const slug = text.toLowerCase().replace(/\W/g, '-')
@@ -213,7 +214,7 @@ const DocumentReader: FunctionComponent<DocumentReaderProps> = ({ selectedStoryI
         console.error('Error loading markdown files:', error)
         setLoadFailed(true)
       },
-      () => stale
+      () => stale,
     )
 
     return () => {
@@ -244,13 +245,13 @@ const DocumentReader: FunctionComponent<DocumentReaderProps> = ({ selectedStoryI
   }, [])
 
   return (
-    <StoryReaderContainer data-test-id='notes-view'>
-      <Background ref={scrollContainerRef} onScroll={handleScroll} data-test-id='notes-scroll'>
+    <StoryReaderContainer data-test-id="notes-view">
+      <Background ref={scrollContainerRef} onScroll={handleScroll} data-test-id="notes-scroll">
         {loadFailed && <LoadFailedText>Notizen konnten nicht geladen werden</LoadFailedText>}
         {!loadFailed && markdownContent.map((content, index) => (
           <Page key={index}>
             <ReactMarkdown
-            components={{
+              components={{
                 h1: (props) => <HeadingRenderer {...props} level={1} />,
                 h2: (props) => <HeadingRenderer {...props} level={2} />,
                 h3: (props) => <HeadingRenderer {...props} level={3} />,
@@ -264,14 +265,14 @@ const DocumentReader: FunctionComponent<DocumentReaderProps> = ({ selectedStoryI
             </ReactMarkdown>
           </Page>
         ))}
-          <TopLink onClick={scrollToTop} $isVisible={isVisible}>
-            <ReactSVG
-                src={arrowUpIcon}
-                beforeInjection={(svg) => {
-                svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
-                }}
-            />
-          </TopLink>
+        <TopLink onClick={scrollToTop} $isVisible={isVisible}>
+          <ReactSVG
+            src={arrowUpIcon}
+            beforeInjection={(svg) => {
+              svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
+            }}
+          />
+        </TopLink>
       </Background>
     </StoryReaderContainer>
   )

@@ -1,9 +1,10 @@
 import { isSoundName } from '../audio/sounds'
-import { AudioState, GameTableState, SoundName, Theme, Track } from '../models/models'
+import {
+  AudioState, GameTableState, SoundName, Theme, Track,
+} from '../models/models'
 
 // Messages on /ws, see docs/architecture.md (not part of the OpenAPI contract)
-export type ServerMessage =
-  | { type: 'state', payload: GameTableState }
+export type ServerMessage = | { type: 'state', payload: GameTableState }
   | { type: 'audio', payload: AudioState }
   // Only to Walls: whether this connection is the audio output
   | { type: 'audio_output', payload: { active: boolean } }
@@ -12,18 +13,15 @@ export type ServerMessage =
   | { type: 'ping' }
 
 // Sent only by the Wall; the server ignores messages of the other screens
-export type ClientMessage =
-  | { type: 'audio_ready' }
-  // eslint-disable-next-line camelcase
+export type ClientMessage = | { type: 'audio_ready' }
+
   | { type: 'track_ended', payload: { track_id: number } }
 
 const THEMES: readonly Theme[] = ['dark', 'tavern']
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value)
 
-const isPositiveInteger = (value: unknown): value is number =>
-  typeof value === 'number' && Number.isSafeInteger(value) && value > 0
+const isPositiveInteger = (value: unknown): value is number => typeof value === 'number' && Number.isSafeInteger(value) && value > 0
 
 const isId = (value: unknown): value is number | null => value === null || isPositiveInteger(value)
 
@@ -35,13 +33,12 @@ const parseState = (payload: unknown): GameTableState | null => {
     return null
   }
   // The payload follows the API contract, whose fields are snake_case
-  /* eslint-disable camelcase */
+
   const { active_adventure_id, active_scene_id, theme } = payload
   if (!isId(active_adventure_id) || !isId(active_scene_id) || !THEMES.includes(theme as Theme)) {
     return null
   }
   return { active_adventure_id, active_scene_id, theme: theme as Theme }
-  /* eslint-enable camelcase */
 }
 
 const parseTrack = (value: unknown): Track | null | undefined => {
@@ -62,7 +59,7 @@ const parseAudio = (payload: unknown): AudioState | null => {
   if (!isRecord(payload)) {
     return null
   }
-  /* eslint-disable camelcase */
+
   const { playing, volume, output_ready } = payload
   const track = parseTrack(payload.track)
   if (
@@ -76,8 +73,9 @@ const parseAudio = (payload: unknown): AudioState | null => {
   ) {
     return null
   }
-  return { playing, track, volume, output_ready }
-  /* eslint-enable camelcase */
+  return {
+    playing, track, volume, output_ready,
+  }
 }
 
 // Returns null for anything that is not a valid, known message, so a newer server can add message types

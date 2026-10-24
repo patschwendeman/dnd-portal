@@ -52,9 +52,9 @@ const ErrorBar: FunctionComponent<ErrorBarProps> = ({ message, onRetry }): React
   const theme = useTheme()
 
   return (
-    <Bar role='alert'>
+    <Bar role="alert">
       <Message>{message}</Message>
-      <RetryButton type='button' onClick={onRetry} aria-label='Erneut versuchen' title='Erneut versuchen'>
+      <RetryButton type="button" onClick={onRetry} aria-label="Erneut versuchen" title="Erneut versuchen">
         <ReactSVG
           src={reloadIcon}
           beforeInjection={(svg) => {

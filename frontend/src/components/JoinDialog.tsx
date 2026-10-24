@@ -1,5 +1,7 @@
 import { QRCodeSVG } from 'qrcode.react'
-import { FunctionComponent, MouseEvent, ReactElement, useEffect, useRef, useState } from 'react'
+import {
+  FunctionComponent, MouseEvent, ReactElement, useEffect, useRef, useState,
+} from 'react'
 import styled, { useTheme } from 'styled-components'
 
 import { TextButton } from './TextButton'
@@ -13,8 +15,7 @@ const QR_CODE_SIZE = 240
 // Quiet zone around the code in modules: cameras need it to find the code
 const QR_CODE_MARGIN = 4
 // Non-breaking space: the command must not be split across lines
-const UNKNOWN_URL_MESSAGE =
-  'Player-URL unbekannt – Spieltisch mit „dnd\u00a0prod“ starten oder den Admin über die IP des Rechners öffnen'
+const UNKNOWN_URL_MESSAGE = 'Player-URL unbekannt – Spieltisch mit „dnd\u00a0prod“ starten oder den Admin über die IP des Rechners öffnen'
 
 const LayoutContainer = styled.div`
   display: flex;
@@ -94,7 +95,7 @@ const JoinDialog: FunctionComponent<JoinDialogProps> = ({ onClose }): ReactEleme
         console.error('Error fetching join info:', err)
         setPlayerUrl(null)
       },
-      () => stale
+      () => stale,
     )
 
     return () => {
@@ -124,11 +125,11 @@ const JoinDialog: FunctionComponent<JoinDialogProps> = ({ onClose }): ReactEleme
 
   return (
     <LayoutContainer onClick={closeOnOutsideClick}>
-      <DialogContainer role='dialog' aria-modal='true' aria-labelledby='join-dialog-title' data-test-id='join-dialog'>
-        <Title id='join-dialog-title'>Spieler verbinden</Title>
+      <DialogContainer role="dialog" aria-modal="true" aria-labelledby="join-dialog-title" data-test-id="join-dialog">
+        <Title id="join-dialog-title">Spieler verbinden</Title>
         {typeof playerUrl === 'string' && (
           <>
-            <QrCode data-test-id='join-qr-code'>
+            <QrCode data-test-id="join-qr-code">
               <QRCodeSVG
                 value={playerUrl}
                 size={QR_CODE_SIZE}
@@ -138,12 +139,12 @@ const JoinDialog: FunctionComponent<JoinDialogProps> = ({ onClose }): ReactEleme
                 title={playerUrl}
               />
             </QrCode>
-            <Url data-test-id='join-url'>{playerUrl}</Url>
+            <Url data-test-id="join-url">{playerUrl}</Url>
           </>
         )}
-        {playerUrl === null && <Hint data-test-id='join-hint'>{UNKNOWN_URL_MESSAGE}</Hint>}
+        {playerUrl === null && <Hint data-test-id="join-hint">{UNKNOWN_URL_MESSAGE}</Hint>}
         <ButtonContainer>
-          <TextButton ref={closeButtonRef} $variant='cancel' data-test-id='join-close' onClick={onClose}>
+          <TextButton ref={closeButtonRef} $variant="cancel" data-test-id="join-close" onClick={onClose}>
             Schließen
           </TextButton>
         </ButtonContainer>

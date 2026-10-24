@@ -80,7 +80,9 @@ const layer = {
   dialog: 40,
 }
 
-export const tokens = { space, text, fontWeight, letterSpacing, font, radius, borderWidth, size, layer }
+export const tokens = {
+  space, text, fontWeight, letterSpacing, font, radius, borderWidth, size, layer,
+}
 
 export type TextStep = keyof typeof text
 

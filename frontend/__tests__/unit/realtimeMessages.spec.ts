@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { parseServerMessage } from '../../src/realtime/messages'
 
 // The payload follows the API contract, whose fields are snake_case
-/* eslint-disable camelcase */
+
 const state = { active_adventure_id: 1, active_scene_id: 5, theme: 'tavern' }
 
 describe('parseServerMessage', () => {
@@ -50,7 +50,9 @@ describe('parseServerMessage', () => {
 })
 
 const track = { id: 34, name: 'Forest', source: '/media/music/side/forest/From_Past_To_Present.mp3' }
-const audio = { playing: true, track, volume: 10, output_ready: false }
+const audio = {
+  playing: true, track, volume: 10, output_ready: false,
+}
 
 describe('parseServerMessage for audio', () => {
   it('parses an audio state', () => {

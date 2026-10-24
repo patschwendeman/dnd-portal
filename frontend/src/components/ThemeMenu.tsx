@@ -1,4 +1,6 @@
-import { FunctionComponent, KeyboardEvent, ReactElement, useEffect, useRef, useState } from 'react'
+import {
+  FunctionComponent, KeyboardEvent, ReactElement, useEffect, useRef, useState,
+} from 'react'
 import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
 
@@ -177,11 +179,11 @@ const ThemeMenu: FunctionComponent<ThemeMenuProps> = ({ themeOverride, onChangeT
     <Wrapper ref={wrapperRef}>
       <Trigger
         ref={triggerRef}
-        type='button'
-        data-test-id='theme-menu'
-        aria-label='Darstellung'
-        title='Darstellung'
-        aria-haspopup='listbox'
+        type="button"
+        data-test-id="theme-menu"
+        aria-label="Darstellung"
+        title="Darstellung"
+        aria-haspopup="listbox"
         aria-expanded={isOpen}
         onClick={() => (isOpen ? setIsOpen(false) : open())}
         onKeyDown={handleTriggerKeyDown}
@@ -194,14 +196,14 @@ const ThemeMenu: FunctionComponent<ThemeMenuProps> = ({ themeOverride, onChangeT
         />
       </Trigger>
       {isOpen && (
-        <List role='listbox' aria-label='Darstellung' onKeyDown={handleListKeyDown}>
+        <List role="listbox" aria-label="Darstellung" onKeyDown={handleListKeyDown}>
           {OPTIONS.map((option, index) => (
             <Option
               key={option.label}
               ref={(element) => {
                 optionRefs.current[index] = element
               }}
-              role='option'
+              role="option"
               tabIndex={-1}
               aria-selected={index === selectedIndex}
               data-test-id={`theme-option-${option.value ?? 'table'}`}

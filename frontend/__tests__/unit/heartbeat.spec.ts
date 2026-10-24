@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import {
+  describe, it, expect, vi, beforeEach, afterEach,
+} from 'vitest'
 
 import { createHeartbeatWatchdog, HEARTBEAT_TIMEOUT_MS } from '../../src/realtime/heartbeat'
 

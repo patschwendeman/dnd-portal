@@ -34,8 +34,7 @@ const openAdmin = async (driver: WebDriver): Promise<void> => {
   await openScreen(driver, '/admin')
 }
 
-const getScrollTop = async (driver: WebDriver): Promise<number> =>
-  driver.executeScript(`return document.querySelector('${NOTES_SCROLL}').scrollTop`)
+const getScrollTop = async (driver: WebDriver): Promise<number> => driver.executeScript(`return document.querySelector('${NOTES_SCROLL}').scrollTop`)
 
 defineFeature(feature, (test) => {
   let driver: WebDriver
@@ -68,7 +67,7 @@ defineFeature(feature, (test) => {
     and('the panel shows the notes entries Main, Fight, Side, Leveling, Mechaniken', async () => {
       await waitForElement(driver, PANEL)
       const names = await Promise.all(
-        STORY_NAMES.map(async (_name, index) => (await waitForElement(driver, `${PANEL} ${entry(index)}`)).getText())
+        STORY_NAMES.map(async (_name, index) => (await waitForElement(driver, `${PANEL} ${entry(index)}`)).getText()),
       )
       expect(names).toEqual(STORY_NAMES)
     })
@@ -95,7 +94,9 @@ defineFeature(feature, (test) => {
     })
   })
 
-  test('I collapse and expand the panel', ({ given, and, when, then }) => {
+  test('I collapse and expand the panel', ({
+    given, and, when, then,
+  }) => {
     let notesWidth = 0
     let scrollTop = 0
 
@@ -109,7 +110,7 @@ defineFeature(feature, (test) => {
       scrollTop = await driver.executeScript(
         `const notes = document.querySelector('${NOTES_SCROLL}')
         notes.scrollTo({ top: ${SCROLL_TOP}, behavior: 'instant' })
-        return notes.scrollTop`
+        return notes.scrollTop`,
       )
       expect(scrollTop).toBe(SCROLL_TOP)
       notesWidth = (await (await waitForElement(driver, NOTES_VIEW)).getRect()).width

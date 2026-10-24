@@ -1,8 +1,12 @@
-import { FunctionComponent, ReactElement, ReactNode, useMemo } from 'react'
+import {
+  FunctionComponent, ReactElement, ReactNode, useMemo,
+} from 'react'
 import { ThemeProvider } from 'styled-components'
 
 import { GameTableScreen, useGameTable } from './useGameTable'
-import { ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext } from '../context/context'
+import {
+  ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext,
+} from '../context/context'
 import { Theme } from '../models/models'
 import { appTheme } from '../style/appTheme'
 import { effectiveTheme } from '../utils/playerTheme'
@@ -40,12 +44,16 @@ const GameTableProvider: FunctionComponent<GameTableProviderProps> = ({
   const adventure = useMemo(() => ({ activeAdventureId }), [activeAdventureId])
   const scene = useMemo(() => ({ activeSceneId }), [activeSceneId])
   const gameTable = useMemo(
-    () => ({ hasState: state !== null, theme, connected, reconnectNow }),
-    [state, theme, connected, reconnectNow]
+    () => ({
+      hasState: state !== null, theme, connected, reconnectNow,
+    }),
+    [state, theme, connected, reconnectNow],
   )
   const gameAudio = useMemo(
-    () => ({ audio, isAudioOutput, requestAudioOutput, reportTrackEnded, subscribeSound }),
-    [audio, isAudioOutput, requestAudioOutput, reportTrackEnded, subscribeSound]
+    () => ({
+      audio, isAudioOutput, requestAudioOutput, reportTrackEnded, subscribeSound,
+    }),
+    [audio, isAudioOutput, requestAudioOutput, reportTrackEnded, subscribeSound],
   )
   const styledTheme = useMemo(() => appTheme(effectiveTheme(themeOverride, theme)), [themeOverride, theme])
 

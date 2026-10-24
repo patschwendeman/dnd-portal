@@ -58,17 +58,19 @@ interface NavRailProps {
   onSelect: (id: string) => void
 }
 
-const NavRail: FunctionComponent<NavRailProps> = ({ items, openItemId, panelId, onSelect }): ReactElement => {
+const NavRail: FunctionComponent<NavRailProps> = ({
+  items, openItemId, panelId, onSelect,
+}): ReactElement => {
   const theme = useTheme()
 
   return (
-    <Rail aria-label='Navigation' data-test-id='nav-rail'>
+    <Rail aria-label="Navigation" data-test-id="nav-rail">
       {items.map((item) => {
         const isActive = item.id === openItemId
         return (
           <RailButton
             key={item.id}
-            type='button'
+            type="button"
             title={item.name}
             aria-label={item.name}
             aria-pressed={isActive}

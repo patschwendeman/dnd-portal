@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { textStyle } from '../style/tokens'
 
 // A button, so the lists in the panel can be used with the keyboard (Tab, Enter, Space)
-const NavigationElement = styled.button<{$isElementActive: boolean}>`
+const NavigationElement = styled.button<{ $isElementActive: boolean }>`
   display: block;
   flex-shrink: 0;
   width: 100%;
@@ -51,7 +51,7 @@ const SideBarLeftElement: FunctionComponent<SideBarLeftElementProps> = ({
   testId,
 }): ReactElement => (
   <NavigationElement
-    type='button'
+    type="button"
     // Full name as tooltip, because a long name is cut off with an ellipsis
     title={name}
     aria-current={isActive ? 'true' : undefined}

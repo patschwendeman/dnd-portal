@@ -33,9 +33,9 @@ const SceneNavigation: FunctionComponent<SceneNavigationProps> = ({ scenes, onSe
   const { activeSceneId } = useContext(ActiveSceneContext)
 
   return (
-    <Navigation data-test-id='scene-navigation'>
+    <Navigation data-test-id="scene-navigation">
       <ScenesLabel>Szenen</ScenesLabel>
-      {scenes.length === 0 && <EmptyHint data-test-id='scenes-empty'>Keine Szenen</EmptyHint>}
+      {scenes.length === 0 && <EmptyHint data-test-id="scenes-empty">Keine Szenen</EmptyHint>}
       {scenes.map((scene) => (
         <SideBarLeftElement
           key={scene.id}

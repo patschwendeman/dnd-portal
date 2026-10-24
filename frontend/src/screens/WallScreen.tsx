@@ -1,4 +1,6 @@
-import { FunctionComponent, ReactElement, useContext, useEffect, useState } from 'react'
+import {
+  FunctionComponent, ReactElement, useContext, useEffect, useState,
+} from 'react'
 import styled from 'styled-components'
 
 import { mediaUrl } from '../api/mediaUrl'
@@ -10,8 +12,7 @@ import { getWallScene } from '../service/WallScreen'
 import { GlobalStyle } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 import { loadLatest } from '../utils/loadSafely'
-import MapEnvironmentSrc from './../../public/assets/images/ground_screen/mapOverview.jpg'
-
+import MapEnvironmentSrc from '../../public/assets/images/ground_screen/mapOverview.jpg'
 
 const OVERLAY_PANEL_MAX_WIDTH = '1440px'
 
@@ -86,84 +87,86 @@ const BackgroundImage = styled.img`
     z-index: ${(props) => props.theme.layer.media};
 `
 const WallScreen: FunctionComponent = (): ReactElement => {
-    const { activeSceneId } = useContext(ActiveSceneContext)
-    const { audio, isAudioOutput, requestAudioOutput, reportTrackEnded, subscribeSound } = useContext(GameAudioContext)
-    const [audioPlayer, setAudioPlayer] = useState<WallAudioPlayer | null>(null)
-    const [activeScene, setActiveScene] = useState<SceneDetail>()
-    const [worldMapVisibility, setWorldMapVisibility] = useState<boolean>(false)
+  const { activeSceneId } = useContext(ActiveSceneContext)
+  const {
+    audio, isAudioOutput, requestAudioOutput, reportTrackEnded, subscribeSound,
+  } = useContext(GameAudioContext)
+  const [audioPlayer, setAudioPlayer] = useState<WallAudioPlayer | null>(null)
+  const [activeScene, setActiveScene] = useState<SceneDetail>()
+  const [worldMapVisibility, setWorldMapVisibility] = useState<boolean>(false)
 
-    const buttonLabels = ['WORLD', 'OFF']
-    const activeButton = worldMapVisibility ? 0 : 1
+  const buttonLabels = ['WORLD', 'OFF']
+  const activeButton = worldMapVisibility ? 0 : 1
 
-    function handleMapsVisibility(option: number) {
-        setWorldMapVisibility(option === 0)
+  function handleMapsVisibility(option: number) {
+    setWorldMapVisibility(option === 0)
+  }
+
+  useEffect(() => {
+    let stale = false
+
+    // Without an active scene the wall shows only the background, no image and no panel
+    if (activeSceneId === null) {
+      setActiveScene(undefined)
+      setWorldMapVisibility(false)
+      return
     }
 
-    useEffect(() => {
-        let stale = false
+    const handleWallScene = (activeScene: SceneDetail) => {
+      setActiveScene(activeScene)
+      setWorldMapVisibility(false)
+    }
 
-        // Without an active scene the wall shows only the background, no image and no panel
-        if (activeSceneId === null) {
-            setActiveScene(undefined)
-            setWorldMapVisibility(false)
-            return
-        }
-
-        const handleWallScene = (activeScene: SceneDetail) => {
-            setActiveScene(activeScene)
-            setWorldMapVisibility(false)
-        }
-
-        // Players see no error: the screen keeps the last loaded scene, the next scene change loads again.
-        loadLatest(
-            () => getWallScene(activeSceneId),
-            handleWallScene,
-            (err) => console.error('Error fetching wall scene:', err),
-            () => stale
-        )
-
-        return () => {
-            stale = true
-        }
-    }, [activeSceneId])
-
-    useEffect(() => {
-        const player = new WallAudioPlayer({ onTrackEnded: reportTrackEnded })
-        setAudioPlayer(player)
-        return () => {
-            player.dispose()
-        }
-    }, [reportTrackEnded])
-
-    useEffect(() => {
-        audioPlayer?.update(audio, isAudioOutput)
-    }, [audioPlayer, audio, isAudioOutput])
-
-    useEffect(() => {
-        if (audioPlayer === null) {
-            return
-        }
-        return subscribeSound((name) => audioPlayer.playSound(name))
-    }, [audioPlayer, subscribeSound])
-
-    return(
-        <Screen>
-            <GlobalStyle />
-            {activeScene && <BackgroundImage data-test-id='wallImg' src={mediaUrl(activeScene.wall_image.source)} alt='' />}
-            <OverlayPanel $isVisible={worldMapVisibility}>
-                <PanelHeader>
-                    <PanelTitle>Weltkarte</PanelTitle>
-                </PanelHeader>
-                <MapEnvironment src={MapEnvironmentSrc} ></MapEnvironment>
-            </OverlayPanel>
-            <ScreenControlBar
-                onVisibilityChange={handleMapsVisibility}
-                buttonLabels={buttonLabels}
-                activeIndex={activeButton}
-                onAudioOutput={requestAudioOutput}
-                isAudioOutput={isAudioOutput}
-            />
-        </Screen>       
+    // Players see no error: the screen keeps the last loaded scene, the next scene change loads again.
+    loadLatest(
+      () => getWallScene(activeSceneId),
+      handleWallScene,
+      (err) => console.error('Error fetching wall scene:', err),
+      () => stale,
     )
+
+    return () => {
+      stale = true
+    }
+  }, [activeSceneId])
+
+  useEffect(() => {
+    const player = new WallAudioPlayer({ onTrackEnded: reportTrackEnded })
+    setAudioPlayer(player)
+    return () => {
+      player.dispose()
+    }
+  }, [reportTrackEnded])
+
+  useEffect(() => {
+    audioPlayer?.update(audio, isAudioOutput)
+  }, [audioPlayer, audio, isAudioOutput])
+
+  useEffect(() => {
+    if (audioPlayer === null) {
+      return
+    }
+    return subscribeSound((name) => audioPlayer.playSound(name))
+  }, [audioPlayer, subscribeSound])
+
+  return (
+    <Screen>
+      <GlobalStyle />
+      {activeScene && <BackgroundImage data-test-id="wallImg" src={mediaUrl(activeScene.wall_image.source)} alt="" />}
+      <OverlayPanel $isVisible={worldMapVisibility}>
+        <PanelHeader>
+          <PanelTitle>Weltkarte</PanelTitle>
+        </PanelHeader>
+        <MapEnvironment src={MapEnvironmentSrc} />
+      </OverlayPanel>
+      <ScreenControlBar
+        onVisibilityChange={handleMapsVisibility}
+        buttonLabels={buttonLabels}
+        activeIndex={activeButton}
+        onAudioOutput={requestAudioOutput}
+        isAudioOutput={isAudioOutput}
+      />
+    </Screen>
+  )
 }
 export { WallScreen }

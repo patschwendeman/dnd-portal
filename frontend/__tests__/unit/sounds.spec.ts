@@ -3,7 +3,9 @@ import { resolve } from 'node:path'
 
 import { describe, it, expect } from 'vitest'
 
-import { isSoundName, SOUND_GROUPS, SOUND_NAMES, soundFile, SOUNDS } from '../../src/audio/sounds'
+import {
+  isSoundName, SOUND_GROUPS, SOUND_NAMES, soundFile, SOUNDS,
+} from '../../src/audio/sounds'
 
 const FRONTEND_DIR = resolve(__dirname, '../..')
 

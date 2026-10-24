@@ -1,17 +1,23 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import {
+  describe, it, expect, vi, beforeEach, afterEach,
+} from 'vitest'
 
 import { ConnectionStatus, createGameTableConnection, SocketLike } from '../../src/realtime/connection'
 import { VisibilitySource } from '../../src/realtime/visibility'
 
 // The payload follows the API contract, whose fields are snake_case
-/* eslint-disable camelcase */
+
 const state = { active_adventure_id: 1, active_scene_id: 5, theme: 'dark' }
 
 class FakeSocket implements SocketLike {
   onopen: (() => void) | null = null
+
   onmessage: ((event: { data: unknown }) => void) | null = null
+
   onclose: (() => void) | null = null
+
   closed = false
+
   sent: string[] = []
 
   send(data: string) {
@@ -34,6 +40,7 @@ let messages: unknown[]
 
 class FakeVisibility implements VisibilitySource {
   visible = true
+
   listeners = new Set<() => void>()
 
   isVisible() {
@@ -53,20 +60,19 @@ class FakeVisibility implements VisibilitySource {
   }
 }
 
-const connect = (heartbeatTimeoutMs = 35000, visibility: VisibilitySource = new FakeVisibility()) =>
-  createGameTableConnection({
-    url: 'ws://localhost/ws?screen=wall',
-    onState: (payload) => states.push(payload),
-    onMessage: (message) => messages.push(message),
-    onStatus: (status) => statuses.push(status),
-    createSocket: () => {
-      const socket = new FakeSocket()
-      sockets.push(socket)
-      return socket
-    },
-    heartbeatTimeoutMs,
-    visibility,
-  })
+const connect = (heartbeatTimeoutMs = 35000, visibility: VisibilitySource = new FakeVisibility()) => createGameTableConnection({
+  url: 'ws://localhost/ws?screen=wall',
+  onState: (payload) => states.push(payload),
+  onMessage: (message) => messages.push(message),
+  onStatus: (status) => statuses.push(status),
+  createSocket: () => {
+    const socket = new FakeSocket()
+    sockets.push(socket)
+    return socket
+  },
+  heartbeatTimeoutMs,
+  visibility,
+})
 
 const latest = () => sockets[sockets.length - 1]
 
@@ -99,7 +105,9 @@ describe('createGameTableConnection', () => {
   it('passes the other messages on', () => {
     connect()
     latest().onopen?.()
-    const audio = { playing: false, track: null, volume: 10, output_ready: true }
+    const audio = {
+      playing: false, track: null, volume: 10, output_ready: true,
+    }
     latest().receive({ type: 'audio', payload: audio })
     latest().receive({ type: 'audio_output', payload: { active: true } })
     latest().receive({ type: 'sound', payload: { name: 'lock' } })

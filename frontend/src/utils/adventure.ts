@@ -5,7 +5,7 @@ import { AdventureSummary } from '../models/models'
 // the Admin works without any selection.
 export const selectDefaultAdventureId = (
   adventures: AdventureSummary[],
-  activeId: number | null
+  activeId: number | null,
 ): number | null => {
   if (activeId !== null) {
     return activeId

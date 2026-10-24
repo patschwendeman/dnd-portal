@@ -1,4 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
+import {
+  describe, it, expect, vi,
+} from 'vitest'
 
 import { loadLatest } from '../../src/utils/loadSafely'
 
@@ -17,10 +19,12 @@ describe('loadLatest', () => {
     const apply = vi.fn()
     const onError = vi.fn()
     const pending = loadLatest(
-      () => new Promise<string>((r) => { resolve = r }),
+      () => new Promise<string>((r) => {
+        resolve = r
+      }),
       apply,
       onError,
-      () => stale
+      () => stale,
     )
     stale = true
     resolve('scene 1')
@@ -44,10 +48,12 @@ describe('loadLatest', () => {
     const apply = vi.fn()
     const onError = vi.fn()
     const pending = loadLatest(
-      () => new Promise<string>((_, r) => { reject = r }),
+      () => new Promise<string>((_, r) => {
+        reject = r
+      }),
       apply,
       onError,
-      () => stale
+      () => stale,
     )
     stale = true
     reject(new Error('Backend not reachable'))

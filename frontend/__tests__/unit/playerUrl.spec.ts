@@ -10,10 +10,10 @@ const at = (url: string) => {
 describe('selectPlayerUrl', () => {
   it('takes the URL from the API', () => {
     expect(selectPlayerUrl('http://192.168.0.10:8080/', at('http://localhost:8080/admin'))).toBe(
-      'http://192.168.0.10:8080/'
+      'http://192.168.0.10:8080/',
     )
     expect(selectPlayerUrl('http://192.168.0.10:5173/', at('http://192.168.0.20:8080/admin'))).toBe(
-      'http://192.168.0.10:5173/'
+      'http://192.168.0.10:5173/',
     )
   })
 

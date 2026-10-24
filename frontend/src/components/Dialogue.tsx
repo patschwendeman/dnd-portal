@@ -7,16 +7,15 @@ import { mediaUrl } from '../api/mediaUrl'
 import { SceneDetail } from '../models/models'
 import { textStyle } from '../style/tokens'
 
-
 interface DialogueProps {
-  isVisible: boolean;
-  sceneOption: SceneDetail | undefined;
-  handleDialogueOption: (option: boolean, sceneOption: SceneDetail | undefined) => void;
+  isVisible: boolean
+  sceneOption: SceneDetail | undefined
+  handleDialogueOption: (option: boolean, sceneOption: SceneDetail | undefined) => void
 }
 
 const DIALOG_WIDTH = '600px'
 
-const LayoutContainer = styled.div<{$isVisible: boolean}>`
+const LayoutContainer = styled.div<{ $isVisible: boolean }>`
   display: ${({ $isVisible }) => ($isVisible ? 'flex' : 'none')};
   position: fixed;
   inset: 0;
@@ -79,7 +78,6 @@ const DialogueImage = styled.img`
 const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogueOption, isVisible }): ReactElement => {
   const handleConfirm = () => {
     if (!sceneOption) {
-      
       throw new Error('Scene option is undefined')
     }
     handleDialogueOption(true, sceneOption)
@@ -99,8 +97,8 @@ const Dialogue: FunctionComponent<DialogueProps> = ({ sceneOption, handleDialogu
           <SceneDescription>{sceneOption?.description}</SceneDescription>
         </TextBlock>
         <ButtonContainer>
-          <TextButton $variant='cancel' data-test-id='decline-button' onClick={handleDecline}>Decline</TextButton>
-          <TextButton $variant='active' data-test-id='confirm-button' onClick={handleConfirm}>Confirm</TextButton>
+          <TextButton $variant="cancel" data-test-id="decline-button" onClick={handleDecline}>Decline</TextButton>
+          <TextButton $variant="active" data-test-id="confirm-button" onClick={handleConfirm}>Confirm</TextButton>
         </ButtonContainer>
       </DialogueContainer>
     </LayoutContainer>

@@ -5,7 +5,7 @@ const LOCAL_HOSTNAMES = ['localhost', '127.0.0.1', '[::1]']
 // Admin, unless it was opened locally. null = unknown.
 export const selectPlayerUrl = (
   apiPlayerUrl: string | null,
-  location: Pick<Location, 'origin' | 'hostname'>
+  location: Pick<Location, 'origin' | 'hostname'>,
 ): string | null => {
   if (apiPlayerUrl !== null) {
     return apiPlayerUrl
