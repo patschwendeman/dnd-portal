@@ -66,7 +66,7 @@ const Screen = styled.div<{ $hasErrorBar: boolean }>`
 `
 
 // Rail and panel sit flush between Top-Bar and bottom edge; only the content keeps the outer
-// padding
+// padding (not at the bottom, there it ends flush as well)
 const Main = styled.div<{ $isPanelOpen: boolean }>`
     display: grid;
     grid-template-columns: ${NAV_RAIL_WIDTH}
@@ -92,7 +92,7 @@ const Content = styled.div<{ $isDashboardOpen: boolean }>`
       ? `minmax(0, 2fr) minmax(${DASHBOARD_MIN_WIDTH}, 1fr)`
       : 'minmax(0, 1fr)')};
     gap: ${(props) => props.theme.space[5]};
-    padding: ${(props) => props.theme.space[5]};
+    padding: ${(props) => props.theme.space[5]} ${(props) => props.theme.space[5]} 0;
     min-width: 0;
     min-height: 0;
 `
