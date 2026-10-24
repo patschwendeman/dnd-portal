@@ -32,16 +32,14 @@
     "styled-components": "^6.1.13"
   },
   "devDependencies": {
-    "@eslint/js": "^9.9.1",
+    "@eslint/js": "^9.39.5",
     "@types/jest": "^29.5.12",
     "@types/node": "^24.19.2",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
-    "eslint": "^8.57.0",
-    "eslint-plugin-import": "^2.30.0",
-    "eslint-plugin-react": "^7.35.0",
-    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
+    "eslint": "^9.39.5",
+    "eslint-config-airbnb-extended": "3.3.0",
     "eslint-plugin-react-refresh": "^0.4.9",
     "eslint-plugin-styled-components-a11y": "^2.1.35",
     "globals": "^15.9.0",
@@ -54,7 +52,6 @@
     "start-server-and-test": "^2.0.6",
     "ts-jest": "^29.2.5",
     "typescript": "^5.5.3",
-    "typescript-eslint": "^8.3.0",
     "vite": "^5.4.1",
     "vitest": "^2.0.5"
   }

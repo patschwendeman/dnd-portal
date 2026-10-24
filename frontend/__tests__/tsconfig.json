@@ -1,0 +1,5 @@
+{
+  // Not built by tsc -b: only gives editors and type-aware ESLint rules a project for the tests.
+  "extends": "../tsconfig.app.json",
+  "include": ["."]
+}
