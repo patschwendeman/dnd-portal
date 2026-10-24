@@ -73,7 +73,6 @@ interface TopBarProps {
   activeAdventureId: number | null
   onSelectAdventure: (adventureId: number) => void
   isDashboardOpen: boolean
-  // id of the dashboard element the toggle button controls
   dashboardId: string
   onToggleDashboard: () => void
 }

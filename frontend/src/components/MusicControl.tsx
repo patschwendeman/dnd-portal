@@ -17,7 +17,6 @@ const VOLUME_SLIDER_THUMB_SIZE = '16px'
 
 const NO_AUDIO_OUTPUT_MESSAGE = 'Keine Audioausgabe bereit'
 
-// Button and title on the left, the vertical volume slider on the right over the full height
 const Music = styled.div`
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;

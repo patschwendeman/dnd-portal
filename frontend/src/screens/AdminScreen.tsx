@@ -345,7 +345,6 @@ function AdminScreen(): ReactElement {
     setOpenPanel((open) => nextOpenPanel(open, id))
   }
 
-  // Fixed order and size; the panels cannot be moved or resized
   const dashboardPanels: DashboardItem[] = [
     {
       id: 'scene',

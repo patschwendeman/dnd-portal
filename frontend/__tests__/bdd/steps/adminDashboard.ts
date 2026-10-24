@@ -164,7 +164,6 @@ defineFeature(feature, (test) => {
       expect(labels).toEqual(PANEL_LABELS)
       const dashboard = await (await waitForElement(driver, DASHBOARD)).getRect()
       const notes = await getNotesWidth(driver)
-      // About a third of the content next to the notes
       expect(dashboard.width).toBeLessThan(notes)
       expect(dashboard.width).toBeGreaterThan(notes / 3)
     })
@@ -211,7 +210,6 @@ defineFeature(feature, (test) => {
       const topBar = await waitForElement(driver, TOP_BAR)
       expect(await topBar.findElements(By.css('[data-test-id^="sound-"]'))).toHaveLength(0)
       expect(await topBar.findElements(By.css(JOIN_BUTTON))).toHaveLength(0)
-      // The main area reaches the bottom of the window
       const notes = await (await waitForElement(driver, NOTES_VIEW)).getRect()
       const windowHeight: number = await driver.executeScript('return window.innerHeight')
       const main = await (await waitForElement(driver, '[data-test-id="nav-rail"]')).getRect()
@@ -368,7 +366,6 @@ defineFeature(feature, (test) => {
     })
 
     then('the panel Screens shows one Ground less as connected', async () => {
-      // The wall screen stays connected
       const expected = { wall: Number(before.wall) + 1, ground: Number(before.ground) }
       expect(await waitForScreenCounts(driver, expected)).toEqual(expected)
     })

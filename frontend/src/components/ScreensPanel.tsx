@@ -27,7 +27,6 @@ const Rows = styled.div`
   gap: ${(props) => props.theme.space[3]};
 `
 
-// Text left, icon button right; the text wraps instead of being cut off
 const Row = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

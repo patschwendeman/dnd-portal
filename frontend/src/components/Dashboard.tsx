@@ -28,7 +28,6 @@ const Grid = styled.aside`
 interface DashboardItem {
   id: string
   label: string
-  // Fixed size in columns (of DASHBOARD_COLUMNS) and rows
   columns: number
   rows: number
   content: ReactElement

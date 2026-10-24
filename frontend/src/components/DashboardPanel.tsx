@@ -23,7 +23,6 @@ const Content = styled.div`
 
 interface DashboardPanelProps {
   label: string
-  // Size in columns and rows of the dashboard grid
   columns: number
   rows: number
   testId: string
