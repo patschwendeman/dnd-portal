@@ -1,7 +1,7 @@
 # DND-31: Prüfungen auf toten Code, Duplikate und Komplexität
 
 **Typ:** setup
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -114,3 +114,34 @@ Details und alle Fundstellen: [known-issues.md](../known-issues.md#baseline-der-
 
 ## Offene Fragen
 - keine
+
+## Review
+
+### Runde 1 – 2026-10-24
+**Empfehlung:** Abnahme
+
+Offen ist nur der Teil von AK2, den man erst nach dem Push prüfen kann: Die CI muss grün sein. Geprüft wurde Commit `e7d2e38` gegen `f82b367` (Plan-Commit mit Status `Freigegeben`). Checks und eingebaute Verschlechterungen liefen in einem temporären Worktree, das Repo blieb unverändert.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | Frontend: `frontend/package.json`:17-18 `check:deadcode` (knip) und `check:dupes` (jscpd), Pins :50-51 (`jscpd` 5.4.2, `knip` 6.43.0). Backend: `backend/Makefile`:7-20 Ziele `check-quality`, `-deadcode`, `-deps`, `-complexity`, `-dupes`. CI: Job `quality` mit `needs: lint` in `.github/workflows/frontend.yml`:88-110 und `.github/workflows/backend.yml`:59-87, Steps rufen dieselben npm-Scripts bzw. Make-Ziele auf. ruff `C90`, `PIE`, `RET` aktiv (`backend/pyproject.toml`:36), laufen im bestehenden `lint`-Job |
+| AK2 | lokal erfüllt, CI nach dem Push prüfen | Ist-Stand grün: `make check-quality` Exit 0 (auch ohne `.env`), pylint 10.00/10; `check:deadcode` und `check:dupes` Exit 0, jscpd 88/4221 Zeilen = 2,08 %. Eingebaute Verschlechterungen brechen jeweils ihren Check: vulture (ungenutzte Funktion, Exit 3), deptry (`six` ungenutzt, `anyio` transitiv, je Exit 1), xenon (Rang C, Exit 1; ruff C901 10 > 8), pylint (9 doppelte Zeilen, 9.99, Exit 8), knip (ungenutzter Export, Datei, Dependency `left-pad`), jscpd (2,33 % > Schwellwert, Exit 1). Baseline-Werte nachgemessen und bestätigt (vulture, radon, knip ohne Config, jscpd mit `--threshold 2.08` → Exit 1) |
+| AK3 | erfüllt | Keine Änderung unter `backend/app`, `backend/tests`, `backend/migrations`, `frontend/src`, `frontend/__tests__`. Lockfiles: nur neue Einträge, im Frontend 72 Pakete, alle `dev: true`; Prod-Image installiert mit `--no-dev`. Trigger, Path-Filter, Cache und Action-Versionen unverändert, kein neuer Workflow. pylint auf `duplicate-code` beschränkt (`backend/pyproject.toml`:76-84) |
+
+**Blockierende Befunde**
+- keine
+
+**Nach dem Push prüfen**
+- [ ] Frontend- und Backend-CI sind grün, der Job `quality` läuft jeweils nach `lint` (AK2).
+
+**Hinweise**
+- Abweichung von E3: ein Commit statt drei (Frontend-Tooling, Backend-Tooling, CI), Umsetzung über `/deliver-task` entgegen E3. Entscheidung beim User; Aufteilen vor dem Push möglich.
+- knip `ignoreIssues` wirkt pro Datei und Fundart: Neue ungenutzte Exporte in den 7 Baseline-Dateien bleiben unbemerkt (nachgewiesen mit `src/realtime/backoff.ts`). Alternative wäre `ignoreExportsUsedInFile`, dann aber globale Regel statt Baseline.
+- vulture-Whitelist arbeitet nur mit Namen (`cls`, `output_ready`, `first_track`, `avatar_media_id`, `active_scene`); gleichnamiger neuer toter Code fällt nicht auf. Grenze von vulture.
+- jscpd-Schwellwert ist ein Anteil; bei wachsendem Code ist absolut mehr Duplikat erlaubt. Der echte Wert ist 2,0848 %, daher ist 2,09 der kleinste grüne zweistellige Wert (nicht „Rundung“).
+- ruff (`max-complexity = 8`) ist für Funktionen strenger als xenon (`--max-absolute B`); xenon bringt Zusatznutzen über Modul- und Durchschnittsränge. Vom Plan so vorgesehen.
+- `Adventure.active_scene` als echter toter Code eingeordnet; ob wegen `post_update` doch nötig, klärt der Aufräum-Task.
+- pytest gegen die Dev-DB: 6 Fehler (Theme `tavern`), unabhängig von dieser Änderung; gegen frischen `postgres:17` alle grün.
+- Lint-Warnung `styled-components-a11y/alt-text` in `frontend/src/screens/WallScreen.tsx:157` bestand schon vorher (DND-29).
+
+**Checks:** Backend: `make check-quality`, ruff check/format, mypy (43 Dateien) grün, `uv lock --check` konsistent, Alembic und pytest gegen frischen `postgres:17` grün (165 Tests). Frontend (Node v24.15.0): `npm ci` konsistent, lint grün (1 Warnung, schon vorher vorhanden), typecheck und build grün, 158 Unit-Tests grün, `check:deadcode` und `check:dupes` grün. CI erst nach dem Push.
