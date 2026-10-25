@@ -1,7 +1,7 @@
 # DND-36: Ground-Raster und Audio in den Admin, Wall und Ground ohne Steuerleiste
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -204,3 +204,37 @@ Spieltisch steuert der Spielleiter alles vom Admin aus und muss nie mehr an Wall
 - keine
 
 ## Review
+
+### Runde 1 – 2026-10-25
+**Empfehlung:** Abnahme
+
+Alle sechs AK sind erfüllt, alle Checks laufen grün, blockierende Befunde gibt es keine. Echte Tonausgabe im Browser (AK3/AK4), die Weltkarte auf echten Monitoren (AK5) und der API-Neustart (AK6) sind laut Teststrategie manuell zu prüfen. Belegt sind sie hier über Code, Unit-, Backend- und E2E-Tests.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | Panel `frontend/src/components/GroundGridPanel.tsx`: Buttons über `OptionButtons` mit `aria-pressed` nach dem Server-Stand. Der Slider zeigt beim Ziehen den lokalen Wert und speichert erst beim Loslassen (`onChangeCommitted`); nach einem neuen Server-Wert oder `failedSave` zeigt er wieder den Server-Wert. Ground zeichnet nur nach dem Kontext (`GroundScreen.tsx`, `gridLineColor`). Backend: Zustand nur im Speicher (`app/realtime/ground_grid.py`), `services/game_table.py` setzt ihn ohne Reset bei Szenen- oder Abenteuerwechsel. Tests `test_ground_grid_is_pushed_to_all_grounds`, `test_new_ground_receives_the_current_ground_grid`, `test_scene_change_pushes_the_unchanged_ground_grid`, `test_scene_and_adventure_changes_keep_the_ground_grid`: grün. E2E `groundGrid.feature` (zwei Grounds plus ein später geöffneter, Linienfarbe und Zellabstand aus dem DOM gelesen, Szenenwechsel, Aus): PASS. |
+| AK2 | erfüllt | `AdminScreen.tsx`: Reihenfolge scene 4x2, music 2x2, sounds 2x2, wall-overlay 2x1, ground-grid 2x1, screens 4x2, level 4x1, players 4xN (E3). E2E-Layoutprüfung in `adminDashboard.feature` (Sounds neben Musik, Ground-Raster neben Wall-Overlay, beide unter Musik/Sounds): PASS. `WallOverlayPanel` nutzt jetzt `OptionButtons`, Test-IDs, Varianten und das No-op beim aktiven Button sind gleich geblieben. E2E `wallOverlay.feature` (2 Szenarien): PASS. |
+| AK3 | erfüllt | `useAudioPlayback.ts` in `AdminScreen.tsx` mit `AudioPlayer.update(audio, isAudioOutput)` und `subscribeSound`. Der Button „Hier abspielen“ (`MusicControl.tsx`) sendet `audio_ready`. Hinweis „Keine Audioausgabe bereit“ hängt an `output_ready`. Unit `audioPlayer.spec.ts` (12 Tests, u. a. Sounds bei voller Lautstärke über der Musik, Trackende melden): grün. Backend `test_track_ended_of_the_output_plays_the_next_track` (vom Admin): grün. E2E „I play music and sounds in the admin window“ (Hervorhebung, Hinweis verschwindet): PASS. Ob wirklich Ton kommt, ist nur manuell prüfbar. |
+| AK4 | erfüllt | `push.make_audio_output` schickt `audio_output {active:false}` an die bisherige Ausgabe, der Player pausiert daraufhin (Unit „pauses at once when it loses the role“). Backend `test_second_admin_takes_over_the_output` und `test_disconnect_of_the_output_is_pushed_to_all`: grün. Im E2E-Szenario oben übernimmt ein zweites Admin-Fenster, nur dort ist der Button hervorgehoben; nach dem Schließen zeigt das erste wieder den Hinweis: PASS. |
+| AK5 | erfüllt | `ScreenControlBar.tsx` ist gelöscht. In `src/` und `__tests__/` gibt es keine Treffer mehr für `ScreenControlBar`, `CONTROL_BAR`, `WallAudio` oder `screen-wall-audio`. `WallScreen.tsx` hat keine Audio-Teile mehr. Der Server ignoriert `audio_ready`/`track_ended` von Walls (`ws.py:34`, Tests `test_audio_ready_of_other_screens_is_ignored` und `test_track_ended_of_other_screens_is_ignored` für wall/ground/player). Weltkarte nachgerechnet: Panelhöhe ≤ 100vh − 96px, oberer Rand 48px, also unten 48px frei. In `ScreensPanel.tsx` ist „Audioausgabe“ entfernt. Hover und Darstellung in beiden Themes nicht am Gerät geprüft (manuell). |
+| AK6 | erfüllt | Nichts wird lokal vorweggenommen. Ein Fehler läuft über `runSave` → `failedSave` → Speicherfehler-Leiste, der Slider springt auf den Server-Wert zurück. Abgelehnter PATCH ohne Push und ohne Änderung: `test_failed_patch_does_not_push` (Zellgröße 155) und `test_patch_rejects_invalid_ground_grid*` (422, Zustand unverändert). Neustart ergibt `off`/100: Zustand nur im Speicher, `test_ground_grid_is_off_with_cell_size_100_after_a_start`. Ein E2E-Test für fehlschlagendes Speichern fehlt, wie bei DND-35. |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- **E5-Widerspruch:** Umgesetzt wörtlich „Klick auf hervorgehobenen Button tut nichts“ (`MusicControl.tsx`). Der erneute Versuch bei blockierter Wiedergabe erfolgt trotzdem: `AudioPlayer.update` ruft `play()` erneut auf, sobald ein neuer Zustand mit `playing` kommt (nächster Play-Klick, Lautstärkeänderung; Unit „does not throw when play() is rejected and tries again on the next state“), so auch in `docs/screens.md`. Löst den Widerspruch auf, kein AK verletzt; Wortlaut von E5 ggf. anpassen.
+- **Abweichungen, alle akzeptabel:** E2E-Szenario „world map from the control bar of a wall“ entfallen (Steuerleiste existiert nicht mehr); `OptionButtons` und `PanelSlider` fassen Code ohne Verhaltensänderung zusammen, dokumentiert in `frontend/DESIGN.md` und `components.md`; jscpd-Schwelle 2.09 → 1.34 % (strenger, kein Puffer); vulture-Eintrag `ground_grid_cell_size` begründet; `messages.ts` verwirft `state`-Nachrichten mit ungültigen Grid-Feldern (getestet in `realtimeMessages.spec.ts`); „Hier abspielen“ als eigene Zeile unten im Panel „Musik“.
+- **Unit-Test „Slider-Wert beim Loslassen“:** nur `toCellSize` und `gridLineColor` unit-getestet; das Verhalten beim Loslassen prüft nur E2E. Kein Komponenten-Test-Setup (testing-library/jsdom), daher vertretbar.
+- **E2 „Wert daneben angezeigt“:** Wert steht rechts neben dem Label „Zellgröße“ über dem Slider (schmales Panel, so in `components.md`); `docs/screens.md:73` sagt „Wert rechts daneben“. Kleine Unschärfe.
+- **E7 „Zwei Schritte“:** beide Schritte in einem Commit `be2e39e` (Regel: ein Commit je Runde); Lauffähigkeit von Schritt 1 allein an der Historie nicht prüfbar.
+- **Plan-Freigabe nicht versioniert:** Plan erscheint erstmals im Umsetzungs-Commit; Änderungen seit Freigabe nicht nachprüfbar. Gesamtdiff `be2e39e` gegen `dfc72f3`.
+- **Doku-Kleinigkeit:** `docs/screens.md`, Abschnitt „Sounds“ (ca. Zeile 114–115): „die Admin-Fenster, das Audioausgabe ist“ → „das Admin-Fenster“.
+- **Zusätzlich geändert:** `backend/README.md`, `frontend/README.md`, `backend/CLAUDE.md`, Theme-Tokens (`colors.dark`, `radius.xl`, `layer.controls`) – Doku-Pflege bzw. Aufräumen nach E6, kein Scope-Verstoß.
+- **Dev-DB:** Backend-Tests gegen temporäre DB; E2E-Lauf hat die aktive Szene von Abenteuer 1 verändert, per API auf 5 zurückgesetzt.
+- **Konventionen erfüllt:** ein Commit auf `development` (nicht gepusht), Kopfzeile nach Schema, Typ `feat`, keine KI-Signatur.
+
+**Checks:**
+- Backend: `ruff check`, `ruff format --check`, `mypy app`, `make check-quality` (pylint 10.00) grün; pytest 216 passed; `openapi.json` aktuell.
+- Frontend: lint, typecheck, build (bekannte Chunk-Warnung) grün; Unit 195 Tests grün; knip, jscpd (1.34 %) grün; `schema.d.ts` aktuell.
+- E2E: 6 Suites, 18 Tests grün.
