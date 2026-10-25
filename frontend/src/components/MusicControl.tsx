@@ -4,7 +4,6 @@ import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
 
 import { PANEL_SLIDER_THUMB_SIZE, PanelSlider } from './PanelSlider'
-import { TextButton } from './TextButton'
 import { AudioState } from '../models/models'
 import { textStyle } from '../style/tokens'
 import { getMusicTitle } from '../utils/utils'
@@ -20,11 +19,10 @@ const NO_AUDIO_OUTPUT_MESSAGE = 'Keine Audioausgabe bereit'
 const Music = styled.div`
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto 1fr;
     grid-template-areas:
         "toggle volume"
-        "track volume"
-        "output output";
+        "track volume";
     gap: ${(props) => props.theme.space[3]};
     height: 100%;
     min-width: 0;
@@ -72,17 +70,6 @@ const AudioHint = styled.span`
     ${textStyle('sm')}
 `
 
-const OutputButton = styled(TextButton)`
-    grid-area: output;
-    justify-self: start;
-    white-space: nowrap;
-    &:focus-visible {
-      outline: ${(props) => props.theme.borderWidth.thick} solid
-        ${(props) => props.theme.colors.primary};
-      outline-offset: ${(props) => props.theme.borderWidth.thick};
-    }
-`
-
 interface MusicControlProps {
   // null until the first audio state of the server arrived
   audio: AudioState | null
@@ -90,12 +77,10 @@ interface MusicControlProps {
   failedSave: object | null
   onToggle: () => void
   onVolumeCommit: (volume: number) => void
-  isAudioOutput: boolean
-  onRequestAudioOutput: () => void
 }
 
 function MusicControl({
-  audio, failedSave, onToggle, onVolumeCommit, isAudioOutput, onRequestAudioOutput,
+  audio, failedSave, onToggle, onVolumeCommit,
 }: MusicControlProps): ReactElement {
   const theme = useTheme()
   const isMusicPlaying = audio?.playing ?? false
@@ -133,16 +118,6 @@ function MusicControl({
           <AudioHint data-test-id="music-no-output">{ NO_AUDIO_OUTPUT_MESSAGE }</AudioHint>
         )}
       </Track>
-      {/* The click is the user interaction the browser needs to allow playback */}
-      <OutputButton
-        type="button"
-        $variant={isAudioOutput ? 'active' : 'cancel'}
-        aria-pressed={isAudioOutput}
-        data-test-id="music-output"
-        onClick={() => !isAudioOutput && onRequestAudioOutput()}
-      >
-        Hier abspielen
-      </OutputButton>
       {/* Half a thumb above and below, so the thumb stays inside the panel at 0 and 100; the
           invisible touch area around the thumb is cut off instead of overflowing the panel */}
       <Box sx={{

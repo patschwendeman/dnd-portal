@@ -29,8 +29,8 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
   Neustart ist die Musik pausiert und die Lautstärke wieder 10 %. Die Wiedergabeposition wird nicht synchronisiert
   (eine neue Ausgabe startet den Track von vorn), Überblendungen gibt es nicht. Ebenso liegen Wall-Overlay und
   Ground-Raster nur im Speicher: Nach einem Neustart ist beides aus (Zellgröße 100).
-- Nach einem Reload ist das Admin-Fenster keine Audioausgabe mehr, bis wieder „Hier abspielen“ geklickt wird (der
-  Browser gibt die Wiedergabe erst nach einer Nutzerinteraktion frei).
+- Nach einem Reload ist das Admin-Fenster keine Audioausgabe mehr, bis dort wieder geklickt oder eine Taste gedrückt
+  wird (der Browser gibt die Wiedergabe erst nach einer Nutzerinteraktion frei).
 - `POST` ist per CORS nicht freigegeben: Die Soundeffekte (`POST /table/sounds`) funktionieren über den Proxy
   (gleicher Origin), nicht bei direktem Zugriff auf Port 8000 aus einem anderen Origin (z. B. Frontend mit absoluter
   `VITE_API_URL`).

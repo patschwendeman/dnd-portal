@@ -101,7 +101,7 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 |---|---|---|
 | `space.1` | innerhalb einer Gruppe | Icon-Gruppe, Navigationseinträge, Button-Gruppe, Label über Überschrift |
 | `space.2` | Label vor Inhalt in derselben Zeile, Menüpunkte untereinander | Menüpunkte der Navigationsleiste; sonst als Teil zusammengesetzter Abstände, z. B. am Label der Panel-Listen |
-| `space.3` | zusammengehörige Elemente, Label → Inhalt darunter | Musik-Button → Titel, Titel → senkrechter Lautstärke-Slider → „Hier abspielen“, Umschalt-Buttons → Zellgröße im Panel „Ground-Raster“, Label → Inhalt im Dashboard-Panel, Zeilen im Panel „Screens“, Dialog-Buttons, „Notizen“ bzw. „Szenen“ → Navigation (`padding-bottom: space.2` am Label plus `gap` `space.1` der Spalte) |
+| `space.3` | zusammengehörige Elemente, Label → Inhalt darunter | Musik-Button → Titel, Titel → senkrechter Lautstärke-Slider, Umschalt-Buttons → Zellgröße im Panel „Ground-Raster“, Label → Inhalt im Dashboard-Panel, Zeilen im Panel „Screens“, Dialog-Buttons, „Notizen“ bzw. „Szenen“ → Navigation (`padding-bottom: space.2` am Label plus `gap` `space.1` der Spalte) |
 | `space.4` | Gruppen in einer Leiste, Elemente im Dialog | Sound-Gruppen im Panel „Sounds“ (nebeneinander; umbrochene Zeilen `space.2`), Panels im Dashboard, Bild → Text → Buttons |
 | `space.5` | Bereiche | Spalten im Admin, Karten, Notizseiten |
 | `space.6`–`space.8` | große Flächen | Abstand zum Bildschirmrand, Innenabstände nach der nächsten Tabelle |
@@ -225,7 +225,7 @@ Wechselt mit dem Theme.
 
 | Rolle | Bedeutung | Verwendung |
 |---|---|---|
-| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Navigationsleiste und Panel im Admin, Wall-Panel, Nebenaktion ([2.4](#24-zustände)); Flächen in Dashboard-Panels (Vorschaubilder, Play-Button ohne Musik, Slider-Schienen, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, inaktive Buttons in den Panels „Wall-Overlay“, „Ground-Raster“ und „Musik“ („Hier abspielen“), Hero-Karte), Ring um das Level-Badge |
+| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Navigationsleiste und Panel im Admin, Wall-Panel, Nebenaktion ([2.4](#24-zustände)); Flächen in Dashboard-Panels (Vorschaubilder, Play-Button ohne Musik, Slider-Schienen, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, inaktive Buttons in den Panels „Wall-Overlay“ und „Ground-Raster“, Hero-Karte), Ring um das Level-Badge |
 | `secondary` | erhöhte Fläche | Karten, Dashboard-Panels, Dialog, Avatar und Chips der Hero-Karte, Nach-oben-Button, Hintergrund der Wall, Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel im Admin, inaktiver Zustand ([2.4](#24-zustände)) |
 | `primary` | Akzent, aktiv | Links, Slider-Füllung, Status-Punkt „verbunden“, Level-Badge der Hero-Karte, aktiver Zustand ([2.4](#24-zustände)) |
 | `border` | Linien | Trennlinien in Karten und Top-Bar, Rand von Avatar und Chips der Hero-Karte, Ränder von Notizseiten, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |

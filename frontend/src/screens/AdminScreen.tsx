@@ -4,6 +4,7 @@ import {
 import styled from 'styled-components'
 
 import useAudioPlayback from '../audio/useAudioPlayback'
+import useAutoAudioOutput from '../audio/useAutoAudioOutput'
 import ActiveScenePanel from '../components/ActiveScenePanel'
 import { Dashboard, DashboardItem } from '../components/Dashboard'
 import Dialogue from '../components/Dialogue'
@@ -124,8 +125,9 @@ function AdminScreen(): ReactElement {
     connected,
     reconnectNow,
   } = useContext(GameTableContext)
-  const { audio, isAudioOutput, requestAudioOutput } = useContext(GameAudioContext)
+  const { audio } = useContext(GameAudioContext)
   useAudioPlayback()
+  useAutoAudioOutput()
   const isMusicPlaying = audio?.playing ?? false
   const [adventures, setAdventures] = useState<AdventureSummary[]>()
   const [scenesDetails, setScenesDetails] = useState<SceneDetail[]>([])
@@ -438,8 +440,6 @@ function AdminScreen(): ReactElement {
           failedSave={failedSave}
           onToggle={handleMusicToggle}
           onVolumeCommit={handleVolumeCommit}
-          isAudioOutput={isAudioOutput}
-          onRequestAudioOutput={requestAudioOutput}
         />
       ),
     },

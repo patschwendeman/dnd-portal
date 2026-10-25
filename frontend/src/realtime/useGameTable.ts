@@ -41,7 +41,7 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
   const [screens, setScreens] = useState<ScreenCounts | null>(null)
   const [status, setStatus] = useState<ConnectionStatus>('connecting')
   const connection = useRef<GameTableConnection | null>(null)
-  // Set by "Hier abspielen", cleared when another Admin takes over
+  // Set by the first user interaction without an output, cleared when another Admin takes over
   const wantsAudioOutput = useRef<boolean>(false)
   const soundListeners = useRef<Set<SoundListener>>(new Set())
 

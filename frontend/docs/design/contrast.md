@@ -39,7 +39,7 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 |---|---|---|---|---|---|
 | `text.color` auf `background` | Notizen, Wall-Panel, inaktive Panel-Einträge (Admin, ohne eigene Fläche) | 4,5 | 17,4 | 9,2 | ✓ beide |
 | `text.color` auf `secondary` | Karten, Dashboard-Panels, Dialog, inaktive Buttons, Panel-Einträge bei Hover (Admin) | 4,5 | 15,9 | 6,5 | ✓ beide |
-| `onPrimary` auf `primary` | aktive Buttons (auch „Hier abspielen“ und die Umschalt-Buttons der Panels) und Navigation, Confirm (14px) | 4,5 | 6,1 | 4,7 | ✓ beide |
+| `onPrimary` auf `primary` | aktive Buttons (auch die Umschalt-Buttons der Panels) und Navigation, Confirm (14px) | 4,5 | 6,1 | 4,7 | ✓ beide |
 | `onPrimary` auf `primary` | Fokus-Outline des gewählten Eintrags der Auswahlliste | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `background` | Links in den Notizen (16px) | 4,5 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `background` | Fokus-Outline nicht gewählter Einträge der Auswahlliste | 3,0 | 6,1 | 4,7 | ✓ beide |

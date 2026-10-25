@@ -100,13 +100,15 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Szenenwechsel wechselt sofort der Track – lief die Musik, spielt er direkt weiter, sonst bleibt sie pausiert. Ohne
   aktive Szene ist die Standardmusik die Playlist. Ist kein Admin Ausgabe, steht unter dem Titel „Keine Audioausgabe
   bereit“; die Befehle ändern trotzdem den Zustand, und ein Admin, der Ausgabe wird, setzt damit ein.
-- **Hier abspielen:** Umschalt-Button unten im Panel „Musik“ (`aria-pressed`, hervorgehoben, solange dieses Fenster
-  Ausgabe ist). Ein Klick macht dieses Admin-Fenster zur Audioausgabe (die Nutzerinteraktion gibt die Wiedergabe im
-  Browser frei); ein Klick auf den hervorgehobenen Button tut nichts. Es spielt immer nur ein Admin-Fenster: Klickt man
-  in einem anderen auf „Hier abspielen“, verstummt das bisherige. Die Ausgabe folgt dem Zustand des Servers
+- **Audioausgabe:** Ist kein Admin Ausgabe, wird das Admin-Fenster zur Audioausgabe, in dem als Nächstes irgendwo
+  geklickt oder eine Taste gedrückt wird (die Nutzerinteraktion gibt die Wiedergabe im Browser frei); der Klick wirkt
+  zusätzlich wie gewohnt, ein Klick auf Play startet also sofort die Musik in diesem Fenster. Einen eigenen Button
+  dafür gibt es nicht. Es spielt immer nur ein Admin-Fenster: Ist bereits eines Ausgabe, übernimmt ein anderes nicht
+  durch Klicks. Die Ausgabe folgt dem Zustand des Servers
   (Play/Pause, Lautstärke, Sounds bei voller Lautstärke über der Musik) und meldet das Trackende. Nach einem
-  Verbindungsabbruch meldet sich das Fenster ohne neuen Klick wieder als Ausgabe, nach einem Reload erst nach einem
-  neuen Klick. Wird das Ausgabe-Fenster geschlossen, zeigen die übrigen „Keine Audioausgabe bereit“. Blockiert der
+  Verbindungsabbruch meldet sich das Fenster ohne neuen Klick wieder als Ausgabe, nach einem Reload erst bei der
+  nächsten Interaktion. Wird das Ausgabe-Fenster geschlossen, zeigen die übrigen „Keine Audioausgabe bereit“, bis in
+  einem von ihnen interagiert wird. Blockiert der
   Browser das Abspielen, wird der Fehler nur geloggt; der nächste Play-Befehl versucht es wieder. Nach einem
   API-Neustart ist die Musik pausiert. Fehler bei Musik-Befehlen zeigt die Hinweisleiste „Änderung konnte nicht
   gespeichert werden“.

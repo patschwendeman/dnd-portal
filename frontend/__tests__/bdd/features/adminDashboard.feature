@@ -27,14 +27,18 @@ Scenario: I control music and sounds from the dashboard
     When I click on a sound button in the panel Sounds
     Then no error bar is shown
 
-Scenario: I play music and sounds in the admin window
+Scenario: The first interaction makes an admin window the audio output
     Given I am on the admin screen and no window is the audio output
-    When I click on Hier abspielen in the panel Musik
-    Then Hier abspielen is highlighted and the hint Keine Audioausgabe bereit is gone
-    When I click on Hier abspielen in a second admin window
-    Then only the second admin window highlights Hier abspielen
-    When the second admin window is closed
-    Then the first admin window shows the hint Keine Audioausgabe bereit
+    And a second admin window is open
+    Then both admin windows show the hint Keine Audioausgabe bereit and no button Hier abspielen
+    When I click on the notes in the first admin window
+    Then the hint is gone in both admin windows
+    When I press a key in the second admin window and the first admin window is closed
+    Then the second admin window shows the hint Keine Audioausgabe bereit
+    When I click on the play button in the second admin window
+    Then the hint is gone and the music plays
+    When I reload the second admin window
+    Then it shows the hint Keine Audioausgabe bereit until I press a key there
 
 Scenario: I see which screens are connected
     Given I am on the admin screen

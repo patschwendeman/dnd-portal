@@ -26,7 +26,6 @@ const DASHBOARD_PANELS = `${DASHBOARD} > section`
 const NOTES_VIEW = '[data-test-id="notes-view"]'
 const NOTES_SCROLL = '[data-test-id="notes-scroll"]'
 const MUSIC_TOGGLE = '[data-test-id="dashboard-panel-music"] [data-test-id="music-toggle"]'
-const MUSIC_OUTPUT = '[data-test-id="dashboard-panel-music"] [data-test-id="music-output"]'
 const NO_OUTPUT_HINT = '[data-test-id="dashboard-panel-music"] [data-test-id="music-no-output"]'
 const SOUND_BUTTON = '[data-test-id="dashboard-panel-sounds"] [data-test-id="sound-heal"]'
 const JOIN_BUTTON = '[data-test-id="join-button"]'
@@ -133,6 +132,15 @@ const isMusicPlaying = async (): Promise<boolean> => {
   const response = await fetch(`${BASE_URL}/api/table/audio`)
   expect(response.ok).toBe(true)
   return ((await response.json()) as { playing: boolean }).playing
+}
+
+const setMusicPlaying = async (playing: boolean): Promise<void> => {
+  const response = await fetch(`${BASE_URL}/api/table/audio`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ playing }),
+  })
+  expect(response.ok).toBe(true)
 }
 
 // The button changes only with the push of the server, so it shows the state the server keeps
@@ -341,61 +349,95 @@ defineFeature(feature, (test) => {
     })
 
     then('no error bar is shown', async () => {
-      // Without an audio output the server drops the sound; the Admin shows no error for it
+      // Only a failed command is visible in the Admin, as an error bar
       await driver.sleep(WAIT_TIMEOUT / 10)
       expect(await driver.findElements(By.css('[role="alert"]'))).toHaveLength(0)
     })
   })
 
-  test('I play music and sounds in the admin window', ({ given, when, then }) => {
-    let second: WebDriver | null = null
+  test(
+    'The first interaction makes an admin window the audio output',
+    ({
+      given, and, then, when,
+    }) => {
+      let second: WebDriver | null = null
+      let wasPlaying = false
 
-    given('I am on the admin screen and no window is the audio output', async () => {
-      const response = await fetch(`${BASE_URL}/api/table/audio`)
-      expect(((await response.json()) as { output_ready: boolean }).output_ready).toBe(false)
-      await openAdmin(driver)
-      await waitForElement(driver, NO_OUTPUT_HINT)
-      expect(await waitForAttribute(driver, MUSIC_OUTPUT, 'aria-pressed', 'false')).toBe('false')
-    })
+      given('I am on the admin screen and no window is the audio output', async () => {
+        const response = await fetch(`${BASE_URL}/api/table/audio`)
+        const audio = (await response.json()) as { output_ready: boolean, playing: boolean }
+        expect(audio.output_ready).toBe(false)
+        wasPlaying = audio.playing
+        // The play button below has to start the music
+        await setMusicPlaying(false)
+        await openAdmin(driver)
+      })
 
-    when('I click on Hier abspielen in the panel Musik', async () => {
-      await clickElement(driver, MUSIC_OUTPUT)
-    })
+      and('a second admin window is open', async () => {
+        second = buildDriver()
+        screenDrivers.push(second)
+        await openAdmin(second)
+      })
 
-    then(
-      'Hier abspielen is highlighted and the hint Keine Audioausgabe bereit is gone',
-      async () => {
-        expect(await waitForAttribute(driver, MUSIC_OUTPUT, 'aria-pressed', 'true')).toBe('true')
+      then(
+        'both admin windows show the hint Keine Audioausgabe bereit and no button Hier abspielen',
+        async () => {
+          // The hint needs the first audio state, so afterwards a click may request the output
+          await Promise.all([driver, second as WebDriver].map(async (item) => {
+            await waitForElement(item, NO_OUTPUT_HINT)
+            const text = await (await waitForElement(item, panel('music'))).getText()
+            expect(text).not.toContain('Hier abspielen')
+          }))
+        },
+      )
+
+      when('I click on the notes in the first admin window', async () => {
+        await clickElement(driver, NOTES_VIEW)
+      })
+
+      then('the hint is gone in both admin windows', async () => {
         await waitForElementGone(driver, NO_OUTPUT_HINT)
-      },
-    )
+        await waitForElementGone(second as WebDriver, NO_OUTPUT_HINT)
+      })
 
-    when('I click on Hier abspielen in a second admin window', async () => {
-      second = buildDriver()
-      screenDrivers.push(second)
-      await openAdmin(second)
-      await clickElement(second, MUSIC_OUTPUT)
-    })
+      when(
+        'I press a key in the second admin window and the first admin window is closed',
+        async () => {
+          await (second as WebDriver).actions().sendKeys('a').perform()
+          // Gives a wrongly sent audio_ready of the second window time to reach the server first
+          await driver.sleep(WAIT_TIMEOUT / 10)
+          await driver.quit()
+          driver = second as WebDriver
+          screenDrivers = screenDrivers.filter((item) => item !== second)
+        },
+      )
 
-    then('only the second admin window highlights Hier abspielen', async () => {
-      const other = second as WebDriver
-      expect(await waitForAttribute(other, MUSIC_OUTPUT, 'aria-pressed', 'true')).toBe('true')
-      expect(await waitForAttribute(driver, MUSIC_OUTPUT, 'aria-pressed', 'false')).toBe('false')
-      await waitForElementGone(driver, NO_OUTPUT_HINT)
-    })
+      then('the second admin window shows the hint Keine Audioausgabe bereit', async () => {
+        await waitForElement(driver, NO_OUTPUT_HINT)
+      })
 
-    when('the second admin window is closed', async () => {
-      const closing = second
-      second = null
-      screenDrivers = screenDrivers.filter((item) => item !== closing)
-      await closing?.quit()
-    })
+      when('I click on the play button in the second admin window', async () => {
+        await clickElement(driver, MUSIC_TOGGLE)
+      })
 
-    then('the first admin window shows the hint Keine Audioausgabe bereit', async () => {
-      await waitForElement(driver, NO_OUTPUT_HINT)
-      expect(await waitForAttribute(driver, MUSIC_OUTPUT, 'aria-pressed', 'false')).toBe('false')
-    })
-  }, SCREENS_SCENARIO_TIMEOUT)
+      then('the hint is gone and the music plays', async () => {
+        await waitForElementGone(driver, NO_OUTPUT_HINT)
+        await waitForMusicState(driver, true)
+      })
+
+      when('I reload the second admin window', async () => {
+        await driver.navigate().refresh()
+      })
+
+      then('it shows the hint Keine Audioausgabe bereit until I press a key there', async () => {
+        await waitForElement(driver, NO_OUTPUT_HINT)
+        await driver.actions().sendKeys('a').perform()
+        await waitForElementGone(driver, NO_OUTPUT_HINT)
+        await setMusicPlaying(wasPlaying)
+      })
+    },
+    SCREENS_SCENARIO_TIMEOUT,
+  )
 
   // Other wall and ground screens may be connected as well (e.g. at the game table), so the
   // scenario checks the counts relative to the counts before. On failure each of the three status

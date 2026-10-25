@@ -127,15 +127,17 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
   Ausgabe, ist `output_ready` `false` und alle bekommen den neuen `AudioState`. Befehle funktionieren auch ohne
   Ausgabe und ändern den Zustand; ein Admin, der Ausgabe wird, setzt mit dem aktuellen Zustand ein (läuft die Musik,
   startet sie den aktuellen Track von vorn). Synchrone Wiedergabepositionen gibt es nicht.
-- **Wiedergabe im Admin:** Der Umschalt-Button „Hier abspielen“ im Panel „Musik“ sendet `audio_ready` (die
-  Nutzerinteraktion gibt die Wiedergabe im Browser frei) und ist hervorgehoben (`aria-pressed`), solange dieses
-  Fenster Ausgabe ist; ein Klick auf den hervorgehobenen Button sendet nichts. `AudioPlayer` (`src/audio/audioPlayer.ts`,
+- **Wiedergabe im Admin:** Solange laut Server keine Ausgabe bereit ist (`output_ready` `false`) und dieses Fenster
+  nicht Ausgabe ist, sendet der Admin bei jedem `pointerdown` bzw. `keydown` im Fenster (Capture-Phase) `audio_ready`
+  (`useAutoAudioOutput`, Entscheidung `shouldRequestAudioOutput` in `src/audio/audioOutput.ts`; die
+  Nutzerinteraktion gibt die Wiedergabe im Browser frei). Vor dem ersten `audio`-Stand und bei vorhandener Ausgabe
+  sendet er nichts, ein anderes Admin-Fenster übernimmt also nicht durch Klicks. `AudioPlayer` (`src/audio/audioPlayer.ts`,
   im Admin über `useAudioPlayback`) setzt den `AudioState` um: Track-Wechsel → `mediaUrl(track.source)` von vorn,
   `playing` → `play()`/`pause()`, `volume / 100` → Lautstärke, Trackende → `track_ended`; verliert das Fenster die
   Rolle oder die Verbindung, pausiert es sofort. Soundeffekte spielt es bei voller Lautstärke parallel (Dateien aus
   `public/assets/sounds`, Liste in `src/audio/sounds.ts`). Scheitert `play()` (Autoplay), wird per `console.error`
   geloggt. Nach einem Reconnect meldet sich ein Admin, der vorher Ausgabe war, von selbst wieder mit `audio_ready`,
-  bis ein anderer übernimmt; nach einem Reload ist ein neuer Klick nötig. Wall und Ground spielen nichts.
+  bis ein anderer übernimmt; nach einem Reload erst bei der nächsten Interaktion. Wall und Ground spielen nichts.
 - **Steuerung im Admin** (Panels „Musik“ und „Sounds“ im Dashboard): zeigt `playing`, den Tracktitel (`getMusicTitle(track.source)`) und ohne Ausgabe den
   Hinweis „Keine Audioausgabe bereit“; Play/Pause (`PATCH /table/audio {playing}`), Lautstärke-Slider
   (`PATCH /table/audio {volume}` beim Loslassen) – ohne lokale Vorwegnahme, Fehler in der Speicherfehler-Leiste mit

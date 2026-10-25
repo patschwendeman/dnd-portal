@@ -85,7 +85,9 @@ src/context/         ActiveAdventureContext, ActiveSceneContext (IDs number | nu
                      requestAudioOutput, reportTrackEnded, subscribeSound)
 src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Panel „Sounds“), audioPlayer.ts
                      (AudioPlayer: Wiedergabe im Admin nach dem AudioState, Audio-Fabrik injizierbar für vitest),
-                     useAudioPlayback.ts (bindet den AudioPlayer im Admin an den GameAudioContext)
+                     useAudioPlayback.ts (bindet den AudioPlayer im Admin an den GameAudioContext),
+                     useAutoAudioOutput.ts (erste Interaktion ohne Ausgabe meldet audio_ready), audioOutput.ts
+                     (shouldRequestAudioOutput)
 src/screens/         Screens
 src/components/      UI-Bausteine (TopBar, JoinDialog, ThemeMenu, NavRail (Navigationsleiste im Admin),
                      SideBarLeftElement (Eintrag im Panel, Button), DocumentNavigation (Notizen-Einträge im Panel),
@@ -134,9 +136,10 @@ Abenteuerwechsel und nach jedem Snapshot (`snapshot` im `GameTableContext`) neu;
 `PATCH adventures/{id}` ohne lokale Vorwegnahme, der Server pusht danach einen Snapshot.
 Details: `../docs/architecture.md#synchronisation`.
 
-Audio: Der Server hält den Musikzustand und pusht ihn als `audio` an alle Screens. Das Admin-Fenster, in dem „Hier
-abspielen“ (Panel „Musik“) geklickt wurde (`audio_ready`), ist die einzige Audioausgabe und spielt per `AudioPlayer`
-(`useAudioPlayback`); nach einem Reconnect meldet es sich selbst wieder, nach einem Reload erst nach einem neuen Klick.
+Audio: Der Server hält den Musikzustand und pusht ihn als `audio` an alle Screens. Ist kein Admin Ausgabe, meldet
+sich das Admin-Fenster mit der nächsten Interaktion (Klick oder Taste, `useAutoAudioOutput`) per `audio_ready`; es ist
+dann die einzige Audioausgabe und spielt per `AudioPlayer` (`useAudioPlayback`). Nach einem Reconnect meldet es sich
+selbst wieder, nach einem Reload erst bei der nächsten Interaktion.
 Befehle (`PATCH table/audio`, `POST table/sounds`) sendet der Admin ohne lokale Vorwegnahme. Wall und Ground spielen
 nichts. Details: `../docs/architecture.md#audio`.
 
