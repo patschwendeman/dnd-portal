@@ -17,6 +17,8 @@ export type GameTableState = Schemas['GameTableState']
 export type Theme = GameTableState['theme']
 // What the Walls show above the scene image: the world map or nothing
 export type WallOverlay = GameTableState['wall_overlay']
+// Line colour of the grid on the Grounds, or no grid
+export type GroundGrid = GameTableState['ground_grid']
 
 // How players join the game table (GET /table/join): URL of the Player Screen in the LAN, null if
 // unknown

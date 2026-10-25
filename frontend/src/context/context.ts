@@ -1,9 +1,10 @@
 import { createContext } from 'react'
 
 import {
-  AudioState, GameTableState, SoundName, Theme, WallOverlay,
+  AudioState, GameTableState, GroundGrid, SoundName, Theme, WallOverlay,
 } from '../models/models'
 import { ScreenCounts } from '../realtime/messages'
+import { GROUND_GRID_CELL_SIZE } from '../utils/groundGrid'
 
 // The game table state comes from the server (WebSocket /ws); the contexts only pass it on, changes
 // go through the API.
@@ -35,6 +36,9 @@ interface GameTableContextType {
   theme: Theme
   // Overlay of the Walls; 'off' until the first snapshot arrived
   wallOverlay: WallOverlay
+  // Grid of the Grounds; 'off' and the smallest cell size until the first snapshot arrived
+  groundGrid: GroundGrid
+  groundGridCellSize: number
   connected: boolean
   reconnectNow: () => void
   // Only for the Admin: connected Walls, Grounds and Players; null until the server sent them
@@ -46,6 +50,8 @@ export const GameTableContext = createContext<GameTableContextType>({
   snapshot: null,
   theme: 'dark',
   wallOverlay: 'off',
+  groundGrid: 'off',
+  groundGridCellSize: GROUND_GRID_CELL_SIZE.min,
   connected: true,
   reconnectNow: () => {},
   screens: null,

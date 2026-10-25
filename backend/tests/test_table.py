@@ -10,7 +10,15 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-STATE_FIELDS = {"active_adventure_id", "active_scene_id", "theme", "wall_overlay"}
+STATE_FIELDS = {
+    "active_adventure_id",
+    "active_scene_id",
+    "theme",
+    "wall_overlay",
+    "ground_grid",
+    "ground_grid_cell_size",
+}
+DEFAULT_GRID = {"ground_grid": "off", "ground_grid_cell_size": 100}
 ADVENTURE_NOT_FOUND = {"detail": "Adventure not found"}
 
 
@@ -36,6 +44,7 @@ def test_get_returns_the_stored_state(client: TestClient, expected_adventures: l
     assert body["active_scene_id"] is None
     assert body["theme"] == "dark"
     assert body["wall_overlay"] == "off"
+    assert {key: body[key] for key in DEFAULT_GRID} == DEFAULT_GRID
 
 
 def test_patch_sets_active_adventure_and_returns_its_active_scene(
@@ -51,6 +60,7 @@ def test_patch_sets_active_adventure_and_returns_its_active_scene(
         "active_scene_id": other_adventure["second_scene_id"],
         "theme": "dark",
         "wall_overlay": "off",
+        **DEFAULT_GRID,
     }
     assert response.json() == expected
     assert client.get("/table").json() == expected
@@ -82,6 +92,7 @@ def test_patch_sets_theme_and_keeps_unset_fields(client: TestClient, db: Session
         "active_scene_id": None,
         "theme": "tavern",
         "wall_overlay": "off",
+        **DEFAULT_GRID,
     }
     assert client.patch("/table", json={"theme": "dark"}).json()["theme"] == "dark"
 
@@ -107,6 +118,7 @@ def test_patch_accepts_null_adventure(client: TestClient, db: Session) -> None:
         "active_scene_id": None,
         "theme": "tavern",
         "wall_overlay": "off",
+        **DEFAULT_GRID,
     }
 
 
@@ -142,7 +154,13 @@ def test_patch_sets_wall_overlay_and_keeps_unset_fields(client: TestClient, db: 
     response = client.patch("/table", json={"wall_overlay": "world"})
 
     assert response.status_code == 200
-    expected = {"active_adventure_id": 1, "active_scene_id": 5, "theme": "tavern", "wall_overlay": "world"}
+    expected = {
+        "active_adventure_id": 1,
+        "active_scene_id": 5,
+        "theme": "tavern",
+        "wall_overlay": "world",
+        **DEFAULT_GRID,
+    }
     assert response.json() == expected
     assert client.get("/table").json() == expected
     assert client.patch("/table", json={"theme": "dark"}).json()["wall_overlay"] == "world"
@@ -228,6 +246,97 @@ def test_wall_overlay_set_with_the_adventure_change_wins(
     response = client.patch("/table", json={"active_adventure_id": other_adventure["id"], "wall_overlay": "world"})
 
     assert response.json()["wall_overlay"] == "world"
+
+
+def test_patch_sets_ground_grid_and_keeps_unset_fields(client: TestClient, db: Session) -> None:
+    client.patch("/table", json={"active_adventure_id": 1, "theme": "tavern", "wall_overlay": "world"})
+    client.patch("/adventures/1", json={"active_scene_id": 5})
+    client.patch("/table", json={"wall_overlay": "world"})
+
+    response = client.patch("/table", json={"ground_grid": "white"})
+
+    assert response.status_code == 200
+    expected = {
+        "active_adventure_id": 1,
+        "active_scene_id": 5,
+        "theme": "tavern",
+        "wall_overlay": "world",
+        "ground_grid": "white",
+        "ground_grid_cell_size": 100,
+    }
+    assert response.json() == expected
+    assert client.get("/table").json() == expected
+
+    response = client.patch("/table", json={"ground_grid_cell_size": 150})
+
+    assert response.json() == {**expected, "ground_grid_cell_size": 150}
+    assert client.patch("/table", json={"theme": "dark"}).json()["ground_grid_cell_size"] == 150
+    assert client.patch("/table", json={"ground_grid": "black", "ground_grid_cell_size": 200}).json() == {
+        **expected,
+        "theme": "dark",
+        "ground_grid": "black",
+        "ground_grid_cell_size": 200,
+    }
+    assert client.patch("/table", json={"ground_grid": "off"}).json()["ground_grid"] == "off"
+
+
+@pytest.mark.parametrize("ground_grid", ["grey", "WHITE", None, 1])
+def test_patch_rejects_invalid_ground_grid(client: TestClient, db: Session, ground_grid: Any) -> None:
+    client.patch("/table", json={"ground_grid": "white"})
+    before = client.get("/table").json()
+
+    response = client.patch("/table", json={"ground_grid": ground_grid})
+
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"] == ["body", "ground_grid"]
+    assert client.get("/table").json() == before
+
+
+@pytest.mark.parametrize("cell_size", [90, 99, 105, 155, 201, 210, 0, -100, 150.5, None, "big"])
+def test_patch_rejects_invalid_ground_grid_cell_size(client: TestClient, db: Session, cell_size: Any) -> None:
+    client.patch("/table", json={"ground_grid_cell_size": 120})
+    before = client.get("/table").json()
+
+    response = client.patch("/table", json={"ground_grid": "black", "ground_grid_cell_size": cell_size})
+
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"] == ["body", "ground_grid_cell_size"]
+    assert client.get("/table").json() == before
+
+
+@pytest.mark.parametrize("cell_size", [100, 110, 150, 190, 200])
+def test_patch_accepts_cell_sizes_in_steps_of_ten(client: TestClient, db: Session, cell_size: int) -> None:
+    response = client.patch("/table", json={"ground_grid_cell_size": cell_size})
+
+    assert response.status_code == 200
+    assert response.json()["ground_grid_cell_size"] == cell_size
+
+
+def test_scene_and_adventure_changes_keep_the_ground_grid(
+    client: TestClient, db: Session, other_adventure: dict[str, int]
+) -> None:
+    client.patch("/table", json={"active_adventure_id": 1})
+    client.patch("/adventures/1", json={"active_scene_id": 5})
+    grid = {"ground_grid": "white", "ground_grid_cell_size": 150}
+    client.patch("/table", json=grid)
+
+    client.patch("/adventures/1", json={"active_scene_id": 6})
+    assert {key: client.get("/table").json()[key] for key in grid} == grid
+
+    client.patch("/adventures/1", json={"active_scene_id": None})
+    client.patch("/table", json={"active_adventure_id": other_adventure["id"]})
+    assert {key: client.get("/table").json()[key] for key in grid} == grid
+
+    client.patch("/table", json={"active_adventure_id": None})
+    assert {key: client.get("/table").json()[key] for key in grid} == grid
+
+
+def test_ground_grid_is_off_with_cell_size_100_after_a_start() -> None:
+    from app.realtime.ground_grid import GroundGridState
+
+    state = GroundGridState()
+
+    assert (state.color, state.cell_size) == ("off", 100)
 
 
 def test_deleting_the_active_adventure_clears_it(

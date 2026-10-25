@@ -1,6 +1,6 @@
 # Bekannte Lücken, Bugs & Altlasten
 
-Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-10-10, Alembic-Migrationen und Medien im Backend am 2026-10-11, Spieltisch per WebSocket am 2026-10-18, Audio auf der Wall am 2026-10-18, Smartphones angebunden am 2026-10-18, Szenen ohne Kampf-Unterscheidung am 2026-10-24, Baseline der Qualitätsprüfungen am 2026-10-24. Punkte mit „(ungeprüft)“ wurden aus dem Code abgeleitet, aber nicht zur Laufzeit verifiziert.
+Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-10-10, Alembic-Migrationen und Medien im Backend am 2026-10-11, Spieltisch per WebSocket am 2026-10-18, Audio auf der Wall am 2026-10-18 (seit DND-36 im Admin), Smartphones angebunden am 2026-10-18, Szenen ohne Kampf-Unterscheidung am 2026-10-24, Baseline der Qualitätsprüfungen am 2026-10-24. Punkte mit „(ungeprüft)“ wurden aus dem Code abgeleitet, aber nicht zur Laufzeit verifiziert.
 
 ## Lücken gegenüber der Vision
 
@@ -27,7 +27,10 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - Ein Server ist ein Spieltisch: keine parallelen Sessions, keine Authentifizierung.
 - Der Musikzustand (Track, Play/Pause, Lautstärke, Audioausgabe) liegt nur im Speicher des API-Prozesses: Nach einem
   Neustart ist die Musik pausiert und die Lautstärke wieder 10 %. Die Wiedergabeposition wird nicht synchronisiert
-  (eine neue Ausgabe startet den Track von vorn), Überblendungen gibt es nicht.
+  (eine neue Ausgabe startet den Track von vorn), Überblendungen gibt es nicht. Ebenso liegen Wall-Overlay und
+  Ground-Raster nur im Speicher: Nach einem Neustart ist beides aus (Zellgröße 100).
+- Nach einem Reload ist das Admin-Fenster keine Audioausgabe mehr, bis wieder „Hier abspielen“ geklickt wird (der
+  Browser gibt die Wiedergabe erst nach einer Nutzerinteraktion frei).
 - `POST` ist per CORS nicht freigegeben: Die Soundeffekte (`POST /table/sounds`) funktionieren über den Proxy
   (gleicher Origin), nicht bei direktem Zugriff auf Port 8000 aus einem anderen Origin (z. B. Frontend mit absoluter
   `VITE_API_URL`).
@@ -57,14 +60,14 @@ in Folge-Tasks, danach den Eintrag in der jeweiligen Ignore-Liste entfernen bzw.
   `RECONNECT_MAX_DELAY_MS` (`src/realtime/backoff.ts`); Typen `TextButtonVariant` (`TextButton.tsx`), `Image`
   (`models.ts`), `OtherServerMessage` (`connection.ts`), `SoundListener` (`useGameTable.ts`). Falsch-Positive: die
   Exporte des generierten `src/api/schema.d.ts`.
-- jscpd (`frontend/.jscpd.json`, `threshold` 2,09 %): 6 Duplikate, 88 von 4221 Zeilen (2,08 %), u. a.
-  `AdventureSelect.tsx` ↔ `ThemeMenu.tsx` (3 Blöcke, 11–16 Zeilen), `darkTheme.ts` ↔ `tavernTheme.ts` (17 Zeilen),
-  `ScreenControlBar.tsx` ↔ `AdminScreen.tsx` (17 Zeilen), `NavRail.tsx` ↔ `SideBarLeftElement.tsx` (11 Zeilen).
+- jscpd (`frontend/.jscpd.json`, `threshold` 1,34 %, seit DND-36): 5 Duplikate, 75 von 5600 Zeilen (1,34 %):
+  `AdventureSelect.tsx` ↔ `ThemeMenu.tsx` (3 Blöcke, 11–16 Zeilen), `darkTheme.ts` ↔ `tavernTheme.ts` (19 Zeilen),
+  `NavRail.tsx` ↔ `SideBarLeftElement.tsx` (13 Zeilen).
 
 **Backend**
 - vulture (`backend/vulture_baseline.py`): Relationship `Adventure.active_scene` wird nirgends gelesen (nur
   `active_scene_id`). Falsch-Positive in `backend/vulture_whitelist.py` bzw. `[tool.vulture]` (Routen, Validatoren,
-  Fixtures, `model_config`, Alembic-Kennungen, Pydantic-Feld `output_ready`, ORM-Fremdschlüssel `avatar_media_id`).
+  Fixtures, `model_config`, Alembic-Kennungen, Pydantic-Felder `output_ready` und `ground_grid_cell_size`, ORM-Fremdschlüssel `avatar_media_id`).
 - deptry: `app/realtime/push.py` importiert `starlette` (transitiv über fastapi, nicht deklariert). Bewusste
   Ausnahmen (Falsch-Positive): `uvicorn` und `psycopg2-binary` (nicht importiert, aber zur Laufzeit gebraucht).
 - Komplexität: höchster Wert nach ruff/mccabe 8 (`game_table_socket` in `app/api/routes/ws.py`), daher

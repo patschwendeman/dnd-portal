@@ -5,11 +5,11 @@ import styled from 'styled-components'
 
 import { mediaUrl } from '../api/mediaUrl'
 import GridOverlay from '../components/GridOverlay'
-import { ScreenControlBar } from '../components/ScreenControlBar'
-import { ActiveSceneContext } from '../context/context'
+import { ActiveSceneContext, GameTableContext } from '../context/context'
 import { SceneDetail } from '../models/models'
 import getGroundScreenData from '../service/groundScreen'
 import GlobalStyle from '../style/GlobalStyle'
+import { gridLineColor } from '../utils/groundGrid'
 import { loadLatest } from '../utils/loadSafely'
 
 const Screen = styled.div`
@@ -58,22 +58,9 @@ function GroundScreen(): ReactElement {
   const { activeSceneId } = useContext(ActiveSceneContext)
   const [mediaSRC, setMediaSRC] = useState<string>('')
   const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null)
-  const [gridColor, setGridColor] = useState<string>('')
-  const [gridOption, setGridOption] = useState<number>(100)
-  const [,setActiveButton] = useState<number | null>(null)
-
-  const buttonLabels = ['BLACK', 'WHITE', 'OFF']
-
-  const gridColorMap: Record<number, string> = {
-    0: 'black',
-    1: 'white',
-    2: 'transparent',
-  }
-
-  const handleGridVisibility = (option: number) => {
-    setActiveButton(option)
-    setGridColor(gridColorMap[option] || 'transparent')
-  }
+  // Colour and cell size come from the server: the Admin sets them for all Grounds
+  const { groundGrid, groundGridCellSize } = useContext(GameTableContext)
+  const gridColor = gridLineColor(groundGrid)
 
   // Without an active scene the ground shows only the background; reset during render instead of
   // in an effect
@@ -116,19 +103,15 @@ function GroundScreen(): ReactElement {
   return (
     <Screen>
       <GlobalStyle />
-      <GridOverlay gridColor={gridColor} gridOption={gridOption} />
+      {gridColor !== null && (
+        <GridOverlay gridColor={gridColor} gridOption={groundGridCellSize} />
+      )}
       {mediaType === 'image' && (
         <BackgroundMedia as="img" data-test-id="groundImg" src={mediaSRC} alt="Background" />
       )}
       {mediaType === 'video' && (
         <BackgroundMedia data-test-id="groundImg" src={mediaSRC} autoPlay loop muted />
       )}
-      <ScreenControlBar
-        onVisibilityChange={handleGridVisibility}
-        onSliderChange={setGridOption}
-        buttonLabels={buttonLabels}
-        label="Raster"
-      />
     </Screen>
   )
 }

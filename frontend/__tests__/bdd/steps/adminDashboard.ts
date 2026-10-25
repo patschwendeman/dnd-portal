@@ -26,12 +26,15 @@ const DASHBOARD_PANELS = `${DASHBOARD} > section`
 const NOTES_VIEW = '[data-test-id="notes-view"]'
 const NOTES_SCROLL = '[data-test-id="notes-scroll"]'
 const MUSIC_TOGGLE = '[data-test-id="dashboard-panel-music"] [data-test-id="music-toggle"]'
+const MUSIC_OUTPUT = '[data-test-id="dashboard-panel-music"] [data-test-id="music-output"]'
+const NO_OUTPUT_HINT = '[data-test-id="dashboard-panel-music"] [data-test-id="music-no-output"]'
 const SOUND_BUTTON = '[data-test-id="dashboard-panel-sounds"] [data-test-id="sound-heal"]'
 const JOIN_BUTTON = '[data-test-id="join-button"]'
 const FULLSCREEN_TOGGLE = '[data-test-id="fullscreen-toggle"]'
 const JOIN_DIALOG = '[data-test-id="join-dialog"]'
 const PANEL_LABELS = [
-  'Aktive Szene', 'Musik', 'Wall-Overlay', 'Sounds', 'Screens', 'Level', 'Spieler',
+  'Aktive Szene', 'Musik', 'Sounds', 'Wall-Overlay', 'Ground-Raster', 'Screens', 'Level',
+  'Spieler',
 ]
 const LEVELING_INDEX = 3
 const SCROLL_TOP = 400
@@ -160,8 +163,8 @@ defineFeature(feature, (test) => {
     })
 
     then(
-      'I see the dashboard with the panels Aktive Szene, Musik, Wall-Overlay, Sounds, Screens, '
-        + 'Level, Spieler',
+      'I see the dashboard with the panels Aktive Szene, Musik, Sounds, Wall-Overlay, '
+        + 'Ground-Raster, Screens, Level, Spieler',
       async () => {
         await waitForElement(driver, DASHBOARD)
         const panels = await driver.findElements(By.css(DASHBOARD_PANELS))
@@ -175,14 +178,16 @@ defineFeature(feature, (test) => {
     )
 
     and(
-      'Aktive Szene spans the full width, below it Musik with Wall-Overlay and Sounds stacked on '
-        + 'its right, below them Screens, Level and Spieler over the full width',
+      'Aktive Szene spans the full width, below it Musik and Sounds side by side, below them '
+        + 'Wall-Overlay and Ground-Raster side by side, below them Screens, Level and Spieler over '
+        + 'the full width',
       async () => {
         const dashboard = await (await waitForElement(driver, DASHBOARD)).getRect()
         const scene = await (await waitForElement(driver, panel('scene'))).getRect()
         const music = await (await waitForElement(driver, panel('music'))).getRect()
-        const overlay = await (await waitForElement(driver, panel('wall-overlay'))).getRect()
         const sounds = await (await waitForElement(driver, panel('sounds'))).getRect()
+        const overlay = await (await waitForElement(driver, panel('wall-overlay'))).getRect()
+        const grid = await (await waitForElement(driver, panel('ground-grid'))).getRect()
         const screens = await (await waitForElement(driver, panel('screens'))).getRect()
         // Without the scroll bar the dashboard gets once it is higher than the main area
         const innerWidth: number = await driver.executeScript(
@@ -192,15 +197,19 @@ defineFeature(feature, (test) => {
         expect(scene.width).toBe(innerWidth)
         expect(music.y).toBeGreaterThan(scene.y + scene.height)
         expect(music.width).toBeLessThan(innerWidth / 2)
-        expect(overlay.y).toBe(music.y)
-        expect(overlay.x).toBeGreaterThan(music.x + music.width)
+        expect(sounds.y).toBe(music.y)
+        expect(sounds.x).toBeGreaterThan(music.x + music.width)
+        expect(sounds.width).toBe(music.width)
+        expect(sounds.height).toBe(music.height)
+        expect(overlay.x).toBe(music.x)
+        expect(overlay.y).toBeGreaterThan(music.y + music.height)
         expect(overlay.width).toBe(music.width)
         expect(overlay.height).toBeLessThan(music.height)
-        expect(sounds.x).toBe(overlay.x)
-        expect(sounds.y).toBeGreaterThan(overlay.y + overlay.height)
-        expect(sounds.y).toBeLessThan(music.y + music.height)
-        expect(sounds.width).toBe(music.width)
-        expect(screens.y).toBeGreaterThan(sounds.y + sounds.height)
+        expect(grid.x).toBe(sounds.x)
+        expect(grid.y).toBe(overlay.y)
+        expect(grid.width).toBe(sounds.width)
+        expect(grid.height).toBe(overlay.height)
+        expect(screens.y).toBeGreaterThan(overlay.y + overlay.height)
         expect(screens.width).toBe(innerWidth)
         const level = await (await waitForElement(driver, panel('level'))).getRect()
         const players = await (await waitForElement(driver, panel('players'))).getRect()
@@ -337,6 +346,56 @@ defineFeature(feature, (test) => {
       expect(await driver.findElements(By.css('[role="alert"]'))).toHaveLength(0)
     })
   })
+
+  test('I play music and sounds in the admin window', ({ given, when, then }) => {
+    let second: WebDriver | null = null
+
+    given('I am on the admin screen and no window is the audio output', async () => {
+      const response = await fetch(`${BASE_URL}/api/table/audio`)
+      expect(((await response.json()) as { output_ready: boolean }).output_ready).toBe(false)
+      await openAdmin(driver)
+      await waitForElement(driver, NO_OUTPUT_HINT)
+      expect(await waitForAttribute(driver, MUSIC_OUTPUT, 'aria-pressed', 'false')).toBe('false')
+    })
+
+    when('I click on Hier abspielen in the panel Musik', async () => {
+      await clickElement(driver, MUSIC_OUTPUT)
+    })
+
+    then(
+      'Hier abspielen is highlighted and the hint Keine Audioausgabe bereit is gone',
+      async () => {
+        expect(await waitForAttribute(driver, MUSIC_OUTPUT, 'aria-pressed', 'true')).toBe('true')
+        await waitForElementGone(driver, NO_OUTPUT_HINT)
+      },
+    )
+
+    when('I click on Hier abspielen in a second admin window', async () => {
+      second = buildDriver()
+      screenDrivers.push(second)
+      await openAdmin(second)
+      await clickElement(second, MUSIC_OUTPUT)
+    })
+
+    then('only the second admin window highlights Hier abspielen', async () => {
+      const other = second as WebDriver
+      expect(await waitForAttribute(other, MUSIC_OUTPUT, 'aria-pressed', 'true')).toBe('true')
+      expect(await waitForAttribute(driver, MUSIC_OUTPUT, 'aria-pressed', 'false')).toBe('false')
+      await waitForElementGone(driver, NO_OUTPUT_HINT)
+    })
+
+    when('the second admin window is closed', async () => {
+      const closing = second
+      second = null
+      screenDrivers = screenDrivers.filter((item) => item !== closing)
+      await closing?.quit()
+    })
+
+    then('the first admin window shows the hint Keine Audioausgabe bereit', async () => {
+      await waitForElement(driver, NO_OUTPUT_HINT)
+      expect(await waitForAttribute(driver, MUSIC_OUTPUT, 'aria-pressed', 'false')).toBe('false')
+    })
+  }, SCREENS_SCENARIO_TIMEOUT)
 
   // Other wall and ground screens may be connected as well (e.g. at the game table), so the
   // scenario checks the counts relative to the counts before. On failure each of the three status

@@ -78,7 +78,7 @@ function GridOverlay({ gridColor, gridOption }: GridOverlayProps): ReactElement 
   }
 
   return (
-    <Overlay>
+    <Overlay data-test-id="ground-grid">
       {gridLines}
     </Overlay>
   )

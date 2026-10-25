@@ -4,11 +4,8 @@ import {
 import styled from 'styled-components'
 
 import { mediaUrl } from '../api/mediaUrl'
-import { WallAudioPlayer } from '../audio/wallAudioPlayer'
-import { CONTROL_BAR_CLEARANCE, ScreenControlBar } from '../components/ScreenControlBar'
-import { ActiveSceneContext, GameAudioContext, GameTableContext } from '../context/context'
-import { SceneDetail, WallOverlay } from '../models/models'
-import saveWallOverlay from '../service/gameTable'
+import { ActiveSceneContext, GameTableContext } from '../context/context'
+import { SceneDetail } from '../models/models'
 import getWallScene from '../service/WallScreen'
 import GlobalStyle from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
@@ -16,9 +13,6 @@ import { loadLatest } from '../utils/loadSafely'
 import MapEnvironmentSrc from '../../public/assets/images/ground_screen/mapOverview.jpg'
 
 const OVERLAY_PANEL_MAX_WIDTH = '1440px'
-
-const OVERLAY_OPTIONS: readonly WallOverlay[] = ['world', 'off']
-const OVERLAY_LABELS = ['WORLD', 'OFF']
 
 const MapEnvironment = styled.img`
     display: block;
@@ -49,8 +43,8 @@ const Screen = styled.div`
 `
 
 // Width: smallest of the upper limit, the viewport minus the side margins and the available height
-// converted into a width, so the world map (a single 16:9 image) fits completely above the control
-// bar
+// (below the same margin as above) converted into a width, so the world map (a single 16:9 image)
+// fits completely
 const OverlayPanel = styled.div<{ $isVisible: boolean }>`
     display: ${({ $isVisible }) => ($isVisible ? 'flex' : 'none')};
     flex-direction: column;
@@ -59,7 +53,7 @@ const OverlayPanel = styled.div<{ $isVisible: boolean }>`
         ${OVERLAY_PANEL_MAX_WIDTH},
         calc(100vw - 2 * ${(props) => props.theme.space[8]}),
         calc(
-            (100vh - ${(props) => props.theme.space[7]} - ${CONTROL_BAR_CLEARANCE} - 2 *
+            (100vh - 2 * ${(props) => props.theme.space[7]} - 2 *
               ${(props) => props.theme.space[6]}
                 - ${(props) => props.theme.text.xl.lineHeight} -
                   ${(props) => props.theme.space[5]}) * 16 / 9
@@ -95,19 +89,8 @@ const BackgroundImage = styled.img`
 `
 function WallScreen(): ReactElement {
   const { activeSceneId } = useContext(ActiveSceneContext)
-  const {
-    audio, isAudioOutput, requestAudioOutput, reportTrackEnded, subscribeSound,
-  } = useContext(GameAudioContext)
-  const [audioPlayer, setAudioPlayer] = useState<WallAudioPlayer | null>(null)
   const { wallOverlay } = useContext(GameTableContext)
   const [activeScene, setActiveScene] = useState<SceneDetail>()
-
-  // No local change: the overlay switches with the push of the server, on all Walls at once (a
-  // scene change closes it there as well). Players see no error, the Admin is the remote control.
-  const handleOverlayChange = (option: number) => {
-    saveWallOverlay(OVERLAY_OPTIONS[option])
-      .catch((err) => console.error('Error saving wall overlay:', err))
-  }
 
   // Without an active scene the wall shows only the background, no image; reset during render
   // instead of in an effect
@@ -140,27 +123,6 @@ function WallScreen(): ReactElement {
     }
   }, [activeSceneId])
 
-  useEffect(() => {
-    const player = new WallAudioPlayer({ onTrackEnded: reportTrackEnded })
-    // The player owns audio elements that the cleanup releases, so it is created in the effect
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAudioPlayer(player)
-    return () => {
-      player.dispose()
-    }
-  }, [reportTrackEnded])
-
-  useEffect(() => {
-    audioPlayer?.update(audio, isAudioOutput)
-  }, [audioPlayer, audio, isAudioOutput])
-
-  useEffect(() => {
-    if (audioPlayer === null) {
-      return undefined
-    }
-    return subscribeSound((name) => audioPlayer.playSound(name))
-  }, [audioPlayer, subscribeSound])
-
   return (
     <Screen>
       <GlobalStyle />
@@ -177,13 +139,6 @@ function WallScreen(): ReactElement {
         </PanelHeader>
         <MapEnvironment src={MapEnvironmentSrc} alt="" />
       </OverlayPanel>
-      <ScreenControlBar
-        onVisibilityChange={handleOverlayChange}
-        buttonLabels={OVERLAY_LABELS}
-        activeIndex={OVERLAY_OPTIONS.indexOf(wallOverlay)}
-        onAudioOutput={requestAudioOutput}
-        isAudioOutput={isAudioOutput}
-      />
     </Screen>
   )
 }

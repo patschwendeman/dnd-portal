@@ -16,5 +16,8 @@ _.avatar_media_id
 # Pydantic field, set via keyword argument in app/realtime/audio.py
 output_ready
 
+# Pydantic field, filled by name from a dict (`model_validate`, request body) in app/services/game_table.py
+ground_grid_cell_size
+
 # pytest fixture requested only for its side effect, tests/test_audio.py
 first_track

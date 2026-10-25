@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.crud import adventure as adventure_crud
 from app.crud import game_table as game_table_crud
+from app.realtime.ground_grid import ground_grid
 from app.realtime.wall_overlay import wall_overlay
 from app.schemas import GameTableState, GameTableUpdate, JoinInfo
 
@@ -20,6 +21,8 @@ def get_state(db: Session) -> GameTableState:
             "active_scene_id": adventure.active_scene_id if adventure is not None else None,
             "theme": game_table.theme,
             "wall_overlay": wall_overlay.value,
+            "ground_grid": ground_grid.color,
+            "ground_grid_cell_size": ground_grid.cell_size,
         }
     )
 
@@ -27,6 +30,8 @@ def get_state(db: Session) -> GameTableState:
 def update_state(db: Session, update: GameTableUpdate) -> GameTableState:
     values = update.model_dump(exclude_unset=True)
     overlay = values.pop("wall_overlay", None)
+    grid = values.pop("ground_grid", None)
+    cell_size = values.pop("ground_grid_cell_size", None)
     adventure_id = values.get("active_adventure_id")
     if adventure_id is not None and not adventure_crud.adventure_exists(db, adventure_id):
         raise AdventureNotFoundError("Adventure not found")
@@ -39,6 +44,10 @@ def update_state(db: Session, update: GameTableUpdate) -> GameTableState:
         wall_overlay.value = overlay
     elif adventure_changed:
         wall_overlay.reset()
+    if grid is not None:
+        ground_grid.color = grid
+    if cell_size is not None:
+        ground_grid.cell_size = cell_size
     # Read again: after the commit the relationship to the (new) active adventure has to be reloaded.
     db.expire_all()
     return get_state(db)

@@ -6,7 +6,7 @@ import styled, { useTheme } from 'styled-components'
 
 import JoinDialog from './JoinDialog'
 import PanelButton from './PanelButton'
-import { GameAudioContext, GameTableContext } from '../context/context'
+import { GameTableContext } from '../context/context'
 import { textStyle } from '../style/tokens'
 import { playerStatusText, screenStatusText } from '../utils/screenStatus'
 
@@ -69,7 +69,7 @@ const Players = styled.span`
 `
 
 // One window per screen: a second click (also after a reload of the Admin) brings the open window
-// to the front instead of opening another one or reloading it, so a Wall keeps its audio output
+// to the front instead of opening another one or reloading it
 const openScreenWindow = (screen: TableScreen, path: string): void => {
   const opened = window.open('', `dnd-portal-${screen}`, 'popup')
   if (opened === null) {
@@ -103,7 +103,6 @@ function PanelIcon({ src, fill }: PanelIconProps): ReactElement {
 function ScreensPanel(): ReactElement {
   const theme = useTheme()
   const { screens } = useContext(GameTableContext)
-  const { audio } = useContext(GameAudioContext)
   const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false)
   const joinButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -124,9 +123,6 @@ function ScreensPanel(): ReactElement {
                 {count !== null && <StatusDot $isConnected={count > 0} />}
                 {screenStatusText(count)}
               </StatusText>
-              {screen === 'wall' && audio?.output_ready && (
-                <StatusText data-test-id="screen-wall-audio">Audioausgabe</StatusText>
-              )}
             </ScreenInfo>
             <PanelButton
               type="button"

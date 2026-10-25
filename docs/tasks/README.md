@@ -39,3 +39,4 @@
 | DND-33 | feat | Admin-Dashboard mit Panel-Raster (Szene, Musik, Sounds, Screens) | Fertig | [DND-33-admin-dashboard.md](DND-33-admin-dashboard.md) |
 | DND-34 | feat | Panels „Spieler“ (Hero-Karte) und „Level“ im Admin-Dashboard | Fertig | [DND-34-admin-players-panel.md](DND-34-admin-players-panel.md) |
 | DND-35 | feat | Wall-Overlay vom Admin steuern | Fertig | [DND-35-wall-overlay-remote.md](DND-35-wall-overlay-remote.md) |
+| DND-36 | feat | Ground-Raster und Audio in den Admin, Wall und Ground ohne Steuerleiste | Im Review | [DND-36-screen-controls-to-admin.md](DND-36-screen-controls-to-admin.md) |

@@ -45,10 +45,11 @@ Teil-spezifischer Kontext (Befehle, Struktur, Konventionen): `frontend/CLAUDE.md
   beschriebenes Soll-Feature bereits existiert – im Zweifel im Code prüfen.
 - **Setup am Spieltisch:** Ein Rechner mit mehreren Monitoren; Admin, Wall und Ground laufen meist als Fenster im
   selben Browser, Wall und Ground können aber auch in anderen Browsern bzw. auf anderen Geräten im LAN laufen. Der
-  Server ist die einzige Quelle des Spieltisch-Zustands (Abenteuer, aktive Szene, Theme) und pusht ihn per WebSocket
-  an diese Screens (siehe architecture.md, „Synchronisation“); `localStorage` dient dafür nicht mehr.
-  Musik und Soundeffekte spielt die Wall, die per „AUDIO“ Audioausgabe ist; der Admin ist nur Fernbedienung (Zustand
-  ebenfalls auf dem Server). Die Player-Screens laufen auf den Smartphones der Spieler (geöffnet per QR-Code im Admin),
+  Server ist die einzige Quelle des Spieltisch-Zustands (Abenteuer, aktive Szene, Theme, Wall-Overlay, Ground-Raster)
+  und pusht ihn per WebSocket an diese Screens (siehe architecture.md, „Synchronisation“); `localStorage` dient dafür
+  nicht mehr. Wall und Ground sind reine Anzeigen ohne Bedienelemente, gesteuert wird alles vom Admin.
+  Musik und Soundeffekte spielt das Admin-Fenster, das per „Hier abspielen“ Audioausgabe ist (Zustand auf dem
+  Server); den Lautsprecher wählt der Spielleiter außerhalb der App (Betriebssystem bzw. Browser). Die Player-Screens laufen auf den Smartphones der Spieler (geöffnet per QR-Code im Admin),
   sind ebenfalls per WebSocket angebunden und übernehmen davon nur das Theme (pro Gerät abweichend wählbar).
 - **Begriffe:** Alle Szenen sind gleich (keine Kampf-/Nicht-Kampfszenen mehr, seit DND-29); ein Kampf soll künftig
   in jeder Szene stattfinden können. Ältere Bezeichnungen (`main`, `side`, `fight`, `battlemap`) tauchen noch in

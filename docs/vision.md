@@ -26,7 +26,8 @@ Die App soll
 ## Spielsituation / Setup
 
 - Ein Rechner mit mehreren Monitoren: Admin Screen (für den Spielleiter), Wall Screen (Monitor/Wand für Atmosphäre),
-  Ground Screen (liegend auf dem Tisch als digitales Spielbrett).
+  Ground Screen (liegend auf dem Tisch als digitales Spielbrett). Wall und Ground sind reine Anzeigen; der Spielleiter
+  steuert alles vom Admin aus, dort spielen auch Musik und Soundeffekte (Lautsprecher außerhalb der App gewählt).
 - Smartphones der Spieler mit dem Player Screen.
 
 ## Kernkonzept: Szenen

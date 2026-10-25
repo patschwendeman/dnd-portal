@@ -14,7 +14,7 @@ export interface PlayableAudio {
   pause: () => void
 }
 
-export interface WallAudioPlayerOptions {
+export interface AudioPlayerOptions {
   onTrackEnded: (trackId: number) => void
   createAudio?: () => PlayableAudio
   resolveSource?: (source: string) => string
@@ -23,14 +23,14 @@ export interface WallAudioPlayerOptions {
 const SOUND_VOLUME = 1
 
 const startPlayback = (audio: PlayableAudio): void => {
-  // e.g. autoplay blocked: the game master clicks "AUDIO" again
+  // e.g. playback blocked by the browser: only logged, the next play command tries again
   audio.play().catch((error: unknown) => console.error('Error playing audio:', error))
 }
 
-// Plays the music and sound effects of the server on the Wall that is the audio output. It decides
-// nothing itself: it follows the audio state of the server (track, playing, volume) and reports the
-// end of a track.
-export class WallAudioPlayer {
+// Plays the music and sound effects of the server in the Admin window that is the audio output. It
+// decides nothing itself: it follows the audio state of the server (track, playing, volume) and
+// reports the end of a track.
+export class AudioPlayer {
   private readonly music: PlayableAudio
 
   private readonly createAudio: () => PlayableAudio
@@ -47,7 +47,7 @@ export class WallAudioPlayer {
     onTrackEnded,
     createAudio = () => new Audio(),
     resolveSource = mediaUrl,
-  }: WallAudioPlayerOptions) {
+  }: AudioPlayerOptions) {
     this.createAudio = createAudio
     this.resolveSource = resolveSource
     this.onTrackEnded = onTrackEnded

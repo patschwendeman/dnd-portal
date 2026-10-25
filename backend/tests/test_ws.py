@@ -1,5 +1,5 @@
 """Tests for the WebSocket /ws: snapshot on connect, push after PATCH /table and PATCH /adventures/{id}, screen and
-origin checks, heartbeat and removal of broken connections; audio output of the Walls (audio_ready, track_ended,
+origin checks, heartbeat and removal of broken connections; audio output of the Admins (audio_ready, track_ended,
 audio_output, sound); number of connected screens for the Admins (screens).
 
 Changing tests use the fixture `db` (tests/conftest.py), which also serves the push. A client always reads its initial
@@ -19,7 +19,15 @@ from starlette.websockets import WebSocketDisconnect
 
 pytestmark = pytest.mark.usefixtures("reset_audio")
 
-STATE_FIELDS = {"active_adventure_id", "active_scene_id", "theme", "wall_overlay"}
+STATE_FIELDS = {
+    "active_adventure_id",
+    "active_scene_id",
+    "theme",
+    "wall_overlay",
+    "ground_grid",
+    "ground_grid_cell_size",
+}
+DEFAULT_GRID = {"ground_grid": "off", "ground_grid_cell_size": 100}
 AUDIO_FIELDS = {"playing", "track", "volume", "output_ready"}
 POLICY_VIOLATION = 1008
 CONFIGURED_ORIGIN = "http://localhost:5173"
@@ -82,11 +90,11 @@ def receive_output(websocket: WebSocketTestSession) -> bool:
     return active
 
 
-def become_output(wall: WebSocketTestSession) -> dict[str, Any]:
+def become_output(admin: WebSocketTestSession) -> dict[str, Any]:
     """Sends audio_ready; returns the audio state pushed afterwards."""
-    wall.send_json({"type": "audio_ready"})
-    assert receive_output(wall) is True
-    return receive_audio(wall)
+    admin.send_json({"type": "audio_ready"})
+    assert receive_output(admin) is True
+    return receive_audio(admin)
 
 
 def test_connect_sends_the_current_state(client: TestClient) -> None:
@@ -152,7 +160,13 @@ def test_two_clients_receive_the_push_after_patch_adventure(client: TestClient, 
 
         client.patch("/adventures/1", json={"active_scene_id": 5})
 
-        expected = {"active_adventure_id": 1, "active_scene_id": 5, "theme": "dark", "wall_overlay": "off"}
+        expected = {
+            "active_adventure_id": 1,
+            "active_scene_id": 5,
+            "theme": "dark",
+            "wall_overlay": "off",
+            **DEFAULT_GRID,
+        }
         assert receive_state(wall) == expected
         assert receive_state(ground) == expected
 
@@ -188,6 +202,7 @@ def test_switching_the_adventure_pushes_its_stored_scene(
             "active_scene_id": other_adventure["first_scene_id"],
             "theme": "dark",
             "wall_overlay": "off",
+            **DEFAULT_GRID,
         }
 
 
@@ -232,10 +247,55 @@ def test_scene_change_pushes_the_closed_wall_overlay_once(client: TestClient, db
             "active_scene_id": 5,
             "theme": "dark",
             "wall_overlay": "off",
+            **DEFAULT_GRID,
         }
         receive_audio(wall)
         client.patch("/table", json={"theme": "tavern"})
         assert receive_state(wall)["theme"] == "tavern"
+
+
+def test_ground_grid_is_pushed_to_all_grounds(client: TestClient, db: Session) -> None:
+    with (
+        client.websocket_connect("/ws?screen=ground") as ground,
+        client.websocket_connect("/ws?screen=ground") as other_ground,
+        client.websocket_connect("/ws?screen=admin") as admin,
+    ):
+        receive_snapshot(ground)
+        receive_snapshot(other_ground)
+        receive_snapshot(admin)
+
+        response = client.patch("/table", json={"ground_grid": "white"})
+
+        assert response.json()["ground_grid"] == "white"
+        for websocket in (ground, other_ground, admin):
+            assert receive_state(websocket) == response.json()
+
+        client.patch("/table", json={"ground_grid_cell_size": 150})
+
+        for websocket in (ground, other_ground, admin):
+            state = receive_state(websocket)
+            assert (state["ground_grid"], state["ground_grid_cell_size"]) == ("white", 150)
+
+
+def test_new_ground_receives_the_current_ground_grid(client: TestClient, db: Session) -> None:
+    client.patch("/table", json={"ground_grid": "black", "ground_grid_cell_size": 180})
+
+    with client.websocket_connect("/ws?screen=ground") as ground:
+        state = receive_snapshot(ground)
+
+    assert (state["ground_grid"], state["ground_grid_cell_size"]) == ("black", 180)
+
+
+def test_scene_change_pushes_the_unchanged_ground_grid(client: TestClient, db: Session) -> None:
+    client.patch("/table", json={"active_adventure_id": 1, "ground_grid": "white", "ground_grid_cell_size": 150})
+    with client.websocket_connect("/ws?screen=ground") as ground:
+        receive_snapshot(ground)
+
+        client.patch("/adventures/1", json={"active_scene_id": 5})
+
+        state = receive_state(ground)
+        assert state["active_scene_id"] == 5
+        assert (state["ground_grid"], state["ground_grid_cell_size"]) == ("white", 150)
 
 
 def test_failed_patch_does_not_push(client: TestClient, db: Session) -> None:
@@ -243,6 +303,7 @@ def test_failed_patch_does_not_push(client: TestClient, db: Session) -> None:
         receive_snapshot(wall)
 
         assert client.patch("/table", json={"theme": "light"}).status_code == 422
+        assert client.patch("/table", json={"ground_grid_cell_size": 155}).status_code == 422
         assert client.patch("/table", json={"active_adventure_id": 99999}).status_code == 422
         assert client.patch("/adventures/1", json={"active_scene_id": 99999}).status_code == 422
         client.patch("/table", json={"theme": "tavern"})
@@ -341,24 +402,26 @@ def test_broadcast_removes_connection_with_failing_send() -> None:
     assert healthy.messages == [{"type": "ping"}, {"type": "ping"}]
 
 
-def test_audio_ready_of_a_wall_makes_it_the_output(client: TestClient) -> None:
+def test_audio_ready_of_an_admin_makes_it_the_output(client: TestClient) -> None:
     with (
+        client.websocket_connect("/ws?screen=admin") as other,
         client.websocket_connect("/ws?screen=admin") as admin,
         client.websocket_connect("/ws?screen=wall") as wall,
     ):
-        assert receive_snapshot(admin) and receive_snapshot(wall)
+        assert receive_snapshot(other) and receive_snapshot(admin) and receive_snapshot(wall)
 
-        audio = become_output(wall)
+        audio = become_output(admin)
 
         assert audio["output_ready"] is True
-        assert receive_audio(admin) == audio
+        assert receive_audio(other) == audio
+        assert receive_audio(wall) == audio
         assert client.get("/table/audio").json() == audio
 
 
-def test_second_wall_takes_over_the_output(client: TestClient) -> None:
+def test_second_admin_takes_over_the_output(client: TestClient) -> None:
     with (
-        client.websocket_connect("/ws?screen=wall") as first,
-        client.websocket_connect("/ws?screen=wall") as second,
+        client.websocket_connect("/ws?screen=admin") as first,
+        client.websocket_connect("/ws?screen=admin") as second,
     ):
         receive_snapshot(first)
         receive_snapshot(second)
@@ -373,24 +436,43 @@ def test_second_wall_takes_over_the_output(client: TestClient) -> None:
         assert receive_audio(second)["output_ready"] is True
 
 
-@pytest.mark.parametrize("screen", ["admin", "ground", "player"])
+@pytest.mark.parametrize("screen", ["wall", "ground", "player"])
 def test_audio_ready_of_other_screens_is_ignored(client: TestClient, screen: str) -> None:
     from app.realtime.audio import audio
 
     with (
         client.websocket_connect(f"/ws?screen={screen}") as other,
-        client.websocket_connect("/ws?screen=wall") as wall,
+        client.websocket_connect("/ws?screen=admin") as admin,
     ):
         receive_snapshot(other)
-        receive_snapshot(wall)
+        receive_snapshot(admin)
 
         other.send_json({"type": "audio_ready"})
-        become_output(wall)
+        become_output(admin)
 
         # Had the other screen become the output, it would have received audio_output (active or not) first.
         assert receive_audio(other)["output_ready"] is True
         assert audio.output is not None
-        assert audio.output.screen == "wall"
+        assert audio.output.screen == "admin"
+
+
+@pytest.mark.parametrize("screen", ["wall", "ground", "player"])
+def test_track_ended_of_other_screens_is_ignored(client: TestClient, screen: str) -> None:
+    with (
+        client.websocket_connect("/ws?screen=admin") as admin,
+        client.websocket_connect(f"/ws?screen={screen}") as other,
+    ):
+        receive_snapshot(admin)
+        receive_snapshot(other)
+        track = become_output(admin)["track"]
+        receive_audio(other)
+
+        other.send_json({"type": "track_ended", "payload": {"track_id": track["id"]}})
+        client.patch("/table/audio", json={"volume": 30})
+
+        # Without a new track first: the next message is the push of the volume.
+        audio = receive_audio(admin)
+        assert (audio["track"], audio["volume"]) == (track, 30)
 
 
 def test_track_ended_of_the_output_plays_the_next_track(
@@ -402,33 +484,33 @@ def test_track_ended_of_the_output_plays_the_next_track(
     client.patch("/table", json={"active_adventure_id": 1})
     client.patch("/adventures/1", json={"active_scene_id": 5})
     with (
-        client.websocket_connect("/ws?screen=admin") as admin,
         client.websocket_connect("/ws?screen=wall") as wall,
+        client.websocket_connect("/ws?screen=admin") as admin,
     ):
-        receive_snapshot(admin)
         receive_snapshot(wall)
-        first = become_output(wall)["track"]
-        receive_audio(admin)
+        receive_snapshot(admin)
+        first = become_output(admin)["track"]
+        receive_audio(wall)
 
-        wall.send_json({"type": "track_ended", "payload": {"track_id": first["id"]}})
+        admin.send_json({"type": "track_ended", "payload": {"track_id": first["id"]}})
 
-        second = receive_audio(wall)["track"]
+        second = receive_audio(admin)["track"]
         assert second is not None
         assert second["id"] != first["id"]
-        assert receive_audio(admin)["track"] == second
+        assert receive_audio(wall)["track"] == second
 
         # Outdated (the first track) or invalid reports are ignored; the next message is the one of audio_ready.
-        wall.send_json({"type": "track_ended", "payload": {"track_id": first["id"]}})
-        wall.send_json({"type": "track_ended", "payload": {"track_id": str(second["id"])}})
-        wall.send_json({"type": "track_ended", "payload": {"track_id": True}})
-        wall.send_json({"type": "track_ended"})
-        assert become_output(wall)["track"] == second
+        admin.send_json({"type": "track_ended", "payload": {"track_id": first["id"]}})
+        admin.send_json({"type": "track_ended", "payload": {"track_id": str(second["id"])}})
+        admin.send_json({"type": "track_ended", "payload": {"track_id": True}})
+        admin.send_json({"type": "track_ended"})
+        assert become_output(admin)["track"] == second
 
 
-def test_track_ended_of_a_wall_that_is_not_the_output_is_ignored(client: TestClient) -> None:
+def test_track_ended_of_an_admin_that_is_not_the_output_is_ignored(client: TestClient) -> None:
     with (
-        client.websocket_connect("/ws?screen=wall") as output,
-        client.websocket_connect("/ws?screen=wall") as other,
+        client.websocket_connect("/ws?screen=admin") as output,
+        client.websocket_connect("/ws?screen=admin") as other,
     ):
         receive_snapshot(output)
         receive_snapshot(other)
@@ -447,14 +529,14 @@ def test_track_ended_of_a_wall_that_is_not_the_output_is_ignored(client: TestCli
 
 def test_sound_is_sent_only_to_the_output(client: TestClient) -> None:
     with (
-        client.websocket_connect("/ws?screen=admin") as admin,
-        client.websocket_connect("/ws?screen=wall") as output,
-        client.websocket_connect("/ws?screen=wall") as other,
+        client.websocket_connect("/ws?screen=wall") as wall,
+        client.websocket_connect("/ws?screen=admin") as output,
+        client.websocket_connect("/ws?screen=admin") as other,
     ):
-        for websocket in (admin, output, other):
+        for websocket in (wall, output, other):
             receive_snapshot(websocket)
         become_output(output)
-        receive_audio(admin)
+        receive_audio(wall)
         receive_audio(other)
 
         assert client.post("/table/sounds", json={"name": "heal"}).status_code == 204
@@ -463,27 +545,33 @@ def test_sound_is_sent_only_to_the_output(client: TestClient) -> None:
         assert receive_json(output) == {"type": "sound", "payload": {"name": "heal"}}
         assert receive_audio(output)["volume"] == 40
         # The first message after the sound is the push of the volume
-        assert receive_audio(admin)["volume"] == 40
+        assert receive_audio(wall)["volume"] == 40
         assert receive_audio(other)["volume"] == 40
 
 
 def test_disconnect_of_the_output_is_pushed_to_all(client: TestClient) -> None:
-    with client.websocket_connect("/ws?screen=admin") as admin:
-        receive_snapshot(admin)
-        with client.websocket_connect("/ws?screen=wall") as wall:
-            receive_snapshot(wall)
-            become_output(wall)
-            assert receive_audio(admin)["output_ready"] is True
+    with (
+        client.websocket_connect("/ws?screen=admin") as other,
+        client.websocket_connect("/ws?screen=wall") as wall,
+    ):
+        receive_snapshot(other)
+        receive_snapshot(wall)
+        with client.websocket_connect("/ws?screen=admin") as admin:
+            receive_snapshot(admin)
+            become_output(admin)
+            assert receive_audio(other)["output_ready"] is True
+            assert receive_audio(wall)["output_ready"] is True
 
-        assert receive_audio(admin)["output_ready"] is False
+        assert receive_audio(other)["output_ready"] is False
+        assert receive_audio(wall)["output_ready"] is False
     assert client.get("/table/audio").json()["output_ready"] is False
 
 
-def test_disconnect_of_another_wall_keeps_the_output(client: TestClient) -> None:
-    with client.websocket_connect("/ws?screen=wall") as output:
+def test_disconnect_of_another_admin_keeps_the_output(client: TestClient) -> None:
+    with client.websocket_connect("/ws?screen=admin") as output:
         receive_snapshot(output)
         become_output(output)
-        with client.websocket_connect("/ws?screen=wall") as other:
+        with client.websocket_connect("/ws?screen=admin") as other:
             receive_snapshot(other)
 
         client.patch("/table/audio", json={"volume": 20})
@@ -493,13 +581,13 @@ def test_disconnect_of_another_wall_keeps_the_output(client: TestClient) -> None
 
 @pytest.mark.parametrize("text", ["not json", "[1, 2]", '"audio_ready"', "{}", '{"type": "unknown"}', "null"])
 def test_invalid_messages_do_not_break_the_connection(client: TestClient, text: str) -> None:
-    with client.websocket_connect("/ws?screen=wall") as wall:
-        receive_snapshot(wall)
+    with client.websocket_connect("/ws?screen=admin") as admin:
+        receive_snapshot(admin)
 
-        wall.send_text(text)
-        wall.send_bytes(b"\x00")
+        admin.send_text(text)
+        admin.send_bytes(b"\x00")
 
-        assert become_output(wall)["output_ready"] is True
+        assert become_output(admin)["output_ready"] is True
 
 
 def receive_screens(websocket: WebSocketTestSession) -> dict[str, int]:

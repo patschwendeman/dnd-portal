@@ -1,7 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import {
-  By, WebDriver, error, until,
-} from 'selenium-webdriver'
+import { WebDriver, error } from 'selenium-webdriver'
 
 import {
   BASE_URL,
@@ -22,8 +20,6 @@ const PANEL = '[data-test-id="dashboard-panel-wall-overlay"]'
 const WORLD_BUTTON = `${PANEL} [data-test-id="wall-overlay-world"]`
 const OFF_BUTTON = `${PANEL} [data-test-id="wall-overlay-off"]`
 const WORLD_MAP = '[data-test-id="wall-world-map"]'
-// The control bar of the wall appears only while the pointer is over the screen
-const CONTROL_BAR_WORLD = '//button[normalize-space()="WORLD"]'
 // Start of two more browsers plus the waits of the scenario
 const SCENARIO_TIMEOUT = 6 * WAIT_TIMEOUT
 const NO_OVERLAY_WITH_TWO_WALLS = 'no overlay is shown and I am on the admin screen with two wall '
@@ -132,28 +128,6 @@ defineFeature(feature, (test) => {
 
     then('both wall screens hide the world map and the panel highlights Aus', async () => {
       await expectOverlay('off')
-    })
-  }, SCENARIO_TIMEOUT)
-
-  test('I show the world map from the control bar of a wall', ({ given, when, then }) => {
-    given(NO_OVERLAY_WITH_TWO_WALLS, async () => {
-      await openScreens('off')
-    })
-
-    when('I click on WORLD in the control bar of the first wall screen', async () => {
-      const [wall] = walls
-      const screen = await waitForElement(wall, 'body')
-      await wall.actions().move({ origin: screen }).perform()
-      const button = await wall.wait(
-        until.elementLocated(By.xpath(CONTROL_BAR_WORLD)),
-        WAIT_TIMEOUT,
-      )
-      await wall.wait(until.elementIsVisible(button), WAIT_TIMEOUT)
-      await button.click()
-    })
-
-    then('both wall screens show the world map and the panel highlights Weltkarte', async () => {
-      await expectOverlay('world')
     })
   }, SCENARIO_TIMEOUT)
 

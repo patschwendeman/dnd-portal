@@ -1,7 +1,8 @@
 import { isSoundName } from '../audio/sounds'
 import {
-  AudioState, GameTableState, SoundName, Theme, Track, WallOverlay,
+  AudioState, GameTableState, GroundGrid, SoundName, Theme, Track, WallOverlay,
 } from '../models/models'
+import { GROUND_GRID_CELL_SIZE } from '../utils/groundGrid'
 
 // Number of open connections per screen type, without the Admins
 export interface ScreenCounts {
@@ -13,7 +14,7 @@ export interface ScreenCounts {
 // Messages on /ws, see docs/architecture.md (not part of the OpenAPI contract)
 export type ServerMessage = { type: 'state', payload: GameTableState }
   | { type: 'audio', payload: AudioState }
-  // Only to Walls: whether this connection is the audio output
+  // Only to Admins: whether this connection is the audio output
   | { type: 'audio_output', payload: { active: boolean } }
   // Only to the audio output
   | { type: 'sound', payload: { name: SoundName } }
@@ -21,12 +22,13 @@ export type ServerMessage = { type: 'state', payload: GameTableState }
   | { type: 'screens', payload: ScreenCounts }
   | { type: 'ping' }
 
-// Sent only by the Wall; the server ignores messages of the other screens
+// Sent only by the Admin; the server ignores messages of the other screens
 export type ClientMessage = { type: 'audio_ready' }
   | { type: 'track_ended', payload: { track_id: number } }
 
 const THEMES: readonly Theme[] = ['dark', 'tavern']
 const WALL_OVERLAYS: readonly WallOverlay[] = ['world', 'off']
+const GROUND_GRIDS: readonly GroundGrid[] = ['black', 'white', 'off']
 
 const isRecord = (value: unknown): value is Record<string, unknown> => (
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -37,6 +39,12 @@ const isPositiveInteger = (value: unknown): value is number => (
 )
 
 const isId = (value: unknown): value is number | null => value === null || isPositiveInteger(value)
+
+const isCellSize = (value: unknown): value is number => {
+  const { min, max, step } = GROUND_GRID_CELL_SIZE
+  return Number.isSafeInteger(value) && (value as number) >= min && (value as number) <= max
+    && ((value as number) - min) % step === 0
+}
 
 const MIN_VOLUME = 0
 const MAX_VOLUME = 100
@@ -51,12 +59,16 @@ const parseState = (payload: unknown): GameTableState | null => {
     active_scene_id: activeSceneId,
     theme,
     wall_overlay: wallOverlay,
+    ground_grid: groundGrid,
+    ground_grid_cell_size: groundGridCellSize,
   } = payload
   if (
     !isId(activeAdventureId)
     || !isId(activeSceneId)
     || !THEMES.includes(theme as Theme)
     || !WALL_OVERLAYS.includes(wallOverlay as WallOverlay)
+    || !GROUND_GRIDS.includes(groundGrid as GroundGrid)
+    || !isCellSize(groundGridCellSize)
   ) {
     return null
   }
@@ -65,6 +77,8 @@ const parseState = (payload: unknown): GameTableState | null => {
     active_scene_id: activeSceneId,
     theme: theme as Theme,
     wall_overlay: wallOverlay as WallOverlay,
+    ground_grid: groundGrid as GroundGrid,
+    ground_grid_cell_size: groundGridCellSize,
   }
 }
 

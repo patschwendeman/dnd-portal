@@ -80,27 +80,31 @@ src/realtime/        WebSocket-Client des Spieltischs: GameTableProvider (ThemeP
                      (VisibilitySource, für Tests ersetzbar)
 src/context/         ActiveAdventureContext, ActiveSceneContext (IDs number | null, nur lesend), GameTableContext
                      (hasState, snapshot: letzter Spieltisch-Zustand, neues Objekt je Push, theme, wallOverlay,
-                     connected,
+                     groundGrid, groundGridCellSize, connected,
                      reconnectNow, screens: Verbindungszahlen nur für den Admin), GameAudioContext (audio, isAudioOutput,
                      requestAudioOutput, reportTrackEnded, subscribeSound)
-src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Panel „Sounds“), wallAudioPlayer.ts
-                     (WallAudioPlayer: Wiedergabe auf der Wall nach dem AudioState, Audio-Fabrik injizierbar für vitest)
+src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Panel „Sounds“), audioPlayer.ts
+                     (AudioPlayer: Wiedergabe im Admin nach dem AudioState, Audio-Fabrik injizierbar für vitest),
+                     useAudioPlayback.ts (bindet den AudioPlayer im Admin an den GameAudioContext)
 src/screens/         Screens
 src/components/      UI-Bausteine (TopBar, JoinDialog, ThemeMenu, NavRail (Navigationsleiste im Admin),
                      SideBarLeftElement (Eintrag im Panel, Button), DocumentNavigation (Notizen-Einträge im Panel),
                      SceneNavigation (Szenenliste im Panel), DocumentReader (Notizen des gewählten Eintrags),
                      Dashboard (Raster rechts im Admin) mit DashboardPanel, ActiveScenePanel, MusicControl,
-                     WallOverlayPanel, SoundBoard, ScreensPanel, LevelPanel, PlayersPanel (Panels), PlayerHeroCard (Hero-Karte),
-                     PanelButton (Icon-Button in Panels), Dialogue, GridOverlay, ScreenControlBar,
+                     WallOverlayPanel, GroundGridPanel, SoundBoard, ScreensPanel, LevelPanel, PlayersPanel (Panels),
+                     PlayerHeroCard (Hero-Karte), PanelButton (Icon-Button in Panels), OptionButtons (Umschalt-Buttons
+                     in Panels), PanelSlider (Slider in Panels), Dialogue, GridOverlay,
                      ResourceBarPlayer …)
 src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
                      getJoinInfo, saveActiveScene, saveGlobalLevel, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
-                     getGroundScreenData …); gameTable.ts: saveWallOverlay (von Admin und Wall genutzt)
+                     getGroundScreenData …); gameTable.ts: saveWallOverlay, saveGroundGrid,
+                     saveGroundGridCellSize (nur vom Admin genutzt)
 src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData/patchData/postData (apiMethods.ts), loadData,
                      saveData/postCommand, mediaUrl (mediaUrl.ts), wsUrl (wsUrl.ts); schema.d.ts generiert
 src/models/models.ts API-Typen AdventureSummary, AdventureDetail, Player, SceneDetail, Image, Track, GameTableState, Theme,
-                     WallOverlay, JoinInfo, AudioState, AudioUpdate, SoundName aus src/api/schema.d.ts
+                     WallOverlay, GroundGrid, JoinInfo, AudioState, AudioUpdate, SoundName aus src/api/schema.d.ts
 src/utils/utils.ts   Musiktitel (getMusicTitle), filterSceneByKey
+src/utils/groundGrid.ts GROUND_GRID_CELL_SIZE (100–200, Schritt 10), gridLineColor, toCellSize (Slider-Wert → Zellgröße)
 src/utils/navRail.ts nextOpenPanel (welches Panel neben der Navigationsleiste offen ist)
 src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
 src/utils/playerTheme.ts Theme-Abweichung des Players lesen/schreiben, effectiveTheme, Altschlüssel verwerfen
@@ -110,16 +114,16 @@ src/utils/useDocumentFullscreen.ts Vollbild des eigenen Fensters (Admin, Top-Bar
 src/utils/playerUrl.ts selectPlayerUrl (URL der API, sonst Origin des Admins, nicht bei localhost/127.0.0.1/[::1])
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }), appTheme(theme),
                      styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden)
-public/assets/       sounds (Soundeffekte, auf der Wall abgespielt), icons; dazu das fest eingebundene Medium
+public/assets/       sounds (Soundeffekte, im Admin abgespielt), icons; dazu das fest eingebundene Medium
                      images/ground_screen/mapOverview.jpg (Weltkarte) – Szenenmedien und Standardmusik liegen in ../media
 public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mechanics), deutsch
 ```
 
 Datenfluss: Screen → `src/service/*` → `getData()` → Backend. Der Admin lädt die Szenenliste nur über
 `adventures/{id}/scenes` des aktiven Abenteuers (`activeAdventureId`). Der Spieltisch-Zustand (aktives Abenteuer, aktive
-Szene, Theme, Wall-Overlay) kommt nur vom Server: `GameTableProvider` verbindet sich per WebSocket (`/ws?screen=…`) und speist die
-Contexts aus jedem Snapshot. Szenen-, Abenteuer-, Theme- und Overlay-Wechsel schreibt der Admin (das Wall-Overlay auch die
-Steuerleiste der Wall) per REST (`PATCH adventures/{id}`
+Szene, Theme, Wall-Overlay, Ground-Raster) kommt nur vom Server: `GameTableProvider` verbindet sich per WebSocket (`/ws?screen=…`) und speist die
+Contexts aus jedem Snapshot. Szenen-, Abenteuer-, Theme-, Overlay- und Raster-Wechsel schreibt nur der Admin (Wall und Ground
+haben keine Bedienelemente) per REST (`PATCH adventures/{id}`
 bzw. `PATCH table`) **ohne lokale Vorwegnahme**; der Server pusht danach den neuen Stand an alle Screens, die die Szene
 per `scenes/{id}` neu laden (ohne aktive Szene kein Request, nur Hintergrund). Nur der Admin zeigt Speicher- und
 Verbindungsfehler. Der Player nutzt vom Snapshot nur das Theme (`Abweichung ?? Spieltisch-Theme`), sendet nichts und
@@ -130,10 +134,11 @@ Abenteuerwechsel und nach jedem Snapshot (`snapshot` im `GameTableContext`) neu;
 `PATCH adventures/{id}` ohne lokale Vorwegnahme, der Server pusht danach einen Snapshot.
 Details: `../docs/architecture.md#synchronisation`.
 
-Audio: Der Server hält den Musikzustand und pusht ihn als `audio` an alle Screens. Die Wall, auf der „AUDIO“ geklickt
-wurde (`audio_ready`), ist die einzige Audioausgabe und spielt per `WallAudioPlayer`; nach einem Reconnect meldet sie
-sich selbst wieder. Der Admin spielt nichts ab, er sendet Befehle (`PATCH table/audio`,
-`POST table/sounds`) ohne lokale Vorwegnahme. Details: `../docs/architecture.md#audio`.
+Audio: Der Server hält den Musikzustand und pusht ihn als `audio` an alle Screens. Das Admin-Fenster, in dem „Hier
+abspielen“ (Panel „Musik“) geklickt wurde (`audio_ready`), ist die einzige Audioausgabe und spielt per `AudioPlayer`
+(`useAudioPlayback`); nach einem Reconnect meldet es sich selbst wieder, nach einem Reload erst nach einem neuen Klick.
+Befehle (`PATCH table/audio`, `POST table/sounds`) sendet der Admin ohne lokale Vorwegnahme. Wall und Ground spielen
+nichts. Details: `../docs/architecture.md#audio`.
 
 ## Konventionen (durch ESLint erzwungen bzw. im Code üblich)
 
@@ -175,7 +180,7 @@ sich selbst wieder. Der Admin spielt nichts ab, er sendet Befehle (`PATCH table/
 
 - Medienpfade (`source`) kommen vom Backend als API-relativer Pfad (`/media/...`) und werden immer über
   `mediaUrl(source)` (`src/api/mediaUrl.ts`, gleiche Basis-URL wie `apiClient`) in eine absolute URL umgewandelt –
-  in `WallScreen`, `GroundScreen`, `Dialogue` und im `WallAudioPlayer` (Musik der Wall).
+  in `WallScreen`, `GroundScreen`, `Dialogue` und im `AudioPlayer` (Musik im Admin).
 - Alle Szenen sind gleich (kein `main` mehr). Das Panel „Szenen“ (`SceneNavigation`) zeigt sie in der Reihenfolge der
   API; aktiv ist der Eintrag mit `scene.id === activeSceneId`. Klick auf die aktive Szene tut nichts, sonst öffnet
   `handleSceneSelection` im `AdminScreen` den Dialog „Szene wechseln“.

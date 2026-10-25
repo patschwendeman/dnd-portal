@@ -57,11 +57,12 @@ def db(client: TestClient, reset_audio: None, monkeypatch: pytest.MonkeyPatch) -
 
     Used by the routes (`get_db`) and by the WebSocket push, which otherwise opens its own session and would not see
     the uncommitted changes. A scene change also changes the music state, so it is reset afterwards (`reset_audio`),
-    like the overlay of the Walls, which is kept in memory as well.
+    like the overlay of the Walls and the grid of the Grounds, which are kept in memory as well.
     """
     from app.db.session import engine, get_db
     from app.main import app
     from app.realtime import push
+    from app.realtime.ground_grid import ground_grid
     from app.realtime.wall_overlay import wall_overlay
 
     with engine.connect() as connection:
@@ -76,6 +77,7 @@ def db(client: TestClient, reset_audio: None, monkeypatch: pytest.MonkeyPatch) -
             session.close()
             transaction.rollback()
             wall_overlay.reset()
+            ground_grid.reset()
 
 
 @pytest.fixture

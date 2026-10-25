@@ -42,7 +42,6 @@ const radius = {
   sm: '4px',
   md: '8px',
   lg: '12px',
-  xl: '16px',
   pill: '999px',
 }
 
@@ -80,7 +79,6 @@ const layer = {
   media: 1,
   grid: 10,
   panel: 20,
-  controls: 30,
   popover: 35,
   dialog: 40,
 }

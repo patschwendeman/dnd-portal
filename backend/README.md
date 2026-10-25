@@ -3,9 +3,9 @@
 REST-API, WebSocket und PostgreSQL-Datenbank des DnD Portals (FastAPI, SQLAlchemy, Alembic). Liefert dem Frontend
 ([`../frontend`](../frontend/)) die Szenen mit ihren Wall-/Ground-Bildern und Musik-Tracks sowie die Mediendateien
 selbst (Ordner [`../media`](../media/)). Abenteuer bündeln Szenen und Spieler. Der Server ist die einzige Quelle des
-Spieltisch-Zustands (aktives Abenteuer, aktive Szene, Theme) und pusht ihn per WebSocket an Admin, Wall, Ground und
+Spieltisch-Zustands (aktives Abenteuer, aktive Szene, Theme, Wall-Overlay, Ground-Raster) und pusht ihn per WebSocket an Admin, Wall, Ground und
 die Player Screens der Smartphones (die davon nur das Theme nutzen).
-Ebenso hält er den Musikzustand (im Speicher) und schickt Musik und Soundeffekte an die Wall, die Audioausgabe ist.
+Ebenso hält er den Musikzustand (im Speicher) und schickt Musik und Soundeffekte an das Admin-Fenster, das Audioausgabe ist.
 Schreibend sind nur das Setzen von aktiver Szene und globalem Level eines Abenteuers, von aktivem Abenteuer und
 Theme des Spieltischs (`PATCH`) sowie die Audio-Befehle (`PATCH`/`POST`).
 
@@ -16,13 +16,13 @@ Theme des Spieltischs (`PATCH`) sowie die Audio-Befehle (`PATCH`/`POST`).
 | `PATCH /adventures/{adventure_id}` | aktive Szene (`active_scene_id`, nur Szenen des Abenteuers, `null` leert sie) und/oder `global_level` (1–20) setzen; 404 bzw. 422 |
 | `GET /adventures/{adventure_id}/scenes` | Szenen des Abenteuers mit Wall-/Ground-Bild und Tracks, nach ID (wie angelegt) |
 | `GET /scenes/{scene_id}` | eine Szene (404, wenn unbekannt) |
-| `GET /table` | Spieltisch-Zustand: aktives Abenteuer, dessen aktive Szene, Theme (`dark` \| `tavern`) |
-| `PATCH /table` | aktives Abenteuer (`active_adventure_id`, `null` leert es) und/oder `theme` setzen; 422 bei unbekanntem Abenteuer |
+| `GET /table` | Spieltisch-Zustand: aktives Abenteuer, dessen aktive Szene, Theme (`dark` \| `tavern`), Wall-Overlay, Ground-Raster (Farbe, Zellgröße) |
+| `PATCH /table` | aktives Abenteuer (`active_adventure_id`, `null` leert es) und/oder `theme`, `wall_overlay`, `ground_grid`, `ground_grid_cell_size` (100–200, Schritt 10) setzen; 422 bei unbekanntem Abenteuer oder ungültigen Werten |
 | `GET /table/audio` | Musikzustand: läuft/pausiert, aktueller Track, Lautstärke (0–100), ob eine Audioausgabe bereit ist |
 | `PATCH /table/audio` | `playing` und/oder `volume` (0–100) setzen; 422 bei ungültigen Werten |
 | `POST /table/sounds` | Soundeffekt (`name`) an die Audioausgabe schicken; 204, auch ohne Ausgabe; 422 bei unbekanntem Namen |
 | `GET /table/join` | URL des Player Screens im LAN (`player_url`, aus `PLAYER_URL`; `null`, wenn unbekannt) für den QR-Code im Admin |
-| `WS /ws?screen=admin\|wall\|ground\|player` | WebSocket: Snapshot des Spieltischs und Musikzustand beim Verbinden und nach jeder Änderung, alle 15 s ein Ping, Audio-Meldungen der Wall; Origin-Prüfung (nicht in OpenAPI) |
+| `WS /ws?screen=admin\|wall\|ground\|player` | WebSocket: Snapshot des Spieltischs und Musikzustand beim Verbinden und nach jeder Änderung, alle 15 s ein Ping, Audio-Meldungen des Admins; Origin-Prüfung (nicht in OpenAPI) |
 | `GET /media/...` | Mediendateien (Bilder, Musik) aus `../media`, inkl. `Range` |
 
 Der API-Vertrag liegt versioniert in [`openapi.json`](openapi.json); daraus erzeugt das Frontend seine Typen. Das

@@ -1,9 +1,10 @@
 import Box from '@mui/material/Box'
-import Slider from '@mui/material/Slider'
 import { ReactElement, useState } from 'react'
 import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
 
+import { PANEL_SLIDER_THUMB_SIZE, PanelSlider } from './PanelSlider'
+import { TextButton } from './TextButton'
 import { AudioState } from '../models/models'
 import { textStyle } from '../style/tokens'
 import { getMusicTitle } from '../utils/utils'
@@ -13,17 +14,17 @@ import playIcon from '/assets/icons/play.svg'
 
 // Lowest height of the vertical slider; in the panel it takes the full height of the content
 const VOLUME_SLIDER_MIN_HEIGHT = '96px'
-const VOLUME_SLIDER_THUMB_SIZE = '16px'
 
 const NO_AUDIO_OUTPUT_MESSAGE = 'Keine Audioausgabe bereit'
 
 const Music = styled.div`
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto 1fr auto;
     grid-template-areas:
         "toggle volume"
-        "track volume";
+        "track volume"
+        "output output";
     gap: ${(props) => props.theme.space[3]};
     height: 100%;
     min-width: 0;
@@ -71,25 +72,16 @@ const AudioHint = styled.span`
     ${textStyle('sm')}
 `
 
-const VolumeSlider = styled(Slider)`
-  & .MuiSlider-thumb {
-    width: ${VOLUME_SLIDER_THUMB_SIZE};
-    height: ${VOLUME_SLIDER_THUMB_SIZE};
-    background-color: ${(props) => props.theme.colors.text.color};
-    &:focus,
-    &:hover,
-    &:active {
-      box-shadow: none;
+// Pressed while this window plays the music; inactive in the panel area `background`
+const OutputButton = styled(TextButton)`
+    grid-area: output;
+    justify-self: start;
+    white-space: nowrap;
+    &:focus-visible {
+      outline: ${(props) => props.theme.borderWidth.thick} solid
+        ${(props) => props.theme.colors.primary};
+      outline-offset: ${(props) => props.theme.borderWidth.thick};
     }
-  }
-  & .MuiSlider-rail {
-    background-color: ${(props) => props.theme.colors.background};
-    border-radius: ${(props) => props.theme.radius.pill};
-  }
-  & .MuiSlider-track {
-    background-color: ${(props) => props.theme.colors.primary};
-    border: none;
-  }
 `
 
 interface MusicControlProps {
@@ -99,11 +91,14 @@ interface MusicControlProps {
   failedSave: object | null
   onToggle: () => void
   onVolumeCommit: (volume: number) => void
+  // Whether this Admin window is the audio output
+  isAudioOutput: boolean
+  onRequestAudioOutput: () => void
 }
 
-// Remote control of the music played by the Wall: the Admin plays nothing itself
+// Controls the music on the server; it plays in the Admin window that is the audio output
 function MusicControl({
-  audio, failedSave, onToggle, onVolumeCommit,
+  audio, failedSave, onToggle, onVolumeCommit, isAudioOutput, onRequestAudioOutput,
 }: MusicControlProps): ReactElement {
   const theme = useTheme()
   const isMusicPlaying = audio?.playing ?? false
@@ -141,17 +136,27 @@ function MusicControl({
           <AudioHint data-test-id="music-no-output">{ NO_AUDIO_OUTPUT_MESSAGE }</AudioHint>
         )}
       </Track>
+      {/* The click is the user interaction the browser needs to allow playback */}
+      <OutputButton
+        type="button"
+        $variant={isAudioOutput ? 'active' : 'cancel'}
+        aria-pressed={isAudioOutput}
+        data-test-id="music-output"
+        onClick={() => !isAudioOutput && onRequestAudioOutput()}
+      >
+        Hier abspielen
+      </OutputButton>
       {/* Half a thumb above and below, so the thumb stays inside the panel at 0 and 100; the
           invisible touch area around the thumb is cut off instead of overflowing the panel */}
       <Box sx={{
         gridArea: 'volume',
         minHeight: VOLUME_SLIDER_MIN_HEIGHT,
         margin: 0,
-        paddingBlock: `calc(${VOLUME_SLIDER_THUMB_SIZE} / 2)`,
+        paddingBlock: `calc(${PANEL_SLIDER_THUMB_SIZE} / 2)`,
         overflow: 'hidden',
       }}
       >
-        <VolumeSlider
+        <PanelSlider
           aria-label="Lautstärke"
           orientation="vertical"
           value={draggedVolume ?? audio?.volume ?? 0}

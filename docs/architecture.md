@@ -6,7 +6,7 @@
  │ /admin   │  │ /wall    │  │ /ground  │                            │ /        │ × n
  └────┬─────┘  └────┬─────┘  └────┬─────┘                            └────┬─────┘
       │ HTTP GET/PATCH/POST (axios, /api/...)                             │ nur WebSocket (Theme)
-      │ WebSocket /ws?screen=… (Snapshots, Audio, Ping, an Admins Screen-Zahlen; Wall → Server: Audio-Meldungen)
+      │ WebSocket /ws?screen=… (Snapshots, Audio, Ping, an Admins Screen-Zahlen; Admin → Server: Audio-Meldungen)
       └─────────────┴─────────────┴──────────────────────────────────────┘
                     │ gleicher Origin: Vite-Proxy (Dev :5173) bzw. nginx (Prod :8080)
                     │ /api/… → API (Präfix entfernt), /ws → API
@@ -22,27 +22,30 @@
 
 ## Synchronisation
 
-- **Der Server ist die einzige Quelle** des Spieltisch-Zustands: aktives Abenteuer, dessen aktive Szene, Theme und
-  Wall-Overlay (Tabelle `game_table`, die aktive Szene steht in `adventure.active_scene_id`; das Wall-Overlay
-  `wall_overlay` liegt wie der Musikzustand nur im Speicher der API, `app/realtime/wall_overlay.py`, nach einem
-  Neustart `off`). Ein Server ist ein Spieltisch (eine
+- **Der Server ist die einzige Quelle** des Spieltisch-Zustands: aktives Abenteuer, dessen aktive Szene, Theme,
+  Wall-Overlay und Ground-Raster (Tabelle `game_table`, die aktive Szene steht in `adventure.active_scene_id`; das
+  Wall-Overlay `wall_overlay` und das Ground-Raster `ground_grid`/`ground_grid_cell_size` liegen wie der Musikzustand
+  nur im Speicher der API, `app/realtime/wall_overlay.py` bzw. `app/realtime/ground_grid.py`, nach einem Neustart
+  `off` bzw. `off`/100). Ein Server ist ein Spieltisch (eine
   globale Session, kein Beitreten).
 - Admin, Wall, Ground und Player verbinden sich beim Laden per WebSocket mit `/ws?screen=admin|wall|ground|player`
   (`GameTableProvider`/`useGameTable`, `src/realtime/`). Der Server schickt direkt nach dem Verbinden und nach **jeder**
   erfolgreichen Änderung per `PATCH /table` oder `PATCH /adventures/{id}` einen vollständigen Snapshot an alle
   Verbindungen (auch an andere Admins; der letzte Schreibzugriff gewinnt, keine Sperren). Der Provider speist daraus
-  `ActiveAdventureContext`, `ActiveSceneContext` (nur lesend), das Theme und das Wall-Overlay (`GameTableContext`). Die Screens laden daraufhin neu vom
+  `ActiveAdventureContext`, `ActiveSceneContext` (nur lesend), das Theme, das Wall-Overlay und das Ground-Raster (`GameTableContext`). Die Screens laden daraufhin neu vom
   Backend: Wall und Ground die Szene, der Admin bei einem Abenteuerwechsel dessen Szenen und nach jedem Snapshot
   Spieler und Level des aktiven Abenteuers (`GET /adventures/{id}`; `global_level` steht nicht im Snapshot). Ohne aktive Szene zeigen Wall und Ground
   nur die Hintergrundfarbe und stellen keinen Request. Bis zum ersten Snapshot gilt „kein Abenteuer, keine Szene,
-  Theme `dark`, kein Wall-Overlay“.
+  Theme `dark`, kein Wall-Overlay, kein Ground-Raster (Zellgröße 100)“.
 - Schreiben nur per REST, **ohne lokale Vorwegnahme**: Der Admin wechselt das Abenteuer per `PATCH /table
   {"active_adventure_id": <id>}`, die Szene per `PATCH /adventures/{id} {"active_scene_id": <id>}`, das Level per
   `PATCH /adventures/{id} {"global_level": <n>}` und das Theme per `PATCH /table {"theme": …}`; das Wall-Overlay
-  schreiben der Admin (Panel „Wall-Overlay“) und die Steuerleiste jeder Wall per `PATCH /table {"wall_overlay":
-  "world" | "off"}` (die Wall zeigt bei einem Fehler nichts an). Ändert sich die aktive Szene des aktiven Abenteuers
+  per `PATCH /table {"wall_overlay": "world" | "off"}` (Panel „Wall-Overlay“) und das Ground-Raster per `PATCH /table
+  {"ground_grid": "black" | "white" | "off"}` bzw. `{"ground_grid_cell_size": 100–200, Schritt 10}` (Panel
+  „Ground-Raster“, Slider beim Loslassen). Wall und Ground schreiben nichts. Ändert sich die aktive Szene des aktiven Abenteuers
   oder das aktive Abenteuer, setzt der Server `wall_overlay` im selben Schreibzugriff auf `off` (ein Push); setzt
-  derselbe `PATCH /table` auch `wall_overlay`, gilt dieser Wert. Admin, Wall und Ground wechseln erst mit dem Push; ein Abenteuerwechsel liefert direkt
+  derselbe `PATCH /table` auch `wall_overlay`, gilt dieser Wert. Das Ground-Raster bleibt bei Szenen- und
+  Abenteuerwechseln unverändert. Admin, Wall und Ground wechseln erst mit dem Push; ein Abenteuerwechsel liefert direkt
   die gespeicherte Szene des neuen Abenteuers, nie die eines anderen. Ist im Snapshot kein Abenteuer gesetzt, aktiviert
   der Admin das erste der Liste (`selectDefaultAdventureId`) per `PATCH /table`. Schlägt ein Schreibzugriff fehl,
   zeigt der Admin „Änderung konnte nicht gespeichert werden“; „Erneut versuchen“ wiederholt den zuletzt
@@ -59,7 +62,7 @@
 - **Ein Worker:** Der Verbindungsmanager hält die offenen Verbindungen im Speicher des API-Prozesses; uvicorn läuft
   deshalb mit genau einem Worker (Default, so in beiden Compose-Stacks).
 - **Audio** (Musik, Soundeffekte) folgt demselben Muster, siehe [Audio](#audio): Der Server hält den Musikzustand,
-  eine Wall spielt ihn ab, der Admin steuert per REST.
+  ein Admin-Fenster spielt ihn ab, gesteuert wird per REST.
 - Der **Player Screen** (Smartphones) nutzt vom Spieltisch nur das Theme; `state`, `audio` und `sound` empfängt er,
   zeigt sie aber nicht an, und er sendet nichts. Er zeigt keinen Verbindungsstatus. Im Settings-Menü kann ein Spieler
   auf seinem Gerät vom Spieltisch-Theme abweichen („Wie Spieltisch“, „Dunkel“, „Taverne“): gespeichert in
@@ -78,13 +81,13 @@ Server → Client:
 |---|---|---|
 | `{"type": "state", "payload": GameTableState}` | alle | direkt nach dem Verbinden und nach jeder erfolgreichen Änderung per `PATCH /table` oder `PATCH /adventures/{id}` (auch für nicht aktive Abenteuer) |
 | `{"type": "audio", "payload": AudioState}` | alle | direkt nach dem Verbinden (nach `state`), nach jeder Änderung des Musikzustands (Audio-Endpoints, Wechsel der aktiven Szene nach dem `state`-Push, Ausgabe bereit bzw. getrennt, Trackende) |
-| `{"type": "audio_output", "payload": {"active": bool}}` | betroffene Wall | `true` an die Wall, die per `audio_ready` Ausgabe wird; `false` an die bisherige Ausgabe, die die Rolle verliert |
+| `{"type": "audio_output", "payload": {"active": bool}}` | betroffener Admin | `true` an den Admin, der per `audio_ready` Ausgabe wird; `false` an die bisherige Ausgabe, die die Rolle verliert |
 | `{"type": "sound", "payload": {"name": SoundName}}` | nur die Ausgabe | nach `POST /table/sounds`; ohne Ausgabe verfällt der Sound |
 | `{"type": "screens", "payload": {"wall": int, "ground": int, "player": int}}` | nur Admins | direkt nach dem Verbinden eines Admins (nach `state` und `audio`) und an alle Admins, sobald sich die Zahl der Verbindungen eines Typs ändert (Verbinden, Trennen, Entfernen nach fehlgeschlagenem Senden); Admins werden nicht gezählt |
 | `{"type": "ping"}` | alle | alle 15 s (Heartbeat) |
 
-Client → Server (nur von Verbindungen mit `screen=wall` ausgewertet; andere Screens, ungültiges JSON und unbekannte
-Typen ignoriert der Server, die Verbindung bleibt bestehen):
+Client → Server (nur von Verbindungen mit `screen=admin` ausgewertet, Nachrichten von Walls und anderen Screens ignoriert der Server; andere Screens, ungültiges JSON und unbekannte
+Typen ebenso, die Verbindung bleibt bestehen):
 
 | Nachricht | Wirkung |
 |---|---|
@@ -110,7 +113,7 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
 - **Der Server entscheidet über die Musik.** `AudioService` (`app/realtime/audio.py`, Instanz `audio`) hält den
   Musikzustand im Speicher des API-Prozesses (bewusst flüchtig, nach einem API-Neustart ist die Musik pausiert):
   Playlist, aktueller Track (`Track` oder `null` bei leerer Playlist), `playing` (Start `false`), `volume` (Prozent
-  0–100, Start 10) und die Audioausgabe (eine Wall-Verbindung oder keine, `output_ready`). Beim App-Start (`lifespan`)
+  0–100, Start 10) und die Audioausgabe (eine Admin-Verbindung oder keine, `output_ready`). Beim App-Start (`lifespan`)
   initialisiert `reset_audio` (`app/realtime/push.py`) ihn für den gespeicherten Spieltisch.
 - **Playlist:** die Tracks der aktiven Szene (nach ID, `get_playlist` in `app/services/audio.py`); ohne aktive Szene
   die **Standardmusik**, das Medium mit dem Storage-Key `Settings.default_music_key` (Default
@@ -119,22 +122,25 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
   zusätzlich `audio`. `playing` bleibt dabei unverändert (läuft die Musik, startet sofort ein Track der neuen Szene).
 - **Nächster Track:** zufällig aus der Playlist und, wenn möglich, nicht der aktuelle (Zufallsquelle `audio.random`,
   für Tests ersetzbar) – bei `track_ended` der Ausgabe.
-- **Ausgabe:** Genau eine Wall spielt (kein Echo im Raum): die zuletzt per `audio_ready` gemeldete. Trennt sich die
+- **Ausgabe:** Genau ein Admin-Fenster spielt (kein doppelter Ton): das zuletzt per `audio_ready` gemeldete; den
+  Lautsprecher wählt der Spielleiter außerhalb der App (kein `setSinkId`). Trennt sich die
   Ausgabe, ist `output_ready` `false` und alle bekommen den neuen `AudioState`. Befehle funktionieren auch ohne
-  Ausgabe und ändern den Zustand; eine Wall, die Ausgabe wird, setzt mit dem aktuellen Zustand ein (läuft die Musik,
+  Ausgabe und ändern den Zustand; ein Admin, der Ausgabe wird, setzt mit dem aktuellen Zustand ein (läuft die Musik,
   startet sie den aktuellen Track von vorn). Synchrone Wiedergabepositionen gibt es nicht.
-- **Wall:** Der Button „AUDIO“ in der Steuerleiste sendet `audio_ready` (die Nutzerinteraktion gibt die Wiedergabe im
-  Browser frei) und ist hervorgehoben, solange die Wall Ausgabe ist. `WallAudioPlayer` (`src/audio/wallAudioPlayer.ts`)
-  setzt den `AudioState` um: Track-Wechsel → `mediaUrl(track.source)` von vorn, `playing` → `play()`/`pause()`,
-  `volume / 100` → Lautstärke, Trackende → `track_ended`; verliert die Wall die Rolle oder die Verbindung, pausiert sie
-  sofort. Soundeffekte spielt sie bei voller Lautstärke parallel (Dateien aus `public/assets/sounds`, Liste in
-  `src/audio/sounds.ts`). Scheitert `play()` (Autoplay), loggt sie per `console.error`. Nach einem Reconnect meldet
-  sich eine Wall, die vorher Ausgabe war, von selbst wieder mit `audio_ready`, bis eine andere Wall übernimmt.
-- **Admin als Fernbedienung** (Panels „Musik“ und „Sounds“ im Dashboard): zeigt `playing`, den Tracktitel (`getMusicTitle(track.source)`) und ohne Ausgabe den
+- **Wiedergabe im Admin:** Der Umschalt-Button „Hier abspielen“ im Panel „Musik“ sendet `audio_ready` (die
+  Nutzerinteraktion gibt die Wiedergabe im Browser frei) und ist hervorgehoben (`aria-pressed`), solange dieses
+  Fenster Ausgabe ist; ein Klick auf den hervorgehobenen Button sendet nichts. `AudioPlayer` (`src/audio/audioPlayer.ts`,
+  im Admin über `useAudioPlayback`) setzt den `AudioState` um: Track-Wechsel → `mediaUrl(track.source)` von vorn,
+  `playing` → `play()`/`pause()`, `volume / 100` → Lautstärke, Trackende → `track_ended`; verliert das Fenster die
+  Rolle oder die Verbindung, pausiert es sofort. Soundeffekte spielt es bei voller Lautstärke parallel (Dateien aus
+  `public/assets/sounds`, Liste in `src/audio/sounds.ts`). Scheitert `play()` (Autoplay), wird per `console.error`
+  geloggt. Nach einem Reconnect meldet sich ein Admin, der vorher Ausgabe war, von selbst wieder mit `audio_ready`,
+  bis ein anderer übernimmt; nach einem Reload ist ein neuer Klick nötig. Wall und Ground spielen nichts.
+- **Steuerung im Admin** (Panels „Musik“ und „Sounds“ im Dashboard): zeigt `playing`, den Tracktitel (`getMusicTitle(track.source)`) und ohne Ausgabe den
   Hinweis „Keine Audioausgabe bereit“; Play/Pause (`PATCH /table/audio {playing}`), Lautstärke-Slider
   (`PATCH /table/audio {volume}` beim Loslassen) – ohne lokale Vorwegnahme, Fehler in der Speicherfehler-Leiste mit
   „Erneut versuchen“. Die Sound-Buttons senden `POST /table/sounds`; Fehler werden nur geloggt (kein
-  Retry). Im Admin wird nichts abgespielt.
+  Retry).
 
 ## Backend (`backend`)
 
@@ -161,7 +167,7 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
 | `/adventures/{adventure_id}/scenes` | `list[SceneDetail]`: Szenen des Abenteuers nach ID (200, ggf. `[]`); 404 wie oben |
 | `/scenes/{scene_id}` | `SceneDetail` (200) bzw. 404 `{"detail": "Scene not found"}` |
 | `/table` | `GameTableState`: Zustand des Spieltischs (200) |
-| `PATCH /table` | Body `GameTableUpdate`, Antwort `GameTableState` (200); 422 `{"detail": "Adventure not found"}` bei unbekanntem Abenteuer (nichts wird geändert), 422 im FastAPI-Standardformat bei ungültigem `theme` oder `wall_overlay` |
+| `PATCH /table` | Body `GameTableUpdate`, Antwort `GameTableState` (200); 422 `{"detail": "Adventure not found"}` bei unbekanntem Abenteuer (nichts wird geändert), 422 im FastAPI-Standardformat bei ungültigem `theme`, `wall_overlay`, `ground_grid` oder `ground_grid_cell_size` |
 | `/table/audio` | `AudioState`: Musikzustand (200), siehe [Audio](#audio) |
 | `PATCH /table/audio` | Body `AudioUpdate`, Antwort `AudioState` (200); 422 im FastAPI-Standardformat bei `volume` außerhalb 0–100 bzw. `null`; `playing: true` bei leerer Playlist ändert `playing` nicht |
 | `POST /table/sounds` | Body `SoundRequest`, 204 (auch ohne Audioausgabe); 422 bei unbekanntem Namen |
@@ -193,9 +199,11 @@ Player           { id: int, player_name: str, character_name: str, race: str,
 AdventureUpdate  { active_scene_id?: int | null, global_level?: int (1–20) }  Request-Body von PATCH
 
 GameTableState   { active_adventure_id: int | null, active_scene_id: int | null, theme: "dark" | "tavern",
-                   wall_overlay: "world" | "off" }
+                   wall_overlay: "world" | "off", ground_grid: "black" | "white" | "off",
+                   ground_grid_cell_size: int (100–200, Schritt 10) }
                    active_scene_id = active_scene_id des aktiven Abenteuers (null ohne Abenteuer)
-GameTableUpdate  { active_adventure_id?: int | null, theme?: "dark" | "tavern", wall_overlay?: "world" | "off" }
+GameTableUpdate  { active_adventure_id?: int | null, theme?: "dark" | "tavern", wall_overlay?: "world" | "off",
+                   ground_grid?: "black" | "white" | "off", ground_grid_cell_size?: int (100–200, Schritt 10) }
                                                                                 Request-Body von PATCH /table
 
 AudioState       { playing: bool, track: Track | null, volume: int, output_ready: bool }   volume in Prozent
@@ -209,7 +217,7 @@ Alle Felder sind Pflicht; nullable sind nur `description` und `active_scene_id` 
 Spielers. Die Fremdschlüssel (`wall_image_id`, `adventure_id` …) sind nicht Teil der Antwort, `SceneDetail` enthält
 kein `adventure_id`. Bei `AdventureUpdate` ändert `PATCH` nur die gesetzten Felder; `"active_scene_id": null` leert
 die aktive Szene, `"global_level": null` wird abgelehnt (422). Ebenso ändert `PATCH /table` nur die gesetzten Felder;
-`"active_adventure_id": null` leert das aktive Abenteuer, `"theme": null` und `"wall_overlay": null` werden abgelehnt (422). `PATCH /table/audio`
+`"active_adventure_id": null` leert das aktive Abenteuer, `"theme": null`, `"wall_overlay": null`, `"ground_grid": null` und `"ground_grid_cell_size": null` werden abgelehnt (422), ebenso eine Zellgröße außerhalb 100–200 oder nicht in 10er-Schritten. `PATCH /table/audio`
 ändert ebenfalls nur die gesetzten Felder; `null` wird abgelehnt (422).
 `source` ist der API-relative Pfad der Datei, `/media/<storage_key>` (aus `media.storage_key` berechnet, nicht
 gespeichert), z. B. `/media/images/ground_screen/main_1.jpg`. Das Frontend macht daraus per `mediaUrl(source)`
@@ -222,7 +230,7 @@ also z. B. `/api/media/images/ground_screen/main_1.jpg` über den Proxy).
 `backend/scripts/export_openapi.py` schreibt `app.openapi()` deterministisch dorthin (ohne DB-Verbindung, die
 `Settings`-Werte aus `.env` bzw. Umgebung reichen). Das Frontend erzeugt daraus per `openapi-typescript`
 `frontend/src/api/schema.d.ts` (versioniert, von ESLint ausgenommen); `src/models/models.ts` leitet `SceneDetail`,
-`Image`, `Track`, `GameTableState`, `Theme`, `WallOverlay`, `AudioState`, `AudioUpdate` und
+`Image`, `Track`, `GameTableState`, `Theme`, `WallOverlay`, `GroundGrid`, `AudioState`, `AudioUpdate` und
 `SoundName` davon ab. Das Nachrichtenformat des
 WebSockets `/ws` ist nicht Teil der OpenAPI, es steht oben unter [WebSocket `/ws`](#websocket-ws).
 
@@ -303,7 +311,7 @@ Datensatz trotzdem an (`size` = NULL).
 - React 18, Vite 5, TypeScript 5 (strict), react-router-dom 6, styled-components 6 (Haupt-Styling, zwei Themes),
   MUI nur für `Box`/`Slider`, axios, react-markdown, react-svg.
 - State: React-State + vier Contexts (`ActiveAdventureContext`, `ActiveSceneContext`, `GameTableContext` mit Theme,
-  Wall-Overlay, Verbindungsstatus und `reconnectNow`, `GameAudioContext` mit `AudioState`, Ausgabe-Rolle der Wall, `audio_ready`/
+  Wall-Overlay, Ground-Raster, Verbindungsstatus und `reconnectNow`, `GameAudioContext` mit `AudioState`, Ausgabe-Rolle des Admins, `audio_ready`/
   `track_ended` und Soundeffekten; `src/context/context.ts`), gespeist vom `GameTableProvider` aus dem
   WebSocket-Snapshot (siehe [Synchronisation](#synchronisation)). Kein Store-Framework. Der aktive Eintrag im Panel
   „Szenen“ des Admins ergibt sich aus `activeSceneId` (Vergleich mit der Szenen-ID, Attribute `aria-current` und
@@ -313,7 +321,7 @@ Datensatz trotzdem an (`size` = NULL).
   `GameTableProvider`, `useGameTable`, Verbindung mit Reconnect `connection.ts`, `messages.ts`, `backoff.ts`,
   `heartbeat.ts`, `visibility.ts`),
   `src/screens` (Screens), `src/components`, `src/service` (Datenladen und Schreibzugriffe je Screen),
-  `src/audio` (Soundliste `sounds.ts`, Wiedergabe auf der Wall `wallAudioPlayer.ts`),
+  `src/audio` (Soundliste `sounds.ts`, Wiedergabe im Admin `audioPlayer.ts` und `useAudioPlayback.ts`),
   `src/api` (axios-Client, Base-URL aus `VITE_API_URL`, Default `/api/`, Timeout 5000 ms; `wsUrl` leitet daraus die
   WebSocket-URL ab), `src/models`, `src/utils` (Musiktitel, Filter, Panel der Navigationsleiste,
   Fehlerbehandlung `loadSafely`), `src/style` (Themes, `appTheme`), `src/context`.
@@ -331,8 +339,8 @@ Datensatz trotzdem an (`size` = NULL).
 - Fehlerbehandlung beim Speichern: `patchData`/`postData` (`src/api/apiMethods.ts`) reichen Fehler weiter, `saveData`
   bzw. `postCommand` (`src/api/saveData.ts`) werfen einen `SaveError` mit derselben Aufbereitung wie `loadData`
   („Saving … failed: backend not reachable“ bzw. „HTTP 422“). Der Admin wertet nur das Ergebnis des jüngsten
-  Speicherns aus (Szene, Abenteuer, Theme, Level, Wall-Overlay und Musik-Befehle gemeinsam).
-- Assets in `public/`: `assets/sounds` (Soundeffekte, auf der Wall abgespielt), `assets/icons`, `story/**`
+  Speicherns aus (Szene, Abenteuer, Theme, Level, Wall-Overlay, Ground-Raster und Musik-Befehle gemeinsam).
+- Assets in `public/`: `assets/sounds` (Soundeffekte, im Admin abgespielt), `assets/icons`, `story/**`
   (Markdown-Notizen, deutsch) sowie das fest eingebundene Medium `assets/images/ground_screen/mapOverview.jpg`
   (Weltkarte im Wall Screen). Szenenbilder und Musik, auch die Standardmusik, kommen vom Backend (`/media/...`, siehe
   Datenmodell und [Audio](#audio)).

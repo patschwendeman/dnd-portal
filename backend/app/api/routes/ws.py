@@ -29,9 +29,9 @@ def _parse(text: str) -> dict[str, Any] | None:
 
 
 async def _handle_message(connection: Connection, text: str) -> None:
-    """Only Walls send messages (they play the audio); anything else is ignored."""
+    """Only Admins send messages (one of them plays the audio); anything else is ignored."""
     message = _parse(text)
-    if message is None or connection.screen != "wall":
+    if message is None or connection.screen != "admin":
         return
     if message.get("type") == "audio_ready":
         await make_audio_output(connection)
@@ -46,11 +46,11 @@ async def _handle_message(connection: Connection, text: str) -> None:
 @router.websocket("")
 async def game_table_socket(websocket: WebSocket, screen: str | None = None) -> None:
     """Pushes the game table state (`{"type": "state", "payload": GameTableState}`), the audio state
-    (`{"type": "audio", "payload": AudioState}`) and `{"type": "ping"}`; to Walls also `audio_output` and `sound`, to
-    Admins also the number of connected screens per type (`{"type": "screens", "payload": {"wall": n, "ground": n,
-    "player": n}}`).
+    (`{"type": "audio", "payload": AudioState}`) and `{"type": "ping"}`; to Admins also `audio_output`, `sound`
+    (only to the audio output) and the number of connected screens per type (`{"type": "screens", "payload":
+    {"wall": n, "ground": n, "player": n}}`).
 
-    Walls send `audio_ready` and `track_ended`; other messages are ignored (see docs/architecture.md).
+    Admins send `audio_ready` and `track_ended`; other messages are ignored (see docs/architecture.md).
     """
     if not is_origin_allowed(websocket.headers.get("origin"), websocket.headers.get("host"), settings.cors_origins):
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Origin not allowed")

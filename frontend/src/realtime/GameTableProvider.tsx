@@ -7,6 +7,7 @@ import {
 } from '../context/context'
 import { Theme } from '../models/models'
 import appTheme from '../style/appTheme'
+import { GROUND_GRID_CELL_SIZE } from '../utils/groundGrid'
 import { effectiveTheme } from '../utils/playerTheme'
 
 interface GameTableProviderProps {
@@ -17,10 +18,10 @@ interface GameTableProviderProps {
 }
 
 // Connects the screen to the game table of the server and passes the state on: active adventure,
-// active scene, theme and overlay of the Walls, the audio state and (Admin only) the number of
-// connected screens. Until the first snapshot nothing is active, the theme is dark and there is no
-// overlay; after a disconnect the last state stays. A theme override only changes the look of this
-// screen; the contexts keep the theme of the game table.
+// active scene, theme, overlay of the Walls and grid of the Grounds, the audio state and (Admin
+// only) the number of connected screens. Until the first snapshot nothing is active, the theme is
+// dark and there is neither overlay nor grid; after a disconnect the last state stays. A theme
+// override only changes the look of this screen; the contexts keep the theme of the game table.
 function GameTableProvider({
   screen,
   themeOverride = null,
@@ -42,6 +43,8 @@ function GameTableProvider({
   const activeSceneId = state?.active_scene_id ?? null
   const theme = state?.theme ?? 'dark'
   const wallOverlay = state?.wall_overlay ?? 'off'
+  const groundGrid = state?.ground_grid ?? 'off'
+  const groundGridCellSize = state?.ground_grid_cell_size ?? GROUND_GRID_CELL_SIZE.min
 
   const adventure = useMemo(() => ({ activeAdventureId }), [activeAdventureId])
   const scene = useMemo(() => ({ activeSceneId }), [activeSceneId])
@@ -51,11 +54,13 @@ function GameTableProvider({
       snapshot: state,
       theme,
       wallOverlay,
+      groundGrid,
+      groundGridCellSize,
       connected,
       reconnectNow,
       screens,
     }),
-    [state, theme, wallOverlay, connected, reconnectNow, screens],
+    [state, theme, wallOverlay, groundGrid, groundGridCellSize, connected, reconnectNow, screens],
   )
   const gameAudio = useMemo(
     () => ({

@@ -28,18 +28,20 @@ Größe nach [1.2](../../DESIGN.md#12-tokens) Größen, Icon nach [1.4](../../DE
 
 Gemeinsame Styled Component `TextButton` ([src/components/TextButton.tsx](../../src/components/TextButton.tsx),
 `<button>` mit `$variant: 'default' | 'active' | 'cancel'`). Laufweite gehört nicht zum Baustein; bei
-Großbuchstaben ergänzt sie die verwendende Komponente (z. B. `ScreenControlBar`), siehe [1.4](../../DESIGN.md#14-regeln).
+Großbuchstaben ergänzt sie die verwendende Komponente, siehe [1.4](../../DESIGN.md#14-regeln).
 
 | Eigenschaft | Wert |
 |---|---|
 | Höhe, Breite | nach [1.2](../../DESIGN.md#12-tokens) Größen |
 | Innenabstand | `0 space.4` |
-| Beispiele | WORLD/OFF, BLACK/WHITE/OFF, Confirm/Decline, Weltkarte/Aus (Panel „Wall-Overlay“, inaktiv mit Fläche `background` wie `cancel`, Fokus als Outline `borderWidth.thick` in `primary`) |
+| Beispiele | Confirm/Decline, Weltkarte/Aus (Panel „Wall-Overlay“), Schwarz/Weiß/Aus (Panel „Ground-Raster“), „Hier abspielen“ (Panel „Musik“); in Panels inaktiv mit Fläche `background` wie `cancel`, aktiv `primary`, `aria-pressed`, Fokus als Outline `borderWidth.thick` in `primary` |
 
 ## Button-Gruppe
 
 `display: flex`, Abstand nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“. Mehrere Text-Buttons, von denen
-einer aktiv ist.
+einer aktiv ist. In Dashboard-Panels gemeinsame Komponente `OptionButtons`
+([src/components/OptionButtons.tsx](../../src/components/OptionButtons.tsx)): `gap` `space.1`, umbrechend, aktiv der
+Zustand des Servers (`aria-pressed`), ein Klick auf den aktiven Button tut nichts.
 
 ## Navigationseintrag
 
@@ -81,7 +83,7 @@ und Laufweite nach [1.4](../../DESIGN.md#14-regeln).
 |---|---|
 | Abstand | nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“. Zum zugehörigen Wert in einem zweizeiligen Block `0` („Musik“ → Titel). |
 | Ausrichtung neben Werten | `align-items: baseline` |
-| Beispiele | Notizen, Szenen, Aktive Szene, Wall, Ground, Musik, Sounds, Screens, Level, Spieler, Spielername der [Hero-Karte](#hero-karte) (in `text.muted`), Szene wechseln, Raster, Zelle, Aktion, Bonusaktion, Bewegung, Spezial, Zauberplätze |
+| Beispiele | Notizen, Szenen, Aktive Szene, Wall, Ground, Musik, Sounds, Wall-Overlay, Ground-Raster, Screens, Level, Spieler, Spielername der [Hero-Karte](#hero-karte) (in `text.muted`), Szene wechseln, Zellgröße, Aktion, Bonusaktion, Bewegung, Spezial, Zauberplätze |
 
 ## Karte
 
@@ -103,7 +105,7 @@ die Liste der Panels (id, Label, Größe, Inhalt) kommt aus dem `AdminScreen`, d
 | Größe | Props `columns` und `rows` (`grid-column: span n`, `grid-row: span m`), Mindesthöhe aus `DASHBOARD_ROW_HEIGHT`; braucht der Inhalt mehr, wächst die Zeile |
 | Aufbau | [Label](#label) oben, darunter mit `space.3` der Inhalt; kein Scrollen im Panel, Text bricht um statt abgeschnitten zu werden |
 | Flächen im Inhalt | `background` (Fläche auf Fläche, [2.2](../../DESIGN.md#22-rollen)) |
-| Inhalte | „Aktive Szene“ (`ActiveScenePanel`: Vorschaubilder Wall und Ground 16:9 nebeneinander mit Label, `gap` `space.3`, darunter Name `text.lg` `semibold` und Beschreibung `text.sm`, beide umbrechend mit Silbentrennung), „Musik“ (`MusicControl`: Grid, links Play/Pause und darunter Titel und Hinweis `text.sm` umbrechend mit Silbentrennung, rechts über die volle Höhe der senkrechte Lautstärke-Slider, `aria-orientation="vertical"`, Abstand `space.3`), „Wall-Overlay“ (`WallOverlayPanel`: [Button-Gruppe](#button-gruppe) aus den [Text-Buttons](#text-button) „Weltkarte“ und „Aus“, `gap` `space.1`, umbrechend; aktiv der Zustand des Servers, `aria-pressed`), „Sounds“ (`SoundBoard`: Gruppen und Buttons einer Gruppe umbrechend, ohne Trennlinien), „Screens“ (`ScreensPanel`: je Screen Name `text.sm` `semibold`, [Status-Punkt](#status-punkt) mit Text; rechts der Icon-Button „In neuem Fenster öffnen“; darunter Spielerzahl und rechts gleich ausgerichtet der Icon-Button „QR-Code“ (`qrCode.svg`, `aria-haspopup="dialog"`)), „Level“ (`LevelPanel`: Grid `minmax(0, 1fr) auto`, links das Level `text.xl` `semibold` mit `tabular-nums`, ohne Abenteuer „–“; rechts die Icon-Buttons „−“ und „+“ mit `gap` `space.1`, zugängliche Namen „Level verringern“ und „Level erhöhen“, an den Grenzen 1 und 20 `disabled`), „Spieler“ (`PlayersPanel`: [Hero-Karten](#hero-karte) untereinander, `gap` `space.4`, Reihenfolge der API; ohne Spieler „Keine Spieler“ `text.sm`) |
+| Inhalte | „Aktive Szene“ (`ActiveScenePanel`: Vorschaubilder Wall und Ground 16:9 nebeneinander mit Label, `gap` `space.3`, darunter Name `text.lg` `semibold` und Beschreibung `text.sm`, beide umbrechend mit Silbentrennung), „Musik“ (`MusicControl`: Grid, links Play/Pause und darunter Titel und Hinweis `text.sm` umbrechend mit Silbentrennung, rechts daneben der senkrechte Lautstärke-Slider (`PanelSlider`, `aria-orientation="vertical"`), darunter über die volle Breite der [Text-Button](#text-button) „Hier abspielen“ (`aria-pressed`, nicht umbrechend), Abstand `space.3`), „Wall-Overlay“ (`WallOverlayPanel`: [Button-Gruppe](#button-gruppe) aus den [Text-Buttons](#text-button) „Weltkarte“ und „Aus“), „Ground-Raster“ (`GroundGridPanel`: [Button-Gruppe](#button-gruppe) „Schwarz“, „Weiß“, „Aus“; darunter mit `space.3` Label „Zellgröße“ und rechts der Wert `text.sm` `semibold` `tabular-nums`, darunter über die volle Breite der waagrechte Slider (`PanelSlider`, 100–200, Schritt 10, Schiene `background`, links und rechts ein halber Griff Abstand, Touch-Fläche abgeschnitten)), „Sounds“ (`SoundBoard`: Gruppen und Buttons einer Gruppe umbrechend, ohne Trennlinien), „Screens“ (`ScreensPanel`: je Screen Name `text.sm` `semibold`, [Status-Punkt](#status-punkt) mit Text; rechts der Icon-Button „In neuem Fenster öffnen“; darunter Spielerzahl und rechts gleich ausgerichtet der Icon-Button „QR-Code“ (`qrCode.svg`, `aria-haspopup="dialog"`)), „Level“ (`LevelPanel`: Grid `minmax(0, 1fr) auto`, links das Level `text.xl` `semibold` mit `tabular-nums`, ohne Abenteuer „–“; rechts die Icon-Buttons „−“ und „+“ mit `gap` `space.1`, zugängliche Namen „Level verringern“ und „Level erhöhen“, an den Grenzen 1 und 20 `disabled`), „Spieler“ (`PlayersPanel`: [Hero-Karten](#hero-karte) untereinander, `gap` `space.4`, Reihenfolge der API; ohne Spieler „Keine Spieler“ `text.sm`) |
 
 ## Hero-Karte
 
@@ -154,15 +156,6 @@ Nur auf der Wall.
 | Breite | `min(OVERLAY_PANEL_MAX_WIDTH, 100vw − 2 × space.8, …)`, siehe [screen-layouts.md](screen-layouts.md#breite-des-overlay-panels) |
 | Position | `space.7` unter der Oberkante, horizontal mittig |
 | Kopfzeile | Überschrift, `space.5` zum Inhalt |
-
-## Schwebende Steuerleiste
-
-Wall und Ground.
-
-| Eigenschaft | Wert |
-|---|---|
-| Position | `bottom: space.5`, horizontal mittig |
-| Sichtbarkeit | nur bei Hover über dem Screen |
 
 ## Dialog
 
@@ -239,12 +232,15 @@ reservierter Platz). Bei beiden Fehlern stehen zwei Leisten untereinander in der
 
 ## Slider
 
-Nur auf dem Ground.
+Nur in Dashboard-Panels des Admins: gemeinsame Komponente `PanelSlider`
+([src/components/PanelSlider.tsx](../../src/components/PanelSlider.tsx)), senkrecht für die Lautstärke („Musik“),
+waagrecht für die Zellgröße („Ground-Raster“).
 
 | Eigenschaft | Wert |
 |---|---|
-| Breite | `SLIDER_WIDTH` |
-| Schiene und Füllung | 4px hoch (MUI-Standard, nicht überschrieben) |
-| Griff | `SLIDER_THUMB_SIZE` |
-| Stufen | rastet in 10er-Schritten ein, ohne sichtbare Punkte |
-| Wert | feste Anzeige rechts, `min-width: SLIDER_VALUE_MIN_WIDTH`, ohne Einheit |
+| Größe | füllt die Fläche des Inhalts (Lautstärke: Mindesthöhe `VOLUME_SLIDER_MIN_HEIGHT`; Zellgröße: volle Breite) |
+| Schiene und Füllung | 4px (MUI-Standard), Schiene `background`, Füllung `primary` |
+| Griff | `PANEL_SLIDER_THUMB_SIZE`, `text.color`; ein halber Griff Abstand an den Enden, die Touch-Fläche wird abgeschnitten |
+| Stufen | Zellgröße rastet in 10er-Schritten ein, ohne sichtbare Punkte |
+| Wert | Zellgröße: feste Anzeige rechts über dem Slider, `min-width: CELL_SIZE_VALUE_MIN_WIDTH`, ohne Einheit |
+| Speichern | beim Loslassen; während des Ziehens der lokale Wert, danach der Wert des Servers |

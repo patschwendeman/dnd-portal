@@ -3,12 +3,14 @@ import {
 } from 'react'
 import styled from 'styled-components'
 
+import useAudioPlayback from '../audio/useAudioPlayback'
 import ActiveScenePanel from '../components/ActiveScenePanel'
 import { Dashboard, DashboardItem } from '../components/Dashboard'
 import Dialogue from '../components/Dialogue'
 import DocumentNavigation from '../components/DocumentNavigation'
 import DocumentReader from '../components/DocumentReader'
 import ErrorBar from '../components/ErrorBar'
+import GroundGridPanel from '../components/GroundGridPanel'
 import LevelPanel from '../components/LevelPanel'
 import MusicControl from '../components/MusicControl'
 import { NavRail, NavRailItem } from '../components/NavRail'
@@ -22,7 +24,7 @@ import {
   ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext,
 } from '../context/context'
 import {
-  AdventureDetail, AdventureSummary, SceneDetail, SoundName, WallOverlay,
+  AdventureDetail, AdventureSummary, GroundGrid, SceneDetail, SoundName, WallOverlay,
 } from '../models/models'
 import {
   getAdminData,
@@ -36,7 +38,7 @@ import {
   saveGlobalLevel,
   saveTheme,
 } from '../service/adminScreen'
-import saveWallOverlay from '../service/gameTable'
+import { saveGroundGrid, saveGroundGridCellSize, saveWallOverlay } from '../service/gameTable'
 import GlobalStyle, { hoverScrollbar } from '../style/GlobalStyle'
 import selectDefaultAdventureId from '../utils/adventure'
 import { loadLatest } from '../utils/loadSafely'
@@ -113,9 +115,17 @@ function AdminScreen(): ReactElement {
   const { activeAdventureId } = useContext(ActiveAdventureContext)
   const { activeSceneId } = useContext(ActiveSceneContext)
   const {
-    hasState, snapshot, theme: gameTableTheme, wallOverlay, connected, reconnectNow,
+    hasState,
+    snapshot,
+    theme: gameTableTheme,
+    wallOverlay,
+    groundGrid,
+    groundGridCellSize,
+    connected,
+    reconnectNow,
   } = useContext(GameTableContext)
-  const { audio } = useContext(GameAudioContext)
+  const { audio, isAudioOutput, requestAudioOutput } = useContext(GameAudioContext)
+  useAudioPlayback()
   const isMusicPlaying = audio?.playing ?? false
   const [adventures, setAdventures] = useState<AdventureSummary[]>()
   const [scenesDetails, setScenesDetails] = useState<SceneDetail[]>([])
@@ -334,6 +344,14 @@ function AdminScreen(): ReactElement {
     runSave(() => saveWallOverlay(nextWallOverlay))
   }
 
+  const handleGroundGridChange = (nextGroundGrid: GroundGrid) => {
+    runSave(() => saveGroundGrid(nextGroundGrid))
+  }
+
+  const handleGroundGridCellSizeCommit = (cellSize: number) => {
+    runSave(() => saveGroundGridCellSize(cellSize))
+  }
+
   const handleMusicToggle = () => {
     const playing = !isMusicPlaying
     runSave(() => saveAudio({ playing }))
@@ -420,8 +438,17 @@ function AdminScreen(): ReactElement {
           failedSave={failedSave}
           onToggle={handleMusicToggle}
           onVolumeCommit={handleVolumeCommit}
+          isAudioOutput={isAudioOutput}
+          onRequestAudioOutput={requestAudioOutput}
         />
       ),
+    },
+    {
+      id: 'sounds',
+      label: 'Sounds',
+      columns: 2,
+      rows: 2,
+      content: <SoundBoard onPlaySound={handleSound} />,
     },
     {
       id: 'wall-overlay',
@@ -431,11 +458,19 @@ function AdminScreen(): ReactElement {
       content: <WallOverlayPanel wallOverlay={wallOverlay} onChange={handleWallOverlayChange} />,
     },
     {
-      id: 'sounds',
-      label: 'Sounds',
+      id: 'ground-grid',
+      label: 'Ground-Raster',
       columns: 2,
-      rows: 2,
-      content: <SoundBoard onPlaySound={handleSound} />,
+      rows: 1,
+      content: (
+        <GroundGridPanel
+          groundGrid={groundGrid}
+          cellSize={groundGridCellSize}
+          failedSave={failedSave}
+          onGridChange={handleGroundGridChange}
+          onCellSizeCommit={handleGroundGridCellSizeCommit}
+        />
+      ),
     },
     {
       id: 'screens',

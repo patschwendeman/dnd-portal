@@ -6,12 +6,12 @@ Markdown-Notizen das Frontend selbst aus `public/`.
 
 | Route | Screen | Zweck |
 |---|---|---|
-| `/admin` | Admin | Spielleiter: Szenen aktivieren, Notizen lesen, Musik und Sounds steuern |
-| `/wall` | Wall | Atmosphäre: Hintergrundbild der aktiven Szene, optional Karten-Overlay; spielt als Audioausgabe Musik und Sounds |
-| `/ground` | Ground | Digitales Spielbrett: Kampfschauplatz, optional mit Grid |
+| `/admin` | Admin | Spielleiter: Szenen aktivieren, Notizen lesen, Wall-Overlay und Ground-Raster steuern; spielt als Audioausgabe Musik und Sounds |
+| `/wall` | Wall | Atmosphäre: Hintergrundbild der aktiven Szene, optional Karten-Overlay; reine Anzeige |
+| `/ground` | Ground | Digitales Spielbrett: Kampfschauplatz, optional mit Grid; reine Anzeige |
 | `/` | Player | Smartphone der Spieler: Ressourcen des Charakters |
 
-Admin, Wall und Ground folgen dem Spieltisch-Zustand des Servers (aktives Abenteuer, aktive Szene, Theme), den er per
+Admin, Wall und Ground folgen dem Spieltisch-Zustand des Servers (aktives Abenteuer, aktive Szene, Theme, Wall-Overlay, Ground-Raster), den er per
 WebSocket pusht; sie können daher auch in verschiedenen Browsern bzw. auf verschiedenen Geräten laufen. Der Player
 Screen ist ebenfalls verbunden und übernimmt davon nur das Theme (pro Gerät abweichend wählbar); die Spieler öffnen ihn
 per QR-Code aus dem Admin („Spieler verbinden“ in der Top-Bar).

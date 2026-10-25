@@ -23,8 +23,10 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   „Kampf“ (Kampf starten). Die Mitte zeigt dabei weiter die Notizen.
 - Musik ein- und ausschalten.
 - Verschiedene Sounds abspielen.
+- Alles, was Wall und Ground zeigen, vom Admin aus steuern; an Wall und Ground wird nichts bedient.
 - Dashboard rechts neben den Notizen: festes Raster aus Panels, in dem alles gebündelt ist, was der Spielleiter während
-  des Spiels steuert (umgesetzt: „Aktive Szene“, „Musik“, „Wall-Overlay“, „Sounds“, „Screens“, „Level“, „Spieler“).
+  des Spiels steuert (umgesetzt: „Aktive Szene“, „Musik“, „Sounds“, „Wall-Overlay“, „Ground-Raster“, „Screens“,
+  „Level“, „Spieler“).
 
 ### Ist
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Top-Bar und Hauptbereich, keine Bottom-Bar. Im
@@ -32,14 +34,15 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   und unterem Rand), in der Mitte die Notizen (etwa zwei Drittel), rechts das Dashboard (etwa ein Drittel, mindestens
   400px). Die Mitte der Top-Bar ist leer.
 - **Dashboard:** Raster mit vier Spalten und einer Mindest-Zeilenhöhe; die Panels haben feste Größe und Position (kein
-  Verschieben): oben „Aktive Szene“ über die volle Breite (2 Zeilen), darunter links „Musik“ (2 Spalten, 2 Zeilen),
-  rechts daneben „Wall-Overlay“ (2 Spalten, 1 Zeile) und darunter „Sounds“ (2 Spalten, 2 Zeilen; links unter „Musik“
-  bleibt eine Lücke von einer Zeile), darunter „Screens“ über die volle Breite (2 Zeilen), darunter „Level“ über die volle Breite
+  Verschieben): oben „Aktive Szene“ über die volle Breite (2 Zeilen), darunter links „Musik“ und rechts „Sounds“ (je
+  2 Spalten, 2 Zeilen), darunter links „Wall-Overlay“ und rechts „Ground-Raster“ (je 2 Spalten, 1 Zeile), darunter
+  „Screens“ über die volle Breite (2 Zeilen), darunter „Level“ über die volle Breite
   (1 Zeile) und „Spieler“ über die volle Breite (eine Zeile je Spieler). Braucht der Inhalt eines Panels mehr Platz
   (schmales Fenster), wird seine Zeile höher – die Panels scrollen nicht für sich und schneiden keinen Text ab; ist das
   Raster höher als der Hauptbereich, scrollt das Dashboard als Ganzes. Der Icon-Button „Dashboard“ rechts
   in der Top-Bar (links vom Theme-Umschalter, hervorgehoben solange das Dashboard offen ist) blendet es aus – die Notizen
-  nehmen dann die volle Breite, Musik, Wall-Overlay, Sounds, Level und QR-Code sind nicht erreichbar – und wieder ein. Auswahl und
+  nehmen dann die volle Breite, Musik, Sounds, Wall-Overlay, Ground-Raster, Level und QR-Code sind nicht erreichbar
+  (die Musik spielt im Ausgabe-Fenster weiter) – und wieder ein. Auswahl und
   Scrollposition der Notizen bleiben erhalten; der Zustand wird nicht gespeichert, nach einem Reload ist das Dashboard
   offen.
 - **Navigationsleiste:** schmale Leiste mit Icon-Buttons „Notizen“ und darunter „Szenen“ (Tooltip mit dem Namen);
@@ -65,12 +68,18 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Panel zu schmal ist); hervorgehoben (`aria-pressed`) ist der Zustand, den der Server zuletzt geschickt hat. Ein Klick
   auf den anderen Button speichert ihn, alle Walls blenden die Weltkarte ein bzw. aus, sobald der Server den neuen
   Stand schickt; ein Klick auf den hervorgehobenen tut nichts. Ein Szenen- oder Abenteuerwechsel schaltet auf „Aus“.
+- **Ground-Raster:** Das Panel „Ground-Raster“ hat drei Umschalt-Buttons „Schwarz“, „Weiß“ und „Aus“ (umbrechend,
+  hervorgehoben ist der Zustand des Servers, ein Klick auf den hervorgehobenen tut nichts) und darunter den Slider
+  „Zellgröße“ (100–200 in Schritten von 10, Wert rechts daneben; per Tastatur mit den Pfeiltasten bedienbar). Während
+  des Ziehens zeigt der Slider den gezogenen Wert, beim Loslassen wird er gespeichert, danach zeigt er den Wert des
+  Servers. Alle Grounds zeigen das Raster, sobald der Server den neuen Stand schickt; Szenen- und Abenteuerwechsel
+  ändern es nicht.
 - **Zustand auf dem Server:** Abenteuer, aktive Szene und Theme stehen auf dem Server und gelten für alle
   Spieltisch-Screens, auch in anderen Browsern oder auf anderen Geräten; sie überstehen Reloads und Neustarts der API.
-  Das Wall-Overlay steht ebenfalls auf dem Server, aber nur im Speicher: Reloads übersteht es, nach einem Neustart der
-  API ist es „Aus“.
+  Wall-Overlay und Ground-Raster stehen ebenfalls auf dem Server, aber nur im Speicher: Reloads überstehen sie, nach
+  einem Neustart der API sind beide „Aus“ (Zellgröße 100).
   Mehrere Admin-Fenster dürfen gleichzeitig schreiben, der letzte Schreibzugriff gewinnt.
-- **Speicherfehler:** Schlägt das Speichern von Szene, Abenteuer, Theme, Level, Wall-Overlay oder ein Musik-Befehl fehl, ändert sich auf keinem Screen etwas,
+- **Speicherfehler:** Schlägt das Speichern von Szene, Abenteuer, Theme, Level, Wall-Overlay, Ground-Raster oder ein Musik-Befehl fehl, ändert sich auf keinem Screen etwas,
   und unter der Top-Bar erscheint die Hinweisleiste „Änderung konnte nicht gespeichert werden“; „Erneut versuchen“
   wiederholt den zuletzt fehlgeschlagenen Schreibzugriff, bei Erfolg verschwindet sie.
 - **Verbindung:** Bricht die Verbindung zum Server ab (spätestens nach etwa 35 s ohne Nachricht erkannt), zeigt der
@@ -82,20 +91,28 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Notizen:** Das Panel „Notizen“ listet die Einträge Main, Fight, Side, Leveling, Mechaniken (Start: Main; per
   Tastatur bedienbar wie die Szenenliste); die Mitte zeigt die Notizen des gewählten Eintrags (Markdown aus `public/story/`), auch bei eingeklapptem Panel.
   Inhaltsverzeichnis-Links, Bilder öffnen in neuem Tab. Eintrag „Side“ ist leer (Ordner fehlt).
-- **Musik (Fernbedienung):** Der Admin spielt selbst nichts ab; Musik und Soundeffekte kommen aus der Wall, die
-  Audioausgabe ist (siehe Wall Screen). Panel „Musik“ mit Play/Pause, darunter dem Titel des aktuellen
-  Tracks und rechts über die volle Höhe einem senkrechten Lautstärke-Slider (gesendet beim Loslassen; per Tastatur mit
+- **Musik:** Musik und Soundeffekte spielt das Admin-Fenster, das Audioausgabe ist; den Lautsprecher wählt der
+  Spielleiter außerhalb der App (Betriebssystem bzw. Browser). Panel „Musik“ mit Play/Pause, darunter dem Titel des
+  aktuellen Tracks, rechts daneben einem senkrechten Lautstärke-Slider (gesendet beim Loslassen; per Tastatur mit
   den Pfeiltasten bedienbar). Titel und Hinweis brechen im schmalen Panel um. Die Anzeige folgt dem Zustand auf dem
   Server, auch für mehrere Admin-Fenster. Der Server spielt zufällige Tracks aus der Playlist der aktiven Szene; nach
   einem Trackende folgt ein anderer Track (bei nur einem derselbe von vorne), die Musik stoppt nur durch Pause. Beim
   Szenenwechsel wechselt sofort der Track – lief die Musik, spielt er direkt weiter, sonst bleibt sie pausiert. Ohne
-  aktive Szene ist die Standardmusik die Playlist. Ist keine Wall Ausgabe, steht unter dem Titel „Keine Audioausgabe
-  bereit“; die Befehle ändern trotzdem den Zustand, und eine Wall, die Ausgabe wird, setzt damit ein. Nach einem
+  aktive Szene ist die Standardmusik die Playlist. Ist kein Admin Ausgabe, steht unter dem Titel „Keine Audioausgabe
+  bereit“; die Befehle ändern trotzdem den Zustand, und ein Admin, der Ausgabe wird, setzt damit ein.
+- **Hier abspielen:** Umschalt-Button unten im Panel „Musik“ (`aria-pressed`, hervorgehoben, solange dieses Fenster
+  Ausgabe ist). Ein Klick macht dieses Admin-Fenster zur Audioausgabe (die Nutzerinteraktion gibt die Wiedergabe im
+  Browser frei); ein Klick auf den hervorgehobenen Button tut nichts. Es spielt immer nur ein Admin-Fenster: Klickt man
+  in einem anderen auf „Hier abspielen“, verstummt das bisherige. Die Ausgabe folgt dem Zustand des Servers
+  (Play/Pause, Lautstärke, Sounds bei voller Lautstärke über der Musik) und meldet das Trackende. Nach einem
+  Verbindungsabbruch meldet sich das Fenster ohne neuen Klick wieder als Ausgabe, nach einem Reload erst nach einem
+  neuen Klick. Wird das Ausgabe-Fenster geschlossen, zeigen die übrigen „Keine Audioausgabe bereit“. Blockiert der
+  Browser das Abspielen, wird der Fehler nur geloggt; der nächste Play-Befehl versucht es wieder. Nach einem
   API-Neustart ist die Musik pausiert. Fehler bei Musik-Befehlen zeigt die Hinweisleiste „Änderung konnte nicht
   gespeichert werden“.
 - **Sounds:** Panel „Sounds“ mit Buttons für Soundeffekte in Gruppen (Heilung/Trank, Buff, Zauber, Debuff, Lock; die
   Gruppen brechen im Panel um und sind durch Abstand getrennt); die
-  Wall, die Audioausgabe ist, spielt sie über der Musik. Ohne Ausgabe passiert nichts (kein Fehler), Fehler beim Senden
+  Admin-Fenster, das Audioausgabe ist, spielt sie über der Musik. Ohne Ausgabe passiert nichts (kein Fehler), Fehler beim Senden
   werden nur geloggt.
 - **Vollbild (Admin):** Icon-Button „Vollbild“ rechts in der Top-Bar (links vom Icon-Button „Dashboard“) schaltet das
   Admin-Fenster in den Vollbildmodus des Browsers und wieder zurück; hervorgehoben, solange das Fenster im Vollbild ist
@@ -103,8 +120,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - Theme-Umschalter (Settings-Icon rechts in der Top-Bar): schaltet das Theme global für Admin, Wall, Ground und die
   Player Screens um (außer auf Smartphones, deren Spieler lokal ein anderes Theme gewählt hat).
 - **Screens:** Panel mit je einer Zeile für Wall und Ground: Name, Status-Punkt und „verbunden“ bzw. „nicht
-  verbunden“ (bei mehreren Verbindungen „2 verbunden“ usw.), bei der Wall zusätzlich „Audioausgabe“, wenn eine Wall
-  Ausgabe ist, und rechts der Icon-Button „In neuem Fenster öffnen“ (`/wall` bzw. `/ground` in einem eigenen Fenster
+  verbunden“ (bei mehreren Verbindungen „2 verbunden“ usw.) und rechts der Icon-Button „In neuem Fenster öffnen“ (`/wall` bzw. `/ground` in einem eigenen Fenster
   je Screen; ein weiterer Klick holt das offene Fenster nach vorn, ohne es neu zu laden). Darunter „N Spieler
   verbunden“ und rechts daneben der Icon-Button „QR-Code“. Die Zahlen schickt der Server bei jeder Änderung (Öffnen
   oder Schließen eines Screens); bis zur ersten Meldung steht „–“.
@@ -181,27 +197,18 @@ legt der geplante Menüpunkt „Kampf“ im Admin fest.
 ### Ist
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Vollbild-Hintergrund = Wall-Bild der aktiven Szene,
   unverzerrt und randlos. Ohne aktive Szene (auch bis der Server den ersten Stand geschickt hat) nur die
-  Hintergrundfarbe des Themes, ohne Bild und ohne Panel; die Steuerleiste funktioniert weiter.
+  Hintergrundfarbe des Themes, ohne Bild und ohne Panel.
+- Reine Anzeige ohne Bedienelemente: keine Steuerleiste, kein Hover-Effekt, kein Ton.
 - Folgt dem Spieltisch per WebSocket (aktive Szene, Abenteuer, Theme, Overlay) und kann damit auch in einem anderen Browser oder
   auf einem anderen Gerät laufen (`http://<IP>:8080/wall`). Nach einem Verbindungsabbruch behält sie das Bild ohne
   Hinweis und verbindet sich selbst neu.
 - Overlay-Panel oben mittig; welches Overlay sie zeigt, steht auf dem Server (Spieltisch) und gilt für alle Walls.
-  Umschalten im Admin (Panel „Wall-Overlay“) oder an jeder Wall über eine Steuerleiste, die beim Hover am unteren Rand
-  erscheint (WORLD / OFF, hervorgehoben ist der Zustand des Servers):
-  - **WORLD:** „Weltkarte“ mit einer fest eingebundenen Weltkarte (nicht aus dem Backend), vollständig über der
-    Steuerleiste.
-  - **OFF:** Overlay ausgeblendet (Start, auch nach einem Neustart der API).
-  Ein Klick auf WORLD oder OFF speichert den Zustand auf dem Server, alle Walls (und das Admin-Panel) wechseln erst mit
-  dessen Push. Schlägt das Speichern fehl, ändert sich nichts; die Wall zeigt keinen Fehler (nur in der Konsole). Eine
-  neu geöffnete Wall zeigt sofort das aktuelle Overlay. Ein Szenen- oder Abenteuerwechsel schließt die Weltkarte auf
-  allen Walls.
-- **AUDIO:** Button in derselben Steuerleiste; ein Klick macht diese Wall zur Audioausgabe für Musik und Soundeffekte
-  (die Nutzerinteraktion gibt die Wiedergabe im Browser frei). Er ist hervorgehoben, solange die Wall Ausgabe ist.
-  Es spielt immer nur eine Wall: Klickt man auf einer anderen Wall „AUDIO“, verstummt die bisherige. Die Ausgabe folgt
-  der Fernbedienung im Admin (Play/Pause, Lautstärke, Sounds bei voller Lautstärke über der Musik) und meldet
-  das Trackende an den Server; sonst zeigt die Wall nichts an. Nach einem Verbindungsabbruch meldet sie sich ohne
-  neuen Klick wieder als Ausgabe. Blockiert der Browser das Abspielen, loggt sie den Fehler; ein erneuter Klick auf
-  „AUDIO“ versucht es wieder.
+  Umgeschaltet wird nur im Admin (Panel „Wall-Overlay“):
+  - **Weltkarte:** Panel „Weltkarte“ mit einer fest eingebundenen Weltkarte (nicht aus dem Backend), vollständig
+    sichtbar (unten derselbe Abstand wie oben).
+  - **Aus:** Overlay ausgeblendet (Start, auch nach einem Neustart der API).
+  Alle Walls wechseln mit dem Push des Servers. Eine neu geöffnete Wall zeigt sofort das aktuelle Overlay. Ein
+  Szenen- oder Abenteuerwechsel schließt die Weltkarte auf allen Walls.
 - Eine szenen-/gebietsspezifische Übersichtskarte gibt es noch nicht.
 - **Ladefehler:** kein Hinweis für die Spieler; die Wall behält den zuletzt geladenen Stand, der nächste
   Szenenwechsel lädt erneut.
@@ -217,9 +224,11 @@ optional mit **Grid** als Layout für taktische Kämpfe.
 ### Ist
 - Vollbild = Ground-Bild der aktiven Szene; Bild oder Video (läuft automatisch, in Schleife, stumm). Ohne aktive
   Szene nur die Hintergrundfarbe des Themes.
-- Grid über eine Steuerleiste beim Hover (wie auf der Wall): „Raster“ BLACK / WHITE / OFF und „Zelle“ mit Slider für
-  die Zellgröße samt angezeigtem Wert. Standard: kein Grid. Einstellungen gelten für alle Szenen und werden nicht
-  gespeichert.
+- Reine Anzeige ohne Bedienelemente (keine Steuerleiste, kein Hover-Effekt).
+- Grid nach dem Spieltisch-Zustand: Linienfarbe Schwarz oder Weiß bzw. kein Grid, Zellgröße 100–200 (mit dem
+  Pixelverhältnis des Geräts skaliert); eingestellt im Admin (Panel „Ground-Raster“), gilt für alle Grounds und alle
+  Szenen. Standard (auch nach einem Neustart der API): kein Grid, Zellgröße 100. Ein neu geöffneter Ground zeigt sofort
+  das aktuelle Raster.
 - Verbindung wie auf der Wall: folgt dem Spieltisch per WebSocket, auch auf einem anderen Gerät; nach einem Abbruch
   kein Hinweis, letzter Stand bleibt, Reconnect automatisch.
 - **Ladefehler:** wie auf der Wall – kein Hinweis, letzter Stand bleibt, der nächste Szenenwechsel lädt erneut.

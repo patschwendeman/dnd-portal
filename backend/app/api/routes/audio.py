@@ -19,7 +19,7 @@ async def read_audio() -> AudioState:
 
 @router.patch("/audio", responses=UPDATE_RESPONSES)
 async def update_audio(update: AudioUpdate, background_tasks: BackgroundTasks) -> AudioState:
-    """Works without an audio output as well: the Wall that becomes the output starts with the stored state."""
+    """Works without an audio output as well: the Admin that becomes the output starts with the stored state."""
     state = await push.update_audio(update)
     background_tasks.add_task(push.push_audio)
     return state

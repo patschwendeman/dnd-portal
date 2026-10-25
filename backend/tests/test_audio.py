@@ -42,11 +42,11 @@ def first_track(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def end_current_track() -> dict[str, Any]:
-    """The audio output reports the end of the current track (like track_ended of the Wall); returns the new state."""
+    """The audio output reports the end of the current track (like track_ended of the Admin); returns the new state."""
     from app.realtime.audio import audio
     from app.realtime.manager import Connection
 
-    output = Connection(websocket=None, screen="wall")  # type: ignore[arg-type]
+    output = Connection(websocket=None, screen="admin")  # type: ignore[arg-type]
     audio.set_output(output)
     assert audio.track is not None
     assert audio.track_ended(output, audio.track.id) is True

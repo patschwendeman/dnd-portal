@@ -4,7 +4,12 @@ import { parseServerMessage } from '../../src/realtime/messages'
 
 // The payload follows the API contract, whose fields are snake_case
 const state = {
-  active_adventure_id: 1, active_scene_id: 5, theme: 'tavern', wall_overlay: 'world',
+  active_adventure_id: 1,
+  active_scene_id: 5,
+  theme: 'tavern',
+  wall_overlay: 'world',
+  ground_grid: 'white',
+  ground_grid_cell_size: 150,
 }
 
 describe('parseServerMessage', () => {
@@ -15,7 +20,12 @@ describe('parseServerMessage', () => {
 
   it('accepts null for adventure and scene', () => {
     const empty = {
-      active_adventure_id: null, active_scene_id: null, theme: 'dark', wall_overlay: 'off',
+      active_adventure_id: null,
+      active_scene_id: null,
+      theme: 'dark',
+      wall_overlay: 'off',
+      ground_grid: 'off',
+      ground_grid_cell_size: 100,
     }
     expect(parseServerMessage(JSON.stringify({ type: 'state', payload: empty })))
       .toEqual({ type: 'state', payload: empty })
@@ -42,6 +52,19 @@ describe('parseServerMessage', () => {
     ['an unknown theme', { type: 'state', payload: { ...state, theme: 'light' } }],
     ['an unknown overlay', { type: 'state', payload: { ...state, wall_overlay: 'map' } }],
     ['a missing overlay', { type: 'state', payload: { ...state, wall_overlay: undefined } }],
+    ['an unknown grid colour', { type: 'state', payload: { ...state, ground_grid: 'grey' } }],
+    ['a missing grid', { type: 'state', payload: { ...state, ground_grid: undefined } }],
+    ['a cell size below 100', { type: 'state', payload: { ...state, ground_grid_cell_size: 90 } }],
+    ['a cell size above 200', { type: 'state', payload: { ...state, ground_grid_cell_size: 210 } }],
+    ['a cell size off the step', {
+      type: 'state', payload: { ...state, ground_grid_cell_size: 155 },
+    }],
+    ['a cell size as string', {
+      type: 'state', payload: { ...state, ground_grid_cell_size: '150' },
+    }],
+    ['a missing cell size', {
+      type: 'state', payload: { ...state, ground_grid_cell_size: undefined },
+    }],
     ['a missing field', { type: 'state', payload: { active_adventure_id: 1, theme: 'dark' } }],
     ['an ID as string', { type: 'state', payload: { ...state, active_scene_id: '5' } }],
     ['a fractional ID', { type: 'state', payload: { ...state, active_adventure_id: 1.5 } }],

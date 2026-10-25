@@ -2,7 +2,7 @@ import {
   describe, it, expect, vi, beforeEach, afterEach,
 } from 'vitest'
 
-import { PlayableAudio, WallAudioPlayer } from '../../src/audio/wallAudioPlayer'
+import { PlayableAudio, AudioPlayer } from '../../src/audio/audioPlayer'
 import { AudioState } from '../../src/models/models'
 
 class FakeAudio implements PlayableAudio {
@@ -51,14 +51,14 @@ const paused: AudioState = { ...playing, playing: false }
 
 let audios: FakeAudio[]
 let ended: number[]
-let player: WallAudioPlayer
+let player: AudioPlayer
 
 const music = () => audios[0]
 
 beforeEach(() => {
   audios = []
   ended = []
-  player = new WallAudioPlayer({
+  player = new AudioPlayer({
     onTrackEnded: (trackId) => ended.push(trackId),
     createAudio: () => {
       const audio = new FakeAudio()
@@ -73,7 +73,7 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('WallAudioPlayer', () => {
+describe('AudioPlayer', () => {
   it('plays nothing while it is not the audio output', () => {
     player.update(playing, false)
     player.playSound('heal')

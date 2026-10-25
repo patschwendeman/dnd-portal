@@ -2,8 +2,8 @@ Feature: Dashboard in the admin screen
 
 Scenario: The dashboard shows its panels next to the notes
     Given I am on the admin screen
-    Then I see the dashboard with the panels Aktive Szene, Musik, Wall-Overlay, Sounds, Screens, Level, Spieler
-    And Aktive Szene spans the full width, below it Musik with Wall-Overlay and Sounds stacked on its right, below them Screens, Level and Spieler over the full width
+    Then I see the dashboard with the panels Aktive Szene, Musik, Sounds, Wall-Overlay, Ground-Raster, Screens, Level, Spieler
+    And Aktive Szene spans the full width, below it Musik and Sounds side by side, below them Wall-Overlay and Ground-Raster side by side, below them Screens, Level and Spieler over the full width
     And no panel scrolls on its own
     And there is no bottom bar, no sound button and no join button in the top bar
 
@@ -26,6 +26,15 @@ Scenario: I control music and sounds from the dashboard
     Then the music state on the server switches back
     When I click on a sound button in the panel Sounds
     Then no error bar is shown
+
+Scenario: I play music and sounds in the admin window
+    Given I am on the admin screen and no window is the audio output
+    When I click on Hier abspielen in the panel Musik
+    Then Hier abspielen is highlighted and the hint Keine Audioausgabe bereit is gone
+    When I click on Hier abspielen in a second admin window
+    Then only the second admin window highlights Hier abspielen
+    When the second admin window is closed
+    Then the first admin window shows the hint Keine Audioausgabe bereit
 
 Scenario: I see which screens are connected
     Given I am on the admin screen

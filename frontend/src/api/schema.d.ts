@@ -107,7 +107,7 @@ export interface paths {
         head?: never;
         /**
          * Update Audio
-         * @description Works without an audio output as well: the Wall that becomes the output starts with the stored state.
+         * @description Works without an audio output as well: the Admin that becomes the output starts with the stored state.
          */
         patch: operations["update_audio_table_audio_patch"];
         trace?: never;
@@ -189,7 +189,7 @@ export interface components {
         };
         /**
          * AudioState
-         * @description Music of the game table, played by the Wall that is the audio output (`output_ready`); volume in percent.
+         * @description Music of the game table, played by the Admin that is the audio output (`output_ready`); volume in percent.
          */
         AudioState: {
             /** Output Ready */
@@ -215,13 +215,22 @@ export interface components {
          * @description State of the game table shared by Admin, Wall and Ground; `active_scene_id` belongs to the active adventure.
          *
          *     `wall_overlay` is what the Walls show above the scene image (`world`: the world map); it is kept in memory only and
-         *     set to `off` whenever the active scene or adventure changes.
+         *     set to `off` whenever the active scene or adventure changes. `ground_grid` (line colour or `off`) and
+         *     `ground_grid_cell_size` (in px) are the grid of the Grounds; also kept in memory only, but unchanged by scene or
+         *     adventure changes.
          */
         GameTableState: {
             /** Active Adventure Id */
             active_adventure_id: number | null;
             /** Active Scene Id */
             active_scene_id: number | null;
+            /**
+             * Ground Grid
+             * @enum {string}
+             */
+            ground_grid: "black" | "white" | "off";
+            /** Ground Grid Cell Size */
+            ground_grid_cell_size: number;
             /**
              * Theme
              * @enum {string}
@@ -240,6 +249,13 @@ export interface components {
         GameTableUpdate: {
             /** Active Adventure Id */
             active_adventure_id?: number | null;
+            /**
+             * Ground Grid
+             * @enum {string}
+             */
+            ground_grid?: "black" | "white" | "off";
+            /** Ground Grid Cell Size */
+            ground_grid_cell_size?: number;
             /**
              * Theme
              * @enum {string}

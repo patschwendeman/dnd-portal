@@ -9,7 +9,7 @@ from app.schemas.audio import DEFAULT_VOLUME
 class AudioService:
     """Music state of the game table, kept in memory of the API process (paused again after a restart).
 
-    The server decides about the music; the Wall that is the audio output only plays it. Changes are made under
+    The server decides about the music; the Admin that is the audio output only plays it. Changes are made under
     `manager.state_lock` (app/realtime/push.py), so they are sent in the order they happened.
     """
 

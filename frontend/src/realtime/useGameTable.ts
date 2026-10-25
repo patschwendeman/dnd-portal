@@ -17,7 +17,7 @@ export interface GameTable {
   state: GameTableState | null
   // null until the first audio state of the server arrived
   audio: AudioState | null
-  // Only for a Wall: whether this connection is the audio output (false while disconnected)
+  // Only for an Admin: whether this connection is the audio output (false while disconnected)
   isAudioOutput: boolean
   // Only for the Admin: connected screens per type; null until the first counts arrived
   screens: ScreenCounts | null
@@ -25,7 +25,8 @@ export interface GameTable {
   // connected, so the Admin does not show the hint on every load
   connected: boolean
   reconnectNow: () => void
-  // Wall: become the audio output, also again after every reconnect until another Wall takes over
+  // Admin: become the audio output, also again after every reconnect until another Admin takes
+  // over
   requestAudioOutput: () => void
   reportTrackEnded: (trackId: number) => void
   // Sound effects sent to this connection (only to the audio output); returns the unsubscribe
@@ -40,7 +41,7 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
   const [screens, setScreens] = useState<ScreenCounts | null>(null)
   const [status, setStatus] = useState<ConnectionStatus>('connecting')
   const connection = useRef<GameTableConnection | null>(null)
-  // Set by "AUDIO", cleared when another Wall takes over
+  // Set by "Hier abspielen", cleared when another Admin takes over
   const wantsAudioOutput = useRef<boolean>(false)
   const soundListeners = useRef<Set<SoundListener>>(new Set())
 

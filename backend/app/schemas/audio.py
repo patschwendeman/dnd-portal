@@ -16,7 +16,7 @@ SoundName = Literal[
 
 
 class AudioState(BaseModel):
-    """Music of the game table, played by the Wall that is the audio output (`output_ready`); volume in percent."""
+    """Music of the game table, played by the Admin that is the audio output (`output_ready`); volume in percent."""
 
     playing: bool
     track: Track | None
