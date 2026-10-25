@@ -32,7 +32,8 @@ Auftrag: $ARGUMENTS
   der Task-Key, der dort vorkommt, und der Typ, der überwiegt (bzw. der Typ aus `docs/tasks/DND-<n>-*.md`).
   Bei mehreren Keys oder unklarem Typ nachfragen.
 - **Kopfzeile:** Sie muss zum Schema aus [CONTRIBUTING.md](../../../CONTRIBUTING.md#commit-nachrichten) passen.
-- **Stichpunkte:** In der Regel einer je zusammengefasstem Commit, in dessen Reihenfolge, knapp und englisch.
+- **Stichpunkte:** In der Regel einer je zusammengefasstem Commit, in dessen Reihenfolge, knapp und englisch;
+  höchstens 5 – bei mehr Commits verwandte zusammenfassen.
 - **Keine KI-Signatur:** Weder eine `Co-Authored-By`-Zeile noch „Generated with Claude Code“.
 
 ## Ablauf

@@ -21,7 +21,8 @@ Du prüfst die Umsetzung eines Tasks. Du änderst keinen Code.
 5. Prüfen, ob alle Subtasks erledigt sind und nichts außerhalb des Scopes geändert wurde.
 6. Lint und Tests des betroffenen Teils ausführen (siehe `backend/CLAUDE.md` bzw. `frontend/CLAUDE.md`).
 7. Konventionen prüfen: Root-`CLAUDE.md`, ein Commit je Umsetzungsrunde, Commit-Schema und Commit-Typ passend
-   zum Plan, Body nur Stichpunkte, keine KI-Signaturen.
+   zum Plan, Body nur Stichpunkte (höchstens 5), keine KI-Signaturen, keine neuen Kommentare, die nur
+   erklären, was der Code tut.
 
 ## Typspezifische Prüfung
 

@@ -21,7 +21,9 @@ Du setzt genau einen Task-Plan um. Der Plan ist die einzige Vorgabe.
    für Schritt) und im Plan abhaken. Dabei die Regeln für den Typ beachten (siehe unten).
 6. Nach jedem Subtask bzw. Befund die relevanten Checks ausführen (Lint, Tests – siehe die CLAUDE.md des
    jeweiligen Teils).
-7. Am Ende Status auf `Im Review` setzen und den Runden-Commit anlegen (siehe „Commits“).
+7. Vor dem Commit den Diff der Runde (`git diff`) auf Kommentare prüfen, die nur erklären, was der Code tut,
+   und diese löschen. Kommentare, die ein nicht offensichtliches Warum festhalten, bleiben.
+8. Am Ende Status auf `Im Review` setzen und den Runden-Commit anlegen (siehe „Commits“).
 
 ## Regeln je Typ
 
@@ -58,7 +60,8 @@ Du setzt genau einen Task-Plan um. Der Plan ist die einzige Vorgabe.
 
   * <Stichpunkt je Subtask bzw. Befund, knapp, englisch>
   ```
-  Kein Fließtext, ohne KI-Signatur.
+  Höchstens 5 Stichpunkte (bei mehr Subtasks bzw. Befunden verwandte zusammenfassen), kein Fließtext, ohne
+  KI-Signatur.
 - Bei Abbruch (Checks nach 3 Versuchen rot, offene Frage): nicht committen, Änderungen im Working Tree lassen
   und melden.
 
