@@ -40,4 +40,4 @@
 | DND-34 | feat | Panels „Spieler“ (Hero-Karte) und „Level“ im Admin-Dashboard | Fertig | [DND-34-admin-players-panel.md](DND-34-admin-players-panel.md) |
 | DND-35 | feat | Wall-Overlay vom Admin steuern | Fertig | [DND-35-wall-overlay-remote.md](DND-35-wall-overlay-remote.md) |
 | DND-36 | feat | Ground-Raster und Audio in den Admin, Wall und Ground ohne Steuerleiste | Fertig | [DND-36-screen-controls-to-admin.md](DND-36-screen-controls-to-admin.md) |
-| DND-37 | feat | Admin wird beim ersten Klick automatisch Audioausgabe | Im Review | [DND-37-auto-audio-output.md](DND-37-auto-audio-output.md) |
+| DND-37 | feat | Admin wird beim ersten Klick automatisch Audioausgabe | Fertig | [DND-37-auto-audio-output.md](DND-37-auto-audio-output.md) |
