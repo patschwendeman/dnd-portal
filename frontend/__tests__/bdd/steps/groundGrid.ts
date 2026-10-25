@@ -144,7 +144,6 @@ defineFeature(feature, (test) => {
     given(
       'no grid is shown and I am on the admin screen with two ground screens open',
       async () => {
-        // The admin and both grounds only show what the server pushes
         await setGroundGrid('off', 100)
         grounds = [buildDriver(), buildDriver()]
         await driver.manage().window().setRect(WINDOW_RECT)
@@ -170,7 +169,6 @@ defineFeature(feature, (test) => {
     )
 
     when('I move the slider Zellgröße to 150 and release it', async () => {
-      // Drag the thumb from 100 (left end) to the middle of the rail (150) and release it there
       const thumb = await waitForElement(driver, CELL_SIZE_THUMB)
       const rail = await waitForElement(driver, CELL_SIZE_RAIL)
       const { width } = await rail.getRect()
@@ -213,7 +211,6 @@ defineFeature(feature, (test) => {
         method: 'PATCH',
         body: JSON.stringify({ active_scene_id: scene.id }),
       })
-      // Only once the grounds show the new scene the grid is checked again
       const src = `${BASE_URL}/api${scene.ground_image.source}`
       await Promise.all(grounds.map(async (ground) => {
         expect(await waitForAttribute(ground, GROUND_IMAGE, 'src', src)).toBe(src)

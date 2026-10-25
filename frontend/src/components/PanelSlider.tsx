@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 const PANEL_SLIDER_THUMB_SIZE = '16px'
 
-// Slider in a dashboard panel: the rail takes the colour of the panel area (`background`)
+// The rail takes the colour of the panel area (`background`)
 const PanelSlider = styled(Slider)`
   & .MuiSlider-thumb {
     width: ${PANEL_SLIDER_THUMB_SIZE};

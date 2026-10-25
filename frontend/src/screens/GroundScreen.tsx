@@ -58,7 +58,6 @@ function GroundScreen(): ReactElement {
   const { activeSceneId } = useContext(ActiveSceneContext)
   const [mediaSRC, setMediaSRC] = useState<string>('')
   const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null)
-  // Colour and cell size come from the server: the Admin sets them for all Grounds
   const { groundGrid, groundGridCellSize } = useContext(GameTableContext)
   const gridColor = gridLineColor(groundGrid)
 

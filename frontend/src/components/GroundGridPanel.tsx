@@ -57,7 +57,6 @@ interface GroundGridPanelProps {
   onCellSizeCommit: (cellSize: number) => void
 }
 
-// Content of the dashboard panel "Ground-Raster": colour and cell size of the grid on all Grounds
 function GroundGridPanel({
   groundGrid, cellSize, failedSave, onGridChange, onCellSizeCommit,
 }: GroundGridPanelProps): ReactElement {

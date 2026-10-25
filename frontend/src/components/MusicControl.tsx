@@ -72,7 +72,6 @@ const AudioHint = styled.span`
     ${textStyle('sm')}
 `
 
-// Pressed while this window plays the music; inactive in the panel area `background`
 const OutputButton = styled(TextButton)`
     grid-area: output;
     justify-self: start;
@@ -91,12 +90,10 @@ interface MusicControlProps {
   failedSave: object | null
   onToggle: () => void
   onVolumeCommit: (volume: number) => void
-  // Whether this Admin window is the audio output
   isAudioOutput: boolean
   onRequestAudioOutput: () => void
 }
 
-// Controls the music on the server; it plays in the Admin window that is the audio output
 function MusicControl({
   audio, failedSave, onToggle, onVolumeCommit, isAudioOutput, onRequestAudioOutput,
 }: MusicControlProps): ReactElement {

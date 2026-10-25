@@ -60,7 +60,7 @@ in Folge-Tasks, danach den Eintrag in der jeweiligen Ignore-Liste entfernen bzw.
   `RECONNECT_MAX_DELAY_MS` (`src/realtime/backoff.ts`); Typen `TextButtonVariant` (`TextButton.tsx`), `Image`
   (`models.ts`), `OtherServerMessage` (`connection.ts`), `SoundListener` (`useGameTable.ts`). Falsch-Positive: die
   Exporte des generierten `src/api/schema.d.ts`.
-- jscpd (`frontend/.jscpd.json`, `threshold` 1,34 %, seit DND-36): 5 Duplikate, 75 von 5600 Zeilen (1,34 %):
+- jscpd (`frontend/.jscpd.json`, `threshold` 1,35 %, seit DND-36): 5 Duplikate, 75 von 5588 Zeilen (1,34 %):
   `AdventureSelect.tsx` ↔ `ThemeMenu.tsx` (3 Blöcke, 11–16 Zeilen), `darkTheme.ts` ↔ `tavernTheme.ts` (19 Zeilen),
   `NavRail.tsx` ↔ `SideBarLeftElement.tsx` (13 Zeilen).
 

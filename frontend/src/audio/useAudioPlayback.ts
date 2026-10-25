@@ -3,8 +3,6 @@ import { useContext, useEffect, useState } from 'react'
 import { AudioPlayer } from './audioPlayer'
 import { GameAudioContext } from '../context/context'
 
-// Plays music and sound effects in this Admin window while it is the audio output ("Hier
-// abspielen"); otherwise it stays silent
 const useAudioPlayback = (): void => {
   const {
     audio, isAudioOutput, reportTrackEnded, subscribeSound,

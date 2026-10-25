@@ -31,9 +31,7 @@ interface OptionButtonsProps<T extends string> {
   onChange: (value: T) => void
 }
 
-// Toggle buttons of a dashboard panel, one of them pressed: the value comes from the server, so
-// the highlighted option changes only with the push that follows the write. A click on the
-// pressed option does nothing.
+// The highlighted option changes only with the push of the server that follows the write
 function OptionButtons<T extends string>({
   options, value, testIdPrefix, onChange,
 }: OptionButtonsProps<T>): ReactElement {
