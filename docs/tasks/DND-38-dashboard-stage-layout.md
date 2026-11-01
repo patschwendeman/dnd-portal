@@ -1,7 +1,7 @@
 # DND-38: Dashboard-Layout „Bühne“ im Admin
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -273,3 +273,23 @@ Spielleiter so mit einem Blick die aktive Szene und die laufende Musik, ohne zu 
 - `OptionButtons` hat `role="group"` ohne zugänglichen Namen; ein `aria-label` wäre eine kleine Verbesserung.
 
 **Checks:** Lint, Typecheck, Unit (199), Build, `check:deadcode`, `check:dupes` grün; E2E `adminDashboard`, `adminPlayers`, `groundGrid`, `wallOverlay`, `selectScene` (15 Tests) grün; Messungen in headless Chrome.
+
+### Runde 2 – 2026-11-01
+**Empfehlung:** Abnahme
+
+| AK | Ergebnis | Beleg (Delta zu Runde 1) |
+|---|---|---|
+| AK1–AK5, AK7–AK9 | erfüllt (wie Runde 1) | `60c7602` entfernt hier nur Kommentare; E2E `adminDashboard`, `adminPlayers`, `selectScene` grün. |
+| AK6 | erfüllt | `GameTablePanel.tsx:254,268` übergibt `label="Wall-Anzeige"`/`"Ground-Anzeige"`; Test-IDs und `onChange` unverändert; E2E `wallOverlay`, `groundGrid` grün. |
+| AK10 | erfüllt | Lint, Typecheck, Unit (199), `check:deadcode`, `check:dupes` (1,29 % < 1,35 %) grün; `.jscpd.json` unverändert. |
+
+**Blockierende Befunde**
+- keine (Kommentar-Befund aus Runde 1 an allen sechs Stellen behoben)
+
+**Hinweise**
+- Neue Pflicht-Prop `label` an `OptionButtons` landet als `aria-label` auf `role="group"`; sauber. `frontend/docs/design/components.md:136` nennt den zugänglichen Namen noch nicht – Ergänzung wäre stimmig. Kein E2E prüft das `aria-label` (optional).
+- Keine neuen code-nacherzählenden Kommentare mehr. Zwei ältere Kopfkommentare im alten Muster (`PlayersPanel.tsx`, `SoundBoard.tsx`) bestanden schon vor dem Task, nicht blockierend.
+- Kommentare in E2E-Steps (`adminPlayers.ts`) begründen Selektoren/Assertions; unbedenklich.
+- Commit `60c7602`: Schema und Typ passen, 2 Stichpunkte, keine KI-Signatur.
+
+**Checks:** Lint, Typecheck, Unit (23 Dateien, 199 Tests), knip, jscpd, Build grün; E2E gegen laufenden Dev-Stack: 6 Suites, 18 Tests grün.
