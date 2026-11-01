@@ -12,6 +12,7 @@ import {
   waitForAttribute,
   waitForElement,
   waitForElementGone,
+  waitForFullscreen,
 } from '../support/helpers'
 
 const feature = loadFeature('__tests__/bdd/features/adminDashboard.feature')
@@ -56,26 +57,6 @@ const panel = (id: string): string => `[data-test-id="dashboard-panel-${id}"]`
 const screenStatus = (screen: string): string => (
   `${panel('table')} [data-test-id="screen-${screen}-status"]`
 )
-
-const isFullscreen = async (driver: WebDriver): Promise<boolean> => driver.executeScript(
-  'return document.fullscreenElement !== null',
-)
-
-// Returns the last seen state instead of throwing on timeout, so the step's expect shows it
-const waitForFullscreen = async (driver: WebDriver, expected: boolean): Promise<boolean> => {
-  let actual = !expected
-  try {
-    await driver.wait(async () => {
-      actual = await isFullscreen(driver)
-      return actual === expected
-    }, WAIT_TIMEOUT)
-  } catch (err) {
-    if (!(err instanceof error.TimeoutError)) {
-      throw err
-    }
-  }
-  return actual
-}
 
 interface ScreenCounts { wall: number | null, ground: number | null }
 

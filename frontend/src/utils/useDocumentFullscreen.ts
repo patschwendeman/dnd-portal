@@ -7,8 +7,8 @@ const subscribe = (onChange: () => void): (() => void) => {
 
 const isFullscreen = (): boolean => document.fullscreenElement !== null
 
-// Full screen of the own window (Admin); the state follows fullscreenchange, so leaving with
-// Escape or by the browser is shown as well
+// Full screen of the own window (Admin, wall, ground); the state follows fullscreenchange, so
+// leaving with Escape or by the browser is shown as well
 export default function useDocumentFullscreen(): { isFullscreen: boolean, toggle: () => void } {
   const active = useSyncExternalStore(subscribe, isFullscreen)
   const toggle = useCallback(() => {

@@ -78,6 +78,26 @@ const waitForAttribute = async (
   return actual
 }
 
+const isFullscreen = async (driver: WebDriver): Promise<boolean> => driver.executeScript(
+  'return document.fullscreenElement !== null',
+)
+
+// Returns the last seen state instead of throwing on timeout, so the step's expect shows it
+const waitForFullscreen = async (driver: WebDriver, expected: boolean): Promise<boolean> => {
+  let actual = !expected
+  try {
+    await driver.wait(async () => {
+      actual = await isFullscreen(driver)
+      return actual === expected
+    }, WAIT_TIMEOUT)
+  } catch (err) {
+    if (!(err instanceof error.TimeoutError)) {
+      throw err
+    }
+  }
+  return actual
+}
+
 export {
   BASE_URL,
   MEDIA_BASE_URL,
@@ -91,4 +111,5 @@ export {
   waitForAttribute,
   waitForElement,
   waitForElementGone,
+  waitForFullscreen,
 }

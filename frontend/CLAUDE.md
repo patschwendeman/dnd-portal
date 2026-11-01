@@ -96,7 +96,8 @@ src/components/      UI-Bausteine (TopBar, JoinDialog, ThemeMenu, NavRail (Navig
                      AudioPanel (MusicControl, SoundBoard), GameTablePanel (Spieltisch), PlayersPanel mit
                      PlayerListItem (Spielerzeile) und LevelStepper (Level im Kopf der Party), PlayerHeroCard
                      (Hero-Karte, derzeit nicht verwendet), PanelButton (Icon-Button in Panels), OptionButtons
-                     (Segment-Control in Panels), PanelSlider (Slider in Panels), Dialogue, GridOverlay,
+                     (Segment-Control in Panels), PanelSlider (Slider in Panels), FullscreenHoverOverlay (Vollbild-Overlay auf Wall und
+                     Ground), Dialogue, GridOverlay,
                      ResourceBarPlayer …)
 src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
                      getJoinInfo, saveActiveScene, saveGlobalLevel, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
@@ -113,7 +114,8 @@ src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhan
 src/utils/playerTheme.ts Theme-Abweichung des Players lesen/schreiben, effectiveTheme, Altschlüssel verwerfen
 src/utils/player.ts  characterInitials (Initialen ohne Avatar), steppedLevel (Level −/+ in den Grenzen 1–20)
 src/utils/screenStatus.ts Statustexte des Panels „Spieltisch“ aus der Anzahl (screenStatusText, playerStatusText)
-src/utils/useDocumentFullscreen.ts Vollbild des eigenen Fensters (Admin, Top-Bar), Zustand über fullscreenchange
+src/utils/useDocumentFullscreen.ts Vollbild des eigenen Fensters (Admin: Top-Bar; Wall und Ground:
+                     FullscreenHoverOverlay), Zustand über fullscreenchange
 src/utils/playerUrl.ts selectPlayerUrl (URL der API, sonst Origin des Admins, nicht bei localhost/127.0.0.1/[::1])
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }), appTheme(theme),
                      styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden)
@@ -126,7 +128,7 @@ Datenfluss: Screen → `src/service/*` → `getData()` → Backend. Der Admin l�
 `adventures/{id}/scenes` des aktiven Abenteuers (`activeAdventureId`). Der Spieltisch-Zustand (aktives Abenteuer, aktive
 Szene, Theme, Wall-Overlay, Ground-Raster) kommt nur vom Server: `GameTableProvider` verbindet sich per WebSocket (`/ws?screen=…`) und speist die
 Contexts aus jedem Snapshot. Szenen-, Abenteuer-, Theme-, Overlay- und Raster-Wechsel schreibt nur der Admin (Wall und Ground
-haben keine Bedienelemente) per REST (`PATCH adventures/{id}`
+haben keine Bedienelemente außer dem lokalen Vollbild-Overlay) per REST (`PATCH adventures/{id}`
 bzw. `PATCH table`) **ohne lokale Vorwegnahme**; der Server pusht danach den neuen Stand an alle Screens, die die Szene
 per `scenes/{id}` neu laden (ohne aktive Szene kein Request, nur Hintergrund). Nur der Admin zeigt Speicher- und
 Verbindungsfehler. Der Player nutzt vom Snapshot nur das Theme (`Abweichung ?? Spieltisch-Theme`), sendet nichts und

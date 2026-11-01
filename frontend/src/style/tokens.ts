@@ -79,6 +79,7 @@ const layer = {
   media: 1,
   grid: 10,
   panel: 20,
+  control: 30,
   popover: 35,
   dialog: 40,
 }

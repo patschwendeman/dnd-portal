@@ -203,7 +203,12 @@ legt der geplante Menüpunkt „Kampf“ im Admin fest.
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Vollbild-Hintergrund = Wall-Bild der aktiven Szene,
   unverzerrt und randlos. Ohne aktive Szene (auch bis der Server den ersten Stand geschickt hat) nur die
   Hintergrundfarbe des Themes, ohne Bild und ohne Panel.
-- Reine Anzeige ohne Bedienelemente: keine Steuerleiste, kein Hover-Effekt, kein Ton.
+- Reine Anzeige ohne Bedienelemente: keine Steuerleiste, kein Ton. Einzige Ausnahme ist das **Vollbild-Overlay**:
+  Solange die Maus über dem Fenster ist (auch stillstehend), ist der ganze Screen abgedunkelt, mittig stehen das
+  Vollbild-Icon und „Vollbild“ (im Vollbild: Icon zum Beenden und „Vollbild beenden“). Ein Klick irgendwo darauf
+  schaltet das Vollbild nur dieses Fensters um; der Zustand ist lokal pro Fenster (nicht auf dem Server) und folgt dem
+  Browser, auch beim Verlassen mit Escape. Verlässt die Maus das Fenster, verschwindet das Overlay. Nur Maus, kein
+  Touch; ohne Maus über dem Fenster bleibt alles unverdeckt.
 - Folgt dem Spieltisch per WebSocket (aktive Szene, Abenteuer, Theme, Overlay) und kann damit auch in einem anderen Browser oder
   auf einem anderen Gerät laufen (`http://<IP>:8080/wall`). Nach einem Verbindungsabbruch behält sie das Bild ohne
   Hinweis und verbindet sich selbst neu.
@@ -229,7 +234,8 @@ optional mit **Grid** als Layout für taktische Kämpfe.
 ### Ist
 - Vollbild = Ground-Bild der aktiven Szene; Bild oder Video (läuft automatisch, in Schleife, stumm). Ohne aktive
   Szene nur die Hintergrundfarbe des Themes.
-- Reine Anzeige ohne Bedienelemente (keine Steuerleiste, kein Hover-Effekt).
+- Reine Anzeige ohne Bedienelemente (keine Steuerleiste); Ausnahme wie auf der Wall das Vollbild-Overlay beim Hovern
+  mit der Maus (liegt auch über dem Raster).
 - Grid nach dem Spieltisch-Zustand: Linienfarbe Schwarz oder Weiß bzw. kein Grid, Zellgröße 100–200 (mit dem
   Pixelverhältnis des Geräts skaliert); eingestellt im Admin (Panel „Spieltisch“, Zeile „Ground“), gilt für alle Grounds und alle
   Szenen. Standard (auch nach einem Neustart der API): kein Grid, Zellgröße 100. Ein neu geöffneter Ground zeigt sofort

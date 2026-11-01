@@ -7,6 +7,7 @@ const darkTheme = {
     overlay: 'rgba(0, 0, 0, 0.850)',
     scrim: 'rgba(0, 0, 0, 0.750)',
     onScrim: '#ffffff',
+    backdrop: 'rgba(0, 0, 0, 0.5)',
     text: {
       color: '#f0f6fc',
       muted: '#f0f6fcb0',

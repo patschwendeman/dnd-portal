@@ -4,6 +4,7 @@ import {
 import styled from 'styled-components'
 
 import { mediaUrl } from '../api/mediaUrl'
+import FullscreenHoverOverlay from '../components/FullscreenHoverOverlay'
 import GridOverlay from '../components/GridOverlay'
 import { ActiveSceneContext, GameTableContext } from '../context/context'
 import { SceneDetail } from '../models/models'
@@ -111,6 +112,7 @@ function GroundScreen(): ReactElement {
       {mediaType === 'video' && (
         <BackgroundMedia data-test-id="groundImg" src={mediaSRC} autoPlay loop muted />
       )}
+      <FullscreenHoverOverlay />
     </Screen>
   )
 }

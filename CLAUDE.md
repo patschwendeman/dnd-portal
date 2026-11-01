@@ -47,7 +47,9 @@ Teil-spezifischer Kontext (Befehle, Struktur, Konventionen): `frontend/CLAUDE.md
   selben Browser, Wall und Ground können aber auch in anderen Browsern bzw. auf anderen Geräten im LAN laufen. Der
   Server ist die einzige Quelle des Spieltisch-Zustands (Abenteuer, aktive Szene, Theme, Wall-Overlay, Ground-Raster)
   und pusht ihn per WebSocket an diese Screens (siehe architecture.md, „Synchronisation“); `localStorage` dient dafür
-  nicht mehr. Wall und Ground sind reine Anzeigen ohne Bedienelemente, gesteuert wird alles vom Admin.
+  nicht mehr. Wall und Ground sind reine Anzeigen ohne Bedienelemente, gesteuert wird alles vom Admin; einzige
+  Ausnahme ist das Vollbild-Overlay beim Hovern mit der Maus, das nur das eigene Fenster ins Vollbild schaltet und
+  nichts am Server ändert.
   Musik und Soundeffekte spielt das Admin-Fenster, das Audioausgabe ist (Zustand auf dem Server; ohne Ausgabe wird
   es das Admin-Fenster, in dem als Nächstes geklickt oder eine Taste gedrückt wird); den Lautsprecher wählt der Spielleiter außerhalb der App (Betriebssystem bzw. Browser). Die Player-Screens laufen auf den Smartphones der Spieler (geöffnet per QR-Code im Admin),
   sind ebenfalls per WebSocket angebunden und übernehmen davon nur das Theme (pro Gerät abweichend wählbar).

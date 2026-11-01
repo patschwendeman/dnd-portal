@@ -16,6 +16,7 @@ gilt der Code.
 | `border` | `#3d444db3` | `#956F01` |
 | `background` | `#0e1117` | `#140701` |
 | `overlay` | `rgba(0, 0, 0, 0.850)` | `rgba(0, 0, 0, 0.850)` |
+| `backdrop` | `rgba(0, 0, 0, 0.5)` | gleich |
 | `scrim` | `rgba(0, 0, 0, 0.750)` | gleich |
 | `onScrim` | `#ffffff` | gleich |
 | `text.color` | `#f0f6fc` | `#CBAB96` |
@@ -97,6 +98,9 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 - **Bühne (Admin):** Der Verlauf unter dem Text ist nach `space.7` voll deckend, der Text beginnt erst darunter. Gemessen
   ist deshalb `onScrim` auf `scrim` über dem hellsten möglichen Bild (Weiß): `scrim` ergibt dort etwa `#404040`.
   `scrim` und `onScrim` sind in beiden Themes gleich.
+- **Vollbild-Overlay (Wall, Ground):** `backdrop` dunkelt nur ab und trägt keinen Text. Icon (`text.color`) und Text
+  (`text.color`, `text.lg`) stehen auf einer Fläche `background`, gemessen wie `text.color` auf `background`; es gibt
+  kein neues Kontrastpaar.
 - **Ressourcen (Player):** Die Spannen reichen über alle fünf Ressourcen.
 - **Flächen in Dashboard-Panels (Admin):** Buttons und Slider-Schiene haben die Fläche `background` auf dem Panel in
   `secondary` (wie Decline im Dialog); die Fläche hebt sich nur schwach ab und ist nur ein Zusatzsignal, erkennbar sind

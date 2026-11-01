@@ -227,6 +227,19 @@ Nur auf der Wall.
 | Position | `space.7` unter der Oberkante, horizontal mittig |
 | Kopfzeile | Überschrift, `space.5` zum Inhalt |
 
+## Vollbild-Overlay
+
+Nur auf Wall und Ground, Komponente `FullscreenHoverOverlay`
+([src/components/FullscreenHoverOverlay.tsx](../../src/components/FullscreenHoverOverlay.tsx)), im Screen als letztes
+Element eingebunden.
+
+| Eigenschaft | Wert |
+|---|---|
+| Ebene, Abdunklung | `layer.control`, `position: fixed`, `inset: 0`; Hintergrund `backdrop` |
+| Aufbau | ganze Fläche ist ein Button (`cursor: pointer`), mittig eine Fläche `background` mit `radius.lg` und Innenabstand `space.5`; darin als Spalte (`gap` `space.3`) das Icon (`fullscreen.svg` bzw. im Vollbild `fullscreenExit.svg`, `size.icon`, `text.color`) und darunter der Text „Vollbild“ bzw. „Vollbild beenden“ (`text.lg` `semibold`, `text.color`) |
+| Sichtbarkeit | nur gerendert, solange die Maus über dem Fenster ist (`pointerenter`/`pointermove` mit `pointerType` `mouse`, ausgeblendet bei `pointerleave`); Touch zeigt es nicht |
+| Bedienung | Klick irgendwo schaltet das Vollbild des eigenen Fensters um (`useDocumentFullscreen`); `aria-label` wie der Text, `aria-pressed` = Vollbild-Zustand |
+
 ## Dialog
 
 | Eigenschaft | Wert |

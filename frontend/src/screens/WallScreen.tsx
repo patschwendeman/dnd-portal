@@ -4,6 +4,7 @@ import {
 import styled from 'styled-components'
 
 import { mediaUrl } from '../api/mediaUrl'
+import FullscreenHoverOverlay from '../components/FullscreenHoverOverlay'
 import { ActiveSceneContext, GameTableContext } from '../context/context'
 import { SceneDetail } from '../models/models'
 import getWallScene from '../service/WallScreen'
@@ -139,6 +140,7 @@ function WallScreen(): ReactElement {
         </PanelHeader>
         <MapEnvironment src={MapEnvironmentSrc} alt="" />
       </OverlayPanel>
+      <FullscreenHoverOverlay />
     </Screen>
   )
 }

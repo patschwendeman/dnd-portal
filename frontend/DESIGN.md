@@ -84,6 +84,7 @@ Ressourcen, das Overlay „Handy drehen“ steht im JSX zuletzt und verdeckt bei
 | `layer.media` | Vollbild-Hintergrund (Bild, Video) |
 | `layer.grid` | Raster-Ebene auf dem Ground |
 | `layer.panel` | Overlay-Panel auf der Wall |
+| `layer.control` | Vollbild-Overlay auf Wall und Ground (über Overlay-Panel und Raster) |
 | `layer.popover` | aufklappende Liste über dem Inhalt, z. B. Abenteuer-Auswahl im Admin |
 | `layer.dialog` | Dialog mit Abdunklung |
 
@@ -110,7 +111,7 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 
 | Fläche | Innenabstand |
 |---|---|
-| Karte, Dashboard-Panel | `space.5` |
+| Karte, Dashboard-Panel, Fläche im Vollbild-Overlay | `space.5` |
 | Bühne (Admin) | keiner, das Wall-Bild ist bündig; Text auf dem Bild `space.7` oben (Verlauf), `space.5` seitlich und unten |
 | Segment-Control | `space.1` |
 | Spielerzeile | `space.2` |
@@ -132,7 +133,7 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 |---|---|---|
 | `text.2xl` | `medium` / `bold` | Charaktername und Initialen der Hero-Karte (`medium`, Admin, derzeit nicht verwendet), h1 in den Notizen (`bold`) |
 | `text.xl` | `semibold` | h2 in den Notizen, Überschrift des Wall-Panels, Zahl im Ressourcen-Button (Player), Szenenname auf der Bühne (Admin) |
-| `text.lg` | `semibold` | Titel von Karte und Dialog, Ziffer der Zauberstufe I–IV (Player), Level und Zeichen „−“ und „+“ im Level-Stepper (Admin) |
+| `text.lg` | `semibold` | Titel von Karte und Dialog, Text im Vollbild-Overlay (Wall, Ground), Ziffer der Zauberstufe I–IV (Player), Level und Zeichen „−“ und „+“ im Level-Stepper (Admin) |
 | `text.md` | `regular` / `medium` / `semibold` / `bold` | Standard und Listen in den Notizen (`ul`, `ol`, `li`, auch Absätze in Listeneinträgen des Inhaltsverzeichnisses) (`regular`), Hinweis im Overlay „Handy drehen“ (`medium`, Player), h3 und h4 in den Notizen (`semibold`), Abenteuer-Auswahl in der Top-Bar (`bold`) |
 | `text.sm` | `regular` / `medium` / `semibold` | Werte, Beschreibungen (auch auf der Bühne), Statustexte, Zustand der Musik, Volk · Klasse · Spieler der Spielerzeile, Chips der Hero-Karte (`regular`), Navigation, Musiktitel, Charaktername und Initialen der Spielerzeile, Text der Hinweisleiste und Zahl im Level-Badge (`medium`), Buttons (auch im Segment-Control), Slider-Wert, Namen der Screens im Panel „Spieltisch“, h5 und h6 in den Notizen (`semibold`) |
 | `text.xs` | `semibold` | Labels (auch auf den Bildern der Bühne) |
@@ -153,7 +154,7 @@ Titel und normale Texte wie „Confirm“.
 | Weltkarte | `radius.md` |
 | Bedienelemente (Buttons, Navigation, Icon-Buttons, Ressourcen-Buttons im Player) | `radius.md` |
 | Zauber- und Spezialplatz (Player) | `radius.sm` |
-| Karte, Dashboard-Panel, Notizseite, Wall-Panel, Dialog | `radius.lg` |
+| Karte, Dashboard-Panel, Notizseite, Wall-Panel, Dialog, Fläche im Vollbild-Overlay | `radius.lg` |
 | Bühne (Admin) | `radius.lg` |
 | Ground-Bild auf der Bühne | `radius.md` |
 | Label auf einem Bild der Bühne | `radius.sm` |
@@ -210,7 +211,7 @@ Aufbau je Baustein in [components.md](docs/design/components.md): [Icon-Button](
 [Segment-Control](docs/design/components.md#segment-control) (Admin), [Spieltisch-Zeile](docs/design/components.md#spieltisch-zeile) (Admin),
 [Spielerzeile](docs/design/components.md#spielerzeile) (Admin), [Level-Stepper](docs/design/components.md#level-stepper) (Admin),
 [Hero-Karte](docs/design/components.md#hero-karte) (Admin, derzeit nicht verwendet), [Status-Punkt](docs/design/components.md#status-punkt) (Admin), [Ressourcen-Button](docs/design/components.md#ressourcen-button) (Player),
-[Overlay-Panel](docs/design/components.md#overlay-panel) (Wall),
+[Overlay-Panel](docs/design/components.md#overlay-panel) (Wall), [Vollbild-Overlay](docs/design/components.md#vollbild-overlay) (Wall, Ground),
 [Dialog](docs/design/components.md#dialog), [Dialog „Spieler verbinden“](docs/design/components.md#dialog-spieler-verbinden) (Admin), [Top-Bar](docs/design/components.md#top-bar),
 [Theme-Menü](docs/design/components.md#theme-menü) (Player), [Hinweisleiste](docs/design/components.md#hinweisleiste) (Admin),
 [Slider](docs/design/components.md#slider) (Admin).
@@ -218,7 +219,8 @@ Aufbau je Baustein in [components.md](docs/design/components.md): [Icon-Button](
 ### 1.6 Screen-Layouts
 
 Aufbau von Admin (Grid aus Top-Bar, Navigationsleiste mit Panel, Notizen und Dashboard), Wall (Vollbild mit Overlay-Panel),
-Ground (Vollbild-Medium mit Raster); Wall und Ground ohne Bedienelemente und Player (Smartphone im Querformat, Karte mit
+Ground (Vollbild-Medium mit Raster); Wall und Ground ohne Bedienelemente außer dem Vollbild-Overlay beim Hovern mit
+der Maus und Player (Smartphone im Querformat, Karte mit
 Ressourcen-Buttons): [screen-layouts.md](docs/design/screen-layouts.md#screen-layouts).
 
 ---
@@ -241,11 +243,12 @@ Wechselt mit dem Theme.
 
 | Rolle | Bedeutung | Verwendung |
 |---|---|---|
-| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Navigationsleiste und Panel im Admin, Wall-Panel, Nebenaktion ([2.4](#24-zustände)); leere Bildflächen der Bühne; Flächen in Dashboard-Panels (Play-Button ohne Musik, Slider-Schienen, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, Segment-Control, Sound-Gruppen, Spielerzeilen, Hero-Karte), Ring um das Level-Badge |
+| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Navigationsleiste und Panel im Admin, Wall-Panel, Fläche im Vollbild-Overlay, Nebenaktion ([2.4](#24-zustände)); leere Bildflächen der Bühne; Flächen in Dashboard-Panels (Play-Button ohne Musik, Slider-Schienen, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, Segment-Control, Sound-Gruppen, Spielerzeilen, Hero-Karte), Ring um das Level-Badge |
 | `secondary` | erhöhte Fläche | Karten, Dashboard-Panels, Dialog, Avatar der Spielerzeile, Avatar und Chips der Hero-Karte, Hover der Buttons im Segment-Control, Nach-oben-Button, Hintergrund der Wall, Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel im Admin, inaktiver Zustand ([2.4](#24-zustände)) |
 | `primary` | Akzent, aktiv | Links, Slider-Füllung, Status-Punkt „verbunden“, Level-Badge der Hero-Karte, aktiver Zustand ([2.4](#24-zustände)) |
 | `border` | Linien | Trennlinien in Karten, Top-Bar und den Panels „Audio“ und „Spieltisch“, Rand des Avatars der Spielerzeile, Rand von Avatar und Chips der Hero-Karte, Ränder von Notizseiten, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |
 | `overlay` | Abdunklung | Hintergrund hinter dem Dialog |
+| `backdrop` | leichte Abdunklung des ganzen Screens | Vollbild-Overlay auf Wall und Ground (Text und Icon stehen auf einer Fläche `background`, nicht auf `backdrop`) |
 | `scrim` | Abdunklung auf Bildern | Verlauf unter dem Text der Bühne, Fläche der Labels „Wall“ und „Ground“ auf der Bühne, Rand des Ground-Bilds |
 | `onScrim` | Vordergrund auf `scrim` | Label, Szenenname und Beschreibung auf der Bühne, Text der Labels „Wall“ und „Ground“ |
 | `text.color` | Vordergrund | Text, Icon-Füllung, Slider-Griff, Ring des Status-Punkts „nicht verbunden“ |
@@ -264,7 +267,7 @@ Wechselt mit dem Theme.
 Zwei Themes: Dark (`darkTheme`, [darkTheme.ts](src/style/darkTheme.ts)) und Tavern (`tavernTheme`,
 [tavernTheme.ts](src/style/tavernTheme.ts)). `resource.*`, `qr.*`, `error` und `onError` sind in beiden Themes
 gleich, weil sie Bedeutung tragen, nicht Stimmung; `scrim` und `onScrim` ebenfalls, weil sie auf beliebigen Bildern
-lesbar sein müssen. Die `resource.*`-Töne sind so gewählt, dass alle Grafik-Paare 3:1 erreichen. Werte: [contrast.md](docs/design/contrast.md#theme-werte).
+lesbar sein müssen, und `backdrop`, weil es beliebige Bilder abdunkelt. Die `resource.*`-Töne sind so gewählt, dass alle Grafik-Paare 3:1 erreichen. Werte: [contrast.md](docs/design/contrast.md#theme-werte).
 
 ### 2.4 Zustände
 
