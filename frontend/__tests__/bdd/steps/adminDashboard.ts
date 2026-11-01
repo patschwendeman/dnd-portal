@@ -25,16 +25,26 @@ const DASHBOARD_TOGGLE = '[data-test-id="dashboard-toggle"]'
 const DASHBOARD_PANELS = `${DASHBOARD} > section`
 const NOTES_VIEW = '[data-test-id="notes-view"]'
 const NOTES_SCROLL = '[data-test-id="notes-scroll"]'
-const MUSIC_TOGGLE = '[data-test-id="dashboard-panel-music"] [data-test-id="music-toggle"]'
-const NO_OUTPUT_HINT = '[data-test-id="dashboard-panel-music"] [data-test-id="music-no-output"]'
-const SOUND_BUTTON = '[data-test-id="dashboard-panel-sounds"] [data-test-id="sound-heal"]'
+const AUDIO_PANEL = '[data-test-id="dashboard-panel-audio"]'
+const MUSIC_TOGGLE = `${AUDIO_PANEL} [data-test-id="music-toggle"]`
+const MUSIC_STATE = `${AUDIO_PANEL} [data-test-id="music-state"]`
+const NO_OUTPUT_HINT = `${AUDIO_PANEL} [data-test-id="music-no-output"]`
+const VOLUME_THUMB = `${AUDIO_PANEL} .MuiSlider-thumb`
+const VOLUME_RAIL = `${AUDIO_PANEL} .MuiSlider-rail`
+const VOLUME_INPUT = `${AUDIO_PANEL} .MuiSlider-root input`
+const VOLUME_VALUE = `${AUDIO_PANEL} [data-test-id="music-volume-value"]`
+const SOUND_BUTTON = `${AUDIO_PANEL} [data-test-id="sound-heal"]`
 const JOIN_BUTTON = '[data-test-id="join-button"]'
+const PLAYERS_STATUS = '[data-test-id="screen-players"]'
 const FULLSCREEN_TOGGLE = '[data-test-id="fullscreen-toggle"]'
 const JOIN_DIALOG = '[data-test-id="join-dialog"]'
-const PANEL_LABELS = [
-  'Aktive Szene', 'Musik', 'Sounds', 'Wall-Overlay', 'Ground-Raster', 'Screens', 'Level',
-  'Spieler',
-]
+const PANEL_LABELS = ['Aktive Szene', 'Audio', 'Spieltisch', 'Party']
+const DASHBOARD_MIN_WIDTH = 400
+const DASHBOARD_MAX_WIDTH = 560
+// The volume the slider is moved to: the middle of the rail
+const MIDDLE_VOLUME = 50
+// Any other volume, so moving the slider to the middle changes it
+const START_VOLUME = 20
 const LEVELING_INDEX = 3
 const SCROLL_TOP = 400
 // Three status waits plus the start of two more browsers, see the scenario
@@ -44,7 +54,7 @@ const entry = (index: number): string => `[data-test-id="notes-entry-${index}"]`
 const panel = (id: string): string => `[data-test-id="dashboard-panel-${id}"]`
 
 const screenStatus = (screen: string): string => (
-  `${panel('screens')} [data-test-id="screen-${screen}-status"]`
+  `${panel('table')} [data-test-id="screen-${screen}-status"]`
 )
 
 const isFullscreen = async (driver: WebDriver): Promise<boolean> => driver.executeScript(
@@ -97,7 +107,7 @@ const waitForScreenCounts = async (
   driver: WebDriver,
   expected?: ScreenCounts,
 ): Promise<ScreenCounts> => {
-  await waitForElement(driver, panel('screens'))
+  await waitForElement(driver, panel('table'))
   let actual: ScreenCounts = { wall: null, ground: null }
   try {
     await driver.wait(async () => {
@@ -128,32 +138,65 @@ const getNotesWidth = async (driver: WebDriver): Promise<number> => (
   (await (await waitForElement(driver, NOTES_VIEW)).getRect()).width
 )
 
-const isMusicPlaying = async (): Promise<boolean> => {
-  const response = await fetch(`${BASE_URL}/api/table/audio`)
-  expect(response.ok).toBe(true)
-  return ((await response.json()) as { playing: boolean }).playing
+// Returns the last seen text instead of throwing on timeout, so the step's expect shows it
+const waitForText = async (
+  driver: WebDriver,
+  selector: string,
+  expected: string,
+): Promise<string | null> => {
+  let actual: string | null = null
+  try {
+    await driver.wait(async () => {
+      const elements = await driver.findElements(By.css(selector))
+      actual = elements.length > 0 ? await elements[0].getText() : null
+      return actual === expected
+    }, WAIT_TIMEOUT)
+  } catch (err) {
+    if (!(err instanceof error.TimeoutError)) {
+      throw err
+    }
+  }
+  return actual
 }
 
-const setMusicPlaying = async (playing: boolean): Promise<void> => {
+interface Audio { playing: boolean, volume: number }
+
+const getAudio = async (): Promise<Audio> => {
+  const response = await fetch(`${BASE_URL}/api/table/audio`)
+  expect(response.ok).toBe(true)
+  return (await response.json()) as Audio
+}
+
+const isMusicPlaying = async (): Promise<boolean> => (await getAudio()).playing
+
+const saveAudio = async (update: Partial<Audio>): Promise<void> => {
   const response = await fetch(`${BASE_URL}/api/table/audio`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ playing }),
+    body: JSON.stringify(update),
   })
   expect(response.ok).toBe(true)
 }
 
-// The button changes only with the push of the server, so it shows the state the server keeps
+const setMusicPlaying = async (playing: boolean): Promise<void> => saveAudio({ playing })
+
+// The button changes only with the push of the server, so it shows the state the server keeps.
+// The click made this window the audio output, so the panel shows the state instead of the hint
 const waitForMusicState = async (driver: WebDriver, playing: boolean): Promise<void> => {
   expect(await waitForAttribute(driver, MUSIC_TOGGLE, 'data-playing', String(playing)))
     .toBe(String(playing))
   expect(await isMusicPlaying()).toBe(playing)
+  const state = playing ? 'Läuft' : 'Pausiert'
+  expect(await waitForText(driver, MUSIC_STATE, state)).toBe(state)
 }
 
 defineFeature(feature, (test) => {
   let driver: WebDriver
   // Wall and ground screens a scenario opens in addition; quit after each scenario, also on failure
   let screenDrivers: WebDriver[] = []
+  // Audio before a scenario that changes the volume, restored afterwards: all specs share the one
+  // game table
+  let restoreAudio: Audio | null = null
 
   beforeEach(async () => {
     driver = buildDriver()
@@ -163,6 +206,10 @@ defineFeature(feature, (test) => {
     const drivers = [driver, ...screenDrivers]
     screenDrivers = []
     await Promise.allSettled(drivers.map((item) => item.quit()))
+    if (restoreAudio !== null) {
+      await saveAudio(restoreAudio)
+      restoreAudio = null
+    }
   })
 
   test('The dashboard shows its panels next to the notes', ({ given, then, and }) => {
@@ -171,60 +218,76 @@ defineFeature(feature, (test) => {
     })
 
     then(
-      'I see the dashboard with the panels Aktive Szene, Musik, Sounds, Wall-Overlay, '
-        + 'Ground-Raster, Screens, Level, Spieler',
+      'I see the dashboard with the panels Aktive Szene, Audio, Spieltisch, Party and no panel '
+        + 'Level',
       async () => {
         await waitForElement(driver, DASHBOARD)
-        const panels = await driver.findElements(By.css(DASHBOARD_PANELS))
-        const labels = await Promise.all(panels.map((item) => item.getAttribute('aria-label')))
+        // In one script: the stage replaces its element once the active scene is loaded
+        let labels: string[] = []
+        try {
+          await driver.wait(async () => {
+            labels = await driver.executeScript(
+              `return [...document.querySelectorAll('${DASHBOARD_PANELS}')]
+                .map((item) => item.getAttribute('aria-label'))`,
+            )
+            return labels.length === PANEL_LABELS.length
+          }, WAIT_TIMEOUT)
+        } catch (err) {
+          if (!(err instanceof error.TimeoutError)) {
+            throw err
+          }
+        }
         expect(labels).toEqual(PANEL_LABELS)
-        const dashboard = await (await waitForElement(driver, DASHBOARD)).getRect()
-        const notes = await getNotesWidth(driver)
-        expect(dashboard.width).toBeLessThan(notes)
-        expect(dashboard.width).toBeGreaterThan(notes / 3)
+        await waitForElement(driver, `${panel('stage')} [data-test-id="active-scene-name"]`)
+        expect(await driver.findElements(By.css(panel('level')))).toHaveLength(0)
       },
     )
 
     and(
-      'Aktive Szene spans the full width, below it Musik and Sounds side by side, below them '
-        + 'Wall-Overlay and Ground-Raster side by side, below them Screens, Level and Spieler over '
-        + 'the full width',
+      'the panels lie in one column over the full width of the dashboard, each as high as its '
+        + 'content',
       async () => {
-        const dashboard = await (await waitForElement(driver, DASHBOARD)).getRect()
-        const scene = await (await waitForElement(driver, panel('scene'))).getRect()
-        const music = await (await waitForElement(driver, panel('music'))).getRect()
-        const sounds = await (await waitForElement(driver, panel('sounds'))).getRect()
-        const overlay = await (await waitForElement(driver, panel('wall-overlay'))).getRect()
-        const grid = await (await waitForElement(driver, panel('ground-grid'))).getRect()
-        const screens = await (await waitForElement(driver, panel('screens'))).getRect()
-        // Without the scroll bar the dashboard gets once it is higher than the main area
-        const innerWidth: number = await driver.executeScript(
-          `return document.querySelector('${DASHBOARD}').clientWidth`,
+        // Without the scroll bar the dashboard gets once it is higher than the main area. The
+        // last child of a panel is its content (the stage: the caption); without padding below it
+        // the panel ends where the content ends
+        const layout: { width: number, x: number, y: number, bottom: number, gap: number }[] = (
+          await driver.executeScript(
+            `const innerWidth = document.querySelector('${DASHBOARD}').clientWidth
+            return [...document.querySelectorAll('${DASHBOARD_PANELS}')].map((item) => {
+              const box = item.getBoundingClientRect()
+              const content = item.lastElementChild.getBoundingClientRect()
+              const padding = parseFloat(getComputedStyle(item).paddingBottom)
+              return {
+                width: Math.round(box.width) - innerWidth,
+                x: box.x,
+                y: box.y,
+                bottom: box.bottom,
+                gap: Math.round(box.bottom - padding - content.bottom),
+              }
+            })`,
+          )
         )
-        expect(dashboard.width).toBeGreaterThanOrEqual(innerWidth)
-        expect(scene.width).toBe(innerWidth)
-        expect(music.y).toBeGreaterThan(scene.y + scene.height)
-        expect(music.width).toBeLessThan(innerWidth / 2)
-        expect(sounds.y).toBe(music.y)
-        expect(sounds.x).toBeGreaterThan(music.x + music.width)
-        expect(sounds.width).toBe(music.width)
-        expect(sounds.height).toBe(music.height)
-        expect(overlay.x).toBe(music.x)
-        expect(overlay.y).toBeGreaterThan(music.y + music.height)
-        expect(overlay.width).toBe(music.width)
-        expect(overlay.height).toBeLessThan(music.height)
-        expect(grid.x).toBe(sounds.x)
-        expect(grid.y).toBe(overlay.y)
-        expect(grid.width).toBe(sounds.width)
-        expect(grid.height).toBe(overlay.height)
-        expect(screens.y).toBeGreaterThan(overlay.y + overlay.height)
-        expect(screens.width).toBe(innerWidth)
-        const level = await (await waitForElement(driver, panel('level'))).getRect()
-        const players = await (await waitForElement(driver, panel('players'))).getRect()
-        expect(level.y).toBeGreaterThan(screens.y + screens.height)
-        expect(level.width).toBe(innerWidth)
-        expect(players.y).toBeGreaterThan(level.y + level.height)
-        expect(players.width).toBe(innerWidth)
+        expect(layout).toHaveLength(PANEL_LABELS.length)
+        layout.forEach((item, index) => {
+          expect(item.width).toBe(0)
+          expect(item.x).toBe(layout[0].x)
+          expect(item.gap).toBe(0)
+          if (index > 0) {
+            expect(item.y).toBeGreaterThan(layout[index - 1].bottom)
+          }
+        })
+      },
+    )
+
+    and(
+      'the dashboard takes a third of the width, at least 400 and at most 560 pixels',
+      async () => {
+        const dashboard = (await (await waitForElement(driver, DASHBOARD)).getRect()).width
+        const notes = await getNotesWidth(driver)
+        const third = (notes + dashboard) / 3
+        const expected = Math.min(DASHBOARD_MAX_WIDTH, Math.max(DASHBOARD_MIN_WIDTH, third))
+        expect(Math.abs(dashboard - expected)).toBeLessThan(1)
+        expect(notes).toBeGreaterThan(dashboard)
       },
     )
 
@@ -320,20 +383,22 @@ defineFeature(feature, (test) => {
   })
 
   test('I control music and sounds from the dashboard', ({ given, when, then }) => {
-    let wasPlaying = false
+    let before: Audio = { playing: false, volume: 0 }
 
     given('I am on the admin screen', async () => {
-      wasPlaying = await isMusicPlaying()
+      before = await getAudio()
+      restoreAudio = before
+      await saveAudio({ volume: START_VOLUME })
       await openAdmin(driver)
-      await waitForAttribute(driver, MUSIC_TOGGLE, 'data-playing', String(wasPlaying))
+      await waitForAttribute(driver, MUSIC_TOGGLE, 'data-playing', String(before.playing))
     })
 
-    when('I click on the play button in the panel Musik', async () => {
+    when('I click on the play button in the panel Audio', async () => {
       await clickElement(driver, MUSIC_TOGGLE)
     })
 
     then('the music state on the server switches and the panel shows it', async () => {
-      await waitForMusicState(driver, !wasPlaying)
+      await waitForMusicState(driver, !before.playing)
     })
 
     when('I click on the play button again', async () => {
@@ -341,10 +406,30 @@ defineFeature(feature, (test) => {
     })
 
     then('the music state on the server switches back', async () => {
-      await waitForMusicState(driver, wasPlaying)
+      await waitForMusicState(driver, before.playing)
     })
 
-    when('I click on a sound button in the panel Sounds', async () => {
+    when('I move the volume slider to 50 and release it', async () => {
+      expect(await waitForAttribute(driver, VOLUME_INPUT, 'value', String(START_VOLUME)))
+        .toBe(String(START_VOLUME))
+      const thumb = await waitForElement(driver, VOLUME_THUMB)
+      const rail = await waitForElement(driver, VOLUME_RAIL)
+      await driver.actions()
+        .move({ origin: thumb })
+        .press()
+        .move({ origin: rail })
+        .release()
+        .perform()
+    })
+
+    then('the volume on the server is 50 and the panel shows 50', async () => {
+      const expected = String(MIDDLE_VOLUME)
+      expect(await waitForAttribute(driver, VOLUME_INPUT, 'value', expected)).toBe(expected)
+      expect(await waitForText(driver, VOLUME_VALUE, expected)).toBe(expected)
+      expect((await getAudio()).volume).toBe(MIDDLE_VOLUME)
+    })
+
+    when('I click on a sound button in the panel Audio', async () => {
       await clickElement(driver, SOUND_BUTTON)
     })
 
@@ -385,7 +470,7 @@ defineFeature(feature, (test) => {
           // The hint needs the first audio state, so afterwards a click may request the output
           await Promise.all([driver, second as WebDriver].map(async (item) => {
             await waitForElement(item, NO_OUTPUT_HINT)
-            const text = await (await waitForElement(item, panel('music'))).getText()
+            const text = await (await waitForElement(item, panel('audio'))).getText()
             expect(text).not.toContain('Hier abspielen')
           }))
         },
@@ -454,7 +539,7 @@ defineFeature(feature, (test) => {
     })
 
     and(
-      'I noted how many wall and ground screens the panel Screens shows as connected',
+      'I noted how many wall and ground screens the panel Spieltisch shows as connected',
       async () => {
         before = await waitForScreenCounts(driver)
         expect(before.wall).not.toBeNull()
@@ -470,7 +555,7 @@ defineFeature(feature, (test) => {
     })
 
     then(
-      'the panel Screens shows one more Wall and one more Ground as connected',
+      'the panel Spieltisch shows one more Wall and one more Ground as connected',
       async () => {
         const expected = { wall: Number(before.wall) + 1, ground: Number(before.ground) + 1 }
         expect(await waitForScreenCounts(driver, expected)).toEqual(expected)
@@ -484,19 +569,33 @@ defineFeature(feature, (test) => {
       await closing?.quit()
     })
 
-    then('the panel Screens shows one Ground less as connected', async () => {
+    then('the panel Spieltisch shows one Ground less as connected', async () => {
       const expected = { wall: Number(before.wall) + 1, ground: Number(before.ground) }
       expect(await waitForScreenCounts(driver, expected)).toEqual(expected)
     })
   }, SCREENS_SCENARIO_TIMEOUT)
 
-  test('I open the QR code from the panel Screens', ({ given, when, then }) => {
+  test('I open the QR code from the panel Spieltisch', ({ given, when, then }) => {
     given('I am on the admin screen', async () => {
       await openAdmin(driver)
     })
 
-    when('I click on the QR code icon next to the players in the panel Screens', async () => {
-      await clickElement(driver, `${panel('screens')} ${JOIN_BUTTON}`)
+    then(
+      'the row Spieler in the panel Spieltisch shows the connected players and the text Spieler '
+        + 'QR-Code',
+      async () => {
+        const status = await waitForElement(driver, `${panel('table')} ${PLAYERS_STATUS}`)
+        await driver.wait(
+          async () => /^\d+ Spieler verbunden$/.test(await status.getText()),
+          WAIT_TIMEOUT,
+        )
+        const row = await status.findElement(By.xpath('../..'))
+        expect(await row.getText()).toContain('Spieler QR-Code')
+      },
+    )
+
+    when('I click on the QR code icon in the row Spieler', async () => {
+      await clickElement(driver, `${panel('table')} ${JOIN_BUTTON}`)
     })
 
     then('the dialog with the QR code and the player URL is shown', async () => {

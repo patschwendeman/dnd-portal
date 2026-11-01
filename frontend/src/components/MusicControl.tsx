@@ -1,31 +1,30 @@
-import Box from '@mui/material/Box'
 import { ReactElement, useState } from 'react'
 import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
 
-import { PANEL_SLIDER_THUMB_SIZE, PanelSlider } from './PanelSlider'
+import { PanelSlider, PanelSliderArea, SliderValue } from './PanelSlider'
 import { AudioState } from '../models/models'
 import { textStyle } from '../style/tokens'
 import { getMusicTitle } from '../utils/utils'
 
 import pauseIcon from '/assets/icons/pause.svg'
 import playIcon from '/assets/icons/play.svg'
-
-// Lowest height of the vertical slider; in the panel it takes the full height of the content
-const VOLUME_SLIDER_MIN_HEIGHT = '96px'
+import volumeIcon from '/assets/icons/volume.svg'
 
 const NO_AUDIO_OUTPUT_MESSAGE = 'Keine Audioausgabe bereit'
 
 const Music = styled.div`
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: auto 1fr;
-    grid-template-areas:
-        "toggle volume"
-        "track volume";
-    gap: ${(props) => props.theme.space[3]};
-    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: ${(props) => props.theme.space[4]};
     min-width: 0;
+`
+
+const NowPlaying = styled.div`
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: ${(props) => props.theme.space[3]};
 `
 
 const AudioControlButton = styled.div<{ $isMusicPlaying: boolean }>`
@@ -42,7 +41,6 @@ const AudioControlButton = styled.div<{ $isMusicPlaying: boolean }>`
     border: none;
     border-radius: ${(props) => props.theme.radius.md};
     cursor: pointer;
-    grid-area: toggle;
     svg {
       display: block;
       width: ${(props) => props.theme.size.icon};
@@ -50,12 +48,11 @@ const AudioControlButton = styled.div<{ $isMusicPlaying: boolean }>`
     }
 `
 
-// The panel is narrow: title and hint wrap instead of being cut off; long German words are
-// hyphenated (lang="de" on the element)
+// Title and state wrap instead of being cut off; long German words are hyphenated (lang="de" on
+// the element)
 const Track = styled.div`
     display: flex;
     flex-direction: column;
-    grid-area: track;
     min-width: 0;
     overflow-wrap: break-word;
     hyphens: auto;
@@ -66,8 +63,21 @@ const TrackName = styled.span`
     font-weight: ${(props) => props.theme.fontWeight.medium};
 `
 
-const AudioHint = styled.span`
+const TrackState = styled.span`
     ${textStyle('sm')}
+`
+
+const Volume = styled.div`
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: ${(props) => props.theme.space[3]};
+
+    svg {
+      display: block;
+      width: ${(props) => props.theme.size.icon};
+      height: ${(props) => props.theme.size.icon};
+    }
 `
 
 interface MusicControlProps {
@@ -77,6 +87,13 @@ interface MusicControlProps {
   failedSave: object | null
   onToggle: () => void
   onVolumeCommit: (volume: number) => void
+}
+
+const trackState = (audio: AudioState): string => {
+  if (!audio.output_ready) {
+    return NO_AUDIO_OUTPUT_MESSAGE
+  }
+  return audio.playing ? 'Läuft' : 'Pausiert'
 }
 
 function MusicControl({
@@ -94,50 +111,58 @@ function MusicControl({
     setDraggedVolume(null)
   }
 
+  const shownVolume = draggedVolume ?? audio?.volume ?? 0
+
   return (
     <Music>
-      <AudioControlButton
-        $isMusicPlaying={isMusicPlaying}
-        onClick={onToggle}
-        data-test-id="music-toggle"
-        data-playing={isMusicPlaying}
-      >
+      <NowPlaying>
+        <AudioControlButton
+          $isMusicPlaying={isMusicPlaying}
+          onClick={onToggle}
+          data-test-id="music-toggle"
+          data-playing={isMusicPlaying}
+        >
+          <ReactSVG
+            src={isMusicPlaying ? pauseIcon : playIcon}
+            beforeInjection={(svg) => {
+              const fill = isMusicPlaying ? theme.colors.onPrimary : theme.colors.text.color
+              svg.setAttribute('style', `fill: ${fill}`)
+            }}
+          />
+        </AudioControlButton>
+        <Track lang="de">
+          <TrackName data-test-id="music-track">
+            { getMusicTitle(audio?.track?.source ?? '') }
+          </TrackName>
+          {audio !== null && (
+            <TrackState
+              data-test-id={audio.output_ready ? 'music-state' : 'music-no-output'}
+            >
+              { trackState(audio) }
+            </TrackState>
+          )}
+        </Track>
+      </NowPlaying>
+      <Volume>
         <ReactSVG
-          src={isMusicPlaying ? pauseIcon : playIcon}
+          src={volumeIcon}
           beforeInjection={(svg) => {
-            const fill = isMusicPlaying ? theme.colors.onPrimary : theme.colors.text.color
-            svg.setAttribute('style', `fill: ${fill}`)
+            svg.setAttribute('style', `fill: ${theme.colors.text.muted}`)
+            svg.setAttribute('aria-hidden', 'true')
           }}
         />
-      </AudioControlButton>
-      <Track lang="de">
-        <TrackName data-test-id="music-track">
-          { getMusicTitle(audio?.track?.source ?? '') }
-        </TrackName>
-        {audio !== null && !audio.output_ready && (
-          <AudioHint data-test-id="music-no-output">{ NO_AUDIO_OUTPUT_MESSAGE }</AudioHint>
-        )}
-      </Track>
-      {/* Half a thumb above and below, so the thumb stays inside the panel at 0 and 100; the
-          invisible touch area around the thumb is cut off instead of overflowing the panel */}
-      <Box sx={{
-        gridArea: 'volume',
-        minHeight: VOLUME_SLIDER_MIN_HEIGHT,
-        margin: 0,
-        paddingBlock: `calc(${PANEL_SLIDER_THUMB_SIZE} / 2)`,
-        overflow: 'hidden',
-      }}
-      >
-        <PanelSlider
-          aria-label="Lautstärke"
-          orientation="vertical"
-          value={draggedVolume ?? audio?.volume ?? 0}
-          onChange={(_event, value) => setDraggedVolume(value as number)}
-          onChangeCommitted={(_event, value) => onVolumeCommit(value as number)}
-          min={0}
-          max={100}
-        />
-      </Box>
+        <PanelSliderArea>
+          <PanelSlider
+            aria-label="Lautstärke"
+            value={shownVolume}
+            onChange={(_event, value) => setDraggedVolume(value as number)}
+            onChangeCommitted={(_event, value) => onVolumeCommit(value as number)}
+            min={0}
+            max={100}
+          />
+        </PanelSliderArea>
+        <SliderValue data-test-id="music-volume-value">{shownVolume}</SliderValue>
+      </Volume>
     </Music>
   )
 }

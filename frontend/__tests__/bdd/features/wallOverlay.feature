@@ -2,9 +2,9 @@ Feature: Overlay of the wall screens
 
 Scenario: I show and hide the world map on all walls from the admin
     Given no overlay is shown and I am on the admin screen with two wall screens open
-    When I click on Weltkarte in the panel Wall-Overlay
+    When I click on Weltkarte in the row Wall of the panel Spieltisch
     Then both wall screens show the world map and the panel highlights Weltkarte
-    When I click on Aus in the panel Wall-Overlay
+    When I click on Aus in the row Wall of the panel Spieltisch
     Then both wall screens hide the world map and the panel highlights Aus
 
 Scenario: A scene change hides the world map

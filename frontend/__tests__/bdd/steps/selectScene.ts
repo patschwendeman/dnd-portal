@@ -21,7 +21,7 @@ const WINDOW_RECT = { width: 1600, height: 1000 }
 const SCENES_ITEM = '[data-test-id="nav-item-scenes"]'
 const SCENE_NAVIGATION = '[data-test-id="nav-panel"] [data-test-id="scene-navigation"]'
 const SCENE_ENTRIES = `${SCENE_NAVIGATION} button`
-const ACTIVE_SCENE_PANEL = '[data-test-id="dashboard-panel-scene"]'
+const ACTIVE_SCENE_PANEL = '[data-test-id="dashboard-panel-stage"]'
 const ACTIVE_SCENE_WALL = `${ACTIVE_SCENE_PANEL} [data-test-id="active-scene-wall"]`
 const ACTIVE_SCENE_GROUND = `${ACTIVE_SCENE_PANEL} [data-test-id="active-scene-ground"]`
 const ACTIVE_SCENE_NAME = `${ACTIVE_SCENE_PANEL} [data-test-id="active-scene-name"]`

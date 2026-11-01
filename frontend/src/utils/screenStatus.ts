@@ -1,4 +1,4 @@
-// Texts of the dashboard panel "Screens"; null: the server has not sent the counts yet
+// Texts of the dashboard panel "Spieltisch"; null: the server has not sent the counts yet
 export const NO_STATUS = '–'
 
 export const screenStatusText = (count: number | null): string => {

@@ -16,13 +16,11 @@ const feature = loadFeature('__tests__/bdd/features/adminPlayers.feature')
 const WINDOW_RECT = { width: 1600, height: 1000 }
 
 const DASHBOARD = '[data-test-id="dashboard"]'
-const LEVEL_PANEL = '[data-test-id="dashboard-panel-level"]'
-const PLAYERS_PANEL = '[data-test-id="dashboard-panel-players"]'
-const LEVEL_VALUE = `${LEVEL_PANEL} [data-test-id="level-value"]`
-const LEVEL_DECREASE = `${LEVEL_PANEL} [data-test-id="level-decrease"]`
-const LEVEL_INCREASE = `${LEVEL_PANEL} [data-test-id="level-increase"]`
-const PLAYER_CARDS = `${PLAYERS_PANEL} article`
-const LEVEL_BADGES = `${PLAYERS_PANEL} [data-test-id="player-level"]`
+const PARTY_PANEL = '[data-test-id="dashboard-panel-party"]'
+const LEVEL_VALUE = `${PARTY_PANEL} [data-test-id="level-value"]`
+const LEVEL_DECREASE = `${PARTY_PANEL} [data-test-id="level-decrease"]`
+const LEVEL_INCREASE = `${PARTY_PANEL} [data-test-id="level-increase"]`
+const PLAYER_ROWS = `${PARTY_PANEL} li`
 
 // Players of the first adventure in ../backend/app/db/data/seed_data.json
 const SEED_PLAYERS = [
@@ -81,19 +79,16 @@ const readTexts = async (driver: WebDriver, selector: string): Promise<string[]>
   return Promise.all(elements.map((element) => element.getText()))
 }
 
-// The level changes only with the push of the server; returns the last seen texts of the panel and
-// of all badges instead of throwing on timeout, so the step's expect shows expected vs. actual
-const waitForLevel = async (driver: WebDriver, level: number): Promise<string[]> => {
+// The level changes only with the push of the server; returns the last seen text of the stepper
+// instead of throwing on timeout, so the step's expect shows expected vs. actual
+const waitForLevel = async (driver: WebDriver, level: number): Promise<string | null> => {
   const expected = String(level)
-  let actual: string[] = []
+  let actual: string | null = null
   try {
     await driver.wait(async () => {
-      actual = [
-        ...(await readTexts(driver, LEVEL_VALUE)),
-        ...(await readTexts(driver, LEVEL_BADGES)),
-      ]
-      return actual.length === 1 + SEED_PLAYERS.length
-        && actual.every((text) => text === expected)
+      const texts = await readTexts(driver, LEVEL_VALUE)
+      actual = texts.length > 0 ? texts[0] : null
+      return actual === expected
     }, WAIT_TIMEOUT)
   } catch (err) {
     if (!(err instanceof error.TimeoutError)) {
@@ -102,11 +97,6 @@ const waitForLevel = async (driver: WebDriver, level: number): Promise<string[]>
   }
   return actual
 }
-
-// Panel and one badge per player
-const levelTexts = (level: number): string[] => (
-  Array(1 + SEED_PLAYERS.length).fill(String(level))
-)
 
 const isEnabled = async (driver: WebDriver, selector: string): Promise<boolean> => (
   (await waitForElement(driver, selector)).isEnabled()
@@ -140,19 +130,21 @@ defineFeature(feature, (test) => {
     }
   })
 
-  test('The panel Spieler shows the players of the adventure', ({ given, then, and }) => {
+  test('The panel Party shows the players of the adventure in one column', ({
+    given, then, and,
+  }) => {
     given('I am on the admin screen', async () => {
       await openAdmin(driver)
     })
 
     then(
-      'the panel Spieler shows a hero card for Aragorn, Legolas, Gimli and Gandalf in this order',
+      'the panel Party shows a row for Aragorn, Legolas, Gimli and Gandalf in this order',
       async () => {
         const expected = SEED_PLAYERS.map((player) => player.characterName)
         let names: string[] = []
         try {
           await driver.wait(async () => {
-            names = await readTexts(driver, `${PLAYER_CARDS} [data-test-id="player-character"]`)
+            names = await readTexts(driver, `${PLAYER_ROWS} [data-test-id="player-character"]`)
             return names.length === expected.length
           }, WAIT_TIMEOUT)
         } catch (err) {
@@ -165,49 +157,72 @@ defineFeature(feature, (test) => {
     )
 
     and(
-      'each card shows player name, character name, race, class, initials and the level of the '
-        + 'adventure',
+      'each row shows the initials, the character name and race, class and player name',
       async () => {
-        const adventure = await getAdventure(await waitForActiveAdventureId(driver))
-        const cards = await driver.findElements(By.css(PLAYER_CARDS))
-        const shown = await Promise.all(cards.map(async (card) => {
+        const rows = await driver.findElements(By.css(PLAYER_ROWS))
+        const shown = await Promise.all(rows.map(async (row) => {
           const text = async (testId: string) => (
-            card.findElement(By.css(`[data-test-id="${testId}"]`)).getText()
+            row.findElement(By.css(`[data-test-id="${testId}"]`)).getText()
           )
           return {
-            playerName: await text('player-name'),
-            characterName: await text('player-character'),
-            race: await text('player-race'),
-            characterClass: await text('player-class'),
             initials: await text('player-avatar'),
-            level: await text('player-level'),
+            characterName: await text('player-character'),
+            // Race, class and player name share one line
+            meta: await row.findElement(By.css('[data-test-id="player-race"]'))
+              .findElement(By.xpath('..')).getText(),
           }
         }))
-        // The label is written in capitals by CSS, getText returns the rendered text
         expect(shown).toEqual(SEED_PLAYERS.map((player) => ({
-          ...player,
-          playerName: player.playerName.toUpperCase(),
           initials: player.characterName.charAt(0),
-          level: String(adventure.global_level),
+          characterName: player.characterName,
+          meta: `${player.race} · ${player.characterClass} · ${player.playerName}`,
         })))
+        // The level is shown once, in the head of the panel
+        expect(await driver.findElements(By.css(`${PLAYER_ROWS} [data-test-id="player-level"]`)))
+          .toHaveLength(0)
       },
     )
 
-    and('the panel Level spans the full width directly above the panel Spieler', async () => {
-      const level = await (await waitForElement(driver, LEVEL_PANEL)).getRect()
-      const players = await (await waitForElement(driver, PLAYERS_PANEL)).getRect()
-      const innerWidth: number = await driver.executeScript(
-        `return document.querySelector('${DASHBOARD}').clientWidth`,
+    and('each player has a row of its own over the full width of the panel', async () => {
+      const rows: { x: number, y: number, bottom: number, width: number }[] = (
+        await driver.executeScript(
+          `const list = document.querySelector('${PARTY_PANEL} ul').getBoundingClientRect()
+          return [...document.querySelectorAll('${PLAYER_ROWS}')].map((row) => {
+            const box = row.getBoundingClientRect()
+            return {
+              x: box.x - list.x, y: box.y, bottom: box.bottom, width: box.width - list.width,
+            }
+          })`,
+        )
       )
-      expect(level.width).toBe(innerWidth)
-      expect(players.width).toBe(innerWidth)
-      expect(players.y).toBeGreaterThan(level.y + level.height)
-      const labels: string[] = await driver.executeScript(
-        `return [...document.querySelectorAll('${DASHBOARD} > section')]
-          .map((item) => item.getAttribute('aria-label'))`,
-      )
-      expect(labels.slice(-2)).toEqual(['Level', 'Spieler'])
+      expect(rows).toHaveLength(SEED_PLAYERS.length)
+      rows.forEach((row, index) => {
+        expect(row.x).toBe(0)
+        expect(row.width).toBe(0)
+        if (index > 0) {
+          expect(row.y).toBeGreaterThan(rows[index - 1].bottom)
+        }
+      })
     })
+
+    and(
+      'the head of the panel shows Party with the number of players and the level of the '
+        + 'adventure',
+      async () => {
+        const adventure = await getAdventure(await waitForActiveAdventureId(driver))
+        expect(await waitForLevel(driver, adventure.global_level))
+          .toBe(String(adventure.global_level))
+        const label = await driver.findElement(By.css(`${PARTY_PANEL} > div:first-child > span`))
+        // The label is written in capitals by CSS, getText returns the rendered text
+        expect(await label.getText()).toBe(`PARTY · ${SEED_PLAYERS.length}`)
+        const labels: string[] = await driver.executeScript(
+          `return [...document.querySelectorAll('${DASHBOARD} > section')]
+            .map((item) => item.getAttribute('aria-label'))`,
+        )
+        expect(labels).not.toContain('Level')
+        expect(labels[labels.length - 1]).toBe('Party')
+      },
+    )
   })
 
   test('I change the level of all players', ({
@@ -222,34 +237,36 @@ defineFeature(feature, (test) => {
       await openAdmin(secondDriver)
     })
 
-    then('the panel Level shows 1 and its minus button is disabled', async () => {
-      expect(await waitForLevel(driver, 1)).toEqual(levelTexts(1))
+    then('the head of the panel Party shows level 1 and its minus button is disabled', async () => {
+      expect(await waitForLevel(driver, 1)).toBe('1')
       expect(await isEnabled(driver, LEVEL_DECREASE)).toBe(false)
       expect(await isEnabled(driver, LEVEL_INCREASE)).toBe(true)
     })
 
-    when('I click on the plus button in the panel Level', async () => {
+    when('I click on the plus button in the head of the panel Party', async () => {
       await clickElement(driver, LEVEL_INCREASE)
     })
 
-    then('the panel Level and all level badges show 2 in both windows', async () => {
-      expect(await waitForLevel(driver, 2)).toEqual(levelTexts(2))
-      expect(await waitForLevel(secondDriver as WebDriver, 2)).toEqual(levelTexts(2))
+    then('the head of the panel Party shows level 2 in both windows', async () => {
+      expect(await waitForLevel(driver, 2)).toBe('2')
+      expect(await waitForLevel(secondDriver as WebDriver, 2)).toBe('2')
       expect((await getAdventure(Number(restore?.adventureId))).global_level).toBe(2)
       expect(await isEnabled(driver, LEVEL_DECREASE)).toBe(true)
     })
 
-    when('I click on the minus button in the panel Level', async () => {
+    when('I click on the minus button in the head of the panel Party', async () => {
       await clickElement(driver, LEVEL_DECREASE)
     })
 
-    then('the panel Level and all level badges show 1 in both windows', async () => {
-      expect(await waitForLevel(driver, 1)).toEqual(levelTexts(1))
-      expect(await waitForLevel(secondDriver as WebDriver, 1)).toEqual(levelTexts(1))
+    then('the head of the panel Party shows level 1 in both windows', async () => {
+      expect(await waitForLevel(driver, 1)).toBe('1')
+      expect(await waitForLevel(secondDriver as WebDriver, 1)).toBe('1')
     })
   }, 3 * WAIT_TIMEOUT)
 
-  test('The level does not go above 20', ({ given, and, then }) => {
+  test('The level does not go above 20', ({
+    given, and, then, when,
+  }) => {
     given('the level of the active adventure is 20', async () => {
       await setLevel(20)
     })
@@ -259,10 +276,30 @@ defineFeature(feature, (test) => {
       await waitForElement(driver, DASHBOARD)
     })
 
-    then('the panel Level shows 20 and its plus button is disabled', async () => {
-      expect(await waitForLevel(driver, 20)).toEqual(levelTexts(20))
+    then('the head of the panel Party shows level 20 and its plus button is disabled', async () => {
+      expect(await waitForLevel(driver, 20)).toBe('20')
       expect(await isEnabled(driver, LEVEL_INCREASE)).toBe(false)
       expect(await isEnabled(driver, LEVEL_DECREASE)).toBe(true)
+    })
+
+    when('I click on the plus button in the head of the panel Party', async () => {
+      await clickElement(driver, LEVEL_INCREASE)
+    })
+
+    then('the level stays 20', async () => {
+      // A write would arrive as a push of the server; nothing may arrive
+      await driver.sleep(WAIT_TIMEOUT / 10)
+      expect(await waitForLevel(driver, 20)).toBe('20')
+      expect((await getAdventure(Number(restore?.adventureId))).global_level).toBe(20)
+    })
+
+    when('I click on the minus button in the head of the panel Party', async () => {
+      await clickElement(driver, LEVEL_DECREASE)
+    })
+
+    then('the head of the panel Party shows level 19', async () => {
+      expect(await waitForLevel(driver, 19)).toBe('19')
+      expect(await isEnabled(driver, LEVEL_INCREASE)).toBe(true)
     })
   })
 })

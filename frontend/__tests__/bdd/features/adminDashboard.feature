@@ -2,8 +2,9 @@ Feature: Dashboard in the admin screen
 
 Scenario: The dashboard shows its panels next to the notes
     Given I am on the admin screen
-    Then I see the dashboard with the panels Aktive Szene, Musik, Sounds, Wall-Overlay, Ground-Raster, Screens, Level, Spieler
-    And Aktive Szene spans the full width, below it Musik and Sounds side by side, below them Wall-Overlay and Ground-Raster side by side, below them Screens, Level and Spieler over the full width
+    Then I see the dashboard with the panels Aktive Szene, Audio, Spieltisch, Party and no panel Level
+    And the panels lie in one column over the full width of the dashboard, each as high as its content
+    And the dashboard takes a third of the width, at least 400 and at most 560 pixels
     And no panel scrolls on its own
     And there is no bottom bar, no sound button and no join button in the top bar
 
@@ -20,11 +21,13 @@ Scenario: I collapse and expand the dashboard
 
 Scenario: I control music and sounds from the dashboard
     Given I am on the admin screen
-    When I click on the play button in the panel Musik
+    When I click on the play button in the panel Audio
     Then the music state on the server switches and the panel shows it
     When I click on the play button again
     Then the music state on the server switches back
-    When I click on a sound button in the panel Sounds
+    When I move the volume slider to 50 and release it
+    Then the volume on the server is 50 and the panel shows 50
+    When I click on a sound button in the panel Audio
     Then no error bar is shown
 
 Scenario: The first interaction makes an admin window the audio output
@@ -42,15 +45,16 @@ Scenario: The first interaction makes an admin window the audio output
 
 Scenario: I see which screens are connected
     Given I am on the admin screen
-    And I noted how many wall and ground screens the panel Screens shows as connected
+    And I noted how many wall and ground screens the panel Spieltisch shows as connected
     When a wall screen and a ground screen are opened
-    Then the panel Screens shows one more Wall and one more Ground as connected
+    Then the panel Spieltisch shows one more Wall and one more Ground as connected
     When the ground screen is closed
-    Then the panel Screens shows one Ground less as connected
+    Then the panel Spieltisch shows one Ground less as connected
 
-Scenario: I open the QR code from the panel Screens
+Scenario: I open the QR code from the panel Spieltisch
     Given I am on the admin screen
-    When I click on the QR code icon next to the players in the panel Screens
+    Then the row Spieler in the panel Spieltisch shows the connected players and the text Spieler QR-Code
+    When I click on the QR code icon in the row Spieler
     Then the dialog with the QR code and the player URL is shown
     When I press Escape
     Then the dialog is closed and the focus is back on the QR code icon

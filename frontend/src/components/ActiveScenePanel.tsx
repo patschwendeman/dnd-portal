@@ -1,101 +1,152 @@
 import { ReactElement } from 'react'
 import styled from 'styled-components'
 
+import DashboardPanel from './DashboardPanel'
 import Label from './Label'
 import { mediaUrl } from '../api/mediaUrl'
 import { Image, SceneDetail } from '../models/models'
 import { textStyle } from '../style/tokens'
 
-const Previews = styled.div`
+const STAGE_LABEL = 'Aktive Szene'
+
+// One column, two rows: the ground inset at the top, the caption at the bottom. The pseudo element
+// spans both and keeps the stage at least 16:9; a long caption makes it higher instead of being
+// cut off, and it never runs below the inset
+const Stage = styled.section`
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: ${(props) => props.theme.space[3]};
-`
-
-const Preview = styled.figure`
-  display: flex;
-  flex-direction: column;
-  gap: ${(props) => props.theme.space[1]};
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
   min-width: 0;
-`
-
-// Without an image the area stays empty, so both previews keep their place
-const PreviewArea = styled.div`
-  aspect-ratio: 16 / 9;
   overflow: hidden;
   background-color: ${(props) => props.theme.colors.background};
-  border-radius: ${(props) => props.theme.radius.md};
+  border-radius: ${(props) => props.theme.radius.lg};
 
-  img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  &::before {
+    content: "";
+    grid-area: 1 / 1 / 3 / 2;
+    aspect-ratio: 16 / 9;
   }
 `
 
-const SceneName = styled.strong`
+// Positioned, so it does not size the grid; everything after it in the DOM lies above it
+const StageImage = styled.img`
+  position: absolute;
+  inset: 0;
   display: block;
-  margin-top: ${(props) => props.theme.space[3]};
-  ${textStyle('lg')}
-  font-weight: ${(props) => props.theme.fontWeight.semibold};
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`
+
+const ImageLabel = styled(Label)`
+  position: relative;
+  grid-area: 1 / 1;
+  align-self: start;
+  justify-self: start;
+  margin: ${(props) => props.theme.space[3]};
+  padding: 0 ${(props) => props.theme.space[1]};
+  background-color: ${(props) => props.theme.colors.scrim};
+  color: ${(props) => props.theme.colors.onScrim};
+  border-radius: ${(props) => props.theme.radius.sm};
+`
+
+// About a third of the stage; without an image the area stays empty in `background`
+const GroundInset = styled.figure`
+  position: relative;
+  grid-area: 1 / 1;
+  justify-self: end;
+  width: calc(100% / 3);
+  margin: ${(props) => props.theme.space[3]};
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: ${(props) => props.theme.colors.background};
+  border: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.scrim};
+  border-radius: ${(props) => props.theme.radius.md};
+
+  ${ImageLabel} {
+    position: absolute;
+    margin: ${(props) => props.theme.space[1]};
+  }
+`
+
+// The text starts below the transparent part of the gradient, so it always lies on the full
+// scrim and stays readable on any image
+const Caption = styled.div`
+  position: relative;
+  grid-area: 2 / 1;
+  align-self: end;
+  display: flex;
+  flex-direction: column;
+  gap: ${(props) => props.theme.space[1]};
+  padding: ${(props) => props.theme.space[7]} ${(props) => props.theme.space[5]}
+    ${(props) => props.theme.space[5]};
+  background: linear-gradient(
+    transparent,
+    ${(props) => props.theme.colors.scrim} ${(props) => props.theme.space[7]}
+  );
+  color: ${(props) => props.theme.colors.onScrim};
   overflow-wrap: break-word;
   hyphens: auto;
+`
+
+const SceneName = styled.strong`
+  ${textStyle('xl')}
+  font-weight: ${(props) => props.theme.fontWeight.semibold};
 `
 
 const SceneDescription = styled.p`
   ${textStyle('sm')}
-  overflow-wrap: break-word;
-  hyphens: auto;
 `
 
 const NoScene = styled.p`
   ${textStyle('sm')}
 `
 
-interface ScenePreviewProps {
-  label: string
-  image: Image | undefined
-  testId: string
-}
-
-function ScenePreview({ label, image, testId }: ScenePreviewProps): ReactElement {
-  return (
-    <Preview>
-      <Label as="figcaption">{label}</Label>
-      <PreviewArea>
-        {image && (
-          <img src={mediaUrl(image.source)} alt={`${label}: ${image.name}`} data-test-id={testId} />
-        )}
-      </PreviewArea>
-    </Preview>
-  )
-}
+const imageAlt = (label: string, image: Image): string => `${label}: ${image.name}`
 
 interface ActiveScenePanelProps {
   activeScene: SceneDetail | undefined
+  testId: string
 }
 
-// Content of the dashboard panel "Aktive Szene": what Wall and Ground show, without looking at
-// them. Name and description wrap (long German words hyphenated, lang="de"); the row of the panel
-// grows instead of cutting them off
-function ActiveScenePanel({ activeScene }: ActiveScenePanelProps): ReactElement {
+// The stage of the dashboard: what Wall and Ground show, without looking at them. Name and
+// description wrap (long German words hyphenated, lang="de")
+function ActiveScenePanel({ activeScene, testId }: ActiveScenePanelProps): ReactElement {
   if (!activeScene) {
-    return <NoScene data-test-id="no-active-scene">Keine Szene aktiv</NoScene>
+    return (
+      <DashboardPanel label={STAGE_LABEL} testId={testId}>
+        <NoScene data-test-id="no-active-scene">Keine Szene aktiv</NoScene>
+      </DashboardPanel>
+    )
   }
+  const { wall_image: wallImage, ground_image: groundImage } = activeScene
   return (
-    <div lang="de">
-      <Previews>
-        <ScenePreview label="Wall" image={activeScene.wall_image} testId="active-scene-wall" />
-        <ScenePreview
-          label="Ground"
-          image={activeScene.ground_image}
-          testId="active-scene-ground"
+    <Stage aria-label={STAGE_LABEL} data-test-id={testId} lang="de">
+      {wallImage && (
+        <StageImage
+          src={mediaUrl(wallImage.source)}
+          alt={imageAlt('Wall', wallImage)}
+          data-test-id="active-scene-wall"
         />
-      </Previews>
-      <SceneName data-test-id="active-scene-name">{activeScene.name}</SceneName>
-      <SceneDescription>{activeScene.description}</SceneDescription>
-    </div>
+      )}
+      <ImageLabel>Wall</ImageLabel>
+      <GroundInset>
+        {groundImage && (
+          <StageImage
+            src={mediaUrl(groundImage.source)}
+            alt={imageAlt('Ground', groundImage)}
+            data-test-id="active-scene-ground"
+          />
+        )}
+        <ImageLabel as="figcaption">Ground</ImageLabel>
+      </GroundInset>
+      <Caption>
+        <Label>{STAGE_LABEL}</Label>
+        <SceneName data-test-id="active-scene-name">{activeScene.name}</SceneName>
+        <SceneDescription>{activeScene.description}</SceneDescription>
+      </Caption>
+    </Stage>
   )
 }
 

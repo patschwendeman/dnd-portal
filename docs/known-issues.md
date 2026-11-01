@@ -59,8 +59,10 @@ in Folge-Tasks, danach den Eintrag in der jeweiligen Ignore-Liste entfernen bzw.
   (`__tests__/bdd/support/helpers.ts`), `LoadError` (`src/api/loadData.ts`), `RECONNECT_BASE_DELAY_MS`,
   `RECONNECT_MAX_DELAY_MS` (`src/realtime/backoff.ts`); Typen `TextButtonVariant` (`TextButton.tsx`), `Image`
   (`models.ts`), `OtherServerMessage` (`connection.ts`), `SoundListener` (`useGameTable.ts`). Falsch-Positive: die
-  Exporte des generierten `src/api/schema.d.ts`.
-- jscpd (`frontend/.jscpd.json`, `threshold` 1,35 %, seit DND-36): 5 Duplikate, 75 von 5588 Zeilen (1,34 %):
+  Exporte des generierten `src/api/schema.d.ts`. Keine Baseline, sondern bewusst reserviert (DND-38): die Datei
+  `src/components/PlayerHeroCard.tsx` (Hero-Karte), die das Layout „Bühne“ nicht nutzt; sie bleibt für wählbare
+  Dashboard-Layouts, der Eintrag entfällt, sobald ein Layout sie wieder verwendet.
+- jscpd (`frontend/.jscpd.json`, `threshold` 1,35 %, seit DND-36): 5 Duplikate, 75 von 5814 Zeilen (1,29 %, Stand DND-38):
   `AdventureSelect.tsx` ↔ `ThemeMenu.tsx` (3 Blöcke, 11–16 Zeilen), `darkTheme.ts` ↔ `tavernTheme.ts` (19 Zeilen),
   `NavRail.tsx` ↔ `SideBarLeftElement.tsx` (13 Zeilen).
 

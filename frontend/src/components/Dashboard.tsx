@@ -1,65 +1,39 @@
-import { ReactElement } from 'react'
+import { ReactElement, ReactNode } from 'react'
 import styled from 'styled-components'
 
 import { hoverScrollbar } from '../style/GlobalStyle'
 
-import DashboardPanel from './DashboardPanel'
-
-const DASHBOARD_COLUMNS = 4
-// Two rows fit the previews, name and description of the active scene at common widths. Only the
-// lowest height: a row grows when the content of a panel needs more (narrow window), so the panels
-// never scroll or cut off their content
-const DASHBOARD_ROW_HEIGHT = '144px'
-
-const Grid = styled.aside`
+// A grid instead of a flex column: grid items never shrink below their content, so a panel that
+// cuts off its overflow (the stage) keeps its height when the dashboard is higher than the main
+// area
+const Column = styled.aside`
   display: grid;
-  grid-template-columns: repeat(${DASHBOARD_COLUMNS}, minmax(0, 1fr));
-  grid-auto-rows: minmax(${DASHBOARD_ROW_HEIGHT}, auto);
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   gap: ${(props) => props.theme.space[4]};
   padding: ${(props) => props.theme.space[5]} 0;
   min-width: 0;
   min-height: 0;
-  /* As high as its rows, at most the main area: with a fixed height the rows would only grow
-     within the free space and a panel with more content would overflow them */
+  /* As high as its panels, at most the main area */
   align-self: start;
   max-height: 100%;
-  /* Scrolls on its own when the grid is higher than the main area; the notes stay where they are */
+  /* Scrolls on its own when the panels are higher than the main area; the notes stay where they
+     are */
   overflow-y: auto;
   ${hoverScrollbar}
 `
 
-interface DashboardItem {
-  id: string
-  label: string
-  columns: number
-  rows: number
-  content: ReactElement
-}
-
 interface DashboardProps {
   id: string
-  // In the order of the grid: left to right, top to bottom
-  panels: DashboardItem[]
+  children: ReactNode
 }
 
-function Dashboard({ id, panels }: DashboardProps): ReactElement {
+function Dashboard({ id, children }: DashboardProps): ReactElement {
   return (
-    <Grid id={id} aria-label="Dashboard" data-test-id="dashboard">
-      {panels.map((panel) => (
-        <DashboardPanel
-          key={panel.id}
-          label={panel.label}
-          columns={panel.columns}
-          rows={panel.rows}
-          testId={`dashboard-panel-${panel.id}`}
-        >
-          {panel.content}
-        </DashboardPanel>
-      ))}
-    </Grid>
+    <Column id={id} aria-label="Dashboard" data-test-id="dashboard">
+      {children}
+    </Column>
   )
 }
 
-export type { DashboardItem }
-export { Dashboard }
+export default Dashboard

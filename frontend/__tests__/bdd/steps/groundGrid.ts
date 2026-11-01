@@ -16,7 +16,7 @@ const feature = loadFeature('__tests__/bdd/features/groundGrid.feature')
 // Wide enough for rail, panel, notes and dashboard side by side
 const WINDOW_RECT = { width: 1600, height: 1000 }
 
-const PANEL = '[data-test-id="dashboard-panel-ground-grid"]'
+const PANEL = '[data-test-id="dashboard-panel-table"]'
 const button = (grid: GroundGrid): string => `${PANEL} [data-test-id="ground-grid-${grid}"]`
 const CELL_SIZE_INPUT = `${PANEL} [data-test-id="ground-grid-cell-size"] input`
 const CELL_SIZE_THUMB = `${PANEL} [data-test-id="ground-grid-cell-size"] .MuiSlider-thumb`
@@ -156,7 +156,7 @@ defineFeature(feature, (test) => {
       },
     )
 
-    when('I click on Weiß in the panel Ground-Raster', async () => {
+    when('I click on Weiß in the row Ground of the panel Spieltisch', async () => {
       await clickElement(driver, button('white'))
     })
 
@@ -222,7 +222,7 @@ defineFeature(feature, (test) => {
       await expectPanel('white', 150)
     })
 
-    when('I click on Aus in the panel Ground-Raster', async () => {
+    when('I click on Aus in the row Ground of the panel Spieltisch', async () => {
       await clickElement(driver, button('off'))
     })
 

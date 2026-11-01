@@ -5,6 +5,8 @@ const tavernTheme = {
     border: '#956F01',
     background: '#140701',
     overlay: 'rgba(0, 0, 0, 0.850)',
+    scrim: 'rgba(0, 0, 0, 0.750)',
+    onScrim: '#ffffff',
     text: {
       color: '#CBAB96',
       muted: '#CBAB96b0',

@@ -83,7 +83,7 @@ src/context/         ActiveAdventureContext, ActiveSceneContext (IDs number | nu
                      groundGrid, groundGridCellSize, connected,
                      reconnectNow, screens: Verbindungszahlen nur für den Admin), GameAudioContext (audio, isAudioOutput,
                      requestAudioOutput, reportTrackEnded, subscribeSound)
-src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Panel „Sounds“), audioPlayer.ts
+src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Panel „Audio“), audioPlayer.ts
                      (AudioPlayer: Wiedergabe im Admin nach dem AudioState, Audio-Fabrik injizierbar für vitest),
                      useAudioPlayback.ts (bindet den AudioPlayer im Admin an den GameAudioContext),
                      useAutoAudioOutput.ts (erste Interaktion ohne Ausgabe meldet audio_ready), audioOutput.ts
@@ -92,10 +92,11 @@ src/screens/         Screens
 src/components/      UI-Bausteine (TopBar, JoinDialog, ThemeMenu, NavRail (Navigationsleiste im Admin),
                      SideBarLeftElement (Eintrag im Panel, Button), DocumentNavigation (Notizen-Einträge im Panel),
                      SceneNavigation (Szenenliste im Panel), DocumentReader (Notizen des gewählten Eintrags),
-                     Dashboard (Raster rechts im Admin) mit DashboardPanel, ActiveScenePanel, MusicControl,
-                     WallOverlayPanel, GroundGridPanel, SoundBoard, ScreensPanel, LevelPanel, PlayersPanel (Panels),
-                     PlayerHeroCard (Hero-Karte), PanelButton (Icon-Button in Panels), OptionButtons (Umschalt-Buttons
-                     in Panels), PanelSlider (Slider in Panels), Dialogue, GridOverlay,
+                     Dashboard (Spalte rechts im Admin) mit DashboardPanel (Rahmen), ActiveScenePanel (Bühne),
+                     AudioPanel (MusicControl, SoundBoard), GameTablePanel (Spieltisch), PlayersPanel mit
+                     PlayerListItem (Spielerzeile) und LevelStepper (Level im Kopf der Party), PlayerHeroCard
+                     (Hero-Karte, derzeit nicht verwendet), PanelButton (Icon-Button in Panels), OptionButtons
+                     (Segment-Control in Panels), PanelSlider (Slider in Panels), Dialogue, GridOverlay,
                      ResourceBarPlayer …)
 src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
                      getJoinInfo, saveActiveScene, saveGlobalLevel, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
@@ -111,7 +112,7 @@ src/utils/navRail.ts nextOpenPanel (welches Panel neben der Navigationsleiste of
 src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
 src/utils/playerTheme.ts Theme-Abweichung des Players lesen/schreiben, effectiveTheme, Altschlüssel verwerfen
 src/utils/player.ts  characterInitials (Initialen ohne Avatar), steppedLevel (Level −/+ in den Grenzen 1–20)
-src/utils/screenStatus.ts Statustexte des Panels „Screens“ aus der Anzahl (screenStatusText, playerStatusText)
+src/utils/screenStatus.ts Statustexte des Panels „Spieltisch“ aus der Anzahl (screenStatusText, playerStatusText)
 src/utils/useDocumentFullscreen.ts Vollbild des eigenen Fensters (Admin, Top-Bar), Zustand über fullscreenchange
 src/utils/playerUrl.ts selectPlayerUrl (URL der API, sonst Origin des Admins, nicht bei localhost/127.0.0.1/[::1])
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }), appTheme(theme),
@@ -129,7 +130,7 @@ haben keine Bedienelemente) per REST (`PATCH adventures/{id}`
 bzw. `PATCH table`) **ohne lokale Vorwegnahme**; der Server pusht danach den neuen Stand an alle Screens, die die Szene
 per `scenes/{id}` neu laden (ohne aktive Szene kein Request, nur Hintergrund). Nur der Admin zeigt Speicher- und
 Verbindungsfehler. Der Player nutzt vom Snapshot nur das Theme (`Abweichung ?? Spieltisch-Theme`), sendet nichts und
-zeigt keinen Verbindungsstatus. Der QR-Code-Dialog im Admin (`JoinDialog`, geöffnet aus dem Panel „Screens“) lädt beim Öffnen `table/join`. Nur an
+zeigt keinen Verbindungsstatus. Der QR-Code-Dialog im Admin (`JoinDialog`, geöffnet aus dem Panel „Spieltisch“) lädt beim Öffnen `table/join`. Nur an
 Admins schickt der Server die Zahl der verbundenen Wall-, Ground- und Player-Verbindungen (`screens`).
 Spieler und Level (`global_level`) stehen nicht im Snapshot: Der Admin lädt `adventures/{id}` beim Laden, bei einem
 Abenteuerwechsel und nach jedem Snapshot (`snapshot` im `GameTableContext`) neu; das Level schreibt er per

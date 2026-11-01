@@ -6,21 +6,19 @@ import styled from 'styled-components'
 import useAudioPlayback from '../audio/useAudioPlayback'
 import useAutoAudioOutput from '../audio/useAutoAudioOutput'
 import ActiveScenePanel from '../components/ActiveScenePanel'
-import { Dashboard, DashboardItem } from '../components/Dashboard'
+import AudioPanel from '../components/AudioPanel'
+import Dashboard from '../components/Dashboard'
+import DashboardPanel from '../components/DashboardPanel'
 import Dialogue from '../components/Dialogue'
 import DocumentNavigation from '../components/DocumentNavigation'
 import DocumentReader from '../components/DocumentReader'
 import ErrorBar from '../components/ErrorBar'
-import GroundGridPanel from '../components/GroundGridPanel'
-import LevelPanel from '../components/LevelPanel'
-import MusicControl from '../components/MusicControl'
+import GameTablePanel from '../components/GameTablePanel'
+import LevelStepper from '../components/LevelStepper'
 import { NavRail, NavRailItem } from '../components/NavRail'
 import PlayersPanel from '../components/PlayersPanel'
 import SceneNavigation from '../components/SceneNavigation'
-import ScreensPanel from '../components/ScreensPanel'
-import SoundBoard from '../components/SoundBoard'
 import TopBar from '../components/TopBar'
-import WallOverlayPanel from '../components/WallOverlayPanel'
 import {
   ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext,
 } from '../context/context'
@@ -52,8 +50,10 @@ import scenesIcon from '/assets/icons/scenes.svg'
 // Icon button (size.control.md, 40px) plus space.3 on both sides
 const NAV_RAIL_WIDTH = '64px'
 const LEFT_COLUMN_WIDTH = '240px'
-// Below this width the two-column panels of the dashboard get too narrow for their content
+// Below this width the rows of the panel "Spieltisch" get too narrow for their controls
 const DASHBOARD_MIN_WIDTH = '400px'
+// Above this width the stage would push the panel "Audio" out of sight on large monitors
+const DASHBOARD_MAX_WIDTH = '560px'
 
 const LOAD_ERROR_MESSAGE = 'Backend nicht erreichbar'
 const SAVE_ERROR_MESSAGE = 'Änderung konnte nicht gespeichert werden'
@@ -96,13 +96,21 @@ const NavPanel = styled.div`
       ${(props) => props.theme.colors.secondary};
 `
 
-// Notes about two thirds, dashboard one third of the width (at least DASHBOARD_MIN_WIDTH); without
-// the dashboard the notes take all of it
+// Dashboard one third of the width (between DASHBOARD_MIN_WIDTH and DASHBOARD_MAX_WIDTH), the
+// notes the rest; without the dashboard the notes take all of it
+const contentColumns = (isDashboardOpen: boolean, gap: string): string => {
+  if (!isDashboardOpen) {
+    return 'minmax(0, 1fr)'
+  }
+  const third = `calc((100% - ${gap}) / 3)`
+  return `minmax(0, 1fr) clamp(${DASHBOARD_MIN_WIDTH}, ${third}, ${DASHBOARD_MAX_WIDTH})`
+}
+
 const Content = styled.div<{ $isDashboardOpen: boolean }>`
     display: grid;
-    grid-template-columns: ${(props) => (props.$isDashboardOpen
-      ? `minmax(0, 2fr) minmax(${DASHBOARD_MIN_WIDTH}, 1fr)`
-      : 'minmax(0, 1fr)')};
+    grid-template-columns: ${(props) => (
+      contentColumns(props.$isDashboardOpen, props.theme.space[5])
+    )};
     gap: ${(props) => props.theme.space[5]};
     padding: 0 ${(props) => props.theme.space[5]};
     min-width: 0;
@@ -421,80 +429,6 @@ function AdminScreen(): ReactElement {
   const players = adventureDetail?.players ?? []
   const level = adventureDetail?.global_level ?? null
 
-  const dashboardPanels: DashboardItem[] = [
-    {
-      id: 'scene',
-      label: 'Aktive Szene',
-      columns: 4,
-      rows: 2,
-      content: <ActiveScenePanel activeScene={activeScene} />,
-    },
-    {
-      id: 'music',
-      label: 'Musik',
-      columns: 2,
-      rows: 2,
-      content: (
-        <MusicControl
-          audio={audio}
-          failedSave={failedSave}
-          onToggle={handleMusicToggle}
-          onVolumeCommit={handleVolumeCommit}
-        />
-      ),
-    },
-    {
-      id: 'sounds',
-      label: 'Sounds',
-      columns: 2,
-      rows: 2,
-      content: <SoundBoard onPlaySound={handleSound} />,
-    },
-    {
-      id: 'wall-overlay',
-      label: 'Wall-Overlay',
-      columns: 2,
-      rows: 1,
-      content: <WallOverlayPanel wallOverlay={wallOverlay} onChange={handleWallOverlayChange} />,
-    },
-    {
-      id: 'ground-grid',
-      label: 'Ground-Raster',
-      columns: 2,
-      rows: 1,
-      content: (
-        <GroundGridPanel
-          groundGrid={groundGrid}
-          cellSize={groundGridCellSize}
-          failedSave={failedSave}
-          onGridChange={handleGroundGridChange}
-          onCellSizeCommit={handleGroundGridCellSizeCommit}
-        />
-      ),
-    },
-    {
-      id: 'screens',
-      label: 'Screens',
-      columns: 4,
-      rows: 2,
-      content: <ScreensPanel />,
-    },
-    {
-      id: 'level',
-      label: 'Level',
-      columns: 4,
-      rows: 1,
-      content: <LevelPanel level={level} onChange={handleLevelChange} />,
-    },
-    {
-      id: 'players',
-      label: 'Spieler',
-      columns: 4,
-      rows: Math.max(1, players.length),
-      content: <PlayersPanel players={players} level={level ?? 1} />,
-    },
-  ]
-
   return (
     <>
       <GlobalStyle />
@@ -534,7 +468,39 @@ function AdminScreen(): ReactElement {
           )}
           <Content $isDashboardOpen={isDashboardOpen}>
             <DocumentReader selectedStoryIndex={selectedStoryIndex} />
-            {isDashboardOpen && <Dashboard id={DASHBOARD_ID} panels={dashboardPanels} />}
+            {isDashboardOpen && (
+              <Dashboard id={DASHBOARD_ID}>
+                <ActiveScenePanel activeScene={activeScene} testId="dashboard-panel-stage" />
+                <DashboardPanel label="Audio" testId="dashboard-panel-audio">
+                  <AudioPanel
+                    audio={audio}
+                    failedSave={failedSave}
+                    onToggleMusic={handleMusicToggle}
+                    onVolumeCommit={handleVolumeCommit}
+                    onPlaySound={handleSound}
+                  />
+                </DashboardPanel>
+                <DashboardPanel label="Spieltisch" testId="dashboard-panel-table">
+                  <GameTablePanel
+                    wallOverlay={wallOverlay}
+                    groundGrid={groundGrid}
+                    groundGridCellSize={groundGridCellSize}
+                    failedSave={failedSave}
+                    onWallOverlayChange={handleWallOverlayChange}
+                    onGroundGridChange={handleGroundGridChange}
+                    onGroundGridCellSizeCommit={handleGroundGridCellSizeCommit}
+                  />
+                </DashboardPanel>
+                <DashboardPanel
+                  label="Party"
+                  title={`Party · ${players.length}`}
+                  headEnd={<LevelStepper level={level} onChange={handleLevelChange} />}
+                  testId="dashboard-panel-party"
+                >
+                  <PlayersPanel players={players} />
+                </DashboardPanel>
+              </Dashboard>
+            )}
           </Content>
         </Main>
       </Screen>

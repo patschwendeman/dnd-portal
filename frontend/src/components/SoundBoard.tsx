@@ -9,17 +9,14 @@ const Sounds = styled.div`
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    /* Groups wrap in the narrow panel, so they are set apart by the gap instead of separator lines
-       (a line would end up at the end or start of a row); rows closer together to fit the fixed
-       height */
-    row-gap: ${(props) => props.theme.space[2]};
-    column-gap: ${(props) => props.theme.space[4]};
+    gap: ${(props) => props.theme.space[2]};
 `
 
 const SoundGroup = styled.div`
     display: flex;
     flex-wrap: wrap;
-    gap: ${(props) => props.theme.space[1]};
+    background-color: ${(props) => props.theme.colors.background};
+    border-radius: ${(props) => props.theme.radius.md};
 `
 
 const AtmoButton = styled.div`
@@ -42,7 +39,7 @@ interface SoundBoardProps {
   onPlaySound: (name: SoundName) => void
 }
 
-// Content of the dashboard panel "Sounds": one button per sound effect, in its groups
+// Sound effects of the dashboard panel "Audio": one button per sound effect, in its groups
 function SoundBoard({ onPlaySound }: SoundBoardProps): ReactElement {
   const theme = useTheme()
 

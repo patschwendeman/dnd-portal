@@ -40,9 +40,9 @@
 - Schreiben nur per REST, **ohne lokale Vorwegnahme**: Der Admin wechselt das Abenteuer per `PATCH /table
   {"active_adventure_id": <id>}`, die Szene per `PATCH /adventures/{id} {"active_scene_id": <id>}`, das Level per
   `PATCH /adventures/{id} {"global_level": <n>}` und das Theme per `PATCH /table {"theme": …}`; das Wall-Overlay
-  per `PATCH /table {"wall_overlay": "world" | "off"}` (Panel „Wall-Overlay“) und das Ground-Raster per `PATCH /table
+  per `PATCH /table {"wall_overlay": "world" | "off"}` (Panel „Spieltisch“, Zeile „Wall“) und das Ground-Raster per `PATCH /table
   {"ground_grid": "black" | "white" | "off"}` bzw. `{"ground_grid_cell_size": 100–200, Schritt 10}` (Panel
-  „Ground-Raster“, Slider beim Loslassen). Wall und Ground schreiben nichts. Ändert sich die aktive Szene des aktiven Abenteuers
+  „Spieltisch“, Zeile „Ground“, Slider beim Loslassen). Wall und Ground schreiben nichts. Ändert sich die aktive Szene des aktiven Abenteuers
   oder das aktive Abenteuer, setzt der Server `wall_overlay` im selben Schreibzugriff auf `off` (ein Push); setzt
   derselbe `PATCH /table` auch `wall_overlay`, gilt dieser Wert. Das Ground-Raster bleibt bei Szenen- und
   Abenteuerwechseln unverändert. Admin, Wall und Ground wechseln erst mit dem Push; ein Abenteuerwechsel liefert direkt
@@ -138,7 +138,7 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
   `public/assets/sounds`, Liste in `src/audio/sounds.ts`). Scheitert `play()` (Autoplay), wird per `console.error`
   geloggt. Nach einem Reconnect meldet sich ein Admin, der vorher Ausgabe war, von selbst wieder mit `audio_ready`,
   bis ein anderer übernimmt; nach einem Reload erst bei der nächsten Interaktion. Wall und Ground spielen nichts.
-- **Steuerung im Admin** (Panels „Musik“ und „Sounds“ im Dashboard): zeigt `playing`, den Tracktitel (`getMusicTitle(track.source)`) und ohne Ausgabe den
+- **Steuerung im Admin** (Panel „Audio“ im Dashboard): zeigt `playing` („Läuft“ bzw. „Pausiert“), den Tracktitel (`getMusicTitle(track.source)`) und ohne Ausgabe den
   Hinweis „Keine Audioausgabe bereit“; Play/Pause (`PATCH /table/audio {playing}`), Lautstärke-Slider
   (`PATCH /table/audio {volume}` beim Loslassen) – ohne lokale Vorwegnahme, Fehler in der Speicherfehler-Leiste mit
   „Erneut versuchen“. Die Sound-Buttons senden `POST /table/sounds`; Fehler werden nur geloggt (kein
@@ -444,7 +444,7 @@ oben: `backend/.env`.
 UI unter http://localhost:8080/admin, `/wall` und `/ground`; Wall und Ground können auch in anderen Browsern oder auf
 anderen Geräten laufen (`http://<IP des Rechners>:8080/wall`). Smartphones öffnen den Player Screen über
 `http://<IP des Rechners>:8080/` (gleicher Build, kein Sonder-Build): am einfachsten per QR-Code im Admin (Dashboard,
-Panel „Screens“, Icon-Button „QR-Code“) oder über die URL, die `dnd prod` ausgibt. Der Dialog nimmt `player_url` aus `GET /table/join`;
+Panel „Spieltisch“, Icon-Button „QR-Code“) oder über die URL, die `dnd prod` ausgibt. Der Dialog nimmt `player_url` aus `GET /table/join`;
 ist sie `null` (Stack ohne Skript gestartet), nimmt er den Origin des Admins, sofern dieser nicht über `localhost`,
 `127.0.0.1` oder `[::1]` geöffnet ist (`selectPlayerUrl`, `src/utils/playerUrl.ts`), sonst zeigt er den Hinweis
 „Player-URL unbekannt …“. nginx (`frontend/nginx.conf`) leitet `/api/` an die API weiter (Präfix entfernt,

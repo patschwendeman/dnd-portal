@@ -16,7 +16,7 @@ const feature = loadFeature('__tests__/bdd/features/wallOverlay.feature')
 // Wide enough for rail, panel, notes and dashboard side by side
 const WINDOW_RECT = { width: 1600, height: 1000 }
 
-const PANEL = '[data-test-id="dashboard-panel-wall-overlay"]'
+const PANEL = '[data-test-id="dashboard-panel-table"]'
 const WORLD_BUTTON = `${PANEL} [data-test-id="wall-overlay-world"]`
 const OFF_BUTTON = `${PANEL} [data-test-id="wall-overlay-off"]`
 const WORLD_MAP = '[data-test-id="wall-world-map"]'
@@ -114,7 +114,7 @@ defineFeature(feature, (test) => {
       await openScreens('off')
     })
 
-    when('I click on Weltkarte in the panel Wall-Overlay', async () => {
+    when('I click on Weltkarte in the row Wall of the panel Spieltisch', async () => {
       await clickElement(driver, WORLD_BUTTON)
     })
 
@@ -122,7 +122,7 @@ defineFeature(feature, (test) => {
       await expectOverlay('world')
     })
 
-    when('I click on Aus in the panel Wall-Overlay', async () => {
+    when('I click on Aus in the row Wall of the panel Spieltisch', async () => {
       await clickElement(driver, OFF_BUTTON)
     })
 

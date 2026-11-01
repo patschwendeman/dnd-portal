@@ -16,6 +16,8 @@ gilt der Code.
 | `border` | `#3d444db3` | `#956F01` |
 | `background` | `#0e1117` | `#140701` |
 | `overlay` | `rgba(0, 0, 0, 0.850)` | `rgba(0, 0, 0, 0.850)` |
+| `scrim` | `rgba(0, 0, 0, 0.750)` | gleich |
+| `onScrim` | `#ffffff` | gleich |
 | `text.color` | `#f0f6fc` | `#CBAB96` |
 | `text.muted` | `#f0f6fcb0` (= `text.color`, 69 % deckend) | `#CBAB96b0` (= `text.color`, 69 % deckend) |
 | `initials` | `#4493F8` (= `primary`) | `#CBAB96` (= `text.color`) |
@@ -39,12 +41,12 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 |---|---|---|---|---|---|
 | `text.color` auf `background` | Notizen, Wall-Panel, inaktive Panel-Einträge (Admin, ohne eigene Fläche) | 4,5 | 17,4 | 9,2 | ✓ beide |
 | `text.color` auf `secondary` | Karten, Dashboard-Panels, Dialog, inaktive Buttons, Panel-Einträge bei Hover (Admin) | 4,5 | 15,9 | 6,5 | ✓ beide |
-| `onPrimary` auf `primary` | aktive Buttons (auch die Umschalt-Buttons der Panels) und Navigation, Confirm (14px) | 4,5 | 6,1 | 4,7 | ✓ beide |
+| `onPrimary` auf `primary` | aktive Buttons (auch der gewählte Button im Segment-Control) und Navigation, Confirm (14px) | 4,5 | 6,1 | 4,7 | ✓ beide |
 | `onPrimary` auf `primary` | Fokus-Outline des gewählten Eintrags der Auswahlliste | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `background` | Links in den Notizen (16px) | 4,5 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `background` | Fokus-Outline nicht gewählter Einträge der Auswahlliste | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `border` auf `background` | Rand der Notizseiten | 3,0 | **1,5** | 4,3 | bewusst ✗ Dark |
-| `border` auf `secondary` | Trennlinien in Karten | 3,0 | **1,5** | 3,0 | bewusst ✗ Dark |
+| `border` auf `secondary` | Trennlinien in Karten und in den Panels „Audio“ und „Spieltisch“ | 3,0 | **1,5** | 3,0 | bewusst ✗ Dark |
 | `secondary` auf `background` | Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel (Admin) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide |
 | `secondary` auf `background` | Hover-Fläche der Menüpunkte der Navigationsleiste und der Panel-Einträge (Admin) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide, siehe Anmerkung |
 | `text.color` auf `background` | Icon des inaktiven Menüpunkts der Navigationsleiste (ohne eigene Fläche) | 3,0 | 17,4 | 9,2 | ✓ beide |
@@ -52,18 +54,25 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `onPrimary` auf `primary` | Icon des aktiven Menüpunkts der Navigationsleiste und der aktiven Icon-Buttons „Dashboard“ und „Vollbild“ | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `background` | Fokus-Outline der Menüpunkte der Navigationsleiste und der Panel-Einträge (Notizen, Szenen) | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `text.color` auf `background` | Icons auf Flächen in Dashboard-Panels (Play-Button ohne Musik, „In neuem Fenster öffnen“, „QR-Code“) | 4,5 | 17,4 | 9,2 | ✓ beide |
-| `primary` auf `secondary` | Status-Punkt „verbunden“ im Panel „Screens“ | 3,0 | 5,6 | 3,3 | ✓ beide |
+| `primary` auf `secondary` | Status-Punkt „verbunden“ im Panel „Spieltisch“ | 3,0 | 5,6 | 3,3 | ✓ beide |
 | `text.color` auf `secondary` | Ring des Status-Punkts „nicht verbunden“ | 3,0 | 15,9 | 6,5 | ✓ beide |
-| `background` auf `secondary` | Flächen in Dashboard-Panels (Buttons, Slider-Schiene, leere Bildfläche) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide, siehe Anmerkung |
-| `text.color` auf `background` | Charaktername der Hero-Karte (32px) | 3,0 | 17,4 | 9,2 | ✓ beide |
-| `text.muted` auf `background` | Spielername der Hero-Karte (12px) | 4,5 | 8,6 | 4,8 | ✓ beide |
-| `text.color` auf `secondary` | Chips der Hero-Karte (14px) | 4,5 | 15,9 | 6,5 | ✓ beide |
-| `initials` auf `secondary` | Initialen im Avatar (32px, groß) | 3,0 | 5,6 | 6,5 | ✓ beide |
-| `onPrimary` auf `primary` | Zahl im Level-Badge (14px) | 4,5 | 6,1 | 4,7 | ✓ beide |
-| `primary` auf `background` | Level-Badge gegen die Hero-Karte | 3,0 | 6,1 | 4,7 | ✓ beide |
-| `text.color` auf `background` | Zeichen „−“/„+“ der Buttons im Panel „Level“ (20px) | 4,5 | 17,4 | 9,2 | ✓ beide |
-| `text.color` auf `secondary` | Level im Panel „Level“ (24px) | 3,0 | 15,9 | 6,5 | ✓ beide |
-| `border` auf `background` | Rand von Avatar und Chips gegen die Hero-Karte | 3,0 | **1,5** | 4,3 | bewusst ✗ Dark, siehe Anmerkung |
+| `background` auf `secondary` | Flächen in Dashboard-Panels (Buttons, Segment-Control, Sound-Gruppen, Spielerzeilen, Slider-Schiene) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide, siehe Anmerkung |
+| `onScrim` auf `scrim` | Label, Szenenname und Beschreibung auf der Bühne (14px), Labels „Wall“ und „Ground“ (12px); ungünstigster Fall `scrim` über weißem Bild, über schwarzem 21,0 | 4,5 | 10,4 | 10,4 | ✓ beide |
+| `text.color` auf `background` | Charaktername der Spielerzeile, Text nicht gewählter Buttons im Segment-Control (14px) | 4,5 | 17,4 | 9,2 | ✓ beide |
+| `text.muted` auf `background` | Volk · Klasse · Spieler der Spielerzeile (14px) | 4,5 | 8,6 | 4,8 | ✓ beide |
+| `initials` auf `secondary` | Initialen im Avatar der Spielerzeile (14px) | 4,5 | 5,6 | 6,5 | ✓ beide |
+| `border` auf `background` | Rand des Avatars gegen die Spielerzeile | 3,0 | **1,5** | 4,3 | bewusst ✗ Dark, siehe Anmerkung |
+| `text.muted` auf `secondary` | Lautsprecher-Icon im Panel „Audio“ | 3,0 | 8,1 | 3,9 | ✓ beide |
+| `text.muted` auf `secondary` | nicht verwendet für Text (14px): Statustexte, Zustand der Musik und Label „Level“ stehen deshalb in `text.color` | 4,5 | 8,1 | **3,9** | nicht verwendet |
+| `text.color` auf `background` | Zeichen „−“/„+“ der Buttons im Level-Stepper (20px) | 4,5 | 17,4 | 9,2 | ✓ beide |
+| `text.color` auf `secondary` | Level im Level-Stepper (20px), Statustexte und Zustand der Musik (14px) | 4,5 | 15,9 | 6,5 | ✓ beide |
+| `text.color` auf `background` | Charaktername der Hero-Karte (32px, derzeit nicht verwendet) | 3,0 | 17,4 | 9,2 | ✓ beide |
+| `text.muted` auf `background` | Spielername der Hero-Karte (12px, derzeit nicht verwendet) | 4,5 | 8,6 | 4,8 | ✓ beide |
+| `text.color` auf `secondary` | Chips der Hero-Karte (14px, derzeit nicht verwendet) | 4,5 | 15,9 | 6,5 | ✓ beide |
+| `initials` auf `secondary` | Initialen im Avatar der Hero-Karte (32px, groß, derzeit nicht verwendet) | 3,0 | 5,6 | 6,5 | ✓ beide |
+| `onPrimary` auf `primary` | Zahl im Level-Badge der Hero-Karte (14px, derzeit nicht verwendet) | 4,5 | 6,1 | 4,7 | ✓ beide |
+| `primary` auf `background` | Level-Badge gegen die Hero-Karte (derzeit nicht verwendet) | 3,0 | 6,1 | 4,7 | ✓ beide |
+| `border` auf `background` | Rand von Avatar und Chips gegen die Hero-Karte (derzeit nicht verwendet) | 3,0 | **1,5** | 4,3 | bewusst ✗ Dark, siehe Anmerkung |
 | `onError` auf `error` | Text der Hinweisleiste (14px) | 4,5 | 9,0 | 9,0 | ✓ |
 | `qr.foreground` auf `qr.background` | QR-Code im Dialog „Spieler verbinden“ | 3,0 | 21,0 | 21,0 | ✓ |
 | `onError` auf `error` | Icon-Button und Fokus-Outline der Hinweisleiste | 3,0 | 9,0 | 9,0 | ✓ |
@@ -81,10 +90,13 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
   Tavern 1,4) und ist nur ein Zusatzsignal. Erkennbar sind sie über Icon bzw. Text, die das Ziel auf `background` und
   auf `secondary` erreichen. Die Linien in `secondary` sind
   Gestaltung wie die Linie unter der Top-Bar (Ausnahme in [2.6](../../DESIGN.md#26-kontrast)).
-- **Hero-Karte (Admin):** Avatar und Chips sind keine Bedienelemente; ihr Rand in `border` ist Gestaltung wie die
-  Trennlinien (Ausnahme in [2.6](../../DESIGN.md#26-kontrast)). Erkennbar sind sie an Initialen bzw. Text, die das Ziel
-  erreichen. Deaktivierte Buttons „−“/„+“ (Zeichen in `text.muted`) sind nach WCAG vom Kontrastziel ausgenommen
+- **Spielerzeile und Hero-Karte (Admin):** Avatar und Chips sind keine Bedienelemente; ihr Rand in `border` ist
+  Gestaltung wie die Trennlinien (Ausnahme in [2.6](../../DESIGN.md#26-kontrast)). Erkennbar sind sie an Initialen bzw.
+  Text, die das Ziel erreichen. Deaktivierte Buttons „−“/„+“ (Zeichen in `text.muted`) sind nach WCAG vom Kontrastziel ausgenommen
   (Dark 8,6, Tavern 4,8 auf `background`).
+- **Bühne (Admin):** Der Verlauf unter dem Text ist nach `space.7` voll deckend, der Text beginnt erst darunter. Gemessen
+  ist deshalb `onScrim` auf `scrim` über dem hellsten möglichen Bild (Weiß): `scrim` ergibt dort etwa `#404040`.
+  `scrim` und `onScrim` sind in beiden Themes gleich.
 - **Ressourcen (Player):** Die Spannen reichen über alle fünf Ressourcen.
 - **Flächen in Dashboard-Panels (Admin):** Buttons und Slider-Schiene haben die Fläche `background` auf dem Panel in
   `secondary` (wie Decline im Dialog); die Fläche hebt sich nur schwach ab und ist nur ein Zusatzsignal, erkennbar sind
