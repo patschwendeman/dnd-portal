@@ -1,7 +1,7 @@
 # DND-39: Vollbild-Overlay beim Hovern auf Wall und Ground
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 Wall und Ground laufen am Spieltisch als eigene Browserfenster auf eigenen Monitoren. Um sie in den Vollbildmodus
@@ -139,3 +139,32 @@ Am Spieltisch merkt man es daran, dass der Spielleiter jede Anzeige mit der Maus
   Variante B – neues Token `colors.backdrop` = `rgba(0, 0, 0, 0.5)` in beiden Themes; `scrim` bleibt unverändert.
 
 ## Review
+
+### Runde 1 – 2026-11-01
+**Empfehlung:** Abnahme
+
+Geprüft: Commit e15fb45 auf `development` (Plan liegt im Umsetzungs-Commit, wie bei DND-37/38).
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | `FullscreenHoverOverlay.tsx:11-44,85-104`: fester Button `inset: 0` auf `colors.backdrop`, mittig Fläche `background` mit Icon und Text; BDD `screenFullscreen.feature` (Wall, Ground) grün: Viewport-groß, `rgba(0, 0, 0, 0.5)`, „Vollbild“, `aria-pressed=false`. |
+| AK2 | erfüllt | BDD grün (`document.fullscreenElement` gesetzt, „Vollbild beenden“, `aria-pressed=true`); eigener Selenium-Check mit zweitem Fenster: nur das eigene Fenster im Vollbild (Wall und Ground). |
+| AK3 | erfüllt | BDD-Schritt „no longer in full screen … Vollbild“ grün (Wall und Ground). |
+| AK4 | erfüllt | BDD „the mouse leaves the window“ per CDP `Input.dispatchMouseEvent` (-10/-10), danach kein Overlay (`screenFullscreen.ts:144-155`); Code: `pointerleave` auf `documentElement` (`FullscreenHoverOverlay.tsx:64-75`). Echte zwei Monitore nur manuell. |
+| AK5 | erfüllt | `useDocumentFullscreen.ts:3-15` (`useSyncExternalStore`, `fullscreenchange`); eigener Check: Vollbild → Escape per CDP → nach Mausbewegung „Vollbild“ (Wall und Ground). Nicht im BDD-Feature (vom Plan nicht verlangt). |
+| AK6 | erfüllt | Nur `pointerType === 'mouse'` (`FullscreenHoverOverlay.tsx:48,60-69`), ohne Hover nicht gerendert (`:79-81`); BDD „no overlay is shown“ nach dem Laden, `wallOverlay`/`groundGrid` grün; eigener Check mit Touch-Tap und `PATCH /table` → kein Overlay. |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- Initialer BDD-Schritt „no overlay is shown“ hängt von der Umgebung ab: Steht der echte Mauszeiger über dem Testfenster, sendet Chrome echte Maus-Ereignisse und das Overlay kann erscheinen (in 1 von 2 Probe-Läufen nach ca. 2 s). Korrektes Verhalten, aber lokal potenziell flaky; E2E läuft nicht in der CI. Möglicher Ausweg: zu Beginn Maus per CDP aus dem Fenster bewegen.
+- Über die Subtasks hinaus: `frontend/CLAUDE.md` (Strukturliste, „keine Bedienelemente außer dem lokalen Vollbild-Overlay“) und zusätzliche Einträge in `frontend/DESIGN.md` – inhaltlich nötig bzw. konsistent mit dem Code, keine Scope-Verletzung; Entscheidung beim User.
+- `isFullscreen`/`waitForFullscreen` unverändert nach `__tests__/bdd/support/helpers.ts:81-99` verschoben; `adminDashboard.ts` ändert nur den Import, Vollbild-Szenarien grün.
+- Kosmetik: `frontend/CLAUDE.md:99-100` bricht aus der Spaltenbreite der Strukturliste aus.
+- Ist das Overlay per Maus sichtbar, schaltet auch ein Touch-Tap das Vollbild um (außerhalb der AKs, Touch ist Non-Goal).
+- `frontend/README.md:10-11` („reine Anzeige“) passt zu E4, kein Widerspruch.
+- Konventionen eingehalten: Commit-Schema, Typ `feat`, 5 Stichpunkte, keine KI-Signatur; Kommentare erklären das Warum; alle Subtasks abgehakt; Backend unverändert.
+- Serverzustand nach E2E-Lauf: `active_scene_id` 2 statt 1; `wall_overlay`/`ground_grid` wieder `off`.
+
+**Checks:** `npm run lint`, `typecheck`, `build`, `check:deadcode`, `check:dupes` grün; `test:unit` 199/199. E2E (`npx jest --runInBand`, Dev-Stack in Docker): 19/20 grün. Rot: `adminDashboard` „The first interaction makes an admin window the audio output“ – Given-Schritt `expect(audio.output_ready).toBe(false)` (`adminDashboard.ts:435`) scheitert an der Umgebung: `GET /table/audio` liefert auch ohne Test `output_ready: true`, ein Safari-Prozess hält Verbindungen zu `:5173` und `/ws?screen=admin` (Admin-Tab außerhalb der Tests). Nicht durch die Änderung verursacht; nach Schließen aller Admin-Tabs erneut prüfen.

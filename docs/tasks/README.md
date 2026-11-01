@@ -42,4 +42,4 @@
 | DND-36 | feat | Ground-Raster und Audio in den Admin, Wall und Ground ohne Steuerleiste | Fertig | [DND-36-screen-controls-to-admin.md](DND-36-screen-controls-to-admin.md) |
 | DND-37 | feat | Admin wird beim ersten Klick automatisch Audioausgabe | Fertig | [DND-37-auto-audio-output.md](DND-37-auto-audio-output.md) |
 | DND-38 | feat | Dashboard-Layout „Bühne“ im Admin | Fertig | [DND-38-dashboard-stage-layout.md](DND-38-dashboard-stage-layout.md) |
-| DND-39 | feat | Vollbild-Overlay beim Hovern auf Wall und Ground | Im Review | [DND-39-screen-fullscreen-overlay.md](DND-39-screen-fullscreen-overlay.md) |
+| DND-39 | feat | Vollbild-Overlay beim Hovern auf Wall und Ground | Fertig | [DND-39-screen-fullscreen-overlay.md](DND-39-screen-fullscreen-overlay.md) |
