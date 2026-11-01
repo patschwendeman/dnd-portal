@@ -63,8 +63,6 @@ interface PlayerListItemProps {
   player: Player
 }
 
-// A player in one row: avatar (or the initials of the character name), character name and below
-// it race, class and player name
 function PlayerListItem({ player }: PlayerListItemProps): ReactElement {
   return (
     <Item aria-label={player.character_name} data-test-id={`player-${player.id}`} lang="de">

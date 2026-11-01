@@ -239,3 +239,37 @@ Spielleiter so mit einem Blick die aktive Szene und die laufende Musik, ohne zu 
 - keine
 
 ## Review
+
+### Runde 1 – 2026-11-01
+**Empfehlung:** Nacharbeiten (ein kleiner blockierender Befund: Kommentar-Konvention; fachlich sind alle AKs erfüllt)
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | `Dashboard.tsx:9-13` einspaltig; `AdminScreen.tsx:473-498` Reihenfolge Bühne, Audio, Spieltisch, Party; `LevelPanel.tsx` gelöscht; E2E prüft Reihenfolge der `aria-label`s, kein `dashboard-panel-level`, volle Breite, Höhe = Inhalt. |
+| AK2 | erfüllt | `AdminScreen.tsx:56,101-106` `clamp(400px, (100% − space.5)/3, 560px)`; gemessen 1280 → 400, 1440 → 400, 1920 → 514,66, 2560 → 560; E2E grün. |
+| AK3 | erfüllt | `ActiveScenePanel.tsx`: Wall-Bild `cover`, Ground-Inset `calc(100% / 3)`, Caption auf `scrim`, Mindesthöhe 16:9; lange Beschreibung: Bühne wächst 246 → 586 px, Text nicht abgeschnitten, beginnt unter dem Inset. |
+| AK4 | erfüllt | `ActiveScenePanel.tsx:116-121` „Keine Szene aktiv“ (`no-active-scene`). |
+| AK5 | erfüllt | `MusicControl.tsx`: Zustandszeile, waagerechter Slider mit Icon und Wert, Speichern bei `onChangeCommitted`, kein „Hier abspielen“; E2E grün. |
+| AK6 | erfüllt | `GameTablePanel.tsx`: Segment-Controls (Test-IDs unverändert), Status und „Spieler QR-Code“; E2E grün; „In neuem Fenster öffnen“ manuell in Chrome geprüft. |
+| AK7 | erfüllt | `PlayersPanel.tsx`/`PlayerListItem.tsx`: Liste, Avatar 40 px, Meta-Zeile; bei 2560 px einspaltig (4 Zeilen, Breite 508). |
+| AK8 | erfüllt | `LevelStepper.tsx` im Kopf der Party; E2E „Level nicht über 20“ und zwei Fenster grün. |
+| AK9 | erfüllt | Keine hart codierten Farben; `scrim`/`onScrim` in beiden Themes gleich, Kontrast 10,37:1. |
+| AK10 | erfüllt | Lint, Typecheck, Unit (199), `check:deadcode`, `check:dupes` (1,29 % < 1,35 %), Build grün. |
+
+**Blockierende Befunde**
+- [x] Neue Kommentare, die nur JSX/CSS nacherzählen (Konvention „keine code-erklärenden Kommentare“):
+  - `frontend/src/components/PlayerListItem.tsx:66-67`
+  - `frontend/src/components/AudioPanel.tsx:28`
+  - `frontend/src/components/GameTablePanel.tsx:224-225`
+  - `frontend/src/components/OptionButtons.tsx:6` und zweiter Satz in `:17`
+  - `frontend/src/components/ActiveScenePanel.tsx:54`, Teil „About a third of the stage“
+
+**Hinweise**
+- Statustexte in `text.color` statt `text.muted`: nachgerechnet (Tavern 3,92:1 < 4,5), sinnvoll und dokumentiert.
+- Zugänglicher Name „Aktive Szene“ statt „Bühne“: entspricht sichtbarem Label, unbedenklich.
+- Segment-Buttons `flex: 1 1 auto`: keine Abschneidung bei 400/515/560 px.
+- Neue Test-IDs `music-volume-value`/`music-state` kommen nur hinzu; `player-level` entfällt laut E6.
+- Layout-Konstanten und Doku-/Kommentar-Anpassungen (`domain.md`, `architecture.md`, `sounds.ts`, `screenStatus.ts`) folgen aus E4–E6 bzw. dem Doku-Subtask.
+- `OptionButtons` hat `role="group"` ohne zugänglichen Namen; ein `aria-label` wäre eine kleine Verbesserung.
+
+**Checks:** Lint, Typecheck, Unit (199), Build, `check:deadcode`, `check:dupes` grün; E2E `adminDashboard`, `adminPlayers`, `groundGrid`, `wallOverlay`, `selectScene` (15 Tests) grün; Messungen in headless Chrome.

@@ -51,7 +51,7 @@ const ImageLabel = styled(Label)`
   border-radius: ${(props) => props.theme.radius.sm};
 `
 
-// About a third of the stage; without an image the area stays empty in `background`
+// Without an image the area stays empty in `background`
 const GroundInset = styled.figure`
   position: relative;
   grid-area: 1 / 1;

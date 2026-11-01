@@ -221,8 +221,6 @@ interface GameTablePanelProps {
   onGroundGridCellSizeCommit: (cellSize: number) => void
 }
 
-// Content of the dashboard panel "Spieltisch": one row per screen with its status, what it shows
-// and a button to open it; the players connect per QR code
 function GameTablePanel({
   wallOverlay,
   groundGrid,
@@ -253,6 +251,7 @@ function GameTablePanel({
             <OptionButtons
               options={WALL_OVERLAY_OPTIONS}
               value={wallOverlay}
+              label="Wall-Anzeige"
               testIdPrefix="wall-overlay"
               onChange={onWallOverlayChange}
             />
@@ -266,6 +265,7 @@ function GameTablePanel({
             <OptionButtons
               options={GROUND_GRID_OPTIONS}
               value={groundGrid}
+              label="Ground-Anzeige"
               testIdPrefix="ground-grid"
               onChange={onGroundGridChange}
             />

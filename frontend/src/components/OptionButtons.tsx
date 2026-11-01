@@ -3,7 +3,6 @@ import styled from 'styled-components'
 
 import { textStyle } from '../style/tokens'
 
-// Segment control: one surface, the buttons inside have none; together as high as a control
 const Options = styled.div`
   display: flex;
   gap: ${(props) => props.theme.space[1]};
@@ -14,7 +13,7 @@ const Options = styled.div`
 `
 
 // Grows and shrinks with its text, so a short option ("Aus") leaves room for a long one in the
-// narrow dashboard. Only the pressed option has a surface
+// narrow dashboard
 const OptionButton = styled.button`
   flex: 1 1 auto;
   min-width: 0;
@@ -56,6 +55,7 @@ interface Option<T extends string> {
 interface OptionButtonsProps<T extends string> {
   options: readonly Option<T>[]
   value: T
+  label: string
   // data-test-id of a button: `<testIdPrefix>-<value>`
   testIdPrefix: string
   onChange: (value: T) => void
@@ -63,10 +63,10 @@ interface OptionButtonsProps<T extends string> {
 
 // The highlighted option changes only with the push of the server that follows the write
 function OptionButtons<T extends string>({
-  options, value, testIdPrefix, onChange,
+  options, value, label, testIdPrefix, onChange,
 }: OptionButtonsProps<T>): ReactElement {
   return (
-    <Options role="group">
+    <Options role="group" aria-label={label}>
       {options.map((option) => {
         const isActive = option.value === value
         return (

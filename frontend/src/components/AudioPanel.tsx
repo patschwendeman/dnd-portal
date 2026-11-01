@@ -25,7 +25,6 @@ interface AudioPanelProps {
   onPlaySound: (name: SoundName) => void
 }
 
-// Content of the dashboard panel "Audio": music above, sound effects below
 function AudioPanel({
   audio, failedSave, onToggleMusic, onVolumeCommit, onPlaySound,
 }: AudioPanelProps): ReactElement {
