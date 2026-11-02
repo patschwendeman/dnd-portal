@@ -1,7 +1,7 @@
 # DND-40: Kachel-Layout im Admin Screen mit fester Kopfzeile
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -273,3 +273,25 @@ Geprüft: Commit 0b68b9e auf `development` (Plan liegt im Umsetzungs-Commit, wie
 - Dev-Stack: Während der Fehler-Simulation wechselte das Theme per `PATCH /table` auf `dark` (Herkunft unklar); Reviewer setzte `tavern`, danach setzte ein anderer Client wieder `dark` – belassen.
 
 **Checks:** `npm run lint`, `typecheck`, `test:unit` (205), `build`, `check:deadcode`, `check:dupes` (1,25 %) grün. E2E (`npx jest --runInBand`, Dev-Stack): 19/20 grün. Rot: „The first interaction makes an admin window the audio output“ – Vorbedingung `output_ready: false` (`adminDashboard.ts:438`) scheitert, weil ein anderes Admin-Fenster Audioausgabe ist; umgebungsbedingt.
+
+### Runde 2 – 2026-11-02
+**Empfehlung:** Abnahme
+
+Geprüft: Nacharbeit-Commit 4bb956a auf `development`; `git diff --stat 0b68b9e 4bb956a` berührt nur die Plan-Datei (Review-Bericht Runde 1) und `frontend/DESIGN.md` – kein Code, AK1–AK8 aus Runde 1 übernommen.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1–AK8 | erfüllt | aus Runde 1 übernommen (kein Code geändert; AK7: E2E 19/20, Fehlschlag umgebungsbedingt) |
+| AK9 | erfüllt | Lint und Typecheck grün; Aussage zu den Links konsistent in `frontend/DESIGN.md:304-306`, `frontend/docs/design/contrast.md:47,95-97` und `docs/known-issues.md:50-51`. |
+
+**Blockierende Befunde**
+- [x] Befund aus Runde 1 (2.6 „Offen“: keine Text-Links) behoben; kein Restvorkommen mehr (grep).
+
+**Hinweise**
+- Hinweis 2 aus Runde 1 erledigt: Ausnahme in `frontend/DESIGN.md:301-303` deckt `border` auf `error` in beiden Themes ab, passend zu `contrast.md:80,93-94` und `ErrorBar.tsx:10-19` (`tileSurface`).
+- Optional: Überschrift der Anmerkung `contrast.md:89` heißt weiter „`border` im Dark-Theme“; inhaltlich durch „Kacheln (Admin)“ (`contrast.md:93-94`) abgedeckt.
+- Hinweis 1 aus Runde 1 offen, Entscheidung beim User: Inhaltsverzeichnis-Links in Tavern 3,3:1 – hinnehmen oder eigener Task.
+- Link `../docs/known-issues.md` aus `frontend/DESIGN.md` gültig.
+- Konventionen eingehalten: `feat(DND-40): address review round 1`, 2 Stichpunkte, keine KI-Signatur, ein Commit.
+
+**Checks:** `npm run lint` und `npm run typecheck` grün. Unit, Build, Deadcode, Dupes und E2E nicht erneut ausgeführt (kein Code seit Runde 1 geändert; dort grün bzw. 19/20 umgebungsbedingt). Dev-Stack nicht verändert.

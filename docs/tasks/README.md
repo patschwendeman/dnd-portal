@@ -43,4 +43,4 @@
 | DND-37 | feat | Admin wird beim ersten Klick automatisch Audioausgabe | Fertig | [DND-37-auto-audio-output.md](DND-37-auto-audio-output.md) |
 | DND-38 | feat | Dashboard-Layout „Bühne“ im Admin | Fertig | [DND-38-dashboard-stage-layout.md](DND-38-dashboard-stage-layout.md) |
 | DND-39 | feat | Vollbild-Overlay beim Hovern auf Wall und Ground | Fertig | [DND-39-screen-fullscreen-overlay.md](DND-39-screen-fullscreen-overlay.md) |
-| DND-40 | feat | Kachel-Layout im Admin Screen mit fester Kopfzeile | Im Review | [DND-40-admin-tile-layout.md](DND-40-admin-tile-layout.md) |
+| DND-40 | feat | Kachel-Layout im Admin Screen mit fester Kopfzeile | Fertig | [DND-40-admin-tile-layout.md](DND-40-admin-tile-layout.md) |
