@@ -5,7 +5,7 @@ import ReactMarkdown, { Components } from 'react-markdown'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
-import { hoverScrollbar, tileSurface } from '../style/GlobalStyle'
+import { hoverScrollbar, tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 import { loadLatest } from '../utils/loadSafely'
 
@@ -76,7 +76,7 @@ const Background = styled.div`
   ${hoverScrollbar}
 `
 
-const Page = styled.div`
+const Page = styled.div<TileSurfaceProps>`
   ${tileSurface}
   width: 100%;
   padding: ${(props) => props.theme.space[7]} ${(props) => props.theme.space[8]};
@@ -210,9 +210,13 @@ interface MarkdownFile {
 interface DocumentReaderProps {
   // Index of the note folder, chosen in DocumentNavigation
   selectedStoryIndex: number
+  // While the scene image lies behind the tiles
+  isTranslucent?: boolean
 }
 
-function DocumentReader({ selectedStoryIndex }: DocumentReaderProps): ReactElement {
+function DocumentReader({
+  selectedStoryIndex, isTranslucent = false,
+}: DocumentReaderProps): ReactElement {
   const theme = useTheme()
   const [markdownContent, setMarkdownContent] = useState<MarkdownFile[]>([])
   const [loadFailed, setLoadFailed] = useState<boolean>(false)
@@ -281,7 +285,7 @@ function DocumentReader({ selectedStoryIndex }: DocumentReaderProps): ReactEleme
       <Background ref={scrollContainerRef} onScroll={handleScroll} data-test-id="notes-scroll">
         {loadFailed && <LoadFailedText>Notizen konnten nicht geladen werden</LoadFailedText>}
         {!loadFailed && markdownContent.map(({ path, text }) => (
-          <Page key={path}>
+          <Page key={path} $isTranslucent={isTranslucent}>
             <PageText>
               <ReactMarkdown components={markdownComponents}>
                 {text || 'Loading...'}

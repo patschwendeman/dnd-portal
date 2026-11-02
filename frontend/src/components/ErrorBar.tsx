@@ -2,12 +2,12 @@ import { ReactElement } from 'react'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
-import { tileSurface } from '../style/GlobalStyle'
+import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 
 import reloadIcon from '/assets/icons/reload.svg'
 
-const Bar = styled.div`
+const Bar = styled.div<TileSurfaceProps>`
   ${tileSurface}
   display: flex;
   flex: 1 1 auto;

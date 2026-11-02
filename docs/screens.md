@@ -21,8 +21,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - Notizen (Markdown) einsehen: Story, NPCs, Kämpfe.
 - Navigationsleiste links mit Menüpunkten, die das Panel daneben füllen: „Notizen“ und „Szenen“ (umgesetzt), geplant
   „Kampf“ (Kampf starten). Die Mitte zeigt dabei weiter die Notizen.
-- Ruhiges, einheitliches Kachel-Layout mit fester Kopfzeile, unter der Notizen und Dashboard scrollen (umgesetzt);
-  geplant: ein Hintergrundbild hinter durchscheinenden Kacheln.
+- Ruhiges, einheitliches Kachel-Layout mit fester Kopfzeile, unter der Notizen und Dashboard scrollen, dahinter das
+  Bild der laufenden Szene, das durch die Kacheln scheint (umgesetzt).
 - Musik ein- und ausschalten.
 - Verschiedene Sounds abspielen.
 - Alles, was Wall und Ground zeigen, vom Admin aus steuern; an Wall und Ground wird nichts bedient.
@@ -38,8 +38,13 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   560px; die Notizen bekommen den Rest). Über Notizen und Dashboard steht eine feste Kopfzeile: links die
   Abenteuer-Auswahl bis zu den Button-Gruppen, rechts eine Kachel mit „Vollbild“ und „Dashboard“ und eine mit Settings.
   Notizen und Dashboard scrollen jeweils für sich unter der Kopfzeile, die stehen bleibt; der Abstand darunter bleibt
-  frei, ganz nach unten gescrollt endet die letzte Kachel auf Höhe der Navigationsleiste. Kein Hintergrundbild, die
-  Kacheln sind deckend (Hintergrundbild und durchscheinende Kacheln: Soll, eigener Task).
+  frei, ganz nach unten gescrollt endet die letzte Kachel auf Höhe der Navigationsleiste.
+- **Szenen-Hintergrund:** Hinter den Kacheln liegt das Wall-Bild der aktiven Szene, abgedunkelt und bildschirmfüllend;
+  es steht fest, während Notizen und Dashboard scrollen. Solange es zu sehen ist, sind Navigationsleiste, Panel,
+  Kopfzeile, Notizseiten und Dashboard-Panels durchscheinend und zeichnen das Bild weich; Bühne, Hinweisleiste und die
+  Bedienflächen in den Kacheln bleiben deckend. Beim Szenenwechsel bleibt das alte Bild, bis das neue geladen ist, dann
+  blenden sie ineinander über (bei „Bewegung reduzieren“ im System ohne Übergang). Ohne aktive Szene, solange sie lädt
+  oder wenn Szene bzw. Bild nicht geladen werden können, ist der Hintergrund einfarbig und die Kacheln sind deckend.
 - **Dashboard:** eine Spalte mit vier Panels in fester Reihenfolge (kein Verschieben): oben die Bühne („Aktive
   Szene“), darunter „Audio“, „Spieltisch“ und „Party“. Jedes Panel ist so hoch wie sein Inhalt – die Panels scrollen
   nicht für sich und schneiden keinen Text ab; sind sie zusammen höher als der Hauptbereich, scrollt das Dashboard als

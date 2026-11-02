@@ -2,9 +2,9 @@ import { ReactElement, ReactNode } from 'react'
 import styled from 'styled-components'
 
 import Label from './Label'
-import { tileSurface } from '../style/GlobalStyle'
+import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 
-const Panel = styled.section`
+const Panel = styled.section<TileSurfaceProps>`
   ${tileSurface}
   display: flex;
   flex-direction: column;
@@ -29,13 +29,15 @@ interface DashboardPanelProps {
   headEnd?: ReactNode
   testId: string
   children: ReactNode
+  // While the scene image lies behind the tiles
+  isTranslucent?: boolean
 }
 
 function DashboardPanel({
-  label, title = undefined, headEnd = undefined, testId, children,
+  label, title = undefined, headEnd = undefined, testId, children, isTranslucent = false,
 }: DashboardPanelProps): ReactElement {
   return (
-    <Panel aria-label={label} data-test-id={testId}>
+    <Panel aria-label={label} data-test-id={testId} $isTranslucent={isTranslucent}>
       <Head>
         <Label>{title ?? label}</Label>
         {headEnd}

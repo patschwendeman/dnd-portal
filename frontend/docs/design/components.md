@@ -93,17 +93,35 @@ und Laufweite nach [1.4](../../DESIGN.md#14-regeln).
 
 ## Kachel
 
-Nur im Admin: alle Bereiche sind frei stehende Kacheln auf `background`, getrennt durch Abstand statt Linien. Gemeinsamer
-CSS-Helper `tileSurface` ([src/style/GlobalStyle.ts](../../src/style/GlobalStyle.ts)).
+Nur im Admin: alle Bereiche sind frei stehende Kacheln über dem [Szenen-Hintergrund](#szenen-hintergrund), getrennt
+durch Abstand statt Linien. Gemeinsamer CSS-Helper `tileSurface` ([src/style/GlobalStyle.ts](../../src/style/GlobalStyle.ts))
+mit dem Schalter `$isTranslucent`, den der `AdminScreen` setzt, solange das Szenenbild zu sehen ist (Prop
+`isTranslucent` an `NavRail`, `AdminHeader`, `DocumentReader` und `DashboardPanel`).
 
 | Eigenschaft | Wert |
 |---|---|
-| Fläche | `secondary`, `radius.lg` |
+| Fläche | `secondary`, `radius.lg`; mit Szenenbild dahinter `secondaryTranslucent` und `backdrop-filter: blur(TILE_BLUR)` |
 | Rand | `borderWidth.thin` in `border` |
 | Lichtkante | innen oben: `box-shadow: inset 0 borderWidth.thin 0` in `border`; kein äußerer Schatten |
-| Abweichende Fläche | Hinweisleiste `error`, [Bühne](#bühne) `background`; Form, Rand und Lichtkante wie oben |
+| Abweichende Fläche | Hinweisleiste `error`, [Bühne](#bühne) `background`, beide immer deckend; Form, Rand und Lichtkante wie oben |
+| Durchscheinend | nur mit Szenenbild: Navigationsleiste und ihr Panel, Abenteuer-Auswahl und Button-Gruppen der Kopfzeile, Notizseiten, Dashboard-Panels. Flächen in den Kacheln (`background`) bleiben deckend |
 | Verwendung | [Navigationsleiste](#navigationsleiste) und ihr Panel, Kacheln der [Kopfzeile](#kopfzeile) (Abenteuer-Auswahl, Button-Gruppen, [Hinweisleiste](#hinweisleiste)), Notizseiten, [Dashboard-Panels](#dashboard-panel), [Bühne](#bühne) |
 | Notizseite | volle Breite der mittleren Spalte, Innenabstand `space.7` oben/unten, `space.8` seitlich; der Text darin höchstens `LINE_MAX_WIDTH` breit und zentriert; Abstand zwischen den Seiten `space.5`. Der Nach-oben-Button schwebt über den Kacheln und hat deshalb die Fläche `background` |
+
+## Szenen-Hintergrund
+
+Nur im Admin, Komponente `SceneBackground` ([src/components/SceneBackground.tsx](../../src/components/SceneBackground.tsx)),
+Zustand aus `useSceneBackground` ([src/utils/useSceneBackground.ts](../../src/utils/useSceneBackground.ts), Logik in
+[src/utils/sceneBackground.ts](../../src/utils/sceneBackground.ts)). Im JSX vor dem Grid des Admins; beide sind
+`position: fixed`, die Reihenfolge legt die Ebenen fest (kein `z-index`).
+
+| Eigenschaft | Wert |
+|---|---|
+| Fläche | `position: fixed`, `inset: 0`, `background` |
+| Bild | Wall-Bild der aktiven Szene (`mediaUrl`), `object-fit: cover` über den ganzen Bildschirm, darüber `scrim`; Dekoration (`aria-hidden`, `alt=""`) |
+| Ohne Bild | keine aktive Szene, Szene lädt noch, Szene oder Bild nicht ladbar: nur die Fläche `background`, die Kacheln sind deckend |
+| Wechsel | das neue Bild erscheint erst, wenn es geladen ist; Bild und Abdunklung blenden gemeinsam über (`SCENE_FADE_MS`, 600 ms), ohne Szene zur Fläche aus. Bei `prefers-reduced-motion: reduce` ohne Übergang |
+| Scrollen | steht fest, Notizen und Dashboard scrollen darüber |
 
 ## Dashboard-Panel
 

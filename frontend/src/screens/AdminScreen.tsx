@@ -3,6 +3,7 @@ import {
 } from 'react'
 import styled from 'styled-components'
 
+import { mediaUrl } from '../api/mediaUrl'
 import useAudioPlayback from '../audio/useAudioPlayback'
 import useAutoAudioOutput from '../audio/useAutoAudioOutput'
 import ActiveScenePanel from '../components/ActiveScenePanel'
@@ -17,6 +18,7 @@ import GameTablePanel from '../components/GameTablePanel'
 import LevelStepper from '../components/LevelStepper'
 import { NavRail, NavRailItem } from '../components/NavRail'
 import PlayersPanel from '../components/PlayersPanel'
+import SceneBackground from '../components/SceneBackground'
 import SceneNavigation from '../components/SceneNavigation'
 import {
   ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext,
@@ -37,11 +39,12 @@ import {
   saveTheme,
 } from '../service/adminScreen'
 import { saveGroundGrid, saveGroundGridCellSize, saveWallOverlay } from '../service/gameTable'
-import GlobalStyle, { hoverScrollbar, tileSurface } from '../style/GlobalStyle'
+import GlobalStyle, { hoverScrollbar, tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import mostImportantError from '../utils/adminError'
 import selectDefaultAdventureId from '../utils/adventure'
 import { loadLatest } from '../utils/loadSafely'
 import nextOpenPanel from '../utils/navRail'
+import { useSceneBackground } from '../utils/useSceneBackground'
 import { filterSceneByKey } from '../utils/utils'
 
 import notesIcon from '/assets/icons/notes.svg'
@@ -101,7 +104,6 @@ const Screen = styled.div<LayoutProps>`
     padding: 0 ${(props) => props.theme.space[5]};
     position: fixed;
     inset: 0;
-    background-color: ${(props) => props.theme.colors.background};
     color: ${(props) => props.theme.colors.text.color};
     a {
         color: ${(props) => props.theme.colors.primary};
@@ -126,7 +128,7 @@ const HeaderArea = styled(Area)`
     margin-top: ${(props) => props.theme.space[5]};
 `
 
-const NavPanel = styled.div`
+const NavPanel = styled.div<TileSurfaceProps>`
     ${tileSurface}
     grid-area: panel;
     min-height: 0;
@@ -454,12 +456,24 @@ function AdminScreen(): ReactElement {
     setOpenPanel((open) => nextOpenPanel(open, id))
   }
 
+  // Like the stage, but a scene that cannot be loaded leaves the background plain
+  const background = useSceneBackground(
+    activeScene && !activeSceneFailed ? mediaUrl(activeScene.wall_image.source) : null,
+  )
+  const isTranslucent = background.isImageShown
+
   const players = adventureDetail?.players ?? []
   const level = adventureDetail?.global_level ?? null
 
   return (
     <>
       <GlobalStyle />
+      <SceneBackground
+        layers={background.layers}
+        shown={background.shown}
+        onLoad={background.onLoad}
+        onError={background.onError}
+      />
       <Dialogue
         sceneOption={sceneOption}
         handleDialogueOption={handleDialogueOption}
@@ -472,10 +486,16 @@ function AdminScreen(): ReactElement {
             openItemId={openNavItem?.id ?? null}
             panelId={NAV_PANEL_ID}
             onSelect={handleNavSelect}
+            isTranslucent={isTranslucent}
           />
         </RailArea>
         {openNavItem && (
-          <NavPanel id={NAV_PANEL_ID} aria-label={openNavItem.name} data-test-id="nav-panel">
+          <NavPanel
+            id={NAV_PANEL_ID}
+            aria-label={openNavItem.name}
+            data-test-id="nav-panel"
+            $isTranslucent={isTranslucent}
+          >
             {openNavItem.panel}
           </NavPanel>
         )}
@@ -489,16 +509,21 @@ function AdminScreen(): ReactElement {
             isDashboardOpen={isDashboardOpen}
             dashboardId={DASHBOARD_ID}
             onToggleDashboard={() => setIsDashboardOpen((open) => !open)}
+            isTranslucent={isTranslucent}
           />
         </HeaderArea>
         <Area $area="notes">
-          <DocumentReader selectedStoryIndex={selectedStoryIndex} />
+          <DocumentReader selectedStoryIndex={selectedStoryIndex} isTranslucent={isTranslucent} />
         </Area>
         {isDashboardOpen && (
           <Area $area="dashboard">
             <Dashboard id={DASHBOARD_ID}>
               <ActiveScenePanel activeScene={activeScene} testId="dashboard-panel-stage" />
-              <DashboardPanel label="Audio" testId="dashboard-panel-audio">
+              <DashboardPanel
+                label="Audio"
+                testId="dashboard-panel-audio"
+                isTranslucent={isTranslucent}
+              >
                 <AudioPanel
                   audio={audio}
                   failedSave={failedSave}
@@ -507,7 +532,11 @@ function AdminScreen(): ReactElement {
                   onPlaySound={handleSound}
                 />
               </DashboardPanel>
-              <DashboardPanel label="Spieltisch" testId="dashboard-panel-table">
+              <DashboardPanel
+                label="Spieltisch"
+                testId="dashboard-panel-table"
+                isTranslucent={isTranslucent}
+              >
                 <GameTablePanel
                   wallOverlay={wallOverlay}
                   groundGrid={groundGrid}
@@ -523,6 +552,7 @@ function AdminScreen(): ReactElement {
                 title={`Party · ${players.length}`}
                 headEnd={<LevelStepper level={level} onChange={handleLevelChange} />}
                 testId="dashboard-panel-party"
+                isTranslucent={isTranslucent}
               >
                 <PlayersPanel players={players} />
               </DashboardPanel>

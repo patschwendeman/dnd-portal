@@ -5,7 +5,7 @@ import DashboardPanel from './DashboardPanel'
 import Label from './Label'
 import { mediaUrl } from '../api/mediaUrl'
 import { Image, SceneDetail } from '../models/models'
-import { tileSurface } from '../style/GlobalStyle'
+import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 
 const STAGE_LABEL = 'Aktive Szene'
@@ -13,7 +13,7 @@ const STAGE_LABEL = 'Aktive Szene'
 // One column, two rows: the ground inset at the top, the caption at the bottom. The pseudo element
 // spans both and keeps the stage at least 16:9; a long caption makes it higher instead of being
 // cut off, and it never runs below the inset
-const Stage = styled.section`
+const Stage = styled.section<TileSurfaceProps>`
   ${tileSurface}
   position: relative;
   display: grid;

@@ -2,7 +2,7 @@ import { ReactElement } from 'react'
 import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
 
-import { tileSurface } from '../style/GlobalStyle'
+import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 
 interface NavRailItem {
   id: string
@@ -11,7 +11,7 @@ interface NavRailItem {
   icon: string
 }
 
-const Rail = styled.nav`
+const Rail = styled.nav<TileSurfaceProps>`
   ${tileSurface}
   display: flex;
   flex-direction: column;
@@ -62,15 +62,17 @@ interface NavRailProps {
   // id of the panel element the buttons control
   panelId: string
   onSelect: (id: string) => void
+  // While the scene image lies behind the tiles
+  isTranslucent?: boolean
 }
 
 function NavRail({
-  items, openItemId, panelId, onSelect,
+  items, openItemId, panelId, onSelect, isTranslucent = false,
 }: NavRailProps): ReactElement {
   const theme = useTheme()
 
   return (
-    <Rail aria-label="Navigation" data-test-id="nav-rail">
+    <Rail aria-label="Navigation" data-test-id="nav-rail" $isTranslucent={isTranslucent}>
       {items.map((item) => {
         const isActive = item.id === openItemId
         return (

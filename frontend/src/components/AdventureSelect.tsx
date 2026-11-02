@@ -4,7 +4,7 @@ import {
 import styled from 'styled-components'
 
 import { AdventureSummary } from '../models/models'
-import { tileSurface } from '../style/GlobalStyle'
+import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 import { getListboxNextIndex, getListboxStartIndex, isListboxNavigationKey } from '../utils/listbox'
 
@@ -17,7 +17,7 @@ const Wrapper = styled.div`
     min-width: 0;
 `
 
-const Trigger = styled.button`
+const Trigger = styled.button<TileSurfaceProps>`
     ${tileSurface}
     display: flex;
     align-items: center;
@@ -124,12 +124,15 @@ interface AdventureSelectProps {
   adventures: AdventureSummary[]
   activeAdventureId: number | null
   onSelectAdventure: (adventureId: number) => void
+  // While the scene image lies behind the tiles
+  isTranslucent?: boolean
 }
 
 function AdventureSelect({
   adventures,
   activeAdventureId,
   onSelectAdventure,
+  isTranslucent = false,
 }: AdventureSelectProps): ReactElement {
   const [isOpen, setIsOpen] = useState(false)
   const [focusIndex, setFocusIndex] = useState(-1)
@@ -209,6 +212,7 @@ function AdventureSelect({
         ref={triggerRef}
         type="button"
         data-test-id="adventure-select"
+        $isTranslucent={isTranslucent}
         aria-label="Abenteuer"
         aria-haspopup="listbox"
         aria-expanded={isOpen}

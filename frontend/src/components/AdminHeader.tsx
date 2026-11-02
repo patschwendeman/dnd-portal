@@ -5,7 +5,7 @@ import { ReactSVG } from 'react-svg'
 import AdventureSelect from './AdventureSelect'
 import ErrorBar from './ErrorBar'
 import { AdventureSummary } from '../models/models'
-import { tileSurface } from '../style/GlobalStyle'
+import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import useDocumentFullscreen from '../utils/useDocumentFullscreen'
 
 import dashboardIcon from '/assets/icons/dashboard.svg'
@@ -22,7 +22,7 @@ const Header = styled.header`
 `
 
 // space.1 around buttons in radius.md gives the outer radius radius.lg of the tile
-const ButtonGroup = styled.div`
+const ButtonGroup = styled.div<TileSurfaceProps>`
     ${tileSurface}
     display: flex;
     flex: none;
@@ -87,6 +87,8 @@ interface AdminHeaderProps {
   isDashboardOpen: boolean
   dashboardId: string
   onToggleDashboard: () => void
+  // While the scene image lies behind the tiles
+  isTranslucent?: boolean
 }
 
 function AdminHeader({
@@ -98,6 +100,7 @@ function AdminHeader({
   isDashboardOpen,
   dashboardId,
   onToggleDashboard,
+  isTranslucent = false,
 }: AdminHeaderProps): ReactElement {
   const theme = useTheme()
   const { isFullscreen, toggle: toggleFullscreen } = useDocumentFullscreen()
@@ -111,9 +114,10 @@ function AdminHeader({
           adventures={adventures}
           activeAdventureId={activeAdventureId}
           onSelectAdventure={onSelectAdventure}
+          isTranslucent={isTranslucent}
         />
       )}
-      <ButtonGroup>
+      <ButtonGroup $isTranslucent={isTranslucent}>
         <ToggleButton
           type="button"
           title={isFullscreen ? 'Vollbild beenden' : 'Vollbild'}
@@ -150,7 +154,7 @@ function AdminHeader({
           />
         </ToggleButton>
       </ButtonGroup>
-      <ButtonGroup>
+      <ButtonGroup $isTranslucent={isTranslucent}>
         <IconButton onClick={onToggleTheme}>
           <ReactSVG
             src={settingsIcon}

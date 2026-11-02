@@ -92,6 +92,7 @@ src/screens/         Screens
 src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin, mit ErrorBar), JoinDialog, ThemeMenu, NavRail (Navigationsleiste im Admin),
                      SideBarLeftElement (Eintrag im Panel, Button), DocumentNavigation (Notizen-Einträge im Panel),
                      SceneNavigation (Szenenliste im Panel), DocumentReader (Notizen des gewählten Eintrags),
+                     SceneBackground (Szenenbild hinter den Kacheln im Admin),
                      Dashboard (Spalte rechts im Admin) mit DashboardPanel (Rahmen), ActiveScenePanel (Bühne),
                      AudioPanel (MusicControl, SoundBoard), GameTablePanel (Spieltisch), PlayersPanel mit
                      PlayerListItem (Spielerzeile) und LevelStepper (Level im Kopf der Party), PlayerHeroCard
@@ -110,6 +111,8 @@ src/models/models.ts API-Typen AdventureSummary, AdventureDetail, Player, SceneD
 src/utils/utils.ts   Musiktitel (getMusicTitle), filterSceneByKey
 src/utils/groundGrid.ts GROUND_GRID_CELL_SIZE (100–200, Schritt 10), gridLineColor, toCellSize (Slider-Wert → Zellgröße)
 src/utils/navRail.ts nextOpenPanel (welches Panel neben der Navigationsleiste offen ist)
+src/utils/sceneBackground.ts sceneBackgroundReducer (Szenenbild hinter den Kacheln: geladen, Überblendung, Rückfall),
+                     useSceneBackground.ts (Hook dazu im Admin, SCENE_FADE_MS)
 src/utils/adminError.ts mostImportantError (welcher Fehler in der Kopfzeile des Admins steht)
 src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
 src/utils/playerTheme.ts Theme-Abweichung des Players lesen/schreiben, effectiveTheme, Altschlüssel verwerfen
@@ -120,7 +123,7 @@ src/utils/useDocumentFullscreen.ts Vollbild des eigenen Fensters (Admin: Kopfzei
 src/utils/playerUrl.ts selectPlayerUrl (URL der API, sonst Origin des Admins, nicht bei localhost/127.0.0.1/[::1])
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }), appTheme(theme),
                      styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden;
-                     CSS-Helper hoverScrollbar und tileSurface für die Kacheln im Admin)
+                     CSS-Helper hoverScrollbar und tileSurface für die Kacheln im Admin, Schalter $isTranslucent)
 public/assets/       sounds (Soundeffekte, im Admin abgespielt), icons; dazu das fest eingebundene Medium
                      images/ground_screen/mapOverview.jpg (Weltkarte) – Szenenmedien und Standardmusik liegen in ../media
 public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mechanics), deutsch
