@@ -89,7 +89,7 @@ src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Pan
                      useAutoAudioOutput.ts (erste Interaktion ohne Ausgabe meldet audio_ready), audioOutput.ts
                      (shouldRequestAudioOutput)
 src/screens/         Screens
-src/components/      UI-Bausteine (TopBar, JoinDialog, ThemeMenu, NavRail (Navigationsleiste im Admin),
+src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin, mit ErrorBar), JoinDialog, ThemeMenu, NavRail (Navigationsleiste im Admin),
                      SideBarLeftElement (Eintrag im Panel, Button), DocumentNavigation (Notizen-Einträge im Panel),
                      SceneNavigation (Szenenliste im Panel), DocumentReader (Notizen des gewählten Eintrags),
                      Dashboard (Spalte rechts im Admin) mit DashboardPanel (Rahmen), ActiveScenePanel (Bühne),
@@ -110,15 +110,17 @@ src/models/models.ts API-Typen AdventureSummary, AdventureDetail, Player, SceneD
 src/utils/utils.ts   Musiktitel (getMusicTitle), filterSceneByKey
 src/utils/groundGrid.ts GROUND_GRID_CELL_SIZE (100–200, Schritt 10), gridLineColor, toCellSize (Slider-Wert → Zellgröße)
 src/utils/navRail.ts nextOpenPanel (welches Panel neben der Navigationsleiste offen ist)
+src/utils/adminError.ts mostImportantError (welcher Fehler in der Kopfzeile des Admins steht)
 src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
 src/utils/playerTheme.ts Theme-Abweichung des Players lesen/schreiben, effectiveTheme, Altschlüssel verwerfen
 src/utils/player.ts  characterInitials (Initialen ohne Avatar), steppedLevel (Level −/+ in den Grenzen 1–20)
 src/utils/screenStatus.ts Statustexte des Panels „Spieltisch“ aus der Anzahl (screenStatusText, playerStatusText)
-src/utils/useDocumentFullscreen.ts Vollbild des eigenen Fensters (Admin: Top-Bar; Wall und Ground:
+src/utils/useDocumentFullscreen.ts Vollbild des eigenen Fensters (Admin: Kopfzeile; Wall und Ground:
                      FullscreenHoverOverlay), Zustand über fullscreenchange
 src/utils/playerUrl.ts selectPlayerUrl (URL der API, sonst Origin des Admins, nicht bei localhost/127.0.0.1/[::1])
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }), appTheme(theme),
-                     styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden)
+                     styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden;
+                     CSS-Helper hoverScrollbar und tileSurface für die Kacheln im Admin)
 public/assets/       sounds (Soundeffekte, im Admin abgespielt), icons; dazu das fest eingebundene Medium
                      images/ground_screen/mapOverview.jpg (Weltkarte) – Szenenmedien und Standardmusik liegen in ../media
 public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mechanics), deutsch

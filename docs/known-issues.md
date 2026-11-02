@@ -47,6 +47,8 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
   erwarten, bis die aktive Szene wieder geleert wird (z. B. `PATCH /adventures/1` mit `{"active_scene_id": null}`) oder
   die DB zurückgesetzt ist.
 - `ResourceBarPlayer`: `spellData[].max` weicht von `SpellMax` ab (Stufe II: 4 vs. 3); Spezial startet bei 1 statt 3.
+- Kontrast (seit DND-40): Die Notizseiten sind Kacheln in `secondary`; die Text-Links der Inhaltsverzeichnisse in den
+  Notizen (`primary`) verfehlen darauf in Tavern 4,5:1 (3,3:1, `frontend/docs/design/contrast.md`). Lösung offen.
 
 ## Baseline der Qualitätsprüfungen
 
@@ -62,7 +64,7 @@ in Folge-Tasks, danach den Eintrag in der jeweiligen Ignore-Liste entfernen bzw.
   Exporte des generierten `src/api/schema.d.ts`. Keine Baseline, sondern bewusst reserviert (DND-38): die Datei
   `src/components/PlayerHeroCard.tsx` (Hero-Karte), die das Layout „Bühne“ nicht nutzt; sie bleibt für wählbare
   Dashboard-Layouts, der Eintrag entfällt, sobald ein Layout sie wieder verwendet.
-- jscpd (`frontend/.jscpd.json`, `threshold` 1,35 %, seit DND-36): 5 Duplikate, 75 von 5814 Zeilen (1,29 %, Stand DND-38):
+- jscpd (`frontend/.jscpd.json`, `threshold` 1,35 %, seit DND-36): 5 Duplikate, 75 von 6013 Zeilen (1,25 %, Stand DND-40):
   `AdventureSelect.tsx` ↔ `ThemeMenu.tsx` (3 Blöcke, 11–16 Zeilen), `darkTheme.ts` ↔ `tavernTheme.ts` (19 Zeilen),
   `NavRail.tsx` ↔ `SideBarLeftElement.tsx` (13 Zeilen).
 

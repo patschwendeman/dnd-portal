@@ -19,9 +19,9 @@ Größe nach [1.2](../../DESIGN.md#12-tokens) Größen, Icon nach [1.4](../../DE
 |---|---|
 | Zentrierung des Icons | `display: grid; place-items: center` |
 | Padding | `0` (Reset bei `<button>`) |
-| Farbe | Hintergrund in der Top-Bar und der Hinweisleiste transparent, sonst nach [2.2](../../DESIGN.md#22-rollen) und [2.4](../../DESIGN.md#24-zustände) |
+| Farbe | Hintergrund in der [Kopfzeile](#kopfzeile) und der Hinweisleiste transparent, sonst nach [2.2](../../DESIGN.md#22-rollen) und [2.4](../../DESIGN.md#24-zustände) |
 | Dashboard-Panels | gemeinsame Styled Component `PanelButton` ([src/components/PanelButton.tsx](../../src/components/PanelButton.tsx)): Fläche `background`, Fokus als Outline `borderWidth.thick` in `primary` (`:focus-visible`); „In neuem Fenster öffnen“, „QR-Code“ und „−“/„+“ im [Level-Stepper](#level-stepper) (dort Zeichen statt Icon, `text.lg` `semibold`; deaktiviert Zeichen in `text.muted`, `cursor: default`); die Sound-Buttons haben keine eigene Fläche, die Fläche ist ihre Gruppe |
-| Beispiele | Sound-Buttons, Settings, Dashboard (Top-Bar, aktiv bei offenem Dashboard wie der Menüpunkt der [Navigationsleiste](#navigationsleiste); `aria-expanded`, `aria-controls`), Vollbild (Top-Bar, aktiv im Vollbild; `aria-pressed`), In neuem Fenster öffnen, QR-Code, Play/Pause, Nach oben, Menüpunkte der [Navigationsleiste](#navigationsleiste) (dort abweichend inaktiv ohne eigene Fläche und Icon `size.iconLg`; der allgemeine Icon-Button bleibt gefüllt) |
+| Beispiele | Sound-Buttons, Settings, Dashboard (Kopfzeile, aktiv bei offenem Dashboard wie der Menüpunkt der [Navigationsleiste](#navigationsleiste); `aria-expanded`, `aria-controls`), Vollbild (Kopfzeile, aktiv im Vollbild; `aria-pressed`), In neuem Fenster öffnen, QR-Code, Play/Pause, Nach oben, Menüpunkte der [Navigationsleiste](#navigationsleiste) (dort abweichend inaktiv ohne eigene Fläche und Icon `size.iconLg`; der allgemeine Icon-Button bleibt gefüllt) |
 | Player | Hintergrund `secondary` (Settings-Button des Theme-Menüs) |
 
 ## Text-Button
@@ -39,7 +39,8 @@ Großbuchstaben ergänzt sie die verwendende Komponente, siehe [1.4](../../DESIG
 ## Button-Gruppe
 
 `display: flex`, Abstand nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“. Mehrere Text-Buttons, von denen
-einer aktiv ist. In Dashboard-Panels stattdessen das [Segment-Control](#segment-control).
+einer aktiv ist. In Dashboard-Panels stattdessen das [Segment-Control](#segment-control). In der [Kopfzeile](#kopfzeile)
+sind die Icon-Buttons zu Kacheln gruppiert.
 
 ## Navigationseintrag
 
@@ -53,7 +54,7 @@ gemeinsam für die Notizen- und die Szenenliste im Panel (`DocumentNavigation`, 
 | Höhe | nach [1.2](../../DESIGN.md#12-tokens) Größen |
 | Innenabstand | `0 space.3`, linksbündig |
 | Schrift | `text.sm` `medium`, einzeilig; zu lange Namen enden mit „…“ (`text-overflow: ellipsis`), der volle Name steht als `title` |
-| Zustände | aktiv: Fläche `primary`, Text `onPrimary`, `aria-current="true"`; inaktiv: ohne eigene Fläche (`transparent`, also `background` des Panels), Text `text.color`; Hover (inaktiv): Fläche `secondary`. Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`), wie beim Menüpunkt der [Navigationsleiste](#navigationsleiste) |
+| Zustände | aktiv: Fläche `primary`, Text `onPrimary`, `aria-current="true"`; inaktiv: ohne eigene Fläche (`transparent`, also `secondary` der Panel-Kachel), Text `text.color`; Hover (inaktiv): Fläche `background`. Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`), wie beim Menüpunkt der [Navigationsleiste](#navigationsleiste) |
 
 ## Navigationsleiste
 
@@ -65,11 +66,11 @@ Menüpunkte: „Notizen“ (`notes.svg`, Panel `DocumentNavigation`) und darunte
 | Eigenschaft | Wert |
 |---|---|
 | Breite | Leiste `NAV_RAIL_WIDTH`, Panel `LEFT_COLUMN_WIDTH` ([screen-layouts.md](screen-layouts.md#layout-konstanten)) |
-| Fläche | Leiste und Panel `background` wie die Top-Bar, bündig zwischen Top-Bar und unterem Rand, ohne Karte; rechts an der Leiste und rechts am Panel je eine senkrechte Linie `borderWidth.thin` in `secondary` über die volle Höhe (wie die Linie unter der Top-Bar): die Linie der Leiste trennt sie vom Panel bzw. bei eingeklapptem Panel von den Notizen, die des Panels trennt es von den Notizen |
+| Fläche | Leiste und Panel sind je eine [Kachel](#kachel) über beide Zeilen des Admins, mit `space.5` Abstand zum oberen und unteren Rand; keine Trennlinien |
 | Leiste | Spalte, horizontal zentriert, Innenabstand `space.5` oben/unten, `gap` `space.2` zwischen den Menüpunkten |
 | Menüpunkt | [Icon-Button](#icon-button) (`<button type="button">`, `size.control.md`, `radius.md`), Icon abweichend `size.iconLg` (24px); Name als `aria-label` und `title`, `aria-pressed` für den Zustand, `aria-controls` aufs Panel |
-| Zustände | wie beim [Navigationseintrag](#navigationseintrag): aktiv (Panel offen): Fläche `primary`, Icon `onPrimary`, auch bei Hover; inaktiv: ohne eigene Fläche (`transparent`, also `background` der Leiste), Icon `text.color`; Hover (inaktiv): Fläche `secondary`; eingeklappt: kein Menüpunkt aktiv. Anders als der allgemeine [Icon-Button](#icon-button), der inaktiv gefüllt bleibt. Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`) |
-| Panel | Innenabstand `space.5` oben/unten, `space.4` seitlich, scrollt bei Überlänge; Inhalt des aktiven Menüpunkts: bei „Notizen“ Label „Notizen“ und die [Navigationseinträge](#navigationseintrag) der Notizen, bei „Szenen“ Label „Szenen“ und je Szene ein Navigationseintrag (Reihenfolge der API), ohne Szenen der Hinweis „Keine Szenen“ (`text.sm`, Innenabstand `0 space.3`) |
+| Zustände | wie beim [Navigationseintrag](#navigationseintrag): aktiv (Panel offen): Fläche `primary`, Icon `onPrimary`, auch bei Hover; inaktiv: ohne eigene Fläche (`transparent`, also `secondary` der Kachel), Icon `text.color`; Hover (inaktiv): Fläche `background`; eingeklappt: kein Menüpunkt aktiv. Anders als der allgemeine [Icon-Button](#icon-button), der inaktiv gefüllt bleibt. Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`) |
+| Panel | Innenabstand `space.5` oben/unten, `space.4` seitlich, scrollt bei Überlänge innerhalb seiner Kachel; Inhalt des aktiven Menüpunkts: bei „Notizen“ Label „Notizen“ und die [Navigationseinträge](#navigationseintrag) der Notizen, bei „Szenen“ Label „Szenen“ und je Szene ein Navigationseintrag (Reihenfolge der API), ohne Szenen der Hinweis „Keine Szenen“ (`text.sm`, Innenabstand `0 space.3`) |
 | Bedienung | Klick (Enter/Leertaste) auf den aktiven Menüpunkt klappt das Panel ein, auf einen anderen bzw. im eingeklappten Zustand öffnet er dessen Panel (`nextOpenPanel` in `src/utils/navRail.ts`). Start: „Notizen“ offen |
 
 ## Label
@@ -90,6 +91,20 @@ und Laufweite nach [1.4](../../DESIGN.md#14-regeln).
 | Aufbau | optional Label, optional Titel, Inhalt. Zeilen getrennt durch Trennlinien ([1.4](../../DESIGN.md#14-regeln) Rahmen). |
 | Beispiele | Ressourcen (Player) |
 
+## Kachel
+
+Nur im Admin: alle Bereiche sind frei stehende Kacheln auf `background`, getrennt durch Abstand statt Linien. Gemeinsamer
+CSS-Helper `tileSurface` ([src/style/GlobalStyle.ts](../../src/style/GlobalStyle.ts)).
+
+| Eigenschaft | Wert |
+|---|---|
+| Fläche | `secondary`, `radius.lg` |
+| Rand | `borderWidth.thin` in `border` |
+| Lichtkante | innen oben: `box-shadow: inset 0 borderWidth.thin 0` in `border`; kein äußerer Schatten |
+| Abweichende Fläche | Hinweisleiste `error`, [Bühne](#bühne) `background`; Form, Rand und Lichtkante wie oben |
+| Verwendung | [Navigationsleiste](#navigationsleiste) und ihr Panel, Kacheln der [Kopfzeile](#kopfzeile) (Abenteuer-Auswahl, Button-Gruppen, [Hinweisleiste](#hinweisleiste)), Notizseiten, [Dashboard-Panels](#dashboard-panel), [Bühne](#bühne) |
+| Notizseite | volle Breite der mittleren Spalte, Innenabstand `space.7` oben/unten, `space.8` seitlich; der Text darin höchstens `LINE_MAX_WIDTH` breit und zentriert; Abstand zwischen den Seiten `space.5`. Der Nach-oben-Button schwebt über den Kacheln und hat deshalb die Fläche `background` |
+
 ## Dashboard-Panel
 
 Nur im Admin, Komponente `DashboardPanel` ([src/components/DashboardPanel.tsx](../../src/components/DashboardPanel.tsx)).
@@ -101,7 +116,7 @@ wiederverwenden können.
 | Eigenschaft | Wert |
 |---|---|
 | Element | `<section>` mit dem Label als `aria-label` (Prop `label`) |
-| Fläche | wie die [Karte](#karte): `secondary`, `radius.lg`, Innenabstand `space.5` |
+| Fläche | [Kachel](#kachel) (`secondary`, `radius.lg`, Rand und Lichtkante), Innenabstand `space.5` |
 | Größe | volle Breite des Dashboards, so hoch wie der Inhalt |
 | Aufbau | Kopf oben: [Label](#label) (Text aus `title`, sonst `label`), rechts davon optional Bedienelemente (`headEnd`, z. B. der [Level-Stepper](#level-stepper)), vertikal zentriert, `gap` `space.3`, umbrechend; darunter mit `space.3` der Inhalt; kein Scrollen im Panel, Text bricht um statt abgeschnitten zu werden |
 | Flächen im Inhalt | `background` (Fläche auf Fläche, [2.2](../../DESIGN.md#22-rollen)) |
@@ -118,7 +133,7 @@ Label über dem Bild.
 | Eigenschaft | Wert |
 |---|---|
 | Element | `<section>` mit `aria-label` „Aktive Szene“, `lang="de"` |
-| Fläche | `background` (sichtbar ohne Wall-Bild), `radius.lg`, `overflow: hidden` |
+| Fläche | [Kachel](#kachel) mit Fläche `background` (sichtbar ohne Wall-Bild), `overflow: hidden`; die Lichtkante liegt zusätzlich als Pseudo-Element über dem Wall-Bild, das sie sonst verdecken würde |
 | Aufbau | Grid mit einer Spalte und zwei Zeilen (`auto 1fr`); ein Pseudo-Element über beide Zeilen hält die Bühne mindestens 16:9 hoch. Das Wall-Bild liegt absolut über die ganze Fläche (`object-fit: cover`) und bestimmt die Höhe nicht. Zeile 1: Label „Wall“ links, Ground-Bild rechts; Zeile 2: der Text unten. Langer Text macht die Bühne höher und läuft nie unter das Ground-Bild |
 | Ground-Bild | ein Drittel der Breite, 16:9, Abstand `space.3` zum Rand, `radius.md`, Rand `borderWidth.thin` in `scrim`, Fläche `background` ohne Bild; Label „Ground“ oben links mit `space.1` Abstand |
 | Bild-Labels | [Label](#label) auf Fläche `scrim`, Text `onScrim`, Innenabstand `0 space.1`, `radius.sm` |
@@ -264,14 +279,20 @@ Nur im Admin, Komponente `JoinDialog` ([src/components/JoinDialog.tsx](../../src
 | Abstände | Innenabstand `space.5`, `gap` `space.4` |
 | Bedienung | `role="dialog"`, `aria-modal`; Fokus beim Öffnen auf „Schließen“, danach zurück auf den Button „QR-Code“; schließt per Button, Esc oder Klick außerhalb |
 
-## Top-Bar
+## Kopfzeile
+
+Nur im Admin, Komponente `AdminHeader` ([src/components/AdminHeader.tsx](../../src/components/AdminHeader.tsx),
+`data-test-id="admin-header"`). Feste Zeile über Notizen und Dashboard (über den Notizen allein bei ausgeblendetem
+Dashboard), scrollt nie ([screen-layouts.md](screen-layouts.md#screen-layouts)).
 
 | Eigenschaft | Wert |
 |---|---|
-| Aufbau | Grid `OUTER_COLUMN_WIDTH 1fr OUTER_COLUMN_WIDTH`: Abenteuer-Auswahl links, Mitte leer, rechts die Icon-Buttons „Vollbild“ (`fullscreen.svg` bzw. `fullscreenExit.svg`), „Dashboard“ (`dashboard.svg`) und Settings (`gap` `space.1`) |
-| Abenteuer-Auswahl | [Auswahlliste](#auswahlliste) `AdventureSelect` (zugänglicher Name „Abenteuer“), Button mit `text.md` `bold`; langer Name einzeilig mit Ellipse innerhalb der Außenspalte |
-| Dashboard | Icon-Button, transparent; bei offenem Dashboard Fläche `primary`, Icon `onPrimary` (auch bei Hover), sonst Hover `secondary`; Fokus als Outline `borderWidth.thick` in `primary` |
-| Vollbild | wie „Dashboard“, aktiv solange das Admin-Fenster im Vollbild ist (`aria-pressed`) |
+| Aufbau | Flex-Zeile aus [Kacheln](#kachel), `gap` `space.4`: Abenteuer-Auswahl (bzw. Hinweisleiste) über die ganze restliche Breite (`flex: 1`), rechtsbündig eine Button-Gruppe mit „Vollbild“ (`fullscreen.svg` bzw. `fullscreenExit.svg`) und „Dashboard“ (`dashboard.svg`) und eine Button-Gruppe mit Settings (`settings.svg`) |
+| Höhe | alle Kacheln gleich hoch: `size.control.md` plus Innenabstand und Rand der Button-Gruppen; Abenteuer-Auswahl und Hinweisleiste strecken sich auf diese Höhe; immer einzeilig |
+| Abenteuer-Auswahl | [Auswahlliste](#auswahlliste) `AdventureSelect` (zugänglicher Name „Abenteuer“): die ganze Kachel ist der Button; Name `text.md` `bold` (einzeilig mit Ellipse) und Pfeil mittig |
+| Button-Gruppe | Kachel mit Innenabstand `space.1` und `gap` `space.1`; Buttons darin `radius.md`, so ergibt sich außen `radius.lg` |
+| Buttons | [Icon-Buttons](#icon-button), inaktiv transparent, Hover `background`. „Dashboard“: aktiv bei offenem Dashboard Fläche `primary`, Icon `onPrimary` (auch bei Hover); Fokus als Outline `borderWidth.thick` in `primary`. „Vollbild“ wie „Dashboard“, aktiv solange das Admin-Fenster im Vollbild ist (`aria-pressed`). Settings ohne Aktiv-Zustand |
+| Fehler | bei einem Fehler ersetzt die [Hinweisleiste](#hinweisleiste) die Abenteuer-Auswahl an derselben Stelle und in derselben Größe; die Button-Gruppen bleiben, ein Abenteuerwechsel ist währenddessen nicht möglich |
 
 ## Auswahlliste
 
@@ -280,9 +301,9 @@ zeichnet. Bisher nur die Abenteuer-Auswahl ([src/components/AdventureSelect.tsx]
 
 | Eigenschaft | Wert |
 |---|---|
-| Button | Höhe `size.control.md`, Innenabstand `0 space.3`, Fläche `secondary`, Text `text.color`, ohne Rahmen, `radius.md`; Fokus als Outline `borderWidth.thick` in `primary` (`:focus-visible`); ohne Einträge deaktiviert. `aria-haspopup="listbox"`, `aria-expanded` |
+| Button | die ganze [Kachel](#kachel) in der [Kopfzeile](#kopfzeile) (so hoch wie die Button-Gruppen, Breite bis zu ihnen), Inhalt zentriert, Innenabstand `0 space.5`, Text `text.color`; Fokus als Outline `borderWidth.thick` in `primary` (`:focus-visible`); ohne Einträge deaktiviert. `aria-haspopup="listbox"`, `aria-expanded` |
 | Chevron | rechts im Button, SVG-`polygon` (`viewBox 0 0 20 20`), `size.icon`, `fill` `text.color`; geöffnet um 180° gedreht |
-| Liste | direkt unter dem Button (`position: absolute`, `top: calc(100% + space.1)`, `left: 0`), mindestens so breit wie der Button; Fläche `secondary`, Rand `borderWidth.thin` in `border`, `radius.lg`, Innenabstand `space.1`, `gap` `space.1`, ohne `box-shadow`; höchstens `ADVENTURE_LIST_MAX_HEIGHT` hoch, darüber scrollt sie; Ebene `layer.popover` |
+| Liste | direkt unter dem Button und mittig zu ihm (`position: absolute`, `top: calc(100% + space.1)`, `left: 50%`, `translateX(-50%)`), so breit wie ihr Inhalt; Fläche `secondary`, Rand `borderWidth.thin` in `border`, `radius.lg`, Innenabstand `space.1`, `gap` `space.1`, ohne `box-shadow`; höchstens `ADVENTURE_LIST_MAX_HEIGHT` hoch, darüber scrollt sie; Ebene `layer.popover` |
 | Eintrag | Höhe, Innenabstand und Schrift wie beim [Navigationseintrag](#navigationseintrag) (`text.sm` `medium`, `radius.md`), Fläche nicht gewählter Einträge aber wie die Liste. Gewählt: Fläche `primary`, Text `onPrimary`. Hover und Fokus: Fläche `background`. Gewählt mit Tastatur-Fokus (`:focus-visible`): bleibt `primary`, dazu Outline `borderWidth.thick` in `onPrimary`, nach innen versetzt (`outline-offset` −`borderWidth.thick`), damit die scrollende Liste sie nicht abschneidet. Nicht gewählt mit Tastatur-Fokus: Fläche `background`, dazu dieselbe innere Outline in `primary`. Hover und Maus ohne Outline. `role="option"`, `aria-selected` |
 | Bedienung | Klick auf den Button öffnet und schließt. Am Button öffnen Enter, Leertaste und Pfeil runter/hoch, der Fokus steht dann auf dem gewählten Eintrag. In der Liste bewegen Pfeile (ohne Umlauf) und Pos1/Ende; Enter/Leertaste wählen und schließen; Esc schließt und setzt den Fokus zurück auf den Button; Tab und Klick außerhalb schließen. Den gewählten Eintrag erneut zu wählen schließt nur |
 
@@ -301,14 +322,16 @@ Bedienung wie die [Auswahlliste](#auswahlliste), mit diesen Abweichungen:
 ## Hinweisleiste
 
 Nur im Admin, Komponente `ErrorBar` ([src/components/ErrorBar.tsx](../../src/components/ErrorBar.tsx)). Erscheint nur bei
-einem Ladefehler oder einem fehlgeschlagenen Speichern der aktiven Szene, sonst ist sie nicht vorhanden (kein
-reservierter Platz). Bei beiden Fehlern stehen zwei Leisten untereinander in derselben Zeile.
+einem Fehler, sonst ist sie nicht vorhanden. Stehen mehrere Fehler an, zeigt sie nur den wichtigsten in der
+Reihenfolge Verbindung getrennt → Laden fehlgeschlagen → Speichern fehlgeschlagen (`mostImportantError` in
+`src/utils/adminError.ts`); ist er behoben, erscheint der nächste.
 
 | Eigenschaft | Wert |
 |---|---|
-| Position | eigene Zeile direkt unter der Top-Bar, volle Breite ([screen-layouts.md](screen-layouts.md#screen-layouts)) |
-| Aufbau | `display: flex`, `justify-content: center`: Text und Icon-Button „Erneut versuchen“ zentriert nebeneinander, `gap` `space.4` |
-| Button | Icon-Button als Ausnahme ohne `size.control.md`: nur so groß wie das Icon (`reload.svg`, `size.icon`, etwa Texthöhe), damit die Leiste schmal bleibt; Icon in `onError`, ohne eigene Fläche und Rahmen; zugänglicher Name „Erneut versuchen“ (`aria-label`, `title`); Fokus als Outline `borderWidth.thick` in `onError` (`:focus-visible`) |
+| Position | in der [Kopfzeile](#kopfzeile) an der Stelle und in der Größe der Abenteuer-Auswahl ([screen-layouts.md](screen-layouts.md#screen-layouts)) |
+| Form | [Kachel](#kachel) mit Fläche `error` (Rand und Lichtkante in `border`) |
+| Aufbau | `display: flex`, `justify-content: center`: Text und Icon-Button „Erneut versuchen“ zentriert nebeneinander, `gap` `space.4`; Text einzeilig mit Ellipse, damit die Kopfzeile ihre Höhe behält |
+| Button | Icon-Button als Ausnahme ohne `size.control.md`: nur so groß wie das Icon (`reload.svg`, `size.icon`, etwa Texthöhe); Icon in `onError`, ohne eigene Fläche und Rahmen; zugänglicher Name „Erneut versuchen“ (`aria-label`, `title`); Fokus als Outline `borderWidth.thick` in `onError` (`:focus-visible`) |
 | Innenabstand | `space.1` oben/unten, `space.5` seitlich ([1.4](../../DESIGN.md#14-regeln) „Innenabstand von Flächen“) |
 | Farbe | Fläche `error`, Text und Icon `onError` ([2.2](../../DESIGN.md#22-rollen)) |
 | Rolle | `role="alert"` |

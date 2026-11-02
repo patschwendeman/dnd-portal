@@ -331,7 +331,7 @@ Datensatz trotzdem an (`size` = NULL).
   (`src/api/loadData.ts`) und werfen einen `LoadError`, dessen Meldung Netzwerkfehler/Timeout („backend not
   reachable“), HTTP-Status („HTTP 500“) und leere Antwort („… not found“) unterscheidet. Die Screens fangen genau
   einmal über `loadSafely` (`src/utils/loadSafely.ts`), sodass aus Effects keine unhandled rejections entstehen:
-  Admin zeigt eine Hinweisleiste mit Icon-Button „Erneut versuchen“, Wall und Ground loggen per `console.error` und behalten den
+  Admin zeigt in der Kopfzeile eine Hinweisleiste mit Icon-Button „Erneut versuchen“, Wall und Ground loggen per `console.error` und behalten den
   letzten Stand. Keine automatischen Wiederholungen. Der `DocumentReader` prüft `response.ok` der Notizdateien.
   Die Ladevorgänge in Effects (Admin, Wall, Ground, `DocumentReader`) laufen über `loadLatest` (ebenfalls
   `src/utils/loadSafely.ts`, aufgebaut auf `loadSafely`): Der Cleanup des Effects markiert die Anfrage als veraltet,

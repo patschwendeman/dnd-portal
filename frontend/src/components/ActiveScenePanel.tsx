@@ -5,6 +5,7 @@ import DashboardPanel from './DashboardPanel'
 import Label from './Label'
 import { mediaUrl } from '../api/mediaUrl'
 import { Image, SceneDetail } from '../models/models'
+import { tileSurface } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 
 const STAGE_LABEL = 'Aktive Szene'
@@ -13,6 +14,7 @@ const STAGE_LABEL = 'Aktive Szene'
 // spans both and keeps the stage at least 16:9; a long caption makes it higher instead of being
 // cut off, and it never runs below the inset
 const Stage = styled.section`
+  ${tileSurface}
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -20,12 +22,21 @@ const Stage = styled.section`
   min-width: 0;
   overflow: hidden;
   background-color: ${(props) => props.theme.colors.background};
-  border-radius: ${(props) => props.theme.radius.lg};
 
   &::before {
     content: "";
     grid-area: 1 / 1 / 3 / 2;
     aspect-ratio: 16 / 9;
+  }
+
+  /* The wall image covers the inner light edge of the tile, so it is repeated above the image */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inherit;
+    pointer-events: none;
   }
 `
 

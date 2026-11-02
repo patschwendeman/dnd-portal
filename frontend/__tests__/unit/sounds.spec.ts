@@ -22,7 +22,7 @@ describe('sound list', () => {
     expect(new Set(SOUND_NAMES).size).toBe(SOUND_NAMES.length)
   })
 
-  it('keeps the groups of the TopBar', () => {
+  it('keeps the groups of the panel Audio', () => {
     expect(SOUND_GROUPS.map((group) => group.map((sound) => sound.name))).toEqual([
       ['heal', 'bottle'],
       ['buff', 'music_1', 'music_2'],

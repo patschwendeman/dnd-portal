@@ -21,6 +21,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - Notizen (Markdown) einsehen: Story, NPCs, Kämpfe.
 - Navigationsleiste links mit Menüpunkten, die das Panel daneben füllen: „Notizen“ und „Szenen“ (umgesetzt), geplant
   „Kampf“ (Kampf starten). Die Mitte zeigt dabei weiter die Notizen.
+- Ruhiges, einheitliches Kachel-Layout mit fester Kopfzeile, unter der Notizen und Dashboard scrollen (umgesetzt);
+  geplant: ein Hintergrundbild hinter durchscheinenden Kacheln.
 - Musik ein- und ausschalten.
 - Verschiedene Sounds abspielen.
 - Alles, was Wall und Ground zeigen, vom Admin aus steuern; an Wall und Ground wird nichts bedient.
@@ -29,16 +31,21 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   zur Auswahl, z. B. „Bento“ und „Cockpit“ aus dem Mockup `frontend/docs/design/mockup/admin-dashboard.html`).
 
 ### Ist
-- **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Top-Bar und Hauptbereich, keine Bottom-Bar. Im
-  Hauptbereich ganz links die Navigationsleiste, daneben das Panel des aktiven Menüpunkts (beide bündig zwischen Top-Bar
-  und unterem Rand), in der Mitte die Notizen, rechts das Dashboard (ein Drittel der Breite, mindestens 400px und
-  höchstens 560px; die Notizen bekommen den Rest). Die Mitte der Top-Bar ist leer.
+- **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): frei stehende Kacheln mit Rand und Lichtkante auf dem
+  Hintergrund, ohne Trennlinien und ohne Bottom-Bar. Ganz links die Navigationsleiste, daneben das Panel des aktiven
+  Menüpunkts (beide über die volle Höhe, mit Abstand zum oberen und unteren Rand), in der Mitte die Notizen (je Seite
+  eine Kachel), rechts das Dashboard (ein Drittel der Breite von Notizen und Dashboard, mindestens 400px und höchstens
+  560px; die Notizen bekommen den Rest). Über Notizen und Dashboard steht eine feste Kopfzeile: links die
+  Abenteuer-Auswahl bis zu den Button-Gruppen, rechts eine Kachel mit „Vollbild“ und „Dashboard“ und eine mit Settings.
+  Notizen und Dashboard scrollen jeweils für sich unter der Kopfzeile, die stehen bleibt; der Abstand darunter bleibt
+  frei, ganz nach unten gescrollt endet die letzte Kachel auf Höhe der Navigationsleiste. Kein Hintergrundbild, die
+  Kacheln sind deckend (Hintergrundbild und durchscheinende Kacheln: Soll, eigener Task).
 - **Dashboard:** eine Spalte mit vier Panels in fester Reihenfolge (kein Verschieben): oben die Bühne („Aktive
   Szene“), darunter „Audio“, „Spieltisch“ und „Party“. Jedes Panel ist so hoch wie sein Inhalt – die Panels scrollen
   nicht für sich und schneiden keinen Text ab; sind sie zusammen höher als der Hauptbereich, scrollt das Dashboard als
   Ganzes. Der Icon-Button „Dashboard“ rechts
-  in der Top-Bar (links vom Theme-Umschalter, hervorgehoben solange das Dashboard offen ist) blendet es aus – die Notizen
-  nehmen dann die volle Breite, Musik, Sounds, Wall-Overlay, Ground-Raster, Level und QR-Code sind nicht erreichbar
+  in der Kopfzeile (links vom Theme-Umschalter, hervorgehoben solange das Dashboard offen ist) blendet es aus – Notizen
+  und Kopfzeile nehmen dann die volle Breite, Musik, Sounds, Wall-Overlay, Ground-Raster, Level und QR-Code sind nicht erreichbar
   (die Musik spielt im Ausgabe-Fenster weiter) – und wieder ein. Auswahl und
   Scrollposition der Notizen bleiben erhalten; der Zustand wird nicht gespeichert, nach einem Reload ist das Dashboard
   offen.
@@ -48,8 +55,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   die Notizen werden breiter und kein Menüpunkt ist hervorgehoben; ein weiterer Klick klappt es wieder aus. Auswahl und
   Scrollposition der Notizen bleiben dabei erhalten. Menüpunkt und Einklapp-Zustand werden nicht gespeichert, nach
   einem Reload ist „Notizen“ wieder offen.
-- **Abenteuer-Auswahl:** Links in der Top-Bar eine Auswahlliste (Button mit aufklappender Liste, per Maus und Tastatur
-  bedienbar) mit allen Abenteuern. Ist auf dem Spieltisch (Server) kein Abenteuer aktiv, wird automatisch das erste
+- **Abenteuer-Auswahl:** Links in der Kopfzeile eine Auswahlliste (die ganze Kachel ist der Button, die Liste klappt
+  mittig darunter auf; per Maus und Tastatur bedienbar) mit allen Abenteuern. Ist auf dem Spieltisch (Server) kein Abenteuer aktiv, wird automatisch das erste
   aktiviert (mit nur einem Abenteuer also ohne Zutun); ohne Abenteuer ist die Auswahl leer und deaktiviert, es werden
   keine Szenen geladen. Gezeigt werden nur die Szenen des aktiven Abenteuers. Ein Wechsel wird gespeichert und gilt für
   alle Spieltisch-Screens; Admin, Wall und Ground zeigen danach direkt die im neuen Abenteuer gespeicherte Szene (bzw.
@@ -77,11 +84,15 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   einem Neustart der API sind beide „Aus“ (Zellgröße 100).
   Mehrere Admin-Fenster dürfen gleichzeitig schreiben, der letzte Schreibzugriff gewinnt.
 - **Speicherfehler:** Schlägt das Speichern von Szene, Abenteuer, Theme, Level, Wall-Overlay, Ground-Raster oder ein Musik-Befehl fehl, ändert sich auf keinem Screen etwas,
-  und unter der Top-Bar erscheint die Hinweisleiste „Änderung konnte nicht gespeichert werden“; „Erneut versuchen“
+  und in der Kopfzeile erscheint die Hinweisleiste „Änderung konnte nicht gespeichert werden“; „Erneut versuchen“
   wiederholt den zuletzt fehlgeschlagenen Schreibzugriff, bei Erfolg verschwindet sie.
 - **Verbindung:** Bricht die Verbindung zum Server ab (spätestens nach etwa 35 s ohne Nachricht erkannt), zeigt der
   Admin die Hinweisleiste „Verbindung zum Server getrennt“ und behält den letzten Stand; er verbindet sich selbst neu
   (1 s, 2 s, 4 s … höchstens 10 s), „Erneut versuchen“ verbindet sofort. Danach verschwindet die Leiste.
+- **Hinweisleiste:** ersetzt in der Kopfzeile die Abenteuer-Auswahl an derselben Stelle und in derselben Größe (kein
+  Abenteuerwechsel, solange sie steht); die Buttons rechts bleiben. Stehen mehrere Fehler an, zeigt sie nur den
+  wichtigsten (Verbindung getrennt → Laden fehlgeschlagen → Speichern fehlgeschlagen); ist er behoben, erscheint der
+  nächste.
 - **Aktive Szene (Bühne):** Das Wall-Bild der aktiven Szene über die volle Breite des Dashboards (16:9), das
   Ground-Bild als kleines Bild oben rechts darin (etwa ein Drittel der Breite), beide mit Label „Wall“ bzw. „Ground“.
   Unten auf dem Bild liegen auf einem dunklen Verlauf das Label „Aktive Szene“, Name und Beschreibung (umbrechend, nie
@@ -116,10 +127,10 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Zauber, Debuff, Lock; jede Gruppe ist eine eigene Fläche, die Gruppen brechen im Panel um); das
   Admin-Fenster, das Audioausgabe ist, spielt sie über der Musik. Ohne Ausgabe passiert nichts (kein Fehler), Fehler beim Senden
   werden nur geloggt.
-- **Vollbild (Admin):** Icon-Button „Vollbild“ rechts in der Top-Bar (links vom Icon-Button „Dashboard“) schaltet das
+- **Vollbild (Admin):** Icon-Button „Vollbild“ rechts in der Kopfzeile (links vom Icon-Button „Dashboard“) schaltet das
   Admin-Fenster in den Vollbildmodus des Browsers und wieder zurück; hervorgehoben, solange das Fenster im Vollbild ist
   (auch wenn es per Escape verlassen wird, folgt die Anzeige).
-- Theme-Umschalter (Settings-Icon rechts in der Top-Bar): schaltet das Theme global für Admin, Wall, Ground und die
+- Theme-Umschalter (Settings-Icon rechts in der Kopfzeile): schaltet das Theme global für Admin, Wall, Ground und die
   Player Screens um (außer auf Smartphones, deren Spieler lokal ein anderes Theme gewählt hat).
 - **Spieltisch:** Panel mit je einer Zeile für Wall, Ground und Spieler, getrennt durch Linien. Wall und Ground: links
   Name, Status-Punkt und „verbunden“ bzw. „nicht verbunden“ (bei mehreren Verbindungen „2 verbunden“ usw.), in der
@@ -146,8 +157,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   wenn dieser über die IP geöffnet ist; sonst zeigt der Dialog „Player-URL unbekannt – Spieltisch mit „dnd prod“
   starten oder den Admin über die IP des Rechners öffnen“. Schließen per Button, Escape oder Klick außerhalb; der Fokus
   kehrt danach zum Button zurück.
-- **Ladefehler:** Lassen sich Abenteuer, Spieler oder Szenen nicht laden (Backend nicht erreichbar, Timeout, HTTP-Fehler), erscheint unter der
-  Top-Bar die Hinweisleiste „Backend nicht erreichbar“ mit Button „Erneut versuchen“; bei Erfolg verschwindet sie.
+- **Ladefehler:** Lassen sich Abenteuer, Spieler oder Szenen nicht laden (Backend nicht erreichbar, Timeout, HTTP-Fehler), erscheint in der
+  Kopfzeile die Hinweisleiste „Backend nicht erreichbar“ mit Button „Erneut versuchen“; bei Erfolg verschwindet sie.
   Keine automatischen Wiederholungen. Kann eine Notizdatei nicht geladen werden, zeigt der Notizbereich „Notizen
   konnten nicht geladen werden“; ein Wechsel des Eintrags lädt erneut.
 

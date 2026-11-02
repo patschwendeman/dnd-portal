@@ -6,12 +6,12 @@ Scenario: The dashboard shows its panels next to the notes
     And the panels lie in one column over the full width of the dashboard, each as high as its content
     And the dashboard takes a third of the width, at least 400 and at most 560 pixels
     And no panel scrolls on its own
-    And there is no bottom bar, no sound button and no join button in the top bar
+    And there is no bottom bar, no sound button and no join button in the header
 
 Scenario: I collapse and expand the dashboard
     Given I am on the admin screen
     And I selected the notes entry Leveling and scrolled down the notes
-    When I click on the dashboard icon in the top bar
+    When I click on the dashboard icon in the header
     Then the dashboard is hidden, the notes are wider, the icon is off
     And Leveling is still selected and the notes are at the same scroll position
     When I click on the dashboard icon again
@@ -61,7 +61,7 @@ Scenario: I open the QR code from the panel Spieltisch
 
 Scenario: I switch the admin window to full screen
     Given I am on the admin screen
-    When I click on the full screen icon in the top bar
+    When I click on the full screen icon in the header
     Then the admin window is in full screen and the icon is highlighted
     When I click on the full screen icon again
     Then the admin window is no longer in full screen

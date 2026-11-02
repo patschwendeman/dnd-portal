@@ -40,20 +40,20 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 
 | Paar | Verwendung | Ziel | Dark | Tavern | Ergebnis |
 |---|---|---|---|---|---|
-| `text.color` auf `background` | Notizen, Wall-Panel, inaktive Panel-Einträge (Admin, ohne eigene Fläche) | 4,5 | 17,4 | 9,2 | ✓ beide |
-| `text.color` auf `secondary` | Karten, Dashboard-Panels, Dialog, inaktive Buttons, Panel-Einträge bei Hover (Admin) | 4,5 | 15,9 | 6,5 | ✓ beide |
+| `text.color` auf `background` | Wall-Panel, Panel-Einträge bei Hover (Admin) | 4,5 | 17,4 | 9,2 | ✓ beide |
+| `text.color` auf `secondary` | Karten, Kacheln im Admin (Notizseiten, Dashboard-Panels, Abenteuer-Auswahl), Dialog, inaktive Buttons, inaktive Panel-Einträge (Admin, ohne eigene Fläche) | 4,5 | 15,9 | 6,5 | ✓ beide |
 | `onPrimary` auf `primary` | aktive Buttons (auch der gewählte Button im Segment-Control) und Navigation, Confirm (14px) | 4,5 | 6,1 | 4,7 | ✓ beide |
 | `onPrimary` auf `primary` | Fokus-Outline des gewählten Eintrags der Auswahlliste | 3,0 | 6,1 | 4,7 | ✓ beide |
-| `primary` auf `background` | Links in den Notizen (16px) | 4,5 | 6,1 | 4,7 | ✓ beide |
+| `primary` auf `secondary` | Links in den Notizen (16px, Inhaltsverzeichnisse) auf den Notizseiten | 4,5 | 5,6 | **3,3** | **✗ Tavern, offen, siehe Anmerkung** |
 | `primary` auf `background` | Fokus-Outline nicht gewählter Einträge der Auswahlliste | 3,0 | 6,1 | 4,7 | ✓ beide |
-| `border` auf `background` | Rand der Notizseiten | 3,0 | **1,5** | 4,3 | bewusst ✗ Dark |
-| `border` auf `secondary` | Trennlinien in Karten und in den Panels „Audio“ und „Spieltisch“ | 3,0 | **1,5** | 3,0 | bewusst ✗ Dark |
-| `secondary` auf `background` | Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel (Admin) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide |
-| `secondary` auf `background` | Hover-Fläche der Menüpunkte der Navigationsleiste und der Panel-Einträge (Admin) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide, siehe Anmerkung |
-| `text.color` auf `background` | Icon des inaktiven Menüpunkts der Navigationsleiste (ohne eigene Fläche) | 3,0 | 17,4 | 9,2 | ✓ beide |
-| `text.color` auf `secondary` | Icon des inaktiven Menüpunkts der Navigationsleiste bei Hover | 3,0 | 15,9 | 6,5 | ✓ beide |
+| `border` auf `background` | Rand der Kacheln im Admin gegen den Hintergrund | 3,0 | **1,5** | 4,3 | bewusst ✗ Dark |
+| `border` auf `secondary` | Rand und Lichtkante der Kacheln im Admin (innen), Trennlinien in Karten und in den Panels „Audio“ und „Spieltisch“ | 3,0 | **1,5** | 3,0 | bewusst ✗ Dark |
+| `background` auf `secondary` | Hover-Fläche der Menüpunkte der Navigationsleiste, der Panel-Einträge und der Buttons der Kopfzeile (Admin) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide, siehe Anmerkung |
+| `text.color` auf `secondary` | Icon des inaktiven Menüpunkts der Navigationsleiste und der inaktiven Buttons der Kopfzeile (ohne eigene Fläche) | 3,0 | 15,9 | 6,5 | ✓ beide |
+| `text.color` auf `background` | Icon des inaktiven Menüpunkts der Navigationsleiste und der Buttons der Kopfzeile bei Hover | 3,0 | 17,4 | 9,2 | ✓ beide |
 | `onPrimary` auf `primary` | Icon des aktiven Menüpunkts der Navigationsleiste und der aktiven Icon-Buttons „Dashboard“ und „Vollbild“ | 3,0 | 6,1 | 4,7 | ✓ beide |
-| `primary` auf `background` | Fokus-Outline der Menüpunkte der Navigationsleiste und der Panel-Einträge (Notizen, Szenen) | 3,0 | 6,1 | 4,7 | ✓ beide |
+| `primary` auf `secondary` | Fokus-Outline der Menüpunkte der Navigationsleiste, der Panel-Einträge (Notizen, Szenen) und der Buttons „Vollbild“ und „Dashboard“ (auf ihrer Kachel) | 3,0 | 5,6 | 3,3 | ✓ beide |
+| `primary` auf `background` | Fokus-Outline der Abenteuer-Auswahl (außerhalb ihrer Kachel) | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `text.color` auf `background` | Icons auf Flächen in Dashboard-Panels (Play-Button ohne Musik, „In neuem Fenster öffnen“, „QR-Code“) | 4,5 | 17,4 | 9,2 | ✓ beide |
 | `primary` auf `secondary` | Status-Punkt „verbunden“ im Panel „Spieltisch“ | 3,0 | 5,6 | 3,3 | ✓ beide |
 | `text.color` auf `secondary` | Ring des Status-Punkts „nicht verbunden“ | 3,0 | 15,9 | 6,5 | ✓ beide |
@@ -74,9 +74,10 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `onPrimary` auf `primary` | Zahl im Level-Badge der Hero-Karte (14px, derzeit nicht verwendet) | 4,5 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `background` | Level-Badge gegen die Hero-Karte (derzeit nicht verwendet) | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `border` auf `background` | Rand von Avatar und Chips gegen die Hero-Karte (derzeit nicht verwendet) | 3,0 | **1,5** | 4,3 | bewusst ✗ Dark, siehe Anmerkung |
-| `onError` auf `error` | Text der Hinweisleiste (14px) | 4,5 | 9,0 | 9,0 | ✓ |
+| `onError` auf `error` | Text der Hinweisleiste in der Kopfzeile (14px) | 4,5 | 9,0 | 9,0 | ✓ |
 | `qr.foreground` auf `qr.background` | QR-Code im Dialog „Spieler verbinden“ | 3,0 | 21,0 | 21,0 | ✓ |
 | `onError` auf `error` | Icon-Button und Fokus-Outline der Hinweisleiste | 3,0 | 9,0 | 9,0 | ✓ |
+| `border` auf `error` | Rand und Lichtkante der Hinweisleiste | 3,0 | **1,2** | **2,0** | bewusst ✗ beide |
 | `text.color` auf `resource.*.muted` | Zahl im Ressourcen-Button (24px, groß) | 3,0 | 14,2–17,6 | 7,2–9,0 | ✓ beide |
 | `resource.*.strong` auf `resource.*.muted` | Rahmen, verfügbare Icons und Plätze | 3,0 | 3,8–11,7 | 3,8–11,7 | ✓ beide |
 | `resource.*.strong` auf `secondary` | Rahmen gegen die Karte | 3,0 | 4,0–13,0 | 3,2–10,5 | ✓ beide |
@@ -86,11 +87,14 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 
 - **Tavern-Rot** (`primary` in Tavern): liegt mit 4,7:1 sicher über der Grenze; `#BD5A5A` erreichte nur genau 4,50:1.
 - **`border` im Dark-Theme:** Ausnahme und Begründung in [2.6](../../DESIGN.md#26-kontrast).
-- **Navigationsleiste (Admin):** Leiste und Panel haben die Fläche `background`. Inaktive Menüpunkte und
-  Panel-Einträge haben keine eigene Fläche; ihre Hover-Fläche `secondary` hebt sich davon nur schwach ab (Dark 1,1,
-  Tavern 1,4) und ist nur ein Zusatzsignal. Erkennbar sind sie über Icon bzw. Text, die das Ziel auf `background` und
-  auf `secondary` erreichen. Die Linien in `secondary` sind
-  Gestaltung wie die Linie unter der Top-Bar (Ausnahme in [2.6](../../DESIGN.md#26-kontrast)).
+- **Kacheln (Admin):** Navigationsleiste, Panel und die Kacheln der Kopfzeile haben die Fläche `secondary`. Inaktive
+  Menüpunkte, Panel-Einträge und Buttons der Kopfzeile haben keine eigene Fläche; ihre Hover-Fläche `background` hebt
+  sich davon nur schwach ab (Dark 1,1, Tavern 1,4) und ist nur ein Zusatzsignal. Erkennbar sind sie über Icon bzw. Text,
+  die das Ziel auf `secondary` und auf `background` erreichen. Rand und Lichtkante der Kacheln (auch der Hinweisleiste)
+  in `border` sind Gestaltung wie die Trennlinien (Ausnahme in [2.6](../../DESIGN.md#26-kontrast)).
+- **Links in den Notizen:** Seit die Notizseiten Kacheln in `secondary` sind, verfehlt `primary` als Textfarbe in
+  Tavern 4,5:1 (3,3:1). Betroffen sind die Text-Links der Inhaltsverzeichnisse (z. B. `public/story/fight`); eine
+  Lösung ist offen ([known-issues.md](../../../docs/known-issues.md)).
 - **Spielerzeile und Hero-Karte (Admin):** Avatar und Chips sind keine Bedienelemente; ihr Rand in `border` ist
   Gestaltung wie die Trennlinien (Ausnahme in [2.6](../../DESIGN.md#26-kontrast)). Erkennbar sind sie an Initialen bzw.
   Text, die das Ziel erreichen. Deaktivierte Buttons „−“/„+“ (Zeichen in `text.muted`) sind nach WCAG vom Kontrastziel ausgenommen

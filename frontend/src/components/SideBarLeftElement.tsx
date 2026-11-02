@@ -33,7 +33,7 @@ const NavigationElement = styled.button<{ $isElementActive: boolean }>`
 
   &:hover {
     background-color: ${(props) => (
-      props.$isElementActive ? props.theme.colors.primary : props.theme.colors.secondary
+      props.$isElementActive ? props.theme.colors.primary : props.theme.colors.background
     )};
   }
 

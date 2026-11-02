@@ -5,7 +5,7 @@ import ReactMarkdown, { Components } from 'react-markdown'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
-import { hoverScrollbar } from '../style/GlobalStyle'
+import { hoverScrollbar, tileSurface } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 import { loadLatest } from '../utils/loadSafely'
 
@@ -25,7 +25,6 @@ const markdownLists = [
   markdownFilesMechanics,
 ]
 
-const PAGE_MAX_WIDTH = '880px'
 const LINE_MAX_WIDTH = '68ch'
 
 const StoryReaderContainer = styled.div`
@@ -45,7 +44,8 @@ const TopLink = styled.button<{ $isVisible: boolean }>`
   height: ${(props) => props.theme.size.control.md};
   padding: 0;
   border-radius: ${(props) => props.theme.radius.md};
-  background-color: ${(props) => (props.theme.colors.secondary)};
+  /* Floats above the tiles of the pages, which have the surface secondary */
+  background-color: ${(props) => (props.theme.colors.background)};
   bottom: ${(props) => props.theme.space[4]};
   right: ${(props) => props.theme.space[4]};
   cursor: pointer;
@@ -70,18 +70,22 @@ const Background = styled.div`
   width: 100%;
   height: 100%;
   overflow-y: auto;
-  padding: ${(props) => props.theme.space[5]} 0;
+  /* No space at the top: the gap below the header keeps it, also while scrolling */
+  padding: 0 0 ${(props) => props.theme.space[5]};
   scroll-behavior: smooth;
   ${hoverScrollbar}
 `
 
 const Page = styled.div`
+  ${tileSurface}
   width: 100%;
-  max-width: ${PAGE_MAX_WIDTH};
   padding: ${(props) => props.theme.space[7]} ${(props) => props.theme.space[8]};
   margin: 0;
-  border: ${(props) => props.theme.borderWidth.thin} solid ${(props) => props.theme.colors.border};
-  border-radius: ${(props) => props.theme.radius.lg};
+`
+
+const PageText = styled.div`
+  max-width: ${LINE_MAX_WIDTH};
+  margin: 0 auto;
   h1 {
     ${textStyle('2xl')}
     font-weight: ${(props) => props.theme.fontWeight.bold};
@@ -108,7 +112,6 @@ const Page = styled.div`
   p {
     ${textStyle('reading')}
     margin: 0 0 ${(props) => props.theme.space[4]};
-    max-width: ${LINE_MAX_WIDTH};
     word-wrap: break-word;
   }
   ol {
@@ -279,9 +282,11 @@ function DocumentReader({ selectedStoryIndex }: DocumentReaderProps): ReactEleme
         {loadFailed && <LoadFailedText>Notizen konnten nicht geladen werden</LoadFailedText>}
         {!loadFailed && markdownContent.map(({ path, text }) => (
           <Page key={path}>
-            <ReactMarkdown components={markdownComponents}>
-              {text || 'Loading...'}
-            </ReactMarkdown>
+            <PageText>
+              <ReactMarkdown components={markdownComponents}>
+                {text || 'Loading...'}
+              </ReactMarkdown>
+            </PageText>
           </Page>
         ))}
         <TopLink onClick={scrollToTop} $isVisible={isVisible}>

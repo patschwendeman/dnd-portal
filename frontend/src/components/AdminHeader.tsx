@@ -3,7 +3,9 @@ import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
 import AdventureSelect from './AdventureSelect'
+import ErrorBar from './ErrorBar'
 import { AdventureSummary } from '../models/models'
+import { tileSurface } from '../style/GlobalStyle'
 import useDocumentFullscreen from '../utils/useDocumentFullscreen'
 
 import dashboardIcon from '/assets/icons/dashboard.svg'
@@ -11,22 +13,21 @@ import fullscreenIcon from '/assets/icons/fullscreen.svg'
 import fullscreenExitIcon from '/assets/icons/fullscreenExit.svg'
 import settingsIcon from '/assets/icons/settings.svg'
 
-const OUTER_COLUMN_WIDTH = '240px'
-
-const Bar = styled.div`
-    display: grid;
-    grid-template-columns: ${OUTER_COLUMN_WIDTH} 1fr ${OUTER_COLUMN_WIDTH};
-    align-items: center;
-    padding: 0 ${(props) => props.theme.space[5]};
-    background-color: ${(props) => props.theme.colors.background};
-    border-bottom: ${(props) => props.theme.borderWidth.thin} solid
-      ${(props) => props.theme.colors.secondary};
+// The adventure select (or the error bar) stretches to the height of the button groups, so all
+// tiles of the header are equally high
+const Header = styled.header`
+    display: flex;
+    gap: ${(props) => props.theme.space[4]};
+    min-width: 0;
 `
 
-const Actions = styled.div`
+// space.1 around buttons in radius.md gives the outer radius radius.lg of the tile
+const ButtonGroup = styled.div`
+    ${tileSurface}
     display: flex;
-    justify-self: end;
+    flex: none;
     gap: ${(props) => props.theme.space[1]};
+    padding: ${(props) => props.theme.space[1]};
 `
 
 const IconButton = styled.button`
@@ -40,6 +41,10 @@ const IconButton = styled.button`
     border: none;
     border-radius: ${(props) => props.theme.radius.md};
     cursor: pointer;
+
+    &:hover {
+        background-color: ${(props) => props.theme.colors.background};
+    }
 
     svg {
         display: block;
@@ -55,7 +60,7 @@ const ToggleButton = styled(IconButton)<{ $isActive: boolean }>`
 
     &:hover {
         background-color: ${(props) => (
-          props.$isActive ? props.theme.colors.primary : props.theme.colors.secondary
+          props.$isActive ? props.theme.colors.primary : props.theme.colors.background
         )};
     }
 
@@ -66,38 +71,49 @@ const ToggleButton = styled(IconButton)<{ $isActive: boolean }>`
     }
 `
 
-interface TopBarProps {
+interface ErrorNotice {
+  message: string
+  onRetry: () => void
+}
+
+interface AdminHeaderProps {
   // Switches the theme of the game table (Admin, Wall and Ground)
   onToggleTheme: () => void
   adventures: AdventureSummary[]
   activeAdventureId: number | null
   onSelectAdventure: (adventureId: number) => void
+  // Replaces the adventure select while it is set, so no adventure can be switched meanwhile
+  errorNotice: ErrorNotice | null
   isDashboardOpen: boolean
   dashboardId: string
   onToggleDashboard: () => void
 }
 
-function TopBar({
+function AdminHeader({
   onToggleTheme,
   adventures,
   activeAdventureId,
   onSelectAdventure,
+  errorNotice,
   isDashboardOpen,
   dashboardId,
   onToggleDashboard,
-}: TopBarProps): ReactElement {
+}: AdminHeaderProps): ReactElement {
   const theme = useTheme()
   const { isFullscreen, toggle: toggleFullscreen } = useDocumentFullscreen()
 
   return (
-    <Bar data-test-id="top-bar">
-      <AdventureSelect
-        adventures={adventures}
-        activeAdventureId={activeAdventureId}
-        onSelectAdventure={onSelectAdventure}
-      />
-      <div />
-      <Actions>
+    <Header data-test-id="admin-header">
+      {errorNotice ? (
+        <ErrorBar message={errorNotice.message} onRetry={errorNotice.onRetry} />
+      ) : (
+        <AdventureSelect
+          adventures={adventures}
+          activeAdventureId={activeAdventureId}
+          onSelectAdventure={onSelectAdventure}
+        />
+      )}
+      <ButtonGroup>
         <ToggleButton
           type="button"
           title={isFullscreen ? 'Vollbild beenden' : 'Vollbild'}
@@ -133,6 +149,8 @@ function TopBar({
             }}
           />
         </ToggleButton>
+      </ButtonGroup>
+      <ButtonGroup>
         <IconButton onClick={onToggleTheme}>
           <ReactSVG
             src={settingsIcon}
@@ -141,9 +159,9 @@ function TopBar({
             }}
           />
         </IconButton>
-      </Actions>
-    </Bar>
+      </ButtonGroup>
+    </Header>
   )
 }
 
-export default TopBar
+export default AdminHeader

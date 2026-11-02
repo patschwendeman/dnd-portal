@@ -2,6 +2,8 @@ import { ReactElement } from 'react'
 import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
 
+import { tileSurface } from '../style/GlobalStyle'
+
 interface NavRailItem {
   id: string
   // Accessible name and tooltip of the icon button
@@ -10,15 +12,13 @@ interface NavRailItem {
 }
 
 const Rail = styled.nav`
+  ${tileSurface}
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: ${(props) => props.theme.space[2]};
   padding: ${(props) => props.theme.space[5]} 0;
   min-height: 0;
-  background-color: ${(props) => props.theme.colors.background};
-  border-right: ${(props) => props.theme.borderWidth.thin} solid
-    ${(props) => props.theme.colors.secondary};
 `
 
 const RailButton = styled.button<{ $isActive: boolean }>`
@@ -38,7 +38,7 @@ const RailButton = styled.button<{ $isActive: boolean }>`
 
   &:hover {
     background-color: ${(props) => (
-      props.$isActive ? props.theme.colors.primary : props.theme.colors.secondary
+      props.$isActive ? props.theme.colors.primary : props.theme.colors.background
     )};
   }
 

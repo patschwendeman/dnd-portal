@@ -68,7 +68,6 @@ Die Werte stehen nur in [tokens.ts](src/style/tokens.ts).
 | `size.iconLg` | Icons in den Menüpunkten der Navigationsleiste (Admin), 24px |
 | `size.scrollbar` | Breite der Scrollleiste (Notizen im Admin) |
 | `size.button.minWidth` | Mindestbreite von Text-Buttons |
-| `size.bar.md` | Top-Bar |
 | `size.avatar.width` · `size.avatar.height` | Avatar der Hero-Karte (Admin, derzeit nicht verwendet), 96 × 128px (Hochformat 3:4) |
 | `size.badge` | Level-Badge der Hero-Karte (Admin, derzeit nicht verwendet), 36px |
 
@@ -100,12 +99,12 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 
 | Abstand | Beziehung | Beispiele |
 |---|---|---|
-| `space.1` | innerhalb einer Gruppe | Icon-Gruppe, Navigationseinträge, Button-Gruppe, Buttons im Segment-Control, Buttons und Level im Level-Stepper, Label über Überschrift (auch auf der Bühne) |
+| `space.1` | innerhalb einer Gruppe | Icon-Gruppe, Navigationseinträge, Button-Gruppe (auch in der Kopfzeile), Buttons im Segment-Control, Buttons und Level im Level-Stepper, Label über Überschrift (auch auf der Bühne) |
 | `space.2` | Label vor Inhalt in derselben Zeile, Menüpunkte untereinander, eng gestapelte Einträge | Menüpunkte der Navigationsleiste, Label „Level“ → „−“ im Level-Stepper, Sound-Gruppen im Panel „Audio“, Spielerzeilen untereinander, Steuerung → Zellgröße in der Spieltisch-Zeile „Ground“; sonst als Teil zusammengesetzter Abstände, z. B. am Label der Panel-Listen |
 | `space.3` | zusammengehörige Elemente, Label → Inhalt darunter | Play-Button → Titel, Lautsprecher-Icon → Slider → Wert, Spalten der Spieltisch-Zeile, Avatar → Text der Spielerzeile, Label → Inhalt im Dashboard-Panel, Label → Level-Stepper im Kopf, Bild-Labels und Ground-Bild → Rand der Bühne, Dialog-Buttons, „Notizen“ bzw. „Szenen“ → Navigation (`padding-bottom: space.2` am Label plus `gap` `space.1` der Spalte) |
-| `space.4` | Gruppen in einer Leiste, Elemente im Dialog | Musik → Lautstärke → Trennlinie → Sounds im Panel „Audio“, Panels im Dashboard, Bild → Text → Buttons |
-| `space.5` | Bereiche | Spalten im Admin, Karten, Notizseiten |
-| `space.6`–`space.8` | große Flächen | Abstand zum Bildschirmrand, Innenabstände nach der nächsten Tabelle |
+| `space.4` | Gruppen in einer Leiste, Elemente im Dialog | Kacheln der Kopfzeile im Admin, Musik → Lautstärke → Trennlinie → Sounds im Panel „Audio“, Panels im Dashboard, Bild → Text → Buttons |
+| `space.5` | Bereiche | Kacheln im Admin (Spalten, Kopfzeile → Notizen und Dashboard, Abstand zum Bildschirmrand), Karten, Notizseiten |
+| `space.6`–`space.8` | große Flächen | Abstand zum Bildschirmrand (außer im Admin), Innenabstände nach der nächsten Tabelle |
 
 **Innenabstand von Flächen**
 
@@ -118,10 +117,11 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 | Spieltisch-Zeile | `space.3` oben/unten (erste Zeile oben, letzte unten `0`) |
 | Label auf einem Bild der Bühne | `0 space.1` |
 | Dialog | `space.5` seitlich und unten |
-| Leisten (seitlich) | `space.5` |
+| Kopfzeile im Admin | keiner; Abenteuer-Auswahl `space.5` seitlich, Button-Gruppen `space.1` |
+| Notizen und Dashboard im Admin | `space.5` unten im Scrollbereich, oben keiner (der Abstand zur Kopfzeile ist das `gap` des Grids) |
 | Navigationsleiste im Admin | `space.5` oben/unten (seitlich aus `NAV_RAIL_WIDTH`) |
 | Panel der Navigationsleiste im Admin | `space.5` oben/unten, `space.4` seitlich |
-| Hinweisleiste | `space.1` oben/unten, `space.5` seitlich |
+| Hinweisleiste (Kopfzeile) | `space.1` oben/unten, `space.5` seitlich |
 | Wall-Panel | `space.6` |
 | Notizseite | `space.7` oben/unten, `space.8` seitlich |
 | Bildschirmrand am Smartphone (Player) | `space.4` oben/unten, seitlich `max(space.5, env(safe-area-inset-left), env(safe-area-inset-right))` (braucht `viewport-fit=cover` in `index.html`) |
@@ -134,7 +134,7 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 | `text.2xl` | `medium` / `bold` | Charaktername und Initialen der Hero-Karte (`medium`, Admin, derzeit nicht verwendet), h1 in den Notizen (`bold`) |
 | `text.xl` | `semibold` | h2 in den Notizen, Überschrift des Wall-Panels, Zahl im Ressourcen-Button (Player), Szenenname auf der Bühne (Admin) |
 | `text.lg` | `semibold` | Titel von Karte und Dialog, Text im Vollbild-Overlay (Wall, Ground), Ziffer der Zauberstufe I–IV (Player), Level und Zeichen „−“ und „+“ im Level-Stepper (Admin) |
-| `text.md` | `regular` / `medium` / `semibold` / `bold` | Standard und Listen in den Notizen (`ul`, `ol`, `li`, auch Absätze in Listeneinträgen des Inhaltsverzeichnisses) (`regular`), Hinweis im Overlay „Handy drehen“ (`medium`, Player), h3 und h4 in den Notizen (`semibold`), Abenteuer-Auswahl in der Top-Bar (`bold`) |
+| `text.md` | `regular` / `medium` / `semibold` / `bold` | Standard und Listen in den Notizen (`ul`, `ol`, `li`, auch Absätze in Listeneinträgen des Inhaltsverzeichnisses) (`regular`), Hinweis im Overlay „Handy drehen“ (`medium`, Player), h3 und h4 in den Notizen (`semibold`), Abenteuer-Auswahl in der Kopfzeile (`bold`) |
 | `text.sm` | `regular` / `medium` / `semibold` | Werte, Beschreibungen (auch auf der Bühne), Statustexte, Zustand der Musik, Volk · Klasse · Spieler der Spielerzeile, Chips der Hero-Karte (`regular`), Navigation, Musiktitel, Charaktername und Initialen der Spielerzeile, Text der Hinweisleiste und Zahl im Level-Badge (`medium`), Buttons (auch im Segment-Control), Slider-Wert, Namen der Screens im Panel „Spieltisch“, h5 und h6 in den Notizen (`semibold`) |
 | `text.xs` | `semibold` | Labels (auch auf den Bildern der Bühne) |
 | `text.reading` | `regular` | nur Fließtext (Absätze) in den Notizen |
@@ -156,6 +156,8 @@ Titel und normale Texte wie „Confirm“.
 | Zauber- und Spezialplatz (Player) | `radius.sm` |
 | Karte, Dashboard-Panel, Notizseite, Wall-Panel, Dialog, Fläche im Vollbild-Overlay | `radius.lg` |
 | Bühne (Admin) | `radius.lg` |
+| Kachel im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Hinweisleiste) | `radius.lg` |
+| Button-Gruppe der Kopfzeile (Buttons darin `radius.md`, Innenabstand `space.1`) | `radius.lg` |
 | Ground-Bild auf der Bühne | `radius.md` |
 | Label auf einem Bild der Bühne | `radius.sm` |
 | Segment-Control (Buttons darin `radius.md`) | `radius.lg` |
@@ -175,9 +177,12 @@ Verschachtelte Flächen: **äußerer Radius = innerer Radius + Innenabstand.** B
 Dreieck der Ressourcen) sind SVG (`<circle>`, `<polygon>`, `viewBox 0 0 20 20`) mit `fill` aus einer Farbrolle, keine
 CSS-Dreiecke über `border-width`.
 
-**Rahmen und Linien:** `borderWidth.thin` für Trennlinien und Ränder von Seiten. `borderWidth.thick` nur
-für Aktiv-Markierungen. Senkrechte Trennlinien sind so hoch wie die Icons daneben (`size.icon`); Ausnahme sind die
-Linien rechts an Navigationsleiste und Panel im Admin, die Flächen abgrenzen und über die volle Höhe laufen.
+**Rahmen und Linien:** `borderWidth.thin` für Trennlinien und Ränder von Seiten und Kacheln. `borderWidth.thick`
+nur für Aktiv-Markierungen. Senkrechte Trennlinien sind so hoch wie die Icons daneben (`size.icon`). Die Bereiche im
+Admin trennen keine Linien, sondern der Abstand zwischen den [Kacheln](docs/design/components.md#kachel).
+
+**Schatten:** `box-shadow` nur als innere Lichtkante der Kachel (`inset 0 borderWidth.thin 0` in `border`, Baustein
+`tileSurface`); sonst kein `box-shadow`, auch kein äußerer Schatten unter Kacheln.
 
 **Aktiv-Zustand:** Kein Leuchten (`box-shadow`). Buttons und Navigation zeigen den Aktiv-Zustand über die Farbe
 ([2.4](#24-zustände)).
@@ -202,23 +207,24 @@ gemeinsame Komponenten gibt es `TextButton` ([TextButton.tsx](src/components/Tex
 ([Label.tsx](src/components/Label.tsx)), `PanelButton` ([PanelButton.tsx](src/components/PanelButton.tsx), Icon-Button
 in Dashboard-Panels), `OptionButtons` ([OptionButtons.tsx](src/components/OptionButtons.tsx), Segment-Control in
 Dashboard-Panels) und `PanelSlider` ([PanelSlider.tsx](src/components/PanelSlider.tsx), Slider in Dashboard-Panels, mit
-`PanelSliderArea` und `SliderValue`).
+`PanelSliderArea` und `SliderValue`). Als gemeinsame CSS-Helper gibt es `tileSurface` (Kachel im Admin) und
+`hoverScrollbar` (Scrollleiste), beide in [GlobalStyle.ts](src/style/GlobalStyle.ts).
 
 Aufbau je Baustein in [components.md](docs/design/components.md): [Icon-Button](docs/design/components.md#icon-button),
 [Text-Button](docs/design/components.md#text-button), [Button-Gruppe](docs/design/components.md#button-gruppe),
 [Navigationseintrag](docs/design/components.md#navigationseintrag), [Navigationsleiste](docs/design/components.md#navigationsleiste) (Admin), [Label](docs/design/components.md#label),
-[Karte](docs/design/components.md#karte), [Dashboard-Panel](docs/design/components.md#dashboard-panel) (Admin), [Bühne](docs/design/components.md#bühne) (Admin),
+[Karte](docs/design/components.md#karte), [Kachel](docs/design/components.md#kachel) (Admin), [Dashboard-Panel](docs/design/components.md#dashboard-panel) (Admin), [Bühne](docs/design/components.md#bühne) (Admin),
 [Segment-Control](docs/design/components.md#segment-control) (Admin), [Spieltisch-Zeile](docs/design/components.md#spieltisch-zeile) (Admin),
 [Spielerzeile](docs/design/components.md#spielerzeile) (Admin), [Level-Stepper](docs/design/components.md#level-stepper) (Admin),
 [Hero-Karte](docs/design/components.md#hero-karte) (Admin, derzeit nicht verwendet), [Status-Punkt](docs/design/components.md#status-punkt) (Admin), [Ressourcen-Button](docs/design/components.md#ressourcen-button) (Player),
 [Overlay-Panel](docs/design/components.md#overlay-panel) (Wall), [Vollbild-Overlay](docs/design/components.md#vollbild-overlay) (Wall, Ground),
-[Dialog](docs/design/components.md#dialog), [Dialog „Spieler verbinden“](docs/design/components.md#dialog-spieler-verbinden) (Admin), [Top-Bar](docs/design/components.md#top-bar),
+[Dialog](docs/design/components.md#dialog), [Dialog „Spieler verbinden“](docs/design/components.md#dialog-spieler-verbinden) (Admin), [Kopfzeile](docs/design/components.md#kopfzeile) (Admin),
 [Theme-Menü](docs/design/components.md#theme-menü) (Player), [Hinweisleiste](docs/design/components.md#hinweisleiste) (Admin),
 [Slider](docs/design/components.md#slider) (Admin).
 
 ### 1.6 Screen-Layouts
 
-Aufbau von Admin (Grid aus Top-Bar, Navigationsleiste mit Panel, Notizen und Dashboard), Wall (Vollbild mit Overlay-Panel),
+Aufbau von Admin (Grid aus Kacheln: Navigationsleiste mit Panel, feste Kopfzeile, Notizen und Dashboard), Wall (Vollbild mit Overlay-Panel),
 Ground (Vollbild-Medium mit Raster); Wall und Ground ohne Bedienelemente außer dem Vollbild-Overlay beim Hovern mit
 der Maus und Player (Smartphone im Querformat, Karte mit
 Ressourcen-Buttons): [screen-layouts.md](docs/design/screen-layouts.md#screen-layouts).
@@ -243,10 +249,10 @@ Wechselt mit dem Theme.
 
 | Rolle | Bedeutung | Verwendung |
 |---|---|---|
-| `background` | Grundfläche | Hintergrund von Admin und Ground, Top-Bar, Navigationsleiste und Panel im Admin, Wall-Panel, Fläche im Vollbild-Overlay, Nebenaktion ([2.4](#24-zustände)); leere Bildflächen der Bühne; Flächen in Dashboard-Panels (Play-Button ohne Musik, Slider-Schienen, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, Segment-Control, Sound-Gruppen, Spielerzeilen, Hero-Karte), Ring um das Level-Badge |
-| `secondary` | erhöhte Fläche | Karten, Dashboard-Panels, Dialog, Avatar der Spielerzeile, Avatar und Chips der Hero-Karte, Hover der Buttons im Segment-Control, Nach-oben-Button, Hintergrund der Wall, Linie unter der Top-Bar, Linien rechts an Navigationsleiste und Panel im Admin, inaktiver Zustand ([2.4](#24-zustände)) |
+| `background` | Grundfläche | Hintergrund von Admin und Ground, Wall-Panel, Fläche im Vollbild-Overlay, Nebenaktion ([2.4](#24-zustände)); Hover in Navigationsleiste, Panel und Kopfzeile im Admin, Nach-oben-Button der Notizen; leere Bildflächen der Bühne; Flächen in Dashboard-Panels (Play-Button ohne Musik, Slider-Schienen, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, Segment-Control, Sound-Gruppen, Spielerzeilen, Hero-Karte), Ring um das Level-Badge |
+| `secondary` | erhöhte Fläche | Karten, Kacheln im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Notizseiten, Dashboard-Panels), Dialog, Avatar der Spielerzeile, Avatar und Chips der Hero-Karte, Hover der Buttons im Segment-Control, Hintergrund der Wall, inaktiver Zustand ([2.4](#24-zustände)) |
 | `primary` | Akzent, aktiv | Links, Slider-Füllung, Status-Punkt „verbunden“, Level-Badge der Hero-Karte, aktiver Zustand ([2.4](#24-zustände)) |
-| `border` | Linien | Trennlinien in Karten, Top-Bar und den Panels „Audio“ und „Spieltisch“, Rand des Avatars der Spielerzeile, Rand von Avatar und Chips der Hero-Karte, Ränder von Notizseiten, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |
+| `border` | Linien | Trennlinien in Karten und den Panels „Audio“ und „Spieltisch“, Rand und Lichtkante der Kacheln im Admin (auch Bühne und Hinweisleiste), Rand des Avatars der Spielerzeile, Rand von Avatar und Chips der Hero-Karte, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |
 | `overlay` | Abdunklung | Hintergrund hinter dem Dialog |
 | `backdrop` | leichte Abdunklung des ganzen Screens | Vollbild-Overlay auf Wall und Ground (Text und Icon stehen auf einer Fläche `background`, nicht auf `backdrop`) |
 | `scrim` | Abdunklung auf Bildern | Verlauf unter dem Text der Bühne, Fläche der Labels „Wall“ und „Ground“ auf der Bühne, Rand des Ground-Bilds |
@@ -255,7 +261,7 @@ Wechselt mit dem Theme.
 | `text.muted` | gedämpfter Vordergrund (`text.color` mit Transparenz) | Volk · Klasse · Spieler der Spielerzeile, Spielername (Label) der Hero-Karte, Lautsprecher-Icon im Panel „Audio“, Zeichen deaktivierter Buttons ([2.4](#24-zustände)); nicht für Text direkt auf `secondary` (Tavern verfehlt dort 4,5:1) |
 | `initials` | Initialen | Initialen im Avatar von Spielerzeile und Hero-Karte ohne Bild (Dark: wie `primary`, Tavern: wie `text.color`) |
 | `onPrimary` | Vordergrund auf Akzent | aktiver Zustand ([2.4](#24-zustände)), Zahl im Level-Badge |
-| `error` | Fläche für Fehler | Hinweisleiste im Admin |
+| `error` | Fläche für Fehler | Hinweisleiste in der Kopfzeile des Admins |
 | `onError` | Vordergrund auf `error` | Text, Icon und Fokus-Outline der Hinweisleiste |
 | `qr.foreground` · `qr.background` | Module und Grund des QR-Codes | QR-Code im Dialog „Spieler verbinden“ (Admin); dunkel auf hell, damit Kameras ihn sicher erkennen |
 | `resource.<art>.strong` | kräftiger Ton einer Ressource (`action`, `bonus`, `movement`, `spell`, `special`) | Rahmen des Ressourcen-Buttons, verfügbare Icons und Plätze (Player) |
@@ -274,11 +280,11 @@ lesbar sein müssen, und `backdrop`, weil es beliebige Bilder abdunkelt. Die `re
 | Zustand | Rolle | Beispiele |
 |---|---|---|
 | aktiv / ausgewählt | Fläche `primary`, Text und Icons `onPrimary` | aktive Buttons und Navigation, gewählter Button im Segment-Control, aktiver Menüpunkt der Navigationsleiste, aktive Szene im Panel „Szenen“, Icon-Button „Dashboard“ bei offenem Dashboard, Icon-Button „Vollbild“ bei Admin im Vollbild, Confirm, Play-Button während die Musik läuft |
-| inaktiv / normal | `secondary` | inaktive Buttons und Navigation; in Dashboard-Panels (Fläche `secondary`) stattdessen `background`, z. B. Play-Button ohne Musik; Ausnahme: inaktive Menüpunkte der Navigationsleiste und Panel-Einträge im Admin sowie Buttons im Segment-Control und in den Sound-Gruppen ohne eigene Fläche, `secondary` nur bei Hover (nicht bei den Sound-Buttons) ([Navigationsleiste](docs/design/components.md#navigationsleiste), [Navigationseintrag](docs/design/components.md#navigationseintrag), [Segment-Control](docs/design/components.md#segment-control)) |
+| inaktiv / normal | `secondary` | inaktive Buttons und Navigation; in Dashboard-Panels (Fläche `secondary`) stattdessen `background`, z. B. Play-Button ohne Musik; Ausnahmen ohne eigene Fläche: Buttons im Segment-Control und in den Sound-Gruppen, `secondary` nur bei Hover (nicht bei den Sound-Buttons); inaktive Menüpunkte der Navigationsleiste, Panel-Einträge und Buttons der Kopfzeile im Admin (auf Kacheln in `secondary`), `background` nur bei Hover ([Navigationsleiste](docs/design/components.md#navigationsleiste), [Navigationseintrag](docs/design/components.md#navigationseintrag), [Kopfzeile](docs/design/components.md#kopfzeile), [Segment-Control](docs/design/components.md#segment-control)) |
 | Abbrechen, Nebenaktion | `background` | Decline-Button |
 | deaktiviert | Fläche unverändert, Zeichen `text.muted`, `cursor: default` | „−“ bei Level 1, „+“ bei Level 20 im Level-Stepper |
 | Fläche auf Fläche | `background` → `secondary` | welche Fläche welche Rolle hat: [2.2](#22-rollen) |
-| Linie | `border`, nie `text.color` | Ausnahme: `secondary` für die Linie unter der Top-Bar und die Linien rechts an Navigationsleiste und Panel im Admin ([2.2](#22-rollen)) |
+| Linie | `border`, nie `text.color` | auch Rand und Lichtkante der Kacheln |
 
 ### 2.5 Farben außerhalb der Themes
 
@@ -292,9 +298,11 @@ Geprüft nach WCAG 2.1. Ziel AA:
 
 - **Text:** 4,5:1, große Schrift (ab 24px oder ab 18,66px fett) 3:1.
 - **Bedienelemente und Grafik:** 3:1.
-- **Ausnahme:** `border` im Dark-Theme und die Linien in `secondary` auf `background` (unter der Top-Bar, rechts an
-  Navigationsleiste und Panel im Admin) in beiden Themes verfehlen 3:1 bewusst: Trennlinien sind Gestaltung, kein
-  Bedienelement, und WCAG verlangt 3:1 nur für die Grenzen von Bedienelementen.
+- **Ausnahme:** `border` im Dark-Theme (Trennlinien, Rand und Lichtkante der Kacheln) verfehlt 3:1 bewusst:
+  Trennlinien und Ränder sind Gestaltung, kein Bedienelement, und WCAG verlangt 3:1 nur für die Grenzen von
+  Bedienelementen.
+- **Offen:** `primary` auf `secondary` verfehlt für Text in Tavern 4,5:1 (3,3:1). Die Notizen liegen auf Kacheln in
+  `secondary`, enthalten derzeit aber keine Text-Links, nur Bilder; ein künftiger Link braucht eine Lösung.
 - **Text auf Bildern:** Text auf der Bühne liegt immer auf der vollen Abdunklung `scrim` (der Verlauf ist oberhalb des
   Texts transparent), so erreicht `onScrim` 4,5:1 auch über einem weißen Bild.
 - **Ausnahme:** Die Flächen in `background` auf `secondary` in den Dashboard-Panels (Buttons, Segment-Control,

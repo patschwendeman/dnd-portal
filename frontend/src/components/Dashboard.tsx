@@ -11,7 +11,8 @@ const Column = styled.aside`
   grid-template-columns: minmax(0, 1fr);
   align-content: start;
   gap: ${(props) => props.theme.space[4]};
-  padding: ${(props) => props.theme.space[5]} 0;
+  /* No space at the top: the gap below the header keeps it, also while scrolling */
+  padding: 0 0 ${(props) => props.theme.space[5]};
   min-width: 0;
   min-height: 0;
   /* As high as its panels, at most the main area */

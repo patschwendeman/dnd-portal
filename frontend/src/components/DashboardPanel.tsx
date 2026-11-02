@@ -2,15 +2,15 @@ import { ReactElement, ReactNode } from 'react'
 import styled from 'styled-components'
 
 import Label from './Label'
+import { tileSurface } from '../style/GlobalStyle'
 
 const Panel = styled.section`
+  ${tileSurface}
   display: flex;
   flex-direction: column;
   gap: ${(props) => props.theme.space[3]};
   min-width: 0;
   padding: ${(props) => props.theme.space[5]};
-  background-color: ${(props) => props.theme.colors.secondary};
-  border-radius: ${(props) => props.theme.radius.lg};
 `
 
 const Head = styled.div`

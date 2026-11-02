@@ -62,9 +62,6 @@ const size = {
   button: {
     minWidth: '112px',
   },
-  bar: {
-    md: '56px',
-  },
   // Avatar (portrait 3:4) and level badge of the hero card of a player
   avatar: {
     width: '96px',

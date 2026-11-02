@@ -6,19 +6,18 @@ import styled from 'styled-components'
 import useAudioPlayback from '../audio/useAudioPlayback'
 import useAutoAudioOutput from '../audio/useAutoAudioOutput'
 import ActiveScenePanel from '../components/ActiveScenePanel'
+import AdminHeader from '../components/AdminHeader'
 import AudioPanel from '../components/AudioPanel'
 import Dashboard from '../components/Dashboard'
 import DashboardPanel from '../components/DashboardPanel'
 import Dialogue from '../components/Dialogue'
 import DocumentNavigation from '../components/DocumentNavigation'
 import DocumentReader from '../components/DocumentReader'
-import ErrorBar from '../components/ErrorBar'
 import GameTablePanel from '../components/GameTablePanel'
 import LevelStepper from '../components/LevelStepper'
 import { NavRail, NavRailItem } from '../components/NavRail'
 import PlayersPanel from '../components/PlayersPanel'
 import SceneNavigation from '../components/SceneNavigation'
-import TopBar from '../components/TopBar'
 import {
   ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext,
 } from '../context/context'
@@ -38,7 +37,8 @@ import {
   saveTheme,
 } from '../service/adminScreen'
 import { saveGroundGrid, saveGroundGridCellSize, saveWallOverlay } from '../service/gameTable'
-import GlobalStyle, { hoverScrollbar } from '../style/GlobalStyle'
+import GlobalStyle, { hoverScrollbar, tileSurface } from '../style/GlobalStyle'
+import mostImportantError from '../utils/adminError'
 import selectDefaultAdventureId from '../utils/adventure'
 import { loadLatest } from '../utils/loadSafely'
 import nextOpenPanel from '../utils/navRail'
@@ -62,11 +62,43 @@ const CONNECTION_ERROR_MESSAGE = 'Verbindung zum Server getrennt'
 const NAV_PANEL_ID = 'admin-nav-panel'
 const DASHBOARD_ID = 'admin-dashboard'
 
-const Screen = styled.div<{ $hasErrorBar: boolean }>`
+interface LayoutProps {
+  $isPanelOpen: boolean
+  $isDashboardOpen: boolean
+}
+
+// Dashboard one third of the width of notes and dashboard (between DASHBOARD_MIN_WIDTH and
+// DASHBOARD_MAX_WIDTH), the notes the rest; without the dashboard the notes take all of it
+const screenColumns = ({ $isPanelOpen, $isDashboardOpen }: LayoutProps, gap: string): string => {
+  const panel = $isPanelOpen ? ` ${LEFT_COLUMN_WIDTH}` : ''
+  if (!$isDashboardOpen) {
+    return `${NAV_RAIL_WIDTH}${panel} minmax(0, 1fr)`
+  }
+  const besideContent = $isPanelOpen
+    ? `${NAV_RAIL_WIDTH} - ${LEFT_COLUMN_WIDTH} - 2 * ${gap}`
+    : `${NAV_RAIL_WIDTH} - ${gap}`
+  const third = `calc((100% - ${besideContent} - ${gap}) / 3)`
+  return `${NAV_RAIL_WIDTH}${panel} minmax(0, 1fr) `
+    + `clamp(${DASHBOARD_MIN_WIDTH}, ${third}, ${DASHBOARD_MAX_WIDTH})`
+}
+
+const screenAreas = ({ $isPanelOpen, $isDashboardOpen }: LayoutProps): string => {
+  const panel = $isPanelOpen ? ' panel' : ''
+  const header = $isDashboardOpen ? 'header header' : 'header'
+  const content = $isDashboardOpen ? 'notes dashboard' : 'notes'
+  return `"rail${panel} ${header}" "rail${panel} ${content}"`
+}
+
+// The gap between the rows keeps the space below the header free while notes and dashboard
+// scroll; their space at the bottom lies inside the scroll areas, so fully scrolled down the last
+// tile ends level with rail and panel
+const Screen = styled.div<LayoutProps>`
     display: grid;
-    grid-template-rows:
-        ${(props) => props.theme.size.bar.md}
-        ${(props) => (props.$hasErrorBar ? 'auto ' : '')}1fr;
+    grid-template-columns: ${(props) => screenColumns(props, props.theme.space[5])};
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: ${(props) => screenAreas(props)};
+    gap: ${(props) => props.theme.space[5]};
+    padding: 0 ${(props) => props.theme.space[5]};
     position: fixed;
     inset: 0;
     background-color: ${(props) => props.theme.colors.background};
@@ -76,45 +108,32 @@ const Screen = styled.div<{ $hasErrorBar: boolean }>`
     };
 `
 
-// Rail, panel and content sit flush between Top-Bar and bottom edge; the space above and below the
-// content lies inside the scroll areas (like in the nav panel), so nothing scrolls behind an empty
-// strip
-const Main = styled.div<{ $isPanelOpen: boolean }>`
+// One cell that its child fills, so the scroll areas inside get a definite height
+const Area = styled.div<{ $area: string }>`
     display: grid;
-    grid-template-columns: ${NAV_RAIL_WIDTH}
-      ${(props) => (props.$isPanelOpen ? `${LEFT_COLUMN_WIDTH} ` : '')}1fr;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+    grid-area: ${(props) => props.$area};
+    min-width: 0;
     min-height: 0;
+`
+
+const RailArea = styled(Area)`
+    margin: ${(props) => props.theme.space[5]} 0;
+`
+
+const HeaderArea = styled(Area)`
+    grid-template: auto / minmax(0, 1fr);
+    margin-top: ${(props) => props.theme.space[5]};
 `
 
 const NavPanel = styled.div`
+    ${tileSurface}
+    grid-area: panel;
     min-height: 0;
+    margin: ${(props) => props.theme.space[5]} 0;
     overflow-y: auto;
     ${hoverScrollbar}
     padding: ${(props) => props.theme.space[5]} ${(props) => props.theme.space[4]};
-    background-color: ${(props) => props.theme.colors.background};
-    border-right: ${(props) => props.theme.borderWidth.thin} solid
-      ${(props) => props.theme.colors.secondary};
-`
-
-// Dashboard one third of the width (between DASHBOARD_MIN_WIDTH and DASHBOARD_MAX_WIDTH), the
-// notes the rest; without the dashboard the notes take all of it
-const contentColumns = (isDashboardOpen: boolean, gap: string): string => {
-  if (!isDashboardOpen) {
-    return 'minmax(0, 1fr)'
-  }
-  const third = `calc((100% - ${gap}) / 3)`
-  return `minmax(0, 1fr) clamp(${DASHBOARD_MIN_WIDTH}, ${third}, ${DASHBOARD_MAX_WIDTH})`
-}
-
-const Content = styled.div<{ $isDashboardOpen: boolean }>`
-    display: grid;
-    grid-template-columns: ${(props) => (
-      contentColumns(props.$isDashboardOpen, props.theme.space[5])
-    )};
-    gap: ${(props) => props.theme.space[5]};
-    padding: 0 ${(props) => props.theme.space[5]};
-    min-width: 0;
-    min-height: 0;
 `
 
 // A write to the API; the screens change only with the push of the server that follows it
@@ -399,7 +418,16 @@ function AdminScreen(): ReactElement {
     }
   }
 
-  const hasErrorBar = !connected || hasLoadError || failedSave !== null
+  const errorNotices = {
+    connection: { message: CONNECTION_ERROR_MESSAGE, onRetry: reconnectNow },
+    load: { message: LOAD_ERROR_MESSAGE, onRetry: retryLoading },
+    save: { message: SAVE_ERROR_MESSAGE, onRetry: retrySaving },
+  }
+  const shownError = mostImportantError({
+    connection: !connected,
+    load: hasLoadError,
+    save: failedSave !== null,
+  })
 
   const navItems: (NavRailItem & { panel: ReactElement })[] = [
     {
@@ -437,72 +465,70 @@ function AdminScreen(): ReactElement {
         handleDialogueOption={handleDialogueOption}
         isVisible={dialogueVisibility}
       />
-      <Screen $hasErrorBar={hasErrorBar}>
-        <TopBar
-          onToggleTheme={handleThemeToggle}
-          adventures={adventures ?? []}
-          activeAdventureId={activeAdventureId}
-          onSelectAdventure={handleAdventureSelection}
-          isDashboardOpen={isDashboardOpen}
-          dashboardId={DASHBOARD_ID}
-          onToggleDashboard={() => setIsDashboardOpen((open) => !open)}
-        />
-        {hasErrorBar && (
-        <div>
-          {!connected && <ErrorBar message={CONNECTION_ERROR_MESSAGE} onRetry={reconnectNow} />}
-          {hasLoadError && <ErrorBar message={LOAD_ERROR_MESSAGE} onRetry={retryLoading} />}
-          {failedSave !== null && <ErrorBar message={SAVE_ERROR_MESSAGE} onRetry={retrySaving} />}
-        </div>
-        )}
-        <Main $isPanelOpen={openNavItem !== undefined}>
+      <Screen $isPanelOpen={openNavItem !== undefined} $isDashboardOpen={isDashboardOpen}>
+        <RailArea $area="rail">
           <NavRail
             items={navItems}
             openItemId={openNavItem?.id ?? null}
             panelId={NAV_PANEL_ID}
             onSelect={handleNavSelect}
           />
-          {openNavItem && (
-            <NavPanel id={NAV_PANEL_ID} aria-label={openNavItem.name} data-test-id="nav-panel">
-              {openNavItem.panel}
-            </NavPanel>
-          )}
-          <Content $isDashboardOpen={isDashboardOpen}>
-            <DocumentReader selectedStoryIndex={selectedStoryIndex} />
-            {isDashboardOpen && (
-              <Dashboard id={DASHBOARD_ID}>
-                <ActiveScenePanel activeScene={activeScene} testId="dashboard-panel-stage" />
-                <DashboardPanel label="Audio" testId="dashboard-panel-audio">
-                  <AudioPanel
-                    audio={audio}
-                    failedSave={failedSave}
-                    onToggleMusic={handleMusicToggle}
-                    onVolumeCommit={handleVolumeCommit}
-                    onPlaySound={handleSound}
-                  />
-                </DashboardPanel>
-                <DashboardPanel label="Spieltisch" testId="dashboard-panel-table">
-                  <GameTablePanel
-                    wallOverlay={wallOverlay}
-                    groundGrid={groundGrid}
-                    groundGridCellSize={groundGridCellSize}
-                    failedSave={failedSave}
-                    onWallOverlayChange={handleWallOverlayChange}
-                    onGroundGridChange={handleGroundGridChange}
-                    onGroundGridCellSizeCommit={handleGroundGridCellSizeCommit}
-                  />
-                </DashboardPanel>
-                <DashboardPanel
-                  label="Party"
-                  title={`Party · ${players.length}`}
-                  headEnd={<LevelStepper level={level} onChange={handleLevelChange} />}
-                  testId="dashboard-panel-party"
-                >
-                  <PlayersPanel players={players} />
-                </DashboardPanel>
-              </Dashboard>
-            )}
-          </Content>
-        </Main>
+        </RailArea>
+        {openNavItem && (
+          <NavPanel id={NAV_PANEL_ID} aria-label={openNavItem.name} data-test-id="nav-panel">
+            {openNavItem.panel}
+          </NavPanel>
+        )}
+        <HeaderArea $area="header">
+          <AdminHeader
+            onToggleTheme={handleThemeToggle}
+            adventures={adventures ?? []}
+            activeAdventureId={activeAdventureId}
+            onSelectAdventure={handleAdventureSelection}
+            errorNotice={shownError === null ? null : errorNotices[shownError]}
+            isDashboardOpen={isDashboardOpen}
+            dashboardId={DASHBOARD_ID}
+            onToggleDashboard={() => setIsDashboardOpen((open) => !open)}
+          />
+        </HeaderArea>
+        <Area $area="notes">
+          <DocumentReader selectedStoryIndex={selectedStoryIndex} />
+        </Area>
+        {isDashboardOpen && (
+          <Area $area="dashboard">
+            <Dashboard id={DASHBOARD_ID}>
+              <ActiveScenePanel activeScene={activeScene} testId="dashboard-panel-stage" />
+              <DashboardPanel label="Audio" testId="dashboard-panel-audio">
+                <AudioPanel
+                  audio={audio}
+                  failedSave={failedSave}
+                  onToggleMusic={handleMusicToggle}
+                  onVolumeCommit={handleVolumeCommit}
+                  onPlaySound={handleSound}
+                />
+              </DashboardPanel>
+              <DashboardPanel label="Spieltisch" testId="dashboard-panel-table">
+                <GameTablePanel
+                  wallOverlay={wallOverlay}
+                  groundGrid={groundGrid}
+                  groundGridCellSize={groundGridCellSize}
+                  failedSave={failedSave}
+                  onWallOverlayChange={handleWallOverlayChange}
+                  onGroundGridChange={handleGroundGridChange}
+                  onGroundGridCellSizeCommit={handleGroundGridCellSizeCommit}
+                />
+              </DashboardPanel>
+              <DashboardPanel
+                label="Party"
+                title={`Party · ${players.length}`}
+                headEnd={<LevelStepper level={level} onChange={handleLevelChange} />}
+                testId="dashboard-panel-party"
+              >
+                <PlayersPanel players={players} />
+              </DashboardPanel>
+            </Dashboard>
+          </Area>
+        )}
       </Screen>
     </>
   )

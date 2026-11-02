@@ -4,6 +4,7 @@ import {
 import styled from 'styled-components'
 
 import { AdventureSummary } from '../models/models'
+import { tileSurface } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 import { getListboxNextIndex, getListboxStartIndex, isListboxNavigationKey } from '../utils/listbox'
 
@@ -11,25 +12,24 @@ const ADVENTURE_LIST_MAX_HEIGHT = '320px'
 
 const Wrapper = styled.div`
     position: relative;
-    justify-self: start;
+    display: flex;
+    flex: 1 1 auto;
     min-width: 0;
-    max-width: 100%;
 `
 
 const Trigger = styled.button`
+    ${tileSurface}
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: ${(props) => props.theme.space[2]};
-    max-width: 100%;
-    height: ${(props) => props.theme.size.control.md};
-    padding: 0 ${(props) => props.theme.space[3]};
+    width: 100%;
+    min-width: 0;
+    padding: 0 ${(props) => props.theme.space[5]};
     ${textStyle('md')}
     font-family: inherit;
     font-weight: ${(props) => props.theme.fontWeight.bold};
-    background-color: ${(props) => props.theme.colors.secondary};
     color: ${(props) => props.theme.colors.text.color};
-    border: none;
-    border-radius: ${(props) => props.theme.radius.md};
     cursor: pointer;
 
     &:disabled {
@@ -61,13 +61,13 @@ const Chevron = styled.svg<{ $isOpen: boolean }>`
 const List = styled.div`
     position: absolute;
     top: calc(100% + ${(props) => props.theme.space[1]});
-    left: 0;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: ${(props) => props.theme.layer.popover};
     display: flex;
     flex-direction: column;
     gap: ${(props) => props.theme.space[1]};
     width: max-content;
-    min-width: 100%;
     max-height: ${ADVENTURE_LIST_MAX_HEIGHT};
     overflow-y: auto;
     padding: ${(props) => props.theme.space[1]};

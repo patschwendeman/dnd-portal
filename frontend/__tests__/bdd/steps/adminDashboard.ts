@@ -20,7 +20,7 @@ const feature = loadFeature('__tests__/bdd/features/adminDashboard.feature')
 // Wide enough for rail, panel, notes and dashboard side by side
 const WINDOW_RECT = { width: 1600, height: 1000 }
 
-const TOP_BAR = '[data-test-id="top-bar"]'
+const HEADER = '[data-test-id="admin-header"]'
 const DASHBOARD = '[data-test-id="dashboard"]'
 const DASHBOARD_TOGGLE = '[data-test-id="dashboard-toggle"]'
 const DASHBOARD_PANELS = `${DASHBOARD} > section`
@@ -42,6 +42,8 @@ const JOIN_DIALOG = '[data-test-id="join-dialog"]'
 const PANEL_LABELS = ['Aktive Szene', 'Audio', 'Spieltisch', 'Party']
 const DASHBOARD_MIN_WIDTH = 400
 const DASHBOARD_MAX_WIDTH = 560
+// space.5: the space between the tiles and the edge of the screen
+const SCREEN_SPACE = 24
 // The volume the slider is moved to: the middle of the rail
 const MIDDLE_VOLUME = 50
 // Any other volume, so moving the slider to the middle changes it
@@ -229,15 +231,16 @@ defineFeature(feature, (test) => {
         + 'content',
       async () => {
         // Without the scroll bar the dashboard gets once it is higher than the main area. The
-        // last child of a panel is its content (the stage: the caption); without padding below it
-        // the panel ends where the content ends
+        // last child of a panel is its content (the stage: the caption); without padding and border
+        // below it the panel ends where the content ends
         const layout: { width: number, x: number, y: number, bottom: number, gap: number }[] = (
           await driver.executeScript(
             `const innerWidth = document.querySelector('${DASHBOARD}').clientWidth
             return [...document.querySelectorAll('${DASHBOARD_PANELS}')].map((item) => {
               const box = item.getBoundingClientRect()
               const content = item.lastElementChild.getBoundingClientRect()
-              const padding = parseFloat(getComputedStyle(item).paddingBottom)
+              const style = getComputedStyle(item)
+              const padding = parseFloat(style.paddingBottom) + parseFloat(style.borderBottomWidth)
               return {
                 width: Math.round(box.width) - innerWidth,
                 x: box.x,
@@ -285,14 +288,14 @@ defineFeature(feature, (test) => {
       expect(overflowing).toEqual([])
     })
 
-    and('there is no bottom bar, no sound button and no join button in the top bar', async () => {
-      const topBar = await waitForElement(driver, TOP_BAR)
-      expect(await topBar.findElements(By.css('[data-test-id^="sound-"]'))).toHaveLength(0)
-      expect(await topBar.findElements(By.css(JOIN_BUTTON))).toHaveLength(0)
+    and('there is no bottom bar, no sound button and no join button in the header', async () => {
+      const header = await waitForElement(driver, HEADER)
+      expect(await header.findElements(By.css('[data-test-id^="sound-"]'))).toHaveLength(0)
+      expect(await header.findElements(By.css(JOIN_BUTTON))).toHaveLength(0)
       const notes = await (await waitForElement(driver, NOTES_VIEW)).getRect()
       const windowHeight: number = await driver.executeScript('return window.innerHeight')
-      const main = await (await waitForElement(driver, '[data-test-id="nav-rail"]')).getRect()
-      expect(main.y + main.height).toBe(windowHeight)
+      const rail = await (await waitForElement(driver, '[data-test-id="nav-rail"]')).getRect()
+      expect(rail.y + rail.height).toBe(windowHeight - SCREEN_SPACE)
       expect(notes.y + notes.height).toBeLessThanOrEqual(windowHeight)
     })
   })
@@ -319,7 +322,7 @@ defineFeature(feature, (test) => {
       notesWidth = await getNotesWidth(driver)
     })
 
-    when('I click on the dashboard icon in the top bar', async () => {
+    when('I click on the dashboard icon in the header', async () => {
       expect(await waitForAttribute(driver, DASHBOARD_TOGGLE, 'aria-expanded', 'true'))
         .toBe('true')
       await clickElement(driver, DASHBOARD_TOGGLE)
@@ -601,7 +604,7 @@ defineFeature(feature, (test) => {
       await openAdmin(driver)
     })
 
-    when('I click on the full screen icon in the top bar', async () => {
+    when('I click on the full screen icon in the header', async () => {
       await clickElement(driver, FULLSCREEN_TOGGLE)
     })
 
