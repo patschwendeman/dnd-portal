@@ -1,7 +1,7 @@
 # DND-41: Szenenbild als Hintergrund im Admin, durchscheinende Kacheln
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -194,3 +194,31 @@ Zwei Befunde blockieren, beide sind klein: Die Fokus-Outline der Abenteuer-Auswa
 - Konventionen eingehalten (ein Commit, Typ `feat`, Schema, 5 Stichpunkte, keine KI-Signatur).
 
 **Checks:** Lint, Typecheck, Unit-Tests 216/216, Build, knip, jscpd (1,20 % bei 1,35) grün. E2E 19/20; das eine Scenario scheitert an der Umgebung.
+
+### Runde 2 – 2026-11-03
+**Empfehlung:** Abnahme
+
+Beide blockierenden Befunde aus Runde 1 sind behoben. Die Fokus-Outline der Abenteuer-Auswahl liegt jetzt nach innen versetzt auf der Kachel. In DESIGN.md 2.6 deckt die Ausnahme jetzt auch `border` auf `secondaryTranslucent` ab. Der Nacharbeit-Commit 2f49c0a ändert nur eine CSS-Zeile und zwei Kommentare, der Rest ist Doku. Alle statischen Checks sind grün. E2E steht bei 19/20; das eine Scenario scheitert wie in Runde 1 an der Umgebung.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | In Runde 2 nicht geändert; Beleg aus Runde 1 gilt (`SceneBackground.tsx`, `AdminScreen.tsx`). |
+| AK2 | erfüllt | In Runde 2 nicht geändert; `$isTranslucent` am `Trigger` unverändert, nur `outline-offset` geändert. |
+| AK3 | erfüllt | In Runde 2 nicht geändert; Unit-Tests (keine Szene, ladende Szene, fehlerhaftes Bild) grün (216/216). |
+| AK4 | erfüllt (nur Code und Unit-Tests) | In Runde 2 nicht geändert; im Browser weiter nicht geprüft. |
+| AK5 | erfüllt | `frontend/src/components/AdventureSelect.tsx:39-45`: `outline-offset: -${borderWidth.thick}`; Outline auf `secondaryTranslucent` (Dark 5,0, Tavern 3,1, Ziel 3,0), ohne Bild auf `secondary` 5,6 / 3,3 (`contrast.md:56`). Zeile „`primary` auf Szenenbild unter `scrim`“ und Eintrag in `docs/known-issues.md` entfernt. Links in den Notizen bleiben bestehender offener Punkt aus DND-40. |
+| AK6 | erfüllt | E2E 19/20; „The first interaction makes an admin window the audio output“ scheitert in der Vorbedingung (`output_ready` schon vor dem Lauf true), Ursache Umgebung. |
+| AK7 | erfüllt | Lint, Typecheck, Unit-Tests 216/216, Build, knip, jscpd (1,20 % bei 1,35) grün; Konfiguration und Baselines unverändert. Style Guide konsistent: `DESIGN.md:312-315` ↔ `contrast.md:82`, „Offen“ (`DESIGN.md:316-318`) ↔ `contrast.md:49,80`; `components.md` passt zum Code. |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- Anmerkung „Links in den Notizen“ in `contrast.md` (ca. Z. 104-106) nennt nur 3,3:1; die 3,1:1 stehen nur in Tabelle, DESIGN.md „Offen“ und known-issues – unvollständig, nicht widersprüchlich.
+- Anmerkung „Fokus-Outline der Abenteuer-Auswahl“ (`contrast.md:121-123`) beschreibt den alten Zustand (2,5:1) als Begründung – vertretbar.
+- Kommentare in `AdventureSelect.tsx:39-40` und `DocumentReader.tsx:47` konform.
+- Weiter offen, nicht blockierend: manuelle Prüfschritte 2–4 (Überblendung, „Bewegung reduzieren“, Admin ohne Szene, Tavern über hellem Bild) und die beiden Vermutungen aus Runde 1.
+- Kein `docs(DND-41): approve plan`-Commit; Gesamtdiff ab 9651f31.
+- Konventionen eingehalten; nichts außerhalb des Scopes geändert.
+
+**Checks:** Lint, Typecheck, Unit-Tests (216/216), Build, knip, jscpd grün. E2E 19/20; das eine Scenario scheitert an der Umgebung.
