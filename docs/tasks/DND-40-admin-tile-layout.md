@@ -241,3 +241,35 @@ verschwinden. Dies ist Task 1 von 2; Hintergrundbild und durchscheinende Kacheln
   `docs/known-issues.md` halten den Stand als offen fest. Zu entscheiden: hinnehmen oder eigener Task.
 
 ## Review
+
+### Runde 1 – 2026-11-02
+**Empfehlung:** Nacharbeiten
+
+Geprüft: Commit 0b68b9e auf `development` (Plan liegt im Umsetzungs-Commit, wie bei DND-39).
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | Headless Chrome 1920 × 937, Tavern: Leiste x 24–88, Panel x 112–352, jeweils y 24 bis vh − 24; Rand `border` 1px, `radius` 12px, Lichtkante `inset 0 1px 0`; Linien in `secondary` entfernt (`NavRail.tsx:14-22`, `AdminScreen.tsx:766-773`); `AdminHeader.tsx` statt Top-Bar. |
+| AK2 | erfüllt | Kopfzeile ab x 376 (= Notizen); Auswahl 376–1720, `gap` 16, Gruppen 1736–1830 und 1846–1896; alle Kacheln 50 px hoch. |
+| AK3 | erfüllt | Kopfzeile bei scrollTop 0/300/4041 fest bei y 24–74; Notizen ab y 98, unten bei vh − 24; Dashboard endet ebenfalls bei vh − 24 (scrollHeight 1264). |
+| AK4 | erfüllt | Dashboard aus: Kopfzeile/Notizen r = vw − 24; Panel eingeklappt: x 112; Button-Gruppen sichtbar. |
+| AK5 | erfüllt | `utils/adminError.ts` (connection → load → save), `adminError.spec.ts` (5 Fälle) grün; live offline: nur „Backend nicht erreichbar“ (1 × `role="alert"`) an Stelle der Auswahl, gleiche Größe. „Verbindung getrennt“ nur per Code und Unit-Test belegt. |
+| AK6 | erfüllt | Notizseite 376–1892, Textblock 686 px (`LINE_MAX_WIDTH`) zentriert; Nach-oben-Button auf `background` sichtbar. |
+| AK7 | erfüllt | E2E 19/20 grün (Fehlschlag umgebungsbedingt, siehe Checks); Abenteuer-Liste mittig unter der Kachel (z-index 35). |
+| AK8 | erfüllt | Kacheln nutzen nur `secondary`, `border`, `background`, `error` (`tileSurface`); Rand und Lichtkante in Tavern und Dark sichtbar, in Dark schwach (1,5:1, als Ausnahme dokumentiert). |
+| AK9 | **nicht erfüllt** | Checks grün, aber Style Guide widerspricht dem Inhalt (siehe Befund). |
+
+**Blockierende Befunde**
+- [x] `frontend/DESIGN.md:304-305` (2.6 „Offen“) behauptet, die Notizen enthielten keine Text-Links. Falsch: `frontend/public/story/{main,fight}/1_tableOfContent.md:3ff` haben Anker-Links in `primary` (`AdminScreen.tsx:106-107`); widerspricht `contrast.md:47,95` und `docs/known-issues.md:50` aus demselben Commit. Abhilfe: Satz an `contrast.md` angleichen (Inhaltsverzeichnis-Links betroffen, Lösung offen).
+
+**Hinweise**
+- Inhaltsverzeichnis-Links in Tavern 3,3:1 (`#C05E5E` auf `#3D271C`; Dark 5,58) – laut E9 nur zu dokumentieren, ist erfolgt; seit diesem Task echter WCAG-Verstoß in „Main“/„Fight“. Entscheidung beim User: hinnehmen oder eigener Task.
+- Ersatzpaar `border` auf `error` statt `text.color` auf `error` sinnvoll (1,15 / 1,96 nachgerechnet). Aber `contrast.md:80,90-94` verweist für „bewusst ✗ beide“ auf 2.6, `DESIGN.md:301` nimmt dort nur `border` im Dark-Theme aus – Tavern `border` auf `error` (2,0:1) ist nicht abgedeckt; Ausnahme in 2.6 ergänzen.
+- Settings ohne eigenen Fokus-Stil: Stand vor dem Task, E3 („Fokus wie heute“) eingehalten; Outline in `primary` wäre kleine Verbesserung.
+- Zusatzkorrekturen (`docs/domain.md`, `frontend/README.md`, Testtitel `sounds.spec.ts`) entfernen veraltete Top-Bar-Nennungen; passt zu E9, keine Scope-Verletzung.
+- `adminNavigation.ts` unverändert, nicht nötig (Prüfung in `adminDashboard.ts:296-299`).
+- Notizseite um Scrollleistenbreite schmaler als die Spalte (993 statt 997 px), unkritisch.
+- Konventionen eingehalten: ein Commit, `feat(DND-40): …`, 5 Stichpunkte, keine KI-Signatur.
+- Dev-Stack: Während der Fehler-Simulation wechselte das Theme per `PATCH /table` auf `dark` (Herkunft unklar); Reviewer setzte `tavern`, danach setzte ein anderer Client wieder `dark` – belassen.
+
+**Checks:** `npm run lint`, `typecheck`, `test:unit` (205), `build`, `check:deadcode`, `check:dupes` (1,25 %) grün. E2E (`npx jest --runInBand`, Dev-Stack): 19/20 grün. Rot: „The first interaction makes an admin window the audio output“ – Vorbedingung `output_ready: false` (`adminDashboard.ts:438`) scheitert, weil ein anderes Admin-Fenster Audioausgabe ist; umgebungsbedingt.

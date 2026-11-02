@@ -298,11 +298,12 @@ Geprüft nach WCAG 2.1. Ziel AA:
 
 - **Text:** 4,5:1, große Schrift (ab 24px oder ab 18,66px fett) 3:1.
 - **Bedienelemente und Grafik:** 3:1.
-- **Ausnahme:** `border` im Dark-Theme (Trennlinien, Rand und Lichtkante der Kacheln) verfehlt 3:1 bewusst:
-  Trennlinien und Ränder sind Gestaltung, kein Bedienelement, und WCAG verlangt 3:1 nur für die Grenzen von
-  Bedienelementen.
-- **Offen:** `primary` auf `secondary` verfehlt für Text in Tavern 4,5:1 (3,3:1). Die Notizen liegen auf Kacheln in
-  `secondary`, enthalten derzeit aber keine Text-Links, nur Bilder; ein künftiger Link braucht eine Lösung.
+- **Ausnahme:** `border` im Dark-Theme (Trennlinien, Rand und Lichtkante der Kacheln) und `border` auf `error` in
+  beiden Themes (Rand und Lichtkante der Hinweisleiste) verfehlen 3:1 bewusst: Trennlinien und Ränder sind Gestaltung,
+  kein Bedienelement, und WCAG verlangt 3:1 nur für die Grenzen von Bedienelementen.
+- **Offen:** `primary` auf `secondary` verfehlt für Text in Tavern 4,5:1 (3,3:1). Betroffen sind die Text-Links der
+  Inhaltsverzeichnisse in den Notizen, die auf Kacheln in `secondary` liegen; eine Lösung ist offen
+  ([known-issues.md](../docs/known-issues.md)).
 - **Text auf Bildern:** Text auf der Bühne liegt immer auf der vollen Abdunklung `scrim` (der Verlauf ist oberhalb des
   Texts transparent), so erreicht `onScrim` 4,5:1 auch über einem weißen Bild.
 - **Ausnahme:** Die Flächen in `background` auf `secondary` in den Dashboard-Panels (Buttons, Segment-Control,
