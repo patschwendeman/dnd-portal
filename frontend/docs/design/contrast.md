@@ -53,8 +53,7 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `text.color` auf `secondary` | Icon des inaktiven Menüpunkts der Navigationsleiste und der inaktiven Buttons der Kopfzeile (ohne eigene Fläche) | 3,0 | 15,9 | 6,5 | ✓ beide |
 | `text.color` auf `background` | Icon des inaktiven Menüpunkts der Navigationsleiste und der Buttons der Kopfzeile bei Hover | 3,0 | 17,4 | 9,2 | ✓ beide |
 | `onPrimary` auf `primary` | Icon des aktiven Menüpunkts der Navigationsleiste und der aktiven Icon-Buttons „Dashboard“ und „Vollbild“ | 3,0 | 6,1 | 4,7 | ✓ beide |
-| `primary` auf `secondary` | Fokus-Outline der Menüpunkte der Navigationsleiste, der Panel-Einträge (Notizen, Szenen) und der Buttons „Vollbild“ und „Dashboard“ (auf ihrer Kachel) | 3,0 | 5,6 | 3,3 | ✓ beide |
-| `primary` auf `background` | Fokus-Outline der Abenteuer-Auswahl (außerhalb ihrer Kachel) | 3,0 | 6,1 | 4,7 | ✓ beide |
+| `primary` auf `secondary` | Fokus-Outline der Menüpunkte der Navigationsleiste, der Panel-Einträge (Notizen, Szenen), der Buttons „Vollbild“ und „Dashboard“ (auf ihrer Kachel) und der Abenteuer-Auswahl (nach innen versetzt, auf ihrer Kachel) | 3,0 | 5,6 | 3,3 | ✓ beide |
 | `text.color` auf `background` | Icons auf Flächen in Dashboard-Panels (Play-Button ohne Musik, „In neuem Fenster öffnen“, „QR-Code“) | 4,5 | 17,4 | 9,2 | ✓ beide |
 | `primary` auf `secondary` | Status-Punkt „verbunden“ im Panel „Spieltisch“ | 3,0 | 5,6 | 3,3 | ✓ beide |
 | `text.color` auf `secondary` | Ring des Status-Punkts „nicht verbunden“ | 3,0 | 15,9 | 6,5 | ✓ beide |
@@ -82,7 +81,6 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `text.muted` auf `secondaryTranslucent` | Lautsprecher-Icon im Panel „Audio“; ungünstigster Fall über weißem Bild, über schwarzem Dark 8,4, Tavern 4,3 | 3,0 | 7,5 | 3,8 | ✓ beide |
 | `border` auf `secondaryTranslucent` | Rand und Lichtkante durchscheinender Kacheln, Trennlinien darin; ungünstigster Fall über weißem Bild, über schwarzem Dark 1,5, Tavern 3,5 | 3,0 | **1,4** | **2,8** | bewusst ✗ beide |
 | `background` auf `secondaryTranslucent` | Hover-Flächen und Flächen in Dashboard-Panels auf durchscheinenden Kacheln; über weißem Bild, über schwarzem Dark 1,0, Tavern 1,2 | 3,0 | **1,2** | **1,5** | bewusst ✗ beide, siehe Anmerkung |
-| `primary` auf Szenenbild unter `scrim` | Fokus-Outline der Abenteuer-Auswahl (außerhalb ihrer Kachel) über dem Szenen-Hintergrund; ungünstigster Fall über weißem Bild, über schwarzem Dark 6,8, Tavern 5,0 | 3,0 | 3,3 | **2,5** | **✗ Tavern, offen, siehe Anmerkung** |
 | `qr.foreground` auf `qr.background` | QR-Code im Dialog „Spieler verbinden“ | 3,0 | 21,0 | 21,0 | ✓ |
 | `onError` auf `error` | Icon-Button und Fokus-Outline der Hinweisleiste | 3,0 | 9,0 | 9,0 | ✓ |
 | `border` auf `error` | Rand und Lichtkante der Hinweisleiste | 3,0 | **1,2** | **2,0** | bewusst ✗ beide |
@@ -120,9 +118,9 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
   Einfluss auf die Messung. Ohne Szenenbild sind die Kacheln deckend `secondary`, es gelten die Werte oben.
   `border` und die Flächen in `background` sind Gestaltung bzw. Zusatzsignal wie auf `secondary` (Ausnahmen in
   [2.6](../../DESIGN.md#26-kontrast)).
-- **Fokus-Outline der Abenteuer-Auswahl über dem Szenenbild:** Das Outline liegt außerhalb der Kachel und damit direkt
-  auf dem abgedunkelten Szenenbild. Über einem sehr hellen Bild verfehlt `primary` in Tavern 3:1 (2,5:1); eine Lösung
-  ist offen ([known-issues.md](../../../docs/known-issues.md)).
+- **Fokus-Outline der Abenteuer-Auswahl:** Die Outline ist nach innen versetzt und liegt so auf der Kachel, nicht auf
+  dem Szenenbild daneben: über einem hellen Bild erreichte `primary` dort in Tavern nur 2,5:1 (Dark 3,4:1), auf der
+  durchscheinenden Kachel 3,1:1.
 - **Ressourcen (Player):** Die Spannen reichen über alle fünf Ressourcen.
 - **Flächen in Dashboard-Panels (Admin):** Buttons und Slider-Schiene haben die Fläche `background` auf dem Panel in
   `secondary` (wie Decline im Dialog); die Fläche hebt sich nur schwach ab und ist nur ein Zusatzsignal, erkennbar sind

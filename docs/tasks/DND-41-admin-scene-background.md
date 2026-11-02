@@ -160,3 +160,37 @@ Stimmung der laufenden Szene vor Augen und erkennt einen Szenenwechsel sofort am
 - keine
 
 ## Review
+
+### Runde 1 – 2026-11-03
+**Empfehlung:** Nacharbeiten
+
+Zwei Befunde blockieren, beide sind klein: Die Fokus-Outline der Abenteuer-Auswahl verfehlt in Tavern 3:1 (AK5), und DESIGN.md 2.6 widerspricht `contrast.md` beim Rand der Kacheln (AK7). Der übrige Code entspricht dem Plan, alle Checks außer einem E2E-Szenario sind grün. Dieses Szenario scheitert an der Umgebung, nicht an der Änderung.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | `frontend/src/components/SceneBackground.tsx:7-37` (`position: fixed`, `inset: 0`, `object-fit: cover`, `scrim` als `::after`); `frontend/src/screens/AdminScreen.tsx:460-476` (Bild ist das Wall-Bild der aktiven Szene, liegt im JSX vor dem Raster); Fläche des Rasters entfernt (`AdminScreen.tsx` ca. Z. 104). Eigener Selenium-Screenshot im Admin (Dark, Szene „Fight 1“): `fight.jpg` liegt abgedunkelt hinter den Kacheln, `position: fixed`. |
+| AK2 | erfüllt | `frontend/src/style/GlobalStyle.ts:31-46` (`secondaryTranslucent` und `blur(12px)` nur mit `$isTranslucent`). Im Browser gemessen: Navigationsleiste, Abenteuer-Auswahl, Notizseite und Panel „Audio“ haben `rgba(22,27,35,0.75)` und `blur(12px)`. Die Bühne bleibt `rgb(14,17,23)` ohne Filter. Hinweisleiste: `ErrorBar.tsx` setzt kein `$isTranslucent`, die Fläche bleibt `error`. Bedienflächen haben weiter `background`, Abenteuer-Liste (`AdventureSelect.tsx:74`) und Dialog bleiben `secondary`. |
+| AK3 | erfüllt | `AdminScreen.tsx:460-463` (bei `activeSceneFailed` oder ohne Szene ist `src` null); `frontend/src/utils/sceneBackground.ts` (`hide` bei `failed`, anzeigen erst nach `loaded`); `isTranslucent = isImageShown`. Unit-Tests „shows no image without an active scene“, „renders the image of a loading scene but does not show it yet“, „stays plain when the image cannot be loaded“ sind grün. Ohne Szene im Browser nicht geprüft. |
+| AK4 | erfüllt (nur Code und Unit-Tests) | Überblendung erst nach dem Laden: Reducer `target`/`loaded`, Tests „keeps the old image while…“ und „fades from the old to the new image once the new one is loaded“. `SceneBackground.tsx:17-22` (`transition` 600 ms, bei `prefers-reduced-motion: reduce` `transition: none`). Im Browser nicht geprüft. |
+| AK5 | **nicht erfüllt** | Nachgerechnet mit WCAG-Formel, alle Werte aus `frontend/docs/design/contrast.md:79-85` bestätigt: Text 14,3 / 6,1; `primary` auf Kachel 5,0 / 3,1; `text.muted` 7,5 / 3,8. **Fokus-Outline der Abenteuer-Auswahl** in Tavern über weißem Bild: **2,48:1, Ziel 3:1** (`AdventureSelect.tsx:39-43`, `outline-offset` nach außen). Vor DND-41 lag sie auf `background` und erreichte 4,7:1, die Änderung verschlechtert sie also. Außerdem verfehlen die Links in den Notizen in Tavern 4,5:1 mit 3,11:1 (vorher 3,32:1); das war schon vorher als offen dokumentiert. |
+| AK6 | erfüllt | E2E selbst ausgeführt: 19/20 grün. Das eine Scenario scheitert in seiner Vorbedingung (`output_ready` erwartet false, ist true). `GET /table/audio` lieferte vor dem Lauf schon `output_ready: true`, es lag also an der Umgebung. Audio-Code wurde nicht geändert. |
+| AK7 | **nicht erfüllt** | Lint, Typecheck, Unit-Tests (216/216), Build, knip und jscpd sind grün (Exit-Code 0). Baseline und `.jscpd.json` sind unverändert (zuletzt geändert in a80c6ad), Schwellwert 1,35, Ist 1,20 %. **Aber:** Der Style Guide widerspricht sich selbst, siehe Befund 2. |
+
+**Blockierende Befunde**
+- [x] **AK5 – Fokus-Outline der Abenteuer-Auswahl.** Sie liegt außerhalb ihrer Kachel auf dem Szenenbild unter `scrim` (`frontend/src/components/AdventureSelect.tsx:39-43`). Über einem hellen Bild erreicht `primary` in Tavern nur 2,5:1 statt 3:1, Dark 3,4:1 ist in Ordnung. Das ist neu durch DND-41 (vorher 4,7:1). Die Lösung aus E6 (Deckkraft der Rolle erhöhen) greift hier nicht. Möglicher Weg: die Outline nach innen legen, wie die Optionen der Liste (`AdventureSelect.tsx:119`, `outline-offset: -borderWidth.thick`). Auf der Kachel erreicht `primary` 3,1:1. Danach `contrast.md:85` und `docs/known-issues.md` anpassen.
+- [x] **AK7 – Style Guide widerspricht sich.** `frontend/docs/design/contrast.md:83` führt `border` auf `secondaryTranslucent` als „bewusst ✗ beide“ (Tavern 2,8:1) und verweist auf die Ausnahmen in 2.6. Die Ausnahme in `frontend/DESIGN.md:312-314` deckt aber nur `border` im Dark-Theme und `border` auf `error` ab, nicht Tavern auf den durchscheinenden Kacheln. Die Ausnahme in 2.6 muss erweitert werden.
+
+**Hinweise**
+- `border` Tavern 2,8:1 unter „Rand ist Gestaltung“: inhaltlich vertretbar (Kacheln und Abenteuer-Auswahl erkennt man am Text, nicht am Rand); nur die Doku muss nachziehen (Befund 2).
+- Links in den Notizen, Tavern 3,1:1 (vorher 3,3:1): bestehender offener Punkt, mehr Deckkraft behebt ihn nicht. Der Abschnitt „Offen“ in `frontend/DESIGN.md:315-317` nennt nur 3,3:1 und nicht die Fokus-Outline; beim Nacharbeiten mit erledigen.
+- E2E erneut gelaufen: 19/20, gleicher Fehler in der Vorbedingung, Ursache Umgebung.
+- Manuelle Prüfschritte: nur ein automatisierter Screenshot (Dark, dunkles Bild). Offen: Überblendung, „Bewegung reduzieren“, Admin ohne Szene, Tavern über hellem Bild (Plan-Schritte 2–4).
+- Veralteter Kommentar `frontend/src/components/DocumentReader.tsx:47` („pages, which have the surface secondary“), nicht aus diesem Commit.
+- Vermutung: Drittes Bild innerhalb von 600 ms → erstes verschwindet sofort, während das zweite einblendet (`loaded` überschreibt `leaving`), evtl. kurzes Flackern.
+- Vermutung: Mitten in der Überblendung decken beide Ebenen nur ~75 % ab, Hintergrund wird kurz dunkler (rein optisch).
+- Kacheln werden durchscheinend, sobald das Bild geladen ist, das Bild blendet aber erst über 600 ms ein; so lange liegt `secondaryTranslucent` über `background` (E5). Vorübergehend und eher besserer Kontrast.
+- Rundung `contrast.md:85` Dark 3,36 als 3,3 eingetragen (sicher, gerundet 3,4).
+- Kein `docs(DND-41): approve plan`-Commit; Plan kam mit dem Runden-Commit, Gesamtdiff ab 9651f31.
+- Konventionen eingehalten (ein Commit, Typ `feat`, Schema, 5 Stichpunkte, keine KI-Signatur).
+
+**Checks:** Lint, Typecheck, Unit-Tests 216/216, Build, knip, jscpd (1,20 % bei 1,35) grün. E2E 19/20; das eine Scenario scheitert an der Umgebung.

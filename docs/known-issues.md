@@ -50,9 +50,6 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - Kontrast (seit DND-40): Die Notizseiten sind Kacheln in `secondary`; die Text-Links der Inhaltsverzeichnisse in den
   Notizen (`primary`) verfehlen darauf in Tavern 4,5:1 (3,3:1, `frontend/docs/design/contrast.md`); auf den
   durchscheinenden Kacheln über einem hellen Szenenbild (seit DND-41) 3,1:1. Lösung offen.
-- Kontrast (seit DND-41): Die Fokus-Outline der Abenteuer-Auswahl liegt außerhalb ihrer Kachel direkt auf dem
-  abgedunkelten Szenenbild; über einem sehr hellen Bild verfehlt `primary` in Tavern 3:1 (2,5:1,
-  `frontend/docs/design/contrast.md`). Lösung offen.
 
 ## Baseline der Qualitätsprüfungen
 

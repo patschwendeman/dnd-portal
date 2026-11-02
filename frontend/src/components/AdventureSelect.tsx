@@ -36,10 +36,12 @@ const Trigger = styled.button<TileSurfaceProps>`
         cursor: default;
     }
 
+    /* Inset, so the outline stays on the tile: outside it would lie on the scene image, where
+       primary misses 3:1 in Tavern over a bright image */
     &:focus-visible {
         outline: ${(props) => props.theme.borderWidth.thick} solid
           ${(props) => props.theme.colors.primary};
-        outline-offset: ${(props) => props.theme.borderWidth.thick};
+        outline-offset: -${(props) => props.theme.borderWidth.thick};
     }
 `
 

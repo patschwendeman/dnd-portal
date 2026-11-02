@@ -309,12 +309,13 @@ Geprüft nach WCAG 2.1. Ziel AA:
 
 - **Text:** 4,5:1, große Schrift (ab 24px oder ab 18,66px fett) 3:1.
 - **Bedienelemente und Grafik:** 3:1.
-- **Ausnahme:** `border` im Dark-Theme (Trennlinien, Rand und Lichtkante der Kacheln) und `border` auf `error` in
-  beiden Themes (Rand und Lichtkante der Hinweisleiste) verfehlen 3:1 bewusst: Trennlinien und Ränder sind Gestaltung,
-  kein Bedienelement, und WCAG verlangt 3:1 nur für die Grenzen von Bedienelementen.
-- **Offen:** `primary` auf `secondary` verfehlt für Text in Tavern 4,5:1 (3,3:1). Betroffen sind die Text-Links der
-  Inhaltsverzeichnisse in den Notizen, die auf Kacheln in `secondary` liegen; eine Lösung ist offen
-  ([known-issues.md](../docs/known-issues.md)).
+- **Ausnahme:** `border` im Dark-Theme (Trennlinien, Rand und Lichtkante der Kacheln), `border` auf
+  `secondaryTranslucent` in beiden Themes (Rand, Lichtkante und Trennlinien durchscheinender Kacheln) und `border` auf
+  `error` in beiden Themes (Rand und Lichtkante der Hinweisleiste) verfehlen 3:1 bewusst: Trennlinien und Ränder sind
+  Gestaltung, kein Bedienelement, und WCAG verlangt 3:1 nur für die Grenzen von Bedienelementen.
+- **Offen:** `primary` verfehlt für Text in Tavern 4,5:1: auf `secondary` 3,3:1, auf `secondaryTranslucent` über einem
+  hellen Szenenbild 3,1:1. Betroffen sind die Text-Links der Inhaltsverzeichnisse in den Notizen, die auf Kacheln in
+  `secondary` bzw. `secondaryTranslucent` liegen; eine Lösung ist offen ([known-issues.md](../docs/known-issues.md)).
 - **Text auf durchscheinenden Kacheln:** Die Fläche hängt vom Szenenbild dahinter ab. Gemessen wird deshalb der
   ungünstigste Fall: `secondaryTranslucent` über einem weißen bzw. schwarzen Bild unter `scrim`. Erreicht ein Paar
   sein Ziel nicht, wird die Deckkraft von `secondaryTranslucent` erhöht, nicht die Abdunklung verringert.

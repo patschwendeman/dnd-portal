@@ -44,7 +44,7 @@ const TopLink = styled.button<{ $isVisible: boolean }>`
   height: ${(props) => props.theme.size.control.md};
   padding: 0;
   border-radius: ${(props) => props.theme.radius.md};
-  /* Floats above the tiles of the pages, which have the surface secondary */
+  /* Floats above the tiles of the pages (surface secondary or secondaryTranslucent) */
   background-color: ${(props) => (props.theme.colors.background)};
   bottom: ${(props) => props.theme.space[4]};
   right: ${(props) => props.theme.space[4]};
