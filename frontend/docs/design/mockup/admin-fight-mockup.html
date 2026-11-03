@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin-Panel Mockup Kampf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Kampfmodus im Admin Screen, aufgebaut auf admin-panel-mockup-v8.html (Kacheln, Farben, Abstände unverändert).
+   - Navigationsleiste: dritter Menüpunkt „Kampf“. Sein Panel ist die Kampfvorbereitung: eine Liste in
+     Initiative-Reihenfolge (↑/↓), alle Spieler sind vorbelegt, Gegner und Verbündete kommen dazu. NPCs haben eine
+     Nummer (gemeinsame Zahlenreihe, nächste freie vorgeschlagen, änderbar = Nummer der Figur am Tisch) und optional
+     eine Bezeichnung, die nur der Spielleiter sieht. „Kampf starten“ legt den Kampf an (Runde 1, erster Platz am Zug).
+   - Panel „Kampf“ ist 280px statt 240px breit, damit Namen und Steuerung nebeneinander passen.
+   - Während des Kampfes: Panel „Kampf“ bearbeitet die Liste (umsortieren, entfernen, Verstärkung) und beendet den
+     Kampf (mit Rückfrage). Das Dashboard tauscht die Bühne gegen „Am Zug“ (Hero-Karte, Runde, Als Nächstes,
+     „Zug beenden“) und die Party gegen „Initiative“ (Kompakt-Liste, NPCs als besiegt markierbar und dann
+     übersprungen; Spieler nicht, sie würfeln am Boden weiter Todesrettungswürfe). Audio und Spieltisch bleiben.
+   - Szenenwechsel und Abenteuerwechsel sind während des Kampfes gesperrt.
+   - Avatar von NPCs: Nummer statt Initialen, Gegner rot, Verbündete grün (Werte wie die Effekt-Chips im Mockup
+     player-card-hero.html, in beiden Themes gleich – wäre eine neue Farbrolle).
+   Theme-Wechsel über den Settings-Button, Zustände über die Mockup-Leiste unten. */
+:root {
+  color-scheme: dark;
+  --bg: #0e1117;
+  --sec: #161b23;
+  --pri: #4493F8;
+  --border: #3d444db3;
+  --text: #f0f6fc;
+  --muted: #f0f6fcb0;
+  --onpri: #0e1117;
+  --initials: #4493F8;
+  --overlay: rgba(0, 0, 0, 0.850);
+  --scrim: rgba(0, 0, 0, 0.750);
+  --onscrim: #ffffff;
+  --backdrop: rgba(0, 0, 0, 0.5);
+  --enemy: #ff6b6b;
+  --enemy-bg: #290000;
+  --enemy-bd: #ff2424;
+  --ally: #3fd033;
+  --ally-bg: #072900;
+  --ally-bd: #099000;
+}
+:root[data-theme="tavern"] {
+  --bg: #140701;
+  --sec: #3D271C;
+  --pri: #C05E5E;
+  --border: #956F01;
+  --text: #CBAB96;
+  --muted: #CBAB96b0;
+  --onpri: #140701;
+  --initials: #CBAB96;
+}
+
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; }
+body {
+  background:
+    linear-gradient(var(--backdrop), var(--backdrop)),
+    url("../../../../media/images/wall_screen/forest.jpg") center / cover fixed,
+    var(--bg);
+  color: var(--text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+}
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--pri); outline-offset: 2px; }
+svg { display: block; }
+
+.lbl { font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.muted { color: var(--muted); }
+.tile {
+  background: color-mix(in srgb, var(--sec) 75%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+}
+.tile, .stage {
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 0 var(--border);
+}
+.ib { position: relative; width: 40px; height: 40px; flex: none; border-radius: 8px; display: grid; place-items: center; background: var(--bg); }
+.ib.ghost { background: transparent; }
+.ib.ghost:hover { background: var(--bg); }
+.ib.on { background: var(--pri); color: var(--onpri); }
+.dot { width: 8px; height: 8px; flex: none; border-radius: 999px; background: var(--pri); }
+.scroll { overflow-y: auto; }
+.scroll::-webkit-scrollbar { width: 4px; }
+.scroll::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; }
+.scroll:hover::-webkit-scrollbar-thumb { background: var(--border); }
+
+/* ---------- Grundraster ---------- */
+.admin {
+  --panel-w: 240px;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 64px var(--panel-w) minmax(0, 1fr) clamp(400px, (100% - 24px) / 3, 560px);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 24px;
+  padding-inline: 24px;
+}
+.admin.wide-panel { --panel-w: 280px; }
+.rail, .panel { margin-block: 24px; grid-row: 1 / -1; }
+.rail { grid-column: 1; }
+.panel { grid-column: 2; }
+.head { grid-column: 3 / -1; grid-row: 1; margin-top: 24px; display: flex; gap: 16px; min-width: 0; }
+.head .adventure { flex: 1 1 auto; min-width: 0; height: auto; }
+.head .group { flex: none; padding: 8px; display: flex; gap: 4px; }
+.middle { grid-column: 3; grid-row: 2; }
+.right { grid-column: 4; grid-row: 2; }
+.middle, .right { padding-bottom: 24px; }
+
+/* ---------- Spalte 1 und 2 ---------- */
+.rail { padding: 24px 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.rail svg { width: 24px; height: 24px; }
+/* laufender Kampf, während ein anderes Panel offen ist */
+.rail .badge { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 999px; background: var(--enemy-bd); box-shadow: 0 0 0 2px var(--sec); }
+.panel { padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; }
+.panel > .lbl { padding: 0 12px 8px; }
+.entry { height: 40px; padding: 0 12px; border-radius: 8px; text-align: left; font-size: 14px; line-height: 20px; font-weight: 500; }
+.entry:hover { background: var(--bg); }
+.entry.on { background: var(--pri); color: var(--onpri); }
+.entry[aria-disabled="true"] { cursor: not-allowed; opacity: .45; }
+.entry[aria-disabled="true"]:hover { background: none; }
+.entry.on[aria-disabled="true"] { opacity: 1; }
+.lockhint { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 8px; padding: 12px; border-radius: 8px; background: var(--bg); font-size: 13px; line-height: 18px; }
+.lockhint svg { flex: none; margin-top: 1px; color: var(--enemy); }
+
+/* ---------- Panel „Kampf“ ---------- */
+.fp { display: flex; flex-direction: column; gap: 12px; flex: 1 1 auto; }
+.fp .lbl { padding: 0 4px; }
+.fp .sm.muted { padding: 0 4px; }
+.fp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.clist { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.crow { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 6px 4px 6px 6px; border-radius: 8px; background: var(--bg); }
+.crow.active { box-shadow: inset 0 0 0 2px var(--pri); }
+.crow.defeated, .irow.defeated { opacity: .5; }
+.t { display: flex; flex-direction: column; min-width: 0; }
+.t span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.t span + span { color: var(--muted); }
+.crow .t .sm { font-size: 13px; line-height: 18px; }
+.ctl { display: flex; align-items: center; gap: 2px; }
+.mv { display: flex; flex-direction: column; }
+.mini { width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; color: var(--muted); }
+.mv .mini { height: 18px; }
+.mini:hover { background: var(--sec); color: var(--text); }
+.mini:disabled { opacity: .25; cursor: default; background: none; }
+.field { height: 40px; min-width: 0; width: 100%; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit; font-size: 14px; line-height: 20px; }
+.field::placeholder { color: var(--muted); }
+.addrow { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; }
+.err { padding: 0 4px; color: var(--enemy); font-size: 13px; line-height: 18px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.pbtn { height: 32px; padding: 0 10px; border-radius: 8px; background: var(--bg); font-size: 13px; line-height: 18px; font-weight: 500; }
+.pbtn:hover { background: var(--pri); color: var(--onpri); }
+.foot { margin-top: auto; padding-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+
+/* ---------- Spalte 3 ---------- */
+.middle { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.adventure { flex: none; height: 56px; padding: 0 24px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 700; }
+.adventure[aria-disabled="true"] { cursor: not-allowed; color: var(--muted); }
+.page { flex: none; padding: 48px 64px; }
+.page > div { max-width: 68ch; margin: 0 auto; display: flex; flex-direction: column; }
+.page h1 { font-size: 32px; line-height: 40px; font-weight: 700; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.page h2 { font-size: 24px; line-height: 32px; font-weight: 600; margin: 32px 0 12px; }
+.page h3 { font-size: 16px; line-height: 24px; font-weight: 600; margin: 24px 0 8px; }
+.page p { font-size: 16px; line-height: 26px; }
+.page p + p { margin-top: 16px; }
+.page h1 + p { margin-top: 24px; }
+.page ul { padding-left: 24px; display: flex; flex-direction: column; gap: 4px; }
+
+/* ---------- Spalte 4: Dashboard ---------- */
+.right { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.slot { display: contents; }
+/* im Kampf stehen „Am Zug“ und „Initiative“ über Audio und Spieltisch */
+.right.fighting .top { order: -2; }
+.right.fighting .lst { order: -1; }
+.p { flex: none; padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+.sm { font-size: 14px; line-height: 20px; }
+.md { font-size: 14px; line-height: 20px; font-weight: 500; }
+
+.stage {
+  flex: none; position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 9;
+  background:
+    radial-gradient(circle at 28% 62%, rgba(255, 170, 80, .55), transparent 30%),
+    radial-gradient(circle at 72% 38%, rgba(255, 205, 130, .32), transparent 22%),
+    linear-gradient(180deg, #24150c 0%, #5b3519 48%, #170d07 100%);
+}
+.stage .ground {
+  position: absolute; right: 12px; top: 12px; width: 32%; aspect-ratio: 16 / 9; border-radius: 8px; border: 1px solid var(--scrim);
+  background:
+    radial-gradient(ellipse at 50% 55%, #6b4528 0 22%, transparent 23%),
+    repeating-linear-gradient(90deg, #4a3020 0 18px, #3a2517 18px 20px);
+}
+.stage .tag { position: absolute; left: 12px; top: 12px; padding: 0 4px; border-radius: 4px; background: var(--scrim); color: var(--onscrim); }
+.stage .ground .tag { left: 4px; top: 4px; }
+.stage .cap { position: absolute; inset: auto 0 0 0; padding: 48px 24px 24px; background: linear-gradient(transparent, var(--scrim) 48px); display: flex; flex-direction: column; gap: 4px; color: var(--onscrim); }
+.stage .cap strong { font-size: 24px; line-height: 32px; font-weight: 600; }
+
+.np { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.tbtn { height: 40px; padding: 0 16px; border-radius: 8px; background: var(--bg); font-size: 14px; line-height: 20px; font-weight: 600; }
+.tbtn.on { background: var(--pri); color: var(--onpri); }
+.tbtn:disabled { opacity: .4; cursor: default; }
+.vol { display: grid; grid-template-columns: 20px minmax(0, 1fr) 3ch; gap: 12px; align-items: center; }
+.vol svg { color: var(--muted); }
+.vol output { text-align: right; font-size: 14px; line-height: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.hr { height: 1px; background: var(--border); }
+.sounds { display: flex; flex-wrap: wrap; gap: 8px; }
+.sgroup { display: flex; background: var(--bg); border-radius: 8px; }
+.sgroup .ib { background: transparent; }
+.sgroup .ib:hover { background: var(--pri); color: var(--onpri); }
+
+input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 16px; background: transparent; min-width: 0; --v: 50%; }
+input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; background: linear-gradient(to right, var(--pri) var(--v), var(--bg) var(--v)); }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -6px; border-radius: 999px; background: var(--text); }
+input[type="range"]::-moz-range-track { height: 4px; border-radius: 999px; background: var(--bg); }
+input[type="range"]::-moz-range-progress { height: 4px; border-radius: 999px; background: var(--pri); }
+input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border: 0; border-radius: 999px; background: var(--text); }
+
+.trow { display: grid; grid-template-columns: 92px minmax(0, 1fr) 40px; gap: 12px; align-items: center; padding-top: 12px; border-top: 1px solid var(--border); }
+.trow .who { display: flex; flex-direction: column; min-width: 0; }
+.trow .status { display: inline-flex; align-items: center; gap: 8px; }
+.seg { display: flex; gap: 4px; padding: 4px; background: var(--bg); border-radius: 12px; min-width: 0; }
+.seg button { flex: 1 1 0; min-width: 0; height: 32px; border-radius: 8px; font-size: 14px; line-height: 20px; font-weight: 600; }
+.seg button:hover { background: var(--sec); }
+.seg button.on { background: var(--pri); color: var(--onpri); }
+
+.party-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.stepper { display: flex; align-items: center; gap: 4px; }
+.stepper .lbl { margin-right: 8px; }
+.stepper .ib { font-size: 20px; line-height: 28px; font-weight: 600; }
+.stepper .val { min-width: 2ch; text-align: center; font-size: 20px; line-height: 28px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.plist { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.prow { display: flex; align-items: center; gap: 12px; padding: 8px; background: var(--bg); border-radius: 12px; min-width: 0; }
+
+/* Avatar: Spieler mit Initialen, NPCs mit Nummer in der Farbe ihrer Art */
+.av { flex: none; width: 40px; height: 40px; border-radius: 8px; display: grid; place-items: center; background: var(--sec); border: 1px solid var(--border); color: var(--initials); font-size: 14px; line-height: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.av.s32 { width: 32px; height: 32px; font-size: 13px; }
+.k-enemy { background: var(--enemy-bg); border-color: var(--enemy-bd); color: var(--enemy); }
+.k-ally { background: var(--ally-bg); border-color: var(--ally-bd); color: var(--ally); }
+
+/* „Am Zug“: Hero-Karte */
+.hero { display: flex; gap: 20px; align-items: center; min-width: 0; }
+.hav-wrap { position: relative; flex: none; }
+.hav { width: 80px; height: 104px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--initials); display: grid; place-items: center; font-size: 32px; line-height: 40px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.hlevel { position: absolute; top: -8px; left: -8px; width: 32px; height: 32px; border-radius: 999px; border: 2px solid var(--sec); background: var(--pri); color: var(--onpri); display: grid; place-items: center; font-size: 14px; line-height: 20px; font-weight: 600; }
+.hinfo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.hname { font-size: 24px; line-height: 32px; font-weight: 600; overflow-wrap: anywhere; }
+.chip { font-size: 13px; line-height: 20px; padding: 2px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); }
+.hinfo .chips { margin-top: 4px; }
+.turn-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.next { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.next .md { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* „Initiative“: Kompakt-Liste */
+.ilist { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.irow { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto 40px; gap: 12px; align-items: center; padding: 8px; background: var(--bg); border-radius: 12px; }
+.irow.active { box-shadow: inset 0 0 0 2px var(--pri); }
+.irow .now { color: var(--pri); }
+.irow .ib { background: transparent; }
+.irow .ib:hover { background: var(--sec); }
+.irow .ib.on { background: var(--enemy-bg); color: var(--enemy); }
+
+/* Rückfrage „Kampf beenden“ */
+.ovl { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 24px; background: var(--overlay); }
+.dlg { max-width: 440px; padding: 24px; border-radius: 12px; background: var(--sec); border: 1px solid var(--border); box-shadow: inset 0 1px 0 var(--border); display: flex; flex-direction: column; gap: 12px; }
+.dlg h2 { font-size: 20px; line-height: 28px; font-weight: 600; }
+.dlg .btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+
+/* nur im Mockup: Zustände direkt anspringen */
+.mock { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 14px; border-radius: 12px; background: var(--scrim); color: var(--onscrim); }
+.mock button { height: 32px; padding: 0 12px; border-radius: 8px; font-size: 13px; line-height: 18px; font-weight: 600; }
+.mock button:hover { background: rgba(255, 255, 255, .12); }
+
+@media (max-width: 1100px) {
+  .admin, .admin.wide-panel { grid-template-columns: minmax(0, 1fr); height: auto; padding: 16px; }
+  .scroll { overflow: visible; }
+  .rail { flex-direction: row; padding: 12px; }
+  .page { padding: 32px 24px; }
+  .rail, .panel, .head, .middle, .right { grid-column: 1; grid-row: auto; margin-block: 0; }
+  .head { flex-wrap: wrap; }
+  .middle, .right { padding-block: 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ib, .entry, .seg button, .mini, .pbtn { transition: background-color .12s ease; }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-notes" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h5"/></symbol>
+  <symbol id="i-scenes" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/></g></symbol>
+  <symbol id="i-fight" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M9.5 17.5L21 6V3h-3L6.5 14.5M11 19l-6-6M8 16l-4 4M5 21l-2-2"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 20 20"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 8l5 5 5-5"/></symbol>
+  <symbol id="i-up" viewBox="0 0 20 20"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l5-5 5 5"/></symbol>
+  <symbol id="i-down" viewBox="0 0 20 20"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 7.5l5 5 5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 20 20"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></symbol>
+  <symbol id="i-skull" viewBox="0 0 20 20"><path fill="currentColor" fill-rule="evenodd" d="M10 2a7 7 0 0 0-7 7c0 2.4 1.2 4.4 3 5.6V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.4c1.8-1.2 3-3.2 3-5.6a7 7 0 0 0-7-7zM7 8.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></symbol>
+  <symbol id="i-fullscreen" viewBox="0 0 20 20"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 7V3h4M13 3h4v4M17 13v4h-4M7 17H3v-4"/></symbol>
+  <symbol id="i-dashboard" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="3" width="6" height="8" rx="1"/><rect x="11" y="3" width="6" height="5" rx="1"/><rect x="11" y="10" width="6" height="7" rx="1"/><rect x="3" y="13" width="6" height="4" rx="1"/></g></symbol>
+  <symbol id="i-settings" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="2.5"/><path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18M4.3 4.3l1.8 1.8M13.9 13.9l1.8 1.8M4.3 15.7l1.8-1.8M13.9 6.1l1.8-1.8"/></g></symbol>
+  <symbol id="i-pause" viewBox="0 0 20 20"><path fill="currentColor" d="M5 4h3.5v12H5zM11.5 4H15v12h-3.5z"/></symbol>
+  <symbol id="i-vol" viewBox="0 0 20 20"><path fill="currentColor" d="M3 7.5h3l4-4v13l-4-4H3zM13 6.2a5.2 5.2 0 0 1 0 7.6l-1.4-1.4a3.2 3.2 0 0 0 0-4.8z"/></symbol>
+  <symbol id="i-open" viewBox="0 0 20 20"><path fill="currentColor" d="M11 3h6v6h-2V6.4l-5.3 5.3-1.4-1.4L13.6 5H11zM4 5h5v2H5v8h8v-4h2v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 20 20"><path fill="currentColor" d="M10 17s-6.5-4-6.5-8.6C3.5 6 5.3 4.5 7.3 4.5c1.2 0 2.1.6 2.7 1.5.6-.9 1.5-1.5 2.7-1.5 2 0 3.8 1.5 3.8 3.9C16.5 13 10 17 10 17z"/></symbol>
+  <symbol id="i-bottle" viewBox="0 0 20 20"><path fill="currentColor" d="M8 2h4v3.2l2.5 3.3V17a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1V8.5L8 5.2z"/></symbol>
+  <symbol id="i-buff" viewBox="0 0 20 20"><path fill="currentColor" d="M10 2.5l6.5 7.5H12v7.5H8V10H3.5z"/></symbol>
+  <symbol id="i-music" viewBox="0 0 20 20"><path fill="currentColor" d="M7.5 4.5L17 2.5v11a2.5 2.5 0 1 1-2-2.45V5.4l-5.5 1.2v8.9a2.5 2.5 0 1 1-2-2.45z"/></symbol>
+  <symbol id="i-music2" viewBox="0 0 20 20"><path fill="currentColor" d="M9 3h6.5v3.5H11V15a2.75 2.75 0 1 1-2-2.65z"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 20 20"><path fill="currentColor" d="M11.5 1.5L4 11h5l-1 7.5L15.5 9h-5z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 20 20"><path fill="currentColor" d="M10 2l2.4 5 5.6.8-4 3.9.9 5.5L10 14.6l-4.9 2.6.9-5.5-4-3.9L7.6 7z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 20 20"><path fill="currentColor" fill-rule="evenodd" d="M10 4.5c-4.6 0-8 5.5-8 5.5s3.4 5.5 8 5.5 8-5.5 8-5.5-3.4-5.5-8-5.5zm0 8.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></symbol>
+  <symbol id="i-ghost" viewBox="0 0 20 20"><path fill="currentColor" fill-rule="evenodd" d="M10 2a6 6 0 0 0-6 6v10l2-2 2 2 2-2 2 2 2-2 2 2V8a6 6 0 0 0-6-6zM7.5 7.25a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5zm5 0a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5z"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 20 20"><path fill="currentColor" fill-rule="evenodd" d="M6 8V6a4 4 0 1 1 8 0v2h1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1zm2 0h4V6a2 2 0 1 0-4 0z"/></symbol>
+</svg>
+
+<div class="admin" id="admin">
+
+  <!-- Spalte 1: Navigationsleiste, jetzt mit „Kampf“ -->
+  <nav class="tile rail" id="rail" aria-label="Navigation"></nav>
+
+  <!-- Spalte 2: Panel des aktiven Menüpunkts -->
+  <aside class="tile panel scroll" id="panel"></aside>
+
+  <header class="head">
+    <button class="tile adventure" type="button" id="adventure" aria-label="Abenteuer" aria-haspopup="listbox"></button>
+    <div class="tile group">
+      <button class="ib" type="button" aria-label="Vollbild" title="Vollbild" aria-pressed="false"><svg width="20" height="20"><use href="#i-fullscreen"/></svg></button>
+      <button class="ib on" type="button" aria-label="Dashboard" title="Dashboard" aria-pressed="true"><svg width="20" height="20"><use href="#i-dashboard"/></svg></button>
+    </div>
+    <div class="tile group">
+      <button class="ib" type="button" id="theme" aria-label="Einstellungen (Theme wechseln)" title="Theme wechseln"><svg width="20" height="20"><use href="#i-settings"/></svg></button>
+    </div>
+  </header>
+
+  <main class="middle scroll">
+    <article class="tile page"><div>
+      <h1>Raum 7 · Die eingestürzte Halle</h1>
+      <h2>Ankunft</h2>
+      <p>Staub hängt in der Luft. Durch einen Riss in der Decke fällt fahles Licht auf einen Haufen zerbrochener Säulen. Am anderen Ende der Halle führt eine verschüttete Treppe in die Tiefe.</p>
+      <p>Wer die Trümmer untersucht (Weisheit (Wahrnehmung) SG 13), entdeckt frische Kratzspuren am Boden – hier wurde vor kurzem etwas Schweres geschleift.</p>
+      <h2>Kampf</h2>
+      <ul>
+        <li>2 × Ghul hinter den Säulen (Überraschung, wenn niemand Wache hält)</li>
+        <li>1 × Grottenschrat auf der Galerie, wirft Steine</li>
+        <li>Borin, der Händler, kämpft auf Seiten der Gruppe</li>
+        <li>Schwieriges Gelände im Trümmerfeld</li>
+      </ul>
+      <h3>Taktik</h3>
+      <p>Die Ghule greifen zuerst die Figur mit der geringsten Rüstungsklasse an. Fällt der Grottenschrat unter die Hälfte seiner Trefferpunkte, flieht er über die Treppe nach unten.</p>
+    </div></article>
+
+    <article class="tile page"><div>
+      <h1>Raum 8 · Die Treppe</h1>
+      <p>Die Stufen sind glitschig und brüchig. Jede Figur, die rennt, muss einen Rettungswurf auf Geschicklichkeit (SG 10) bestehen.</p>
+    </div></article>
+  </main>
+
+  <!-- Spalte 4: Dashboard; ohne Kampf Bühne, Audio, Spieltisch, Party – im Kampf Am Zug, Initiative, Audio, Spieltisch -->
+  <div class="right scroll" id="right">
+    <div class="slot" id="slot-top"></div>
+
+    <section class="tile p" style="gap: 16px">
+      <span class="lbl">Audio</span>
+      <div class="np">
+        <button class="ib on" type="button" aria-label="Musik pausieren"><svg width="20" height="20"><use href="#i-pause"/></svg></button>
+        <div class="t"><span class="md">Schlacht im Nebel</span><span class="sm">Läuft</span></div>
+        <button class="tbtn on" type="button" aria-pressed="true">Hier abspielen</button>
+      </div>
+      <div class="vol">
+        <svg width="20" height="20"><use href="#i-vol"/></svg>
+        <input type="range" min="0" max="100" value="60" aria-label="Lautstärke" style="--v: 60%">
+        <output>60</output>
+      </div>
+      <div class="hr"></div>
+      <div class="sounds" id="sounds"></div>
+    </section>
+
+    <section class="tile p">
+      <span class="lbl">Spieltisch</span>
+      <div class="trow">
+        <div class="who"><span class="sm" style="font-weight: 600">Wall</span><span class="sm status"><span class="dot"></span>verbunden</span></div>
+        <div class="seg"><button type="button">Weltkarte</button><button class="on" type="button">Aus</button></div>
+        <button class="ib" type="button" aria-label="In neuem Fenster öffnen"><svg width="20" height="20"><use href="#i-open"/></svg></button>
+      </div>
+      <div class="trow">
+        <div class="who"><span class="sm" style="font-weight: 600">Ground</span><span class="sm status"><span class="dot"></span>verbunden</span></div>
+        <div class="seg"><button class="on" type="button">Schwarz</button><button type="button">Weiß</button><button type="button">Aus</button></div>
+        <button class="ib" type="button" aria-label="In neuem Fenster öffnen"><svg width="20" height="20"><use href="#i-open"/></svg></button>
+      </div>
+    </section>
+
+    <div class="slot" id="slot-list"></div>
+  </div>
+</div>
+
+<div id="dialog"></div>
+
+<div class="mock" role="group" aria-label="Mockup-Zustände">
+  <span class="lbl">Mockup</span>
+  <button type="button" data-act="mock" data-id="prep">Vorbereitung</button>
+  <button type="button" data-act="mock" data-id="fight">Kampf · Runde 3</button>
+</div>
+
+<script>
+const NOTES = ['Einführung', 'Raum 1 · Torhaus', 'Raum 2 · Wachstube', 'Raum 3 · Brunnen', 'Raum 7 · Halle',
+  'Raum 8 · Treppe', 'Raum 13 · Schatzkammer', 'Leveling', 'Mechaniken'];
+const ACTIVE_NOTE = 'Raum 7 · Halle';
+const SCENES = ['Dorf', 'Shop', 'Taverne', 'Level Up', 'Torhaus', 'Wachstube', 'Eingestürzte Halle', 'Treppe',
+  'Schatzkammer'];
+const ACTIVE_SCENE = 'Eingestürzte Halle';
+const SOUND_GROUPS = [
+  [['heart', 'Heilung'], ['bottle', 'Trank']],
+  [['buff', 'Buff'], ['music', 'Musik 1'], ['music2', 'Musik 2']],
+  [['bolt', 'Zauber 1'], ['star', 'Zauber 2']],
+  [['eye', 'Debuff 1'], ['ghost', 'Debuff 2']],
+  [['lock', 'Schloss']],
+];
+const PLAYERS = {
+  thalia: { c: 'Thalia Sturmwind', p: 'Lena', race: 'Elfe', cls: 'Magierin' },
+  brom: { c: 'Brom Eisenfaust', p: 'Jonas', race: 'Zwerg', cls: 'Kämpfer' },
+  kael: { c: 'Kael Schattenschritt', p: 'Mira', race: 'Halbling', cls: 'Schurke' },
+  sera: { c: 'Seraphine Morgenlicht', p: 'Tim', race: 'Mensch', cls: 'Klerikerin' },
+};
+const LEVEL = 5;
+const KIND = { enemy: 'Gegner', ally: 'Verbündeter' };
+
+let uid = 0;
+const player = (pid) => ({ id: ++uid, kind: 'player', pid, defeated: false });
+const npc = (kind, number, label = '') => ({ id: ++uid, kind, number, label, defeated: false });
+// so, wie der Spielleiter die Liste nach dem Initiativewurf sortiert hat
+const exampleList = () => [player('kael'), npc('enemy', 1, 'Ghul'), player('thalia'), npc('enemy', 3, 'Grottenschrat'),
+  player('brom'), npc('ally', 4, 'Borin'), npc('enemy', 2, 'Ghul'), player('sera')];
+
+const s = { mode: 'prep', panel: 'fight', list: exampleList(), activeId: null, round: 1,
+  addKind: 'enemy', addError: '', draft: null, dialog: false };
+
+const $ = (id) => document.getElementById(id);
+const icon = (id, size = 20) => `<svg width="${size}" height="${size}"><use href="#i-${id}"/></svg>`;
+const esc = (t) => String(t).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+const initials = (n) => n.split(' ').slice(0, 2).map((w) => w[0]).join('');
+const fighting = () => s.mode === 'fight';
+
+function lines(c) {
+  if (c.kind === 'player') {
+    const p = PLAYERS[c.pid];
+    return [p.c, `${p.race}, ${p.cls} · ${p.p}`];
+  }
+  const sub = [c.defeated ? 'Besiegt' : '', c.label].filter(Boolean).join(' · ');
+  return [`${KIND[c.kind]} ${c.number}`, sub];
+}
+function avatar(c, size = '') {
+  const text = c.kind === 'player' ? initials(PLAYERS[c.pid].c) : c.number;
+  return `<span class="av ${size} k-${c.kind}">${text}</span>`;
+}
+function nextFreeNumber() {
+  let n = 1;
+  while (s.list.some((c) => c.number === n)) n += 1;
+  return n;
+}
+// nächster, der nicht besiegt ist; wrapped = es beginnt eine neue Runde
+function nextActive(fromId) {
+  const from = s.list.findIndex((c) => c.id === fromId);
+  for (let i = 1; i <= s.list.length; i += 1) {
+    const c = s.list[(from + i) % s.list.length];
+    if (!c.defeated) return { c, wrapped: from + i >= s.list.length };
+  }
+  return null;
+}
+function textLines(c) {
+  const [a, b] = lines(c);
+  return `<div class="t"><span class="md">${esc(a)}</span>${b ? `<span class="sm">${esc(b)}</span>` : ''}</div>`;
+}
+
+/* ---------- Navigationsleiste und Kopfzeile ---------- */
+function renderRail() {
+  $('rail').innerHTML = [['notes', 'Notizen'], ['scenes', 'Szenen'], ['fight', 'Kampf']].map(([id, t]) => {
+    const on = s.panel === id;
+    const badge = id === 'fight' && fighting() && !on ? '<span class="badge" aria-hidden="true"></span>' : '';
+    const tip = id === 'fight' && fighting() ? `${t} (läuft)` : t;
+    return `<button class="ib ${on ? 'on' : 'ghost'}" type="button" data-act="nav" data-id="${id}" aria-label="${tip}" title="${tip}" aria-pressed="${on}"><svg><use href="#i-${id}"/></svg>${badge}</button>`;
+  }).join('');
+}
+function renderHead() {
+  const a = $('adventure');
+  a.setAttribute('aria-disabled', String(fighting()));
+  a.title = fighting() ? 'Während des Kampfes nicht wechselbar' : '';
+  a.innerHTML = `<span>Der verlorene Pass</span>${icon(fighting() ? 'lock' : 'chevron')}`;
+}
+
+/* ---------- Panel ---------- */
+function renderPanel() {
+  const panel = $('panel');
+  $('admin').classList.toggle('wide-panel', s.panel === 'fight');
+  if (s.panel === 'notes') {
+    panel.setAttribute('aria-label', 'Notizen');
+    panel.innerHTML = `<span class="lbl">Notizen</span>${NOTES.map((n) => (
+      `<button class="entry${n === ACTIVE_NOTE ? ' on' : ''}" type="button">${n}</button>`)).join('')}`;
+  } else if (s.panel === 'scenes') {
+    panel.setAttribute('aria-label', 'Szenen');
+    const hint = fighting()
+      ? `<p class="lockhint">${icon('lock', 16)}<span>Kampf läuft. Die Szene lässt sich erst nach „Kampf beenden“ wechseln.</span></p>`
+      : '';
+    panel.innerHTML = `<span class="lbl">Szenen</span>${hint}${SCENES.map((n) => (
+      `<button class="entry${n === ACTIVE_SCENE ? ' on' : ''}" type="button"${fighting() ? ' aria-disabled="true"' : ''}${n === ACTIVE_SCENE ? ' aria-current="true"' : ''}>${n}</button>`)).join('')}`;
+  } else {
+    panel.setAttribute('aria-label', 'Kampf');
+    panel.innerHTML = fightPanel();
+  }
+}
+
+function fightPanel() {
+  const rows = s.list.map((c, i) => `
+    <li class="crow${fighting() && c.id === s.activeId ? ' active' : ''}${c.defeated ? ' defeated' : ''}">
+      ${avatar(c, 's32')}${textLines(c)}
+      <div class="ctl">
+        <div class="mv">
+          <button class="mini" type="button" data-act="up" data-id="${c.id}" aria-label="Nach vorn" title="Nach vorn"${i === 0 ? ' disabled' : ''}>${icon('up', 16)}</button>
+          <button class="mini" type="button" data-act="down" data-id="${c.id}" aria-label="Nach hinten" title="Nach hinten"${i === s.list.length - 1 ? ' disabled' : ''}>${icon('down', 16)}</button>
+        </div>
+        <button class="mini" type="button" data-act="remove" data-id="${c.id}" aria-label="Entfernen" title="Entfernen">${icon('x', 16)}</button>
+      </div>
+    </li>`).join('');
+  const missing = Object.keys(PLAYERS).filter((pid) => !s.list.some((c) => c.pid === pid));
+  const draft = s.draft || { nr: nextFreeNumber(), label: '' };
+  const foot = fighting()
+    ? '<button class="tbtn" type="button" data-act="end">Kampf beenden</button>'
+    : `<button class="tbtn on" type="button" data-act="start"${s.list.length ? '' : ' disabled'}>Kampf starten</button>`;
+  return `<div class="fp">
+    <div class="fp-head"><span class="lbl">${fighting() ? 'Kampf' : 'Kampf vorbereiten'}</span>${fighting() ? `<span class="lbl muted">Runde ${s.round}</span>` : ''}</div>
+    <p class="sm muted">Reihenfolge = Initiative</p>
+    ${s.list.length ? `<ol class="clist">${rows}</ol>` : '<p class="sm muted">Noch keine Teilnehmer</p>'}
+    <div class="hr"></div>
+    <span class="lbl">${fighting() ? 'Verstärkung' : 'Hinzufügen'}</span>
+    <div class="seg">
+      <button class="${s.addKind === 'enemy' ? 'on' : ''}" type="button" data-act="kind" data-id="enemy" aria-pressed="${s.addKind === 'enemy'}">Gegner</button>
+      <button class="${s.addKind === 'ally' ? 'on' : ''}" type="button" data-act="kind" data-id="ally" aria-pressed="${s.addKind === 'ally'}">Verbündeter</button>
+    </div>
+    <div class="addrow">
+      <input class="field" id="add-nr" type="number" min="1" value="${esc(draft.nr)}" aria-label="Nummer der Figur" title="Nummer der Figur">
+      <input class="field" id="add-label" type="text" value="${esc(draft.label)}" placeholder="Bezeichnung" aria-label="Bezeichnung (nur im Admin sichtbar)">
+    </div>
+    <p class="sm muted">Nummer = Figur am Tisch. Die Bezeichnung sieht nur der Spielleiter.</p>
+    ${s.addError ? `<p class="err" role="alert">${s.addError}</p>` : ''}
+    <button class="tbtn" type="button" data-act="add">Hinzufügen</button>
+    ${missing.length ? `<div class="chips">${missing.map((pid) => (
+      `<button class="pbtn" type="button" data-act="addplayer" data-id="${pid}">+ ${PLAYERS[pid].c.split(' ')[0]}</button>`)).join('')}</div>` : ''}
+    <div class="foot">${foot}</div>
+  </div>`;
+}
+
+/* ---------- Dashboard ---------- */
+const STAGE = `<section class="stage top" aria-label="Aktive Szene">
+  <span class="lbl tag">Wall</span>
+  <div class="ground"><span class="lbl tag">Ground</span></div>
+  <div class="cap">
+    <span class="lbl">Aktive Szene</span>
+    <strong>Die eingestürzte Halle</strong>
+    <p class="sm">Zerbrochene Säulen, eine verschüttete Treppe und frische Kratzspuren am Boden.</p>
+  </div>
+</section>`;
+
+function partyTile() {
+  const rows = Object.values(PLAYERS).map((p) => `<div class="prow"><span class="av">${initials(p.c)}</span>
+    <div class="t"><span class="md">${p.c}</span><span class="sm">${p.p} · ${p.race}, ${p.cls}</span></div></div>`).join('');
+  return `<section class="tile p lst">
+    <div class="party-head">
+      <span class="lbl">Party · 4</span>
+      <div class="stepper"><span class="lbl">Level</span>
+        <button class="ib" type="button" aria-label="Level verringern">−</button><span class="val">${LEVEL}</span>
+        <button class="ib" type="button" aria-label="Level erhöhen">+</button></div>
+    </div>
+    <div class="plist">${rows}</div>
+  </section>`;
+}
+
+function turnTile() {
+  const c = s.list.find((x) => x.id === s.activeId);
+  if (!c) {
+    return `<section class="tile p top" aria-label="Am Zug"><span class="lbl">Am Zug</span>
+      <p class="sm muted">Niemand am Zug – alle Teilnehmer sind besiegt.</p></section>`;
+  }
+  const p = c.kind === 'player' ? PLAYERS[c.pid] : null;
+  const chips = p ? [p.race, p.cls] : [c.label].filter(Boolean);
+  const n = nextActive(c.id);
+  const next = n && n.c.id !== c.id
+    ? `<span class="sm muted">${n.wrapped ? `Runde ${s.round + 1}:` : 'Als Nächstes:'}</span>${avatar(n.c, 's32')}<span class="md">${esc(lines(n.c)[0])}</span>`
+    : '';
+  return `<section class="tile p top" aria-label="Am Zug" style="gap: 16px">
+    <div class="party-head"><span class="lbl">Am Zug</span><span class="lbl muted">Runde ${s.round}</span></div>
+    <div class="hero">
+      <div class="hav-wrap"><span class="hav k-${c.kind}">${p ? initials(p.c) : c.number}</span>${p ? `<span class="hlevel">${LEVEL}</span>` : ''}</div>
+      <div class="hinfo">
+        <span class="lbl muted">${p ? esc(p.p) : KIND[c.kind]}</span>
+        <span class="hname">${esc(lines(c)[0])}</span>
+        ${chips.length ? `<div class="chips">${chips.map((t) => `<span class="chip">${esc(t)}</span>`).join('')}</div>` : ''}
+      </div>
+    </div>
+    <div class="turn-foot">
+      <div class="next">${next}</div>
+      <button class="tbtn on" type="button" data-act="endturn">Zug beenden</button>
+    </div>
+  </section>`;
+}
+
+function initiativeTile() {
+  const count = (k) => s.list.filter((c) => c.kind === k).length;
+  const rows = s.list.map((c) => {
+    const active = c.id === s.activeId;
+    const toggle = c.kind === 'player' ? '<span></span>'
+      : `<button class="ib${c.defeated ? ' on' : ''}" type="button" data-act="defeat" data-id="${c.id}" aria-pressed="${c.defeated}" aria-label="Besiegt" title="${c.defeated ? 'Wieder im Kampf' : 'Als besiegt markieren'}">${icon('skull')}</button>`;
+    return `<li class="irow${active ? ' active' : ''}${c.defeated ? ' defeated' : ''}"${active ? ' aria-current="step"' : ''}>
+      ${avatar(c)}${textLines(c)}${active ? '<span class="lbl now">Am Zug</span>' : '<span></span>'}${toggle}</li>`;
+  }).join('');
+  return `<section class="tile p lst" aria-label="Initiative">
+    <div class="party-head"><span class="lbl">Initiative · ${s.list.length}</span>
+      <span class="sm muted">Spieler ${count('player')} · Gegner ${count('enemy')} · Verbündete ${count('ally')}</span></div>
+    <ol class="ilist">${rows}</ol>
+  </section>`;
+}
+
+function renderDashboard() {
+  $('right').classList.toggle('fighting', fighting());
+  $('slot-top').innerHTML = fighting() ? turnTile() : STAGE;
+  $('slot-list').innerHTML = fighting() ? initiativeTile() : partyTile();
+}
+
+function renderDialog() {
+  $('dialog').innerHTML = s.dialog ? `<div class="ovl"><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-t">
+    <h2 id="dlg-t">Kampf beenden?</h2>
+    <p class="sm muted">Reihenfolge, Runde und Nummern werden verworfen. Szene und Abenteuer lassen sich danach wieder wechseln.</p>
+    <div class="btns"><button class="tbtn" type="button" data-act="decline">Decline</button><button class="tbtn on" type="button" data-act="confirm">Confirm</button></div>
+  </div></div>` : '';
+}
+
+function render() {
+  renderRail();
+  renderHead();
+  renderPanel();
+  renderDashboard();
+  renderDialog();
+}
+
+/* ---------- Aktionen ---------- */
+function move(id, dir) {
+  const i = s.list.findIndex((c) => c.id === id);
+  const j = i + dir;
+  if (j < 0 || j >= s.list.length) return;
+  [s.list[i], s.list[j]] = [s.list[j], s.list[i]];
+}
+function remove(id) {
+  if (id === s.activeId) {
+    const n = nextActive(id);
+    s.activeId = n && n.c.id !== id ? n.c.id : null;
+  }
+  s.list = s.list.filter((c) => c.id !== id);
+}
+function addNpc() {
+  const nr = Number($('add-nr').value);
+  const label = $('add-label').value.trim();
+  if (!Number.isInteger(nr) || nr < 1) {
+    s.addError = 'Nummer ab 1 eingeben.';
+  } else if (s.list.some((c) => c.number === nr)) {
+    s.addError = `Nummer ${nr} ist schon vergeben.`;
+  }
+  if (s.addError) {
+    s.draft = { nr: $('add-nr').value, label };
+    return;
+  }
+  s.list.push(npc(s.addKind, nr, label));
+  s.draft = null;
+}
+function endTurn() {
+  const n = nextActive(s.activeId);
+  if (!n) return;
+  if (n.wrapped) s.round += 1;
+  s.activeId = n.c.id;
+}
+function startFight() {
+  s.mode = 'fight';
+  s.round = 1;
+  s.activeId = (s.list.find((c) => !c.defeated) || {}).id ?? null;
+}
+function toPrep(list) {
+  Object.assign(s, { mode: 'prep', list, activeId: null, round: 1, dialog: false, draft: null });
+}
+function midFight() {
+  const list = exampleList();
+  list.find((c) => c.number === 2).defeated = true;
+  Object.assign(s, { mode: 'fight', list, round: 3, dialog: false, draft: null,
+    activeId: list.find((c) => c.pid === 'thalia').id });
+}
+
+const ACTIONS = {
+  nav: (id) => { s.panel = id; },
+  up: (id) => move(id, -1),
+  down: (id) => move(id, 1),
+  remove,
+  kind: (id) => { s.addKind = id; },
+  add: addNpc,
+  addplayer: (pid) => { s.list.push(player(pid)); },
+  start: startFight,
+  end: () => { s.dialog = true; },
+  decline: () => { s.dialog = false; },
+  // nach dem Kampf: Vorbereitung wieder mit allen Spielern
+  confirm: () => toPrep(Object.keys(PLAYERS).map(player)),
+  endturn: endTurn,
+  defeat: (id) => { const c = s.list.find((x) => x.id === id); c.defeated = !c.defeated; },
+  mock: (id) => (id === 'prep' ? toPrep(exampleList()) : midFight()),
+};
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act]');
+  if (!b || b.disabled) return;
+  const raw = b.dataset.id;
+  s.addError = '';
+  ACTIONS[b.dataset.act](raw !== undefined && /^\d+$/.test(raw) ? Number(raw) : raw);
+  render();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && (e.target.id === 'add-label' || e.target.id === 'add-nr')) {
+    s.addError = '';
+    addNpc();
+    render();
+    $('add-label').focus();
+  }
+  if (e.key === 'Escape' && s.dialog) { s.dialog = false; render(); }
+});
+
+$('sounds').innerHTML = SOUND_GROUPS.map((g) => `<div class="sgroup">${g.map(([i, t]) => (
+  `<button class="ib" type="button" aria-label="${t}" title="${t}">${icon(i)}</button>`)).join('')}</div>`).join('');
+
+// Im Mockup schaltet der Settings-Button zwischen Dark und Tavern um
+$('theme').addEventListener('click', () => {
+  const root = document.documentElement;
+  root.dataset.theme = root.dataset.theme === 'tavern' ? 'dark' : 'tavern';
+});
+
+render();
+</script>
+</body>
+</html>
