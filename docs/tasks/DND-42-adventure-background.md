@@ -1,7 +1,7 @@
 # DND-42: Hintergrundbild pro Abenteuer und Theme im Admin
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -194,6 +194,36 @@ einem hellen Bild ihr Kontrastziel erreichen.
 - Kontrast der Notiz-Links in Dark: Mit `backdrop` und 75 % (E2) erreicht `primary` als Text (Links der
   Inhaltsverzeichnisse) auf durchscheinenden Notizseiten über einem weißen Bild nur 4,0:1 statt 4,5:1. E8 verlangt
   dann eine höhere Deckkraft (Dark bräuchte etwa 83 %, `#161b23d3`), E2 legt Dark auf 75 % fest. Umgesetzt ist E2; das
-  Paar ist in `contrast.md` und `known-issues.md` wie der bestehende Tavern-Fall als offen geführt. Entscheidung offen.
+  Paar ist in `contrast.md` und `known-issues.md` wie der bestehende Tavern-Fall als offen geführt.
+  **Entscheidung (User, 2026-11-03):** Dark bleibt bei 75 % (E2 gilt); das Paar bleibt als offener Kontrastfall geführt.
 
 ## Review
+
+### Runde 1 – 2026-11-03
+**Empfehlung:** Abnahme
+
+Keine blockierenden Befunde. AK5 ist nur teilweise erfüllt: `primary` als Linkfarbe der Notizen verfehlt über einem weißen Bild 4,5:1 (Dark 4,0:1 neu, Tavern 3,0:1 seit DND-40). Der User hat am 2026-11-03 entschieden, Dark bei 75 % zu lassen (E2 gilt) und das Paar offen zu führen; daher nicht blockierend. Geprüft: Commit `600ab58`, Basis `9685a3d`.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | Seed `background_dark_media_id: 2` (`fight.jpg`), `background_tavern_media_id: 4` (`tavern.jpg`) in `backend/app/db/data/seed_data.json:7-8`; Auswahl je Theme in `adventureBackgroundSource` (`frontend/src/utils/adventureBackground.ts:66-73`); Abdunklung `backdrop` in `AdventureBackground.tsx:28`. `GET /adventures/1` liefert beide Bilder, Dateien antworten 200 `image/jpeg`. |
+| AK2 | erfüllt | Quelle hängt nur von Abenteuer und Theme ab; Wechsel nur bei geänderter URL (`useAdventureBackground.ts:36-40`). Unit-Test „keeps the image when the active scene changes“. |
+| AK3 | erfüllt | Theme-Wechsel ändert die URL und blendet über (Reducer aus DND-41, `prefers-reduced-motion` in `AdventureBackground.tsx:20-22`); beim Abenteuerwechsel einfarbig, solange das neue Abenteuer lädt (`AdminScreen.tsx:458-463`, E7). Tests „takes the image of the adventure for the theme“, „changes with the adventure“. |
+| AK4 | erfüllt | Ohne Bild oder während des Ladens ist die Quelle `null`; Ladefehler → `failed` → `hide`; `isTranslucent = background.isImageShown` (`AdminScreen.tsx:464`). Tests „has no image …“, „stays plain when the image cannot be loaded“, „turns plain when the new image cannot be loaded“. |
+| AK5 | teilweise (vom User entschieden) | Dark `#161b23bf` (75 %), Tavern `#3D271Ceb` (92 %, `tavernTheme.ts:5`); Bühne bleibt bei `scrim` 0.750. Kontrast nachgerechnet, deckt sich mit `contrast.md`: über Weiß Dark 11,45 / 4,02 / 6,37, Tavern 5,95 / 3,04 / 3,68. `primary` als Linkfarbe verfehlt 4,5:1, als offen in `contrast.md` und `docs/known-issues.md` geführt. |
+| AK6 | erfüllt | Migration `0006_adventure_background.py` sucht über `storage_key`; `test_migration_0006.py` deckt Bild vorhanden/fehlend, leere DB, Fremdschlüssel, Downgrade ab. Dev-DB ohne Reset auf `0006` mit Werten 2 und 4. |
+| AK7 | erfüllt | `AdventureDetail` mit `background_dark`/`background_tavern` als `Image \| None` (`backend/app/schemas/adventure.py:40-42`); Tests `test_read_adventure_returns_background_per_theme_as_image`, `…_null_without_background`, `ADVENTURE_FIELDS`. `openapi.json` und `generate:api` ohne Diff. |
+| AK8 | erfüllt | Siehe Checks; Baselines (`knip.jsonc`, `.jscpd.json`, `vulture_*`) unverändert. |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- Abweichungen des Implementers nachvollziehbar und dokumentiert: Seeder füllt `media` vor `adventure`; `sceneBackground.ts`/`.spec.ts` in `adventureBackground.ts`/`.spec.ts` umbenannt, keine Verweise auf alte Namen mehr.
+- Beim Abenteuerwechsel wird der Hintergrund kurz einfarbig statt direkt überzublenden (E7); beim manuellen Test 2 und 3 bestätigen.
+- Kein Unit-Test für `adventureDetail?.id === loadedAdventureId` in `AdminScreen.tsx`; Reducer- und Quellenlogik vollständig getestet.
+- Kein eigener Commit `docs(DND-42): approve plan` (Praxis wie DND-40/41).
+- `docs/screens.md`: Zeile „Abenteuer-Hintergrund“ abweichend umbrochen (kosmetisch).
+- Manuelle Prüfschritte 1–5 offen; Darstellung im Browser nicht angesehen.
+
+**Checks:** Backend ruff, mypy, `alembic check`, `make check-quality` grün; pytest auf frischer DB 223/223 (Dev-DB 221/223, Abweichung durch DB-Zustand). Frontend lint, typecheck, `test:unit` 221/221, build, knip, jscpd grün. E2E 18/20 im ersten Lauf; im zweiten Lauf nur „first interaction makes an admin window the audio output“ rot, vermutlich geteilter Serverzustand, kein Audio-/Vollbild-Code geändert.
