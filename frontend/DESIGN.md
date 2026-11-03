@@ -184,10 +184,10 @@ Admin trennen keine Linien, sondern der Abstand zwischen den [Kacheln](docs/desi
 **Schatten:** `box-shadow` nur als innere Lichtkante der Kachel (`inset 0 borderWidth.thin 0` in `border`, Baustein
 `tileSurface`); sonst kein `box-shadow`, auch kein äußerer Schatten unter Kacheln.
 
-**Durchscheinende Kacheln:** Liegt im Admin das Szenenbild hinter den Kacheln
-([Szenen-Hintergrund](docs/design/components.md#szenen-hintergrund)), haben die Kacheln die Fläche
+**Durchscheinende Kacheln:** Liegt im Admin das Hintergrundbild des Abenteuers hinter den Kacheln
+([Abenteuer-Hintergrund](docs/design/components.md#abenteuer-hintergrund)), haben die Kacheln die Fläche
 `secondaryTranslucent` und zeichnen weich, was dahinter liegt (`backdrop-filter: blur(TILE_BLUR)`); Rand und
-Lichtkante bleiben. Nur mit Bild: ohne Szenenbild sind sie deckend `secondary` ohne Unschärfe. Deckend bleiben immer die
+Lichtkante bleiben. Nur mit Bild: ohne Hintergrundbild sind sie deckend `secondary` ohne Unschärfe. Deckend bleiben immer die
 Bühne, die Hinweisleiste und die Flächen in den Kacheln (`background`); ebenso die Abenteuer-Liste und der Dialog, die
 keine Kacheln sind. Schalter `$isTranslucent` an `tileSurface`.
 
@@ -197,7 +197,7 @@ keine Kacheln sind. Schalter `$isTranslucent` an `tileSurface`.
 **Bilder:** Szenenbilder immer im Format 16:9 (`aspect-ratio: 16 / 9`) mit `object-fit: cover`; auf der Bühne ist
 16:9 die Mindesthöhe, bei langem Text wird sie höher und das Wall-Bild füllt sie weiter (`cover`). Karten (Weltkarte)
 mit `object-fit: contain`.
-Vollbild-Hintergründe mit `position: fixed`, `inset: 0`, `object-fit: cover` (auch das Szenenbild hinter den Kacheln
+Vollbild-Hintergründe mit `position: fixed`, `inset: 0`, `object-fit: cover` (auch das Hintergrundbild hinter den Kacheln
 im Admin).
 
 **Zahlen:** `font-variant-numeric: tabular-nums`, wo Zahlen sich ändern oder untereinander stehen (Slider-Wert,
@@ -222,7 +222,7 @@ durchscheinende Kacheln ([1.4](#14-regeln)).
 Aufbau je Baustein in [components.md](docs/design/components.md): [Icon-Button](docs/design/components.md#icon-button),
 [Text-Button](docs/design/components.md#text-button), [Button-Gruppe](docs/design/components.md#button-gruppe),
 [Navigationseintrag](docs/design/components.md#navigationseintrag), [Navigationsleiste](docs/design/components.md#navigationsleiste) (Admin), [Label](docs/design/components.md#label),
-[Karte](docs/design/components.md#karte), [Kachel](docs/design/components.md#kachel) (Admin), [Szenen-Hintergrund](docs/design/components.md#szenen-hintergrund) (Admin), [Dashboard-Panel](docs/design/components.md#dashboard-panel) (Admin), [Bühne](docs/design/components.md#bühne) (Admin),
+[Karte](docs/design/components.md#karte), [Kachel](docs/design/components.md#kachel) (Admin), [Abenteuer-Hintergrund](docs/design/components.md#abenteuer-hintergrund) (Admin), [Dashboard-Panel](docs/design/components.md#dashboard-panel) (Admin), [Bühne](docs/design/components.md#bühne) (Admin),
 [Segment-Control](docs/design/components.md#segment-control) (Admin), [Spieltisch-Zeile](docs/design/components.md#spieltisch-zeile) (Admin),
 [Spielerzeile](docs/design/components.md#spielerzeile) (Admin), [Level-Stepper](docs/design/components.md#level-stepper) (Admin),
 [Hero-Karte](docs/design/components.md#hero-karte) (Admin, derzeit nicht verwendet), [Status-Punkt](docs/design/components.md#status-punkt) (Admin), [Ressourcen-Button](docs/design/components.md#ressourcen-button) (Player),
@@ -258,14 +258,14 @@ Wechselt mit dem Theme.
 
 | Rolle | Bedeutung | Verwendung |
 |---|---|---|
-| `background` | Grundfläche | Hintergrund von Admin (unter dem Szenenbild, ohne Bild sichtbar) und Ground, Wall-Panel, Fläche im Vollbild-Overlay, Nebenaktion ([2.4](#24-zustände)); Hover in Navigationsleiste, Panel und Kopfzeile im Admin, Nach-oben-Button der Notizen; leere Bildflächen der Bühne; Flächen in Dashboard-Panels (Play-Button ohne Musik, Slider-Schienen, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, Segment-Control, Sound-Gruppen, Spielerzeilen, Hero-Karte), Ring um das Level-Badge |
-| `secondary` | erhöhte Fläche | Karten, Kacheln im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Notizseiten, Dashboard-Panels; ohne Szenenbild), Dialog, Avatar der Spielerzeile, Avatar und Chips der Hero-Karte, Hover der Buttons im Segment-Control, Hintergrund der Wall, inaktiver Zustand ([2.4](#24-zustände)) |
-| `secondaryTranslucent` | erhöhte Fläche über einem Bild (`secondary` mit 75 % Deckkraft) | Kacheln im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Notizseiten, Dashboard-Panels), solange das Szenenbild dahinter liegt ([1.4](#14-regeln)) |
+| `background` | Grundfläche | Hintergrund von Admin (unter dem Hintergrundbild, ohne Bild sichtbar) und Ground, Wall-Panel, Fläche im Vollbild-Overlay, Nebenaktion ([2.4](#24-zustände)); Hover in Navigationsleiste, Panel und Kopfzeile im Admin, Nach-oben-Button der Notizen; leere Bildflächen der Bühne; Flächen in Dashboard-Panels (Play-Button ohne Musik, Slider-Schienen, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, Segment-Control, Sound-Gruppen, Spielerzeilen, Hero-Karte), Ring um das Level-Badge |
+| `secondary` | erhöhte Fläche | Karten, Kacheln im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Notizseiten, Dashboard-Panels; ohne Hintergrundbild), Dialog, Avatar der Spielerzeile, Avatar und Chips der Hero-Karte, Hover der Buttons im Segment-Control, Hintergrund der Wall, inaktiver Zustand ([2.4](#24-zustände)) |
+| `secondaryTranslucent` | erhöhte Fläche über einem Bild (`secondary` mit 75 % Deckkraft in Dark, 92 % in Tavern) | Kacheln im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Notizseiten, Dashboard-Panels), solange das Hintergrundbild dahinter liegt ([1.4](#14-regeln)) |
 | `primary` | Akzent, aktiv | Links, Slider-Füllung, Status-Punkt „verbunden“, Level-Badge der Hero-Karte, aktiver Zustand ([2.4](#24-zustände)) |
 | `border` | Linien | Trennlinien in Karten und den Panels „Audio“ und „Spieltisch“, Rand und Lichtkante der Kacheln im Admin (auch Bühne und Hinweisleiste), Rand des Avatars der Spielerzeile, Rand von Avatar und Chips der Hero-Karte, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |
 | `overlay` | Abdunklung | Hintergrund hinter dem Dialog |
-| `backdrop` | leichte Abdunklung des ganzen Screens | Vollbild-Overlay auf Wall und Ground (Text und Icon stehen auf einer Fläche `background`, nicht auf `backdrop`) |
-| `scrim` | Abdunklung auf Bildern | Abdunklung des Szenenbilds hinter den Kacheln im Admin, Verlauf unter dem Text der Bühne, Fläche der Labels „Wall“ und „Ground“ auf der Bühne, Rand des Ground-Bilds |
+| `backdrop` | leichte Abdunklung des ganzen Screens | Abdunklung des Hintergrundbilds hinter den Kacheln im Admin; Vollbild-Overlay auf Wall und Ground (Text und Icon stehen auf einer Fläche `background`, nicht auf `backdrop`) |
+| `scrim` | Abdunklung auf Bildern | Verlauf unter dem Text der Bühne, Fläche der Labels „Wall“ und „Ground“ auf der Bühne, Rand des Ground-Bilds |
 | `onScrim` | Vordergrund auf `scrim` | Label, Szenenname und Beschreibung auf der Bühne, Text der Labels „Wall“ und „Ground“ |
 | `text.color` | Vordergrund | Text, Icon-Füllung, Slider-Griff, Ring des Status-Punkts „nicht verbunden“ |
 | `text.muted` | gedämpfter Vordergrund (`text.color` mit Transparenz) | Volk · Klasse · Spieler der Spielerzeile, Spielername (Label) der Hero-Karte, Lautsprecher-Icon im Panel „Audio“, Zeichen deaktivierter Buttons ([2.4](#24-zustände)); nicht für Text direkt auf `secondary` (Tavern verfehlt dort 4,5:1) |
@@ -284,7 +284,8 @@ Zwei Themes: Dark (`darkTheme`, [darkTheme.ts](src/style/darkTheme.ts)) und Tave
 [tavernTheme.ts](src/style/tavernTheme.ts)). `resource.*`, `qr.*`, `error` und `onError` sind in beiden Themes
 gleich, weil sie Bedeutung tragen, nicht Stimmung; `scrim` und `onScrim` ebenfalls, weil sie auf beliebigen Bildern
 lesbar sein müssen, und `backdrop`, weil es beliebige Bilder abdunkelt. `secondaryTranslucent` ist in jedem Theme
-dessen `secondary` mit 75 % Deckkraft. Die `resource.*`-Töne sind so gewählt, dass alle Grafik-Paare 3:1 erreichen. Werte: [contrast.md](docs/design/contrast.md#theme-werte).
+dessen `secondary` mit verringerter Deckkraft: in Dark 75 %, in Tavern 92 % (erst damit erreicht `primary` auf der
+Kachel auch über einem hellen Bild 3:1). Die `resource.*`-Töne sind so gewählt, dass alle Grafik-Paare 3:1 erreichen. Werte: [contrast.md](docs/design/contrast.md#theme-werte).
 
 ### 2.4 Zustände
 
@@ -313,12 +314,14 @@ Geprüft nach WCAG 2.1. Ziel AA:
   `secondaryTranslucent` in beiden Themes (Rand, Lichtkante und Trennlinien durchscheinender Kacheln) und `border` auf
   `error` in beiden Themes (Rand und Lichtkante der Hinweisleiste) verfehlen 3:1 bewusst: Trennlinien und Ränder sind
   Gestaltung, kein Bedienelement, und WCAG verlangt 3:1 nur für die Grenzen von Bedienelementen.
-- **Offen:** `primary` verfehlt für Text in Tavern 4,5:1: auf `secondary` 3,3:1, auf `secondaryTranslucent` über einem
-  hellen Szenenbild 3,1:1. Betroffen sind die Text-Links der Inhaltsverzeichnisse in den Notizen, die auf Kacheln in
+- **Offen:** `primary` verfehlt für Text 4,5:1: in Tavern auf `secondary` 3,3:1 und auf `secondaryTranslucent` über
+  einem hellen Hintergrundbild 3,0:1, in Dark auf `secondaryTranslucent` über einem hellen Hintergrundbild 4,0:1.
+  Betroffen sind die Text-Links der Inhaltsverzeichnisse in den Notizen, die auf Kacheln in
   `secondary` bzw. `secondaryTranslucent` liegen; eine Lösung ist offen ([known-issues.md](../docs/known-issues.md)).
-- **Text auf durchscheinenden Kacheln:** Die Fläche hängt vom Szenenbild dahinter ab. Gemessen wird deshalb der
-  ungünstigste Fall: `secondaryTranslucent` über einem weißen bzw. schwarzen Bild unter `scrim`. Erreicht ein Paar
-  sein Ziel nicht, wird die Deckkraft von `secondaryTranslucent` erhöht, nicht die Abdunklung verringert.
+- **Text auf durchscheinenden Kacheln:** Die Fläche hängt vom Hintergrundbild dahinter ab. Gemessen wird deshalb der
+  ungünstigste Fall: `secondaryTranslucent` über einem weißen bzw. schwarzen Bild unter `backdrop`. Erreicht ein Paar
+  sein Ziel nicht, wird die Deckkraft von `secondaryTranslucent` in diesem Theme erhöht, nicht die Abdunklung
+  verringert.
 - **Text auf Bildern:** Text auf der Bühne liegt immer auf der vollen Abdunklung `scrim` (der Verlauf ist oberhalb des
   Texts transparent), so erreicht `onScrim` 4,5:1 auch über einem weißen Bild.
 - **Ausnahme:** Die Flächen in `background` auf `secondary` in den Dashboard-Panels (Buttons, Segment-Control,

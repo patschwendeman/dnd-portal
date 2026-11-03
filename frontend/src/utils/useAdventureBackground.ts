@@ -2,16 +2,20 @@ import {
   useCallback, useEffect, useReducer, useState,
 } from 'react'
 
+import { mediaUrl } from '../api/mediaUrl'
+import { AdventureDetail, Theme } from '../models/models'
+
 import {
-  initialSceneBackground,
-  isSceneImageShown,
-  sceneBackgroundLayers,
-  sceneBackgroundReducer,
-} from './sceneBackground'
+  adventureBackgroundLayers,
+  adventureBackgroundReducer,
+  adventureBackgroundSource,
+  initialAdventureBackground,
+  isBackgroundImageShown,
+} from './adventureBackground'
 
-export const SCENE_FADE_MS = 600
+export const BACKGROUND_FADE_MS = 600
 
-interface SceneBackground {
+interface AdventureBackground {
   layers: string[]
   shown: string | null
   isImageShown: boolean
@@ -19,9 +23,15 @@ interface SceneBackground {
   onError: (src: string) => void
 }
 
-// State of the image behind the tiles of the Admin; src null = plain background
-export function useSceneBackground(src: string | null): SceneBackground {
-  const [state, dispatch] = useReducer(sceneBackgroundReducer, src, initialSceneBackground)
+// State of the image behind the tiles of the Admin; without an image for the theme (or while the
+// adventure loads) the background is plain
+export function useAdventureBackground(
+  adventure: AdventureDetail | undefined,
+  theme: Theme,
+): AdventureBackground {
+  const source = adventureBackgroundSource(adventure, theme)
+  const src = source === null ? null : mediaUrl(source)
+  const [state, dispatch] = useReducer(adventureBackgroundReducer, src, initialAdventureBackground)
 
   const [prevSrc, setPrevSrc] = useState(src)
   if (src !== prevSrc) {
@@ -37,7 +47,7 @@ export function useSceneBackground(src: string | null): SceneBackground {
     }
     const timer = window.setTimeout(
       () => dispatch({ type: 'settled', src: leaving }),
-      SCENE_FADE_MS,
+      BACKGROUND_FADE_MS,
     )
     return () => window.clearTimeout(timer)
   }, [leaving])
@@ -46,9 +56,9 @@ export function useSceneBackground(src: string | null): SceneBackground {
   const onError = useCallback((failed: string) => dispatch({ type: 'failed', src: failed }), [])
 
   return {
-    layers: sceneBackgroundLayers(state),
+    layers: adventureBackgroundLayers(state),
     shown: state.shown,
-    isImageShown: isSceneImageShown(state),
+    isImageShown: isBackgroundImageShown(state),
     onLoad,
     onError,
   }

@@ -132,6 +132,10 @@ def image(item: dict[str, Any]) -> dict[str, Any]:
     return {"id": item["id"], "name": item["name"], "source": media_source(item)}
 
 
+def optional_image(media: list[dict[str, Any]], media_id: int | None) -> dict[str, Any] | None:
+    return image(media[media_id - 1]) if media_id else None
+
+
 @pytest.fixture(scope="session")
 def expected_scene_details(seed: dict[str, Any]) -> list[dict[str, Any]]:
     """Scenes in the `SceneDetail` schema: images and tracks (sorted by ID) with `id`, `name`, `source`."""
@@ -160,7 +164,8 @@ def expected_adventures(seed: dict[str, Any]) -> list[dict[str, Any]]:
 
 @pytest.fixture(scope="session")
 def expected_adventure_details(seed: dict[str, Any]) -> list[dict[str, Any]]:
-    """Adventures in the `AdventureDetail` schema as seeded: no active scene, players (sorted by ID) with avatar."""
+    """Adventures in the `AdventureDetail` schema as seeded: no active scene, players (sorted by ID) with avatar,
+    background images per theme."""
     media = with_ids(seed["media"])
     players = with_ids(seed["players"])
     return [
@@ -182,6 +187,8 @@ def expected_adventure_details(seed: dict[str, Any]) -> list[dict[str, Any]]:
                 for player in players
                 if player["adventure_id"] == adventure["id"]
             ],
+            "background_dark": optional_image(media, adventure.get("background_dark_media_id")),
+            "background_tavern": optional_image(media, adventure.get("background_tavern_media_id")),
         }
         for adventure in with_ids(seed["adventures"])
     ]

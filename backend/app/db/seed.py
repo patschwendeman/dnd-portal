@@ -51,13 +51,13 @@ def build_media(item: dict[str, Any], media_dir: Path) -> Media:
 
 
 def seed_data(db: Session, data: dict[str, Any], media_dir: Path) -> None:
-    # Order follows the references: scenes and players point to adventures and media.
-    if is_empty(db, Adventure):
-        db.add_all([Adventure(**item) for item in data["adventures"]])
-        db.commit()
-
+    # Order follows the references: adventures point to media, scenes and players to adventures and media.
     if is_empty(db, Media):
         db.add_all([build_media(item, media_dir) for item in data["media"]])
+        db.commit()
+
+    if is_empty(db, Adventure):
+        db.add_all([Adventure(**item) for item in data["adventures"]])
         db.commit()
 
     if is_empty(db, Scene):

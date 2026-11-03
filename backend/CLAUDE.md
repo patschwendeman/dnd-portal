@@ -50,9 +50,9 @@ Der `TestClient` läuft als Context Manager (damit der `lifespan` Migrationen un
 CRUD-Funktion geprüft. Daneben prüfen `test_cors.py` (erlaubte Origins und Methoden `GET`/`PATCH`, keine Credentials), `test_config.py`
 (`Settings`, ohne DB), `test_migrate.py` (Alt-DB-Prüfung über eine Tabellenliste, ohne die Test-DB zu verändern),
 `test_media.py` (Auslieferung unter `/media` inkl. `Range`, 404 und Pfad-Traversal; `source`-Format; alle Seed-Dateien
-in `../media` vorhanden), `test_seed.py` (Seeder inkl. Abenteuer, Spieler und fehlender Datei, in einer zurückgerollten
-Transaktion) sowie `test_migration_0002.py` bis `test_migration_0005.py` (Migration `0001` → `0002`, `0002` → `0003`,
-`0003` → `0004` bzw. `0004` → `0005` und zurück mit Daten, in einer eigenen temporären Datenbank – braucht
+in `../media` vorhanden), `test_seed.py` (Seeder inkl. Abenteuer mit Hintergrundbildern, Spieler und fehlender Datei, in
+einer zurückgerollten Transaktion) sowie `test_migration_0002.py` bis `test_migration_0006.py` (Migration `0001` → `0002`,
+`0002` → `0003`, `0003` → `0004`, `0004` → `0005` bzw. `0005` → `0006` und zurück mit Daten, in einer eigenen temporären Datenbank – braucht
 `CREATE DATABASE`). `test_table.py` prüft `GET`/`PATCH /table` und `GET /table/join` (`player_url` per `monkeypatch` auf `settings`),
 `test_ws.py` den WebSocket `/ws` per
 `TestClient.websocket_connect` (Snapshot, Push nach `PATCH`, `screen`- und Origin-Prüfung, Ping mit per `monkeypatch`
@@ -102,7 +102,7 @@ app/schemas/              Pydantic-Schemas des API-Vertrags: game_table.py (Game
                           audio.py (AudioState, AudioUpdate, SoundRequest, SoundName),
                           adventure.py (AdventureSummary, AdventureDetail, Player,
                           AdventureUpdate), scene.py (SceneDetail, Image, Track)
-app/crud/adventure.py     Abenteuer lesen (mit Spielern und Avatar), Existenzprüfung, Update
+app/crud/adventure.py     Abenteuer lesen (mit Spielern, Avatar und Hintergrundbildern), Existenzprüfung, Update
 app/crud/game_table.py    Spieltisch-Zeile lesen (mit aktivem Abenteuer), Update
 app/crud/media.py         read_media_by_storage_key (Standardmusik)
 app/crud/scene.py         Lesezugriffe auf Scene, immer mit Relationen (read_scenes je adventure_id, read_scene),
@@ -128,11 +128,11 @@ app/api/routes/*.py       je Ressource ein `router` (adventures inkl. Szenen je 
                           Einzelszene, table, audio mit Prefix `/table` und Tag `audio`, ws) – nur HTTP-Mapping
 tests/conftest.py         Fixtures: TestClient, Seed-Daten und daraus berechnete Erwartungen
 tests/test_*.py           Tests je Router (adventures inkl. Szenen, scenes, table, audio), WebSocket (ws), Medien (media), CORS,
-                          Config, Migrationsstart (migrate), Seeder (seed), Migrationen 0002–0005 (migration_000n)
+                          Config, Migrationsstart (migrate), Seeder (seed), Migrationen 0002–0006 (migration_000n)
 alembic.ini               Alembic-Konfiguration (ohne DB-URL; Dateinamen <revision>_<slug>.py, ruff als post_write_hook)
 migrations/env.py         URL aus settings.database_url, target_metadata = Base.metadata, compare_type=True
 migrations/versions/      Migrationen, nummeriert (0001_initial_schema.py, 0002_…, 0003_adventure_and_player.py,
-                          0004_game_table.py, 0005_drop_scene_main.py)
+                          0004_game_table.py, 0005_drop_scene_main.py, 0006_adventure_background.py)
 scripts/export_openapi.py schreibt app.openapi() nach openapi.json (versioniert, Basis der Frontend-Typen)
 Makefile                  Qualitätsprüfungen (check-deadcode, check-deps, check-complexity, check-dupes, check-quality)
 vulture_whitelist.py      Falsch-Positive von vulture; vulture_baseline.py: bestehender toter Code (Baseline DND-31)
@@ -165,7 +165,7 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
   eines Abenteuers per `selectinload`).
 - Models im typisierten 2.0-Stil: `Mapped[...]`/`mapped_column`, Nullbarkeit im Typ spiegelt das Schema (aktuell
   sind alle Spalten außer `media.size`, `adventure.description`, `adventure.active_scene_id`,
-  `player.avatar_media_id` und `game_table.active_adventure_id` (`Mapped[... | None]`) `NOT NULL`); Relationen zwischen Modulen per
+  `adventure.background_dark_media_id`, `adventure.background_tavern_media_id`, `player.avatar_media_id` und `game_table.active_adventure_id` (`Mapped[... | None]`) `NOT NULL`); Relationen zwischen Modulen per
   `TYPE_CHECKING`-Import und String-Annotation. Abfragen nur mit `select()`,
   `db.scalars()`, `db.get()` (kein `db.query`); bei `joinedload` von Collections `.unique()`; gefiltert wird in SQL.
 - ruff: Zeilenlänge 120, Regelsets `E`, `F`, `W`, `I`, `B`, `UP`, `SIM`, `C90` (`max-complexity = 8`), `PIE`, `RET`;
@@ -186,14 +186,15 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
 - **API-Vertrag:** `openapi.json` ist versioniert und Basis der Frontend-Typen; nach Änderungen an Schemas oder
   Routen neu exportieren (Ablauf: `../docs/architecture.md#api-vertrag--typgenerierung`). Alle Mediendateien stehen
   in einer Tabelle `media` (Model `Media`, `kind` `image` | `audio`); die ORM-Relationen heißen wie die API-Felder
-  (`Scene.wall_image`, `Scene.ground_image`, `Scene.tracks` über `scene_track(scene_id, media_id)`), die API-Schemas
+  (`Scene.wall_image`, `Scene.ground_image`, `Scene.tracks` über `scene_track(scene_id, media_id)`,
+  `Adventure.background_dark`, `Adventure.background_tavern`), die API-Schemas
   `Image` und `Track` bleiben Response-Typen.
 - **Medien:** Dateien liegen in `../media` (im Container `/app/media`, `Settings.media_dir`), `media.storage_key` ist
   der Pfad relativ dazu (z. B. `images/ground_screen/main_1.jpg`). Die API liefert `source` = `/media/<storage_key>`
   (berechnet, nicht gespeichert) und die Dateien per `StaticFiles` unter `/media` (inkl. `Range`).
 - **Seed:** Listen `adventures`, `media` (`kind`, `name`, `storage_key`), `scenes` und `players`, befüllt in der
-  Reihenfolge `adventure` → `media` → `scene` → `player`; Referenzen (`adventure_id`, `wall_image_id`, `ground_image_id`,
-  `track_ids`-Liste, `avatar_media_id`) sind Autoincrement-IDs in Dateireihenfolge – Einträge nicht umsortieren. Der Seeder
+  Reihenfolge `media` → `adventure` → `scene` → `player`; Referenzen (`adventure_id`, `wall_image_id`, `ground_image_id`,
+  `track_ids`-Liste, `avatar_media_id`, `background_dark_media_id`, `background_tavern_media_id`) sind Autoincrement-IDs in Dateireihenfolge – Einträge nicht umsortieren. Der Seeder
   ermittelt `content_type` und `size` aus der Datei; fehlt sie, warnt er im Log und legt den Eintrag ohne `size` an.
   Er befüllt nur leere Tabellen; Änderungen an der JSON erfordern einen DB-Reset (z. B.
   `docker compose -f compose.dev.yaml down -v` im Root).

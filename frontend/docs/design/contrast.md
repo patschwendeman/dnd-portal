@@ -13,7 +13,7 @@ gilt der Code.
 |---|---|---|
 | `primary` | `#4493F8` | `#C05E5E` |
 | `secondary` | `#161b23` | `#3D271C` |
-| `secondaryTranslucent` | `#161b23bf` (= `secondary`, 75 % deckend) | `#3D271Cbf` (= `secondary`, 75 % deckend) |
+| `secondaryTranslucent` | `#161b23bf` (= `secondary`, 75 % deckend) | `#3D271Ceb` (= `secondary`, 92 % deckend) |
 | `border` | `#3d444db3` | `#956F01` |
 | `background` | `#0e1117` | `#140701` |
 | `overlay` | `rgba(0, 0, 0, 0.850)` | `rgba(0, 0, 0, 0.850)` |
@@ -75,12 +75,12 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `primary` auf `background` | Level-Badge gegen die Hero-Karte (derzeit nicht verwendet) | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `border` auf `background` | Rand von Avatar und Chips gegen die Hero-Karte (derzeit nicht verwendet) | 3,0 | **1,5** | 4,3 | bewusst ✗ Dark, siehe Anmerkung |
 | `onError` auf `error` | Text der Hinweisleiste in der Kopfzeile (14px) | 4,5 | 9,0 | 9,0 | ✓ |
-| `text.color` auf `secondaryTranslucent` | Text und Icons auf durchscheinenden Kacheln (Notizseiten, Dashboard-Panels, Abenteuer-Auswahl, Panel-Einträge); ungünstigster Fall über weißem Bild, über schwarzem Dark 16,9, Tavern 7,5 | 4,5 | 14,3 | 6,1 | ✓ beide |
-| `primary` auf `secondaryTranslucent` | Status-Punkt „verbunden“ und Fokus-Outlines auf durchscheinenden Kacheln; ungünstigster Fall über weißem Bild, über schwarzem Dark 5,9, Tavern 3,8 | 3,0 | 5,0 | 3,1 | ✓ beide |
-| `primary` auf `secondaryTranslucent` | Links in den Notizen (16px) auf durchscheinenden Notizseiten; ungünstigster Fall über weißem Bild | 4,5 | 5,0 | **3,1** | **✗ Tavern, offen wie auf `secondary`** |
-| `text.muted` auf `secondaryTranslucent` | Lautsprecher-Icon im Panel „Audio“; ungünstigster Fall über weißem Bild, über schwarzem Dark 8,4, Tavern 4,3 | 3,0 | 7,5 | 3,8 | ✓ beide |
-| `border` auf `secondaryTranslucent` | Rand und Lichtkante durchscheinender Kacheln, Trennlinien darin; ungünstigster Fall über weißem Bild, über schwarzem Dark 1,5, Tavern 3,5 | 3,0 | **1,4** | **2,8** | bewusst ✗ beide |
-| `background` auf `secondaryTranslucent` | Hover-Flächen und Flächen in Dashboard-Panels auf durchscheinenden Kacheln; über weißem Bild, über schwarzem Dark 1,0, Tavern 1,2 | 3,0 | **1,2** | **1,5** | bewusst ✗ beide, siehe Anmerkung |
+| `text.color` auf `secondaryTranslucent` | Text und Icons auf durchscheinenden Kacheln (Notizseiten, Dashboard-Panels, Abenteuer-Auswahl, Panel-Einträge); ungünstigster Fall über weißem Bild, über schwarzem Dark 16,9, Tavern 6,8 | 4,5 | 11,5 | 5,9 | ✓ beide |
+| `primary` auf `secondaryTranslucent` | Status-Punkt „verbunden“ und Fokus-Outlines auf durchscheinenden Kacheln; ungünstigster Fall über weißem Bild, über schwarzem Dark 5,9, Tavern 3,5 | 3,0 | 4,0 | 3,0 | ✓ beide |
+| `primary` auf `secondaryTranslucent` | Links in den Notizen (16px) auf durchscheinenden Notizseiten; ungünstigster Fall über weißem Bild, über schwarzem Dark 5,9, Tavern 3,5 | 4,5 | **4,0** | **3,0** | **✗ beide, offen wie in Tavern auf `secondary`** |
+| `text.muted` auf `secondaryTranslucent` | Lautsprecher-Icon im Panel „Audio“; ungünstigster Fall über weißem Bild, über schwarzem Dark 8,4, Tavern 4,1 | 3,0 | 6,4 | 3,7 | ✓ beide |
+| `border` auf `secondaryTranslucent` | Rand und Lichtkante durchscheinender Kacheln, Trennlinien darin; ungünstigster Fall über weißem Bild, über schwarzem Dark 1,5, Tavern 3,2 | 3,0 | **1,2** | **2,8** | bewusst ✗ beide |
+| `background` auf `secondaryTranslucent` | Hover-Flächen und Flächen in Dashboard-Panels auf durchscheinenden Kacheln; über weißem Bild, über schwarzem Dark 1,0, Tavern 1,4 | 3,0 | **1,5** | **1,6** | bewusst ✗ beide, siehe Anmerkung |
 | `qr.foreground` auf `qr.background` | QR-Code im Dialog „Spieler verbinden“ | 3,0 | 21,0 | 21,0 | ✓ |
 | `onError` auf `error` | Icon-Button und Fokus-Outline der Hinweisleiste | 3,0 | 9,0 | 9,0 | ✓ |
 | `border` auf `error` | Rand und Lichtkante der Hinweisleiste | 3,0 | **1,2** | **2,0** | bewusst ✗ beide |
@@ -99,7 +99,7 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
   die das Ziel auf `secondary` und auf `background` erreichen. Rand und Lichtkante der Kacheln (auch der Hinweisleiste)
   in `border` sind Gestaltung wie die Trennlinien (Ausnahme in [2.6](../../DESIGN.md#26-kontrast)).
 - **Links in den Notizen:** Seit die Notizseiten Kacheln in `secondary` sind, verfehlt `primary` als Textfarbe in
-  Tavern 4,5:1 (3,3:1). Betroffen sind die Text-Links der Inhaltsverzeichnisse (z. B. `public/story/fight`); eine
+  Tavern 4,5:1 (3,3:1); auf durchscheinenden Notizseiten über einem hellen Hintergrundbild auch in Dark (4,0:1). Betroffen sind die Text-Links der Inhaltsverzeichnisse (z. B. `public/story/fight`); eine
   Lösung ist offen ([known-issues.md](../../../docs/known-issues.md)).
 - **Spielerzeile und Hero-Karte (Admin):** Avatar und Chips sind keine Bedienelemente; ihr Rand in `border` ist
   Gestaltung wie die Trennlinien (Ausnahme in [2.6](../../DESIGN.md#26-kontrast)). Erkennbar sind sie an Initialen bzw.
@@ -111,16 +111,17 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 - **Vollbild-Overlay (Wall, Ground):** `backdrop` dunkelt nur ab und trägt keinen Text. Icon (`text.color`) und Text
   (`text.color`, `text.lg`) stehen auf einer Fläche `background`, gemessen wie `text.color` auf `background`; es gibt
   kein neues Kontrastpaar.
-- **Durchscheinende Kacheln (Admin):** Die Fläche ist `secondaryTranslucent` über dem Szenenbild unter `scrim`. Gemessen
-  sind die beiden Extreme: über einem weißen Bild ergibt `scrim` etwa `#404040`, die Kachel darüber etwa `#20242a`
-  (Dark) bzw. `#3e2d25` (Tavern); über einem schwarzen Bild etwa `#10141a` bzw. `#2e1d15`. In der Tabelle steht der
+- **Durchscheinende Kacheln (Admin):** Die Fläche ist `secondaryTranslucent` (Dark 75 %, Tavern 92 % deckend) über dem
+  Hintergrundbild des Abenteuers unter `backdrop`. Gemessen sind die beiden Extreme, nicht nur die gewählten Bilder:
+  über einem weißen Bild ergibt `backdrop` etwa `#808080`, die Kachel darüber etwa `#30343a` (Dark) bzw. `#422e24`
+  (Tavern); über einem schwarzen Bild etwa `#10141a` bzw. `#38241a`. In der Tabelle steht der
   ungünstigere Wert, der andere in der Spalte „Verwendung“. Die Unschärfe ändert den Mittelwert nicht und bleibt ohne
-  Einfluss auf die Messung. Ohne Szenenbild sind die Kacheln deckend `secondary`, es gelten die Werte oben.
+  Einfluss auf die Messung. Ohne Hintergrundbild sind die Kacheln deckend `secondary`, es gelten die Werte oben.
   `border` und die Flächen in `background` sind Gestaltung bzw. Zusatzsignal wie auf `secondary` (Ausnahmen in
   [2.6](../../DESIGN.md#26-kontrast)).
 - **Fokus-Outline der Abenteuer-Auswahl:** Die Outline ist nach innen versetzt und liegt so auf der Kachel, nicht auf
-  dem Szenenbild daneben: über einem hellen Bild erreichte `primary` dort in Tavern nur 2,5:1 (Dark 3,4:1), auf der
-  durchscheinenden Kachel 3,1:1.
+  dem Hintergrundbild daneben: über einem weißen Bild erreichte `primary` dort in Tavern nur 1,1:1 (Dark 1,3:1), auf
+  der durchscheinenden Kachel 3,0:1 (Dark 4,0:1).
 - **Ressourcen (Player):** Die Spannen reichen über alle fünf Ressourcen.
 - **Flächen in Dashboard-Panels (Admin):** Buttons und Slider-Schiene haben die Fläche `background` auf dem Panel in
   `secondary` (wie Decline im Dialog); die Fläche hebt sich nur schwach ab und ist nur ein Zusatzsignal, erkennbar sind

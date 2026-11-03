@@ -21,8 +21,9 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - Notizen (Markdown) einsehen: Story, NPCs, Kämpfe.
 - Navigationsleiste links mit Menüpunkten, die das Panel daneben füllen: „Notizen“ und „Szenen“ (umgesetzt), geplant
   „Kampf“ (Kampf starten). Die Mitte zeigt dabei weiter die Notizen.
-- Ruhiges, einheitliches Kachel-Layout mit fester Kopfzeile, unter der Notizen und Dashboard scrollen, dahinter das
-  Bild der laufenden Szene, das durch die Kacheln scheint (umgesetzt).
+- Ruhiges, einheitliches Kachel-Layout mit fester Kopfzeile, unter der Notizen und Dashboard scrollen, dahinter
+  ein Hintergrundbild des Abenteuers je Theme, das durch die Kacheln scheint und nicht mit der Szene wechselt
+  (umgesetzt; die Bilder werden über Seed bzw. Datenbank festgelegt, nicht im Admin).
 - Musik ein- und ausschalten.
 - Verschiedene Sounds abspielen.
 - Alles, was Wall und Ground zeigen, vom Admin aus steuern; an Wall und Ground wird nichts bedient.
@@ -39,12 +40,15 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Abenteuer-Auswahl bis zu den Button-Gruppen, rechts eine Kachel mit „Vollbild“ und „Dashboard“ und eine mit Settings.
   Notizen und Dashboard scrollen jeweils für sich unter der Kopfzeile, die stehen bleibt; der Abstand darunter bleibt
   frei, ganz nach unten gescrollt endet die letzte Kachel auf Höhe der Navigationsleiste.
-- **Szenen-Hintergrund:** Hinter den Kacheln liegt das Wall-Bild der aktiven Szene, abgedunkelt und bildschirmfüllend;
-  es steht fest, während Notizen und Dashboard scrollen. Solange es zu sehen ist, sind Navigationsleiste, Panel,
+- **Abenteuer-Hintergrund:** Hinter den Kacheln liegt das Hintergrundbild des aktiven Abenteuers zum Theme des
+  Spieltischs (je Abenteuer ein Bild für Dark und eins für Tavern, festgelegt über Seed bzw. Datenbank, im Admin nicht
+  wählbar), zu 50 % abgedunkelt und bildschirmfüllend; es steht fest, während Notizen und Dashboard scrollen. Solange es zu sehen ist, sind Navigationsleiste, Panel,
   Kopfzeile, Notizseiten und Dashboard-Panels durchscheinend und zeichnen das Bild weich; Bühne, Hinweisleiste und die
-  Bedienflächen in den Kacheln bleiben deckend. Beim Szenenwechsel bleibt das alte Bild, bis das neue geladen ist, dann
-  blenden sie ineinander über (bei „Bewegung reduzieren“ im System ohne Übergang). Ohne aktive Szene, solange sie lädt
-  oder wenn Szene bzw. Bild nicht geladen werden können, ist der Hintergrund einfarbig und die Kacheln sind deckend.
+  Bedienflächen in den Kacheln bleiben deckend (die Kacheln sind in Dark zu 75 %, in Tavern zu 92 % deckend). Das Bild
+  wechselt nur mit Abenteuer oder Theme, nicht mit der Szene: das alte bleibt, bis das neue geladen ist, dann blenden
+  sie ineinander über (bei „Bewegung reduzieren“ im System ohne Übergang). Ohne Bild für das aktive Theme, solange das
+  Abenteuer lädt oder wenn das Bild nicht geladen werden kann, ist der Hintergrund einfarbig und die Kacheln sind
+  deckend.
 - **Dashboard:** eine Spalte mit vier Panels in fester Reihenfolge (kein Verschieben): oben die Bühne („Aktive
   Szene“), darunter „Audio“, „Spieltisch“ und „Party“. Jedes Panel ist so hoch wie sein Inhalt – die Panels scrollen
   nicht für sich und schneiden keinen Text ab; sind sie zusammen höher als der Hauptbereich, scrollt das Dashboard als

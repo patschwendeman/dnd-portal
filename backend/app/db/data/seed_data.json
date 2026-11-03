@@ -1,6 +1,12 @@
 {
   "adventures": [
-    { "name": "Erstes Abenteuer", "description": "Das erste Abenteuer", "global_level": 1 }
+    {
+      "name": "Erstes Abenteuer",
+      "description": "Das erste Abenteuer",
+      "global_level": 1,
+      "background_dark_media_id": 2,
+      "background_tavern_media_id": 4
+    }
   ],
   "media": [
     { "kind": "image", "name": "Forest", "storage_key": "images/wall_screen/forest.jpg" },

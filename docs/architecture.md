@@ -164,7 +164,7 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
 | Pfad | Liefert |
 |---|---|
 | `/adventures` | `list[AdventureSummary]`: alle Abenteuer nach ID (200, ggf. `[]`) |
-| `/adventures/{adventure_id}` | `AdventureDetail` inkl. Spieler (200) bzw. 404 `{"detail": "Adventure not found"}` |
+| `/adventures/{adventure_id}` | `AdventureDetail` inkl. Spieler und Hintergrundbildern (200) bzw. 404 `{"detail": "Adventure not found"}` |
 | `PATCH /adventures/{adventure_id}` | Body `AdventureUpdate`, Antwort `AdventureDetail` (200); 404 wie oben; 422 `{"detail": "Scene does not belong to adventure"}`, wenn `active_scene_id` nicht existiert oder zu einem anderen Abenteuer gehört (nichts wird geändert), 422 im FastAPI-Standardformat bei `global_level` außerhalb 1–20 |
 | `/adventures/{adventure_id}/scenes` | `list[SceneDetail]`: Szenen des Abenteuers nach ID (200, ggf. `[]`); 404 wie oben |
 | `/scenes/{scene_id}` | `SceneDetail` (200) bzw. 404 `{"detail": "Scene not found"}` |
@@ -195,7 +195,9 @@ Track       { id: int, name: str, source: str }
 
 AdventureSummary { id: int, name: str, description: str | null }
 AdventureDetail  { id: int, name: str, description: str | null, global_level: int,
-                   active_scene_id: int | null, players: list[Player] }       players nach ID sortiert
+                   active_scene_id: int | null, players: list[Player],         players nach ID sortiert
+                   background_dark: Image | null, background_tavern: Image | null }
+                   Hintergrundbild des Admins je Theme (null = einfarbig)
 Player           { id: int, player_name: str, character_name: str, race: str,
                    character_class: str, avatar: Image | null }
 AdventureUpdate  { active_scene_id?: int | null, global_level?: int (1–20) }  Request-Body von PATCH
@@ -248,8 +250,10 @@ CI prüft beide Dateien auf Aktualität (Export bzw. Generierung + `git diff --e
 
 ```
 Adventure → adventure (id, name, description (Text, nullable), global_level (1–20, Default 1),
-                       active_scene_id → scene (nullable, ON DELETE SET NULL))
-              Adventure.scenes: 1:N, Adventure.players: 1:N (beide nach ID), Adventure.active_scene: N:1
+                       active_scene_id → scene (nullable, ON DELETE SET NULL),
+                       background_dark_media_id → media (nullable), background_tavern_media_id → media (nullable))
+              Adventure.scenes: 1:N, Adventure.players: 1:N (beide nach ID), Adventure.active_scene: N:1,
+              Adventure.background_dark, Adventure.background_tavern: N:1
 Player    → player    (id, adventure_id → adventure, player_name, character_name, race, character_class,
                        avatar_media_id → media (nullable))
               Player.avatar: N:1
@@ -270,7 +274,8 @@ ist). Die aktive Szene und das globale Level stehen persistent im Abenteuer; das
 desselben Abenteuers gehört, prüft der Service (nicht die DB). Wegen der zirkulären Fremdschlüssel `adventure` ↔ `scene`
 legt die Migration den FK `active_scene_id` zuletzt an (im Model `use_alter=True`, Relation mit `post_update=True`).
 
-Nullable sind nur `media.size`, `adventure.description`, `adventure.active_scene_id`, `player.avatar_media_id` und
+Nullable sind nur `media.size`, `adventure.description`, `adventure.active_scene_id`,
+`adventure.background_dark_media_id`, `adventure.background_tavern_media_id`, `player.avatar_media_id` und
 `game_table.active_adventure_id`. `kind` beschreibt die Dateiart, nicht die Verwendung: Eine Datei ist
 genau ein Datensatz und kann mehrfach genutzt werden (z. B. das Level-Up-Bild als Wall- und Ground-Bild).
 `storage_key` ist der Pfad relativ zum Medienordner (z. B. `images/wall_screen/forest.jpg`); die API bildet daraus
@@ -295,14 +300,18 @@ aktives Abenteuer = kleinste Abenteuer-ID (auf einer leeren DB NULL, weil der Se
 Abenteuer aktiv und Wall und Ground bleiben leer, bis ein Admin geöffnet wird und das erste Abenteuer aktiviert), Theme
 `dark`; `downgrade` entfernt die Tabelle. `0005` entfernt die Spalte `scene.main` (Kampf-/Nicht-Kampfszene); Szenen,
 Bilder, Tracks und die aktive Szene bleiben erhalten. `downgrade` legt sie wieder an (`NOT NULL`, alle Szenen
-`false`), die frühere Einteilung ist dann verloren. Bestehende Datenbanken laufen jeweils
-ohne Reset weiter.
+`false`), die frühere Einteilung ist dann verloren. `0006` ergänzt `adventure.background_dark_media_id` und
+`adventure.background_tavern_media_id` (Hintergrundbild des Admins je Theme) und trägt für jedes vorhandene Abenteuer
+die Standardbilder ein, gesucht über `storage_key` (`images/wall_screen/fight.jpg` bzw. `images/wall_screen/tavern.jpg`);
+fehlt ein Bild in `media`, bleibt die Spalte leer. `downgrade` entfernt beide Spalten. Bestehende Datenbanken laufen
+jeweils ohne Reset weiter.
 
-**Seed-Daten:** Listen `adventures` (`name`, `description`, `global_level`), `media` (`kind`, `name`, `storage_key`),
+**Seed-Daten:** Listen `adventures` (`name`, `description`, `global_level`, `background_dark_media_id`,
+`background_tavern_media_id`), `media` (`kind`, `name`, `storage_key`),
 `scenes` (Referenz `adventure_id` sowie `wall_image_id`, `ground_image_id`, `track_ids` auf Media-IDs) und `players`
 (`adventure_id`, `player_name`, `character_name`, `race`, `character_class`, `avatar_media_id`). Reihenfolge im
-Seeder: `adventure` → `media` → `scene` → `player`, `active_scene_id` bleibt leer. Ein Abenteuer („Erstes Abenteuer“)
-mit allen Szenen und vier Platzhalter-Spielern („Spieler 1..4“, ohne Avatar). 29 Szenen in dieser Reihenfolge:
+Seeder: `media` → `adventure` → `scene` → `player`, `active_scene_id` bleibt leer. Ein Abenteuer („Erstes Abenteuer“,
+Hintergrund Dark `fight.jpg`, Tavern `tavern.jpg`) mit allen Szenen und vier Platzhalter-Spielern („Spieler 1..4“, ohne Avatar). 29 Szenen in dieser Reihenfolge:
 Default (Dorf), Shop, Tavern, Level Up und „Fight 1..25“ (teils mit Tags wie Boss, Loot, Ereignis, Key), 76 Medien (33 Bilder, 43 Musiktracks).
 IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement). Der Seeder ermittelt `content_type` (per
 Dateiendung) und `size` aus der Datei im Medienordner; fehlt sie, schreibt er eine Warnung ins Log und legt den

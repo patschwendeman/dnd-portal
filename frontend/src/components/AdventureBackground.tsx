@@ -1,7 +1,7 @@
 import { ReactElement } from 'react'
 import styled from 'styled-components'
 
-import { SCENE_FADE_MS } from '../utils/useSceneBackground'
+import { BACKGROUND_FADE_MS } from '../utils/useAdventureBackground'
 
 // Lies before the grid of the Admin in the DOM, so the grid covers it without a z-index
 const Root = styled.div`
@@ -10,12 +10,12 @@ const Root = styled.div`
   background-color: ${(props) => props.theme.colors.background};
 `
 
-// Image and scrim fade together, so without an image nothing darkens the plain background
+// Image and darkening fade together, so without an image nothing darkens the plain background
 const Layer = styled.div<{ $isShown: boolean }>`
   position: absolute;
   inset: 0;
   opacity: ${(props) => (props.$isShown ? 1 : 0)};
-  transition: opacity ${SCENE_FADE_MS}ms ease-in-out;
+  transition: opacity ${BACKGROUND_FADE_MS}ms ease-in-out;
 
   @media (prefers-reduced-motion: reduce) {
     transition: none;
@@ -25,7 +25,7 @@ const Layer = styled.div<{ $isShown: boolean }>`
     content: "";
     position: absolute;
     inset: 0;
-    background-color: ${(props) => props.theme.colors.scrim};
+    background-color: ${(props) => props.theme.colors.backdrop};
   }
 `
 
@@ -36,18 +36,19 @@ const Image = styled.img`
   object-fit: cover;
 `
 
-interface SceneBackgroundProps {
-  // Image URLs from useSceneBackground; all but the shown one are invisible
+interface AdventureBackgroundProps {
+  // Image URLs from useAdventureBackground; all but the shown one are invisible
   layers: string[]
   shown: string | null
   onLoad: (src: string) => void
   onError: (src: string) => void
 }
 
-// The wall image of the active scene behind the tiles of the Admin, darkened; pure decoration
-function SceneBackground({
+// The image of the active adventure for the theme behind the tiles of the Admin, darkened; pure
+// decoration
+function AdventureBackground({
   layers, shown, onLoad, onError,
-}: SceneBackgroundProps): ReactElement {
+}: AdventureBackgroundProps): ReactElement {
   return (
     <Root aria-hidden="true">
       {layers.map((src) => (
@@ -59,4 +60,4 @@ function SceneBackground({
   )
 }
 
-export default SceneBackground
+export default AdventureBackground

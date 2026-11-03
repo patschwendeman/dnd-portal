@@ -157,6 +157,8 @@ export interface components {
         AdventureDetail: {
             /** Active Scene Id */
             active_scene_id: number | null;
+            background_dark: components["schemas"]["Image"] | null;
+            background_tavern: components["schemas"]["Image"] | null;
             /** Description */
             description: string | null;
             /** Global Level */

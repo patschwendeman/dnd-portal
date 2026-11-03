@@ -14,6 +14,26 @@
             ],
             "title": "Active Scene Id"
           },
+          "background_dark": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Image"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "background_tavern": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Image"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "description": {
             "anyOf": [
               {
@@ -51,7 +71,9 @@
           "description",
           "global_level",
           "active_scene_id",
-          "players"
+          "players",
+          "background_dark",
+          "background_tavern"
         ],
         "title": "AdventureDetail",
         "type": "object"

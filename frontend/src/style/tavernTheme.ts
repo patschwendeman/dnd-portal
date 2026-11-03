@@ -2,7 +2,7 @@ const tavernTheme = {
   colors: {
     primary: '#C05E5E',
     secondary: '#3D271C',
-    secondaryTranslucent: '#3D271Cbf',
+    secondaryTranslucent: '#3D271Ceb',
     border: '#956F01',
     background: '#140701',
     overlay: 'rgba(0, 0, 0, 0.850)',

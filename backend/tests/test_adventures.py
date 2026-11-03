@@ -15,7 +15,16 @@ from sqlalchemy.orm import Session
 from app.crud import scene as scene_crud
 from app.models import Adventure
 
-ADVENTURE_FIELDS = {"id", "name", "description", "global_level", "active_scene_id", "players"}
+ADVENTURE_FIELDS = {
+    "id",
+    "name",
+    "description",
+    "global_level",
+    "active_scene_id",
+    "players",
+    "background_dark",
+    "background_tavern",
+}
 PLAYER_FIELDS = {"id", "player_name", "character_name", "race", "character_class", "avatar"}
 NOT_FOUND = {"detail": "Adventure not found"}
 SCENE_NOT_IN_ADVENTURE = {"detail": "Scene does not belong to adventure"}
@@ -78,6 +87,34 @@ def test_read_adventure_returns_player_avatar_as_image(client: TestClient, db: S
     assert response.status_code == 200
     avatar = response.json()["players"][0]["avatar"]
     assert avatar == {"id": 1, "name": "Forest", "source": "/media/images/wall_screen/forest.jpg"}
+
+
+def test_read_adventure_returns_background_per_theme_as_image(client: TestClient) -> None:
+    response = client.get("/adventures/1")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["background_dark"] == {"id": 2, "name": "Fight", "source": "/media/images/wall_screen/fight.jpg"}
+    assert body["background_tavern"] == {
+        "id": 4,
+        "name": "Tavern",
+        "source": "/media/images/wall_screen/tavern.jpg",
+    }
+
+
+def test_read_adventure_returns_null_without_background(client: TestClient, db: Session) -> None:
+    adventure = db.get(Adventure, 1)
+    assert adventure is not None
+    adventure.background_tavern_media_id = None
+    db.commit()
+
+    response = client.get("/adventures/1")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["background_tavern"] is None
+    assert body["background_dark"] is not None
+    assert set(body) == ADVENTURE_FIELDS
 
 
 @pytest.mark.parametrize("sub_path", SUB_PATHS)

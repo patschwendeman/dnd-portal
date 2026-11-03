@@ -3,11 +3,11 @@ import {
 } from 'react'
 import styled from 'styled-components'
 
-import { mediaUrl } from '../api/mediaUrl'
 import useAudioPlayback from '../audio/useAudioPlayback'
 import useAutoAudioOutput from '../audio/useAutoAudioOutput'
 import ActiveScenePanel from '../components/ActiveScenePanel'
 import AdminHeader from '../components/AdminHeader'
+import AdventureBackground from '../components/AdventureBackground'
 import AudioPanel from '../components/AudioPanel'
 import Dashboard from '../components/Dashboard'
 import DashboardPanel from '../components/DashboardPanel'
@@ -18,7 +18,6 @@ import GameTablePanel from '../components/GameTablePanel'
 import LevelStepper from '../components/LevelStepper'
 import { NavRail, NavRailItem } from '../components/NavRail'
 import PlayersPanel from '../components/PlayersPanel'
-import SceneBackground from '../components/SceneBackground'
 import SceneNavigation from '../components/SceneNavigation'
 import {
   ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext,
@@ -44,7 +43,7 @@ import mostImportantError from '../utils/adminError'
 import selectDefaultAdventureId from '../utils/adventure'
 import { loadLatest } from '../utils/loadSafely'
 import nextOpenPanel from '../utils/navRail'
-import { useSceneBackground } from '../utils/useSceneBackground'
+import { useAdventureBackground } from '../utils/useAdventureBackground'
 import { filterSceneByKey } from '../utils/utils'
 
 import notesIcon from '/assets/icons/notes.svg'
@@ -456,9 +455,11 @@ function AdminScreen(): ReactElement {
     setOpenPanel((open) => nextOpenPanel(open, id))
   }
 
-  // Like the stage, but a scene that cannot be loaded leaves the background plain
-  const background = useSceneBackground(
-    activeScene && !activeSceneFailed ? mediaUrl(activeScene.wall_image.source) : null,
+  // The detail of the previous adventure stays until the new one is loaded; meanwhile the
+  // background is plain instead of showing the image of the previous adventure
+  const background = useAdventureBackground(
+    adventureDetail?.id === loadedAdventureId ? adventureDetail : undefined,
+    gameTableTheme,
   )
   const isTranslucent = background.isImageShown
 
@@ -468,7 +469,7 @@ function AdminScreen(): ReactElement {
   return (
     <>
       <GlobalStyle />
-      <SceneBackground
+      <AdventureBackground
         layers={background.layers}
         shown={background.shown}
         onLoad={background.onLoad}

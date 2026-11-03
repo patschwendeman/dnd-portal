@@ -1,7 +1,7 @@
 from typing import Any
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.models import Adventure, Player
 
@@ -13,7 +13,11 @@ def read_adventures(db: Session) -> list[Adventure]:
 def read_adventure(db: Session, adventure_id: int) -> Adventure | None:
     statement = (
         select(Adventure)
-        .options(selectinload(Adventure.players).joinedload(Player.avatar))
+        .options(
+            selectinload(Adventure.players).joinedload(Player.avatar),
+            joinedload(Adventure.background_dark),
+            joinedload(Adventure.background_tavern),
+        )
         .where(Adventure.id == adventure_id)
     )
     return db.scalars(statement).one_or_none()

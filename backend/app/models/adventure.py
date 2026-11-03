@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.media import Media
     from app.models.player import Player
     from app.models.scene import Scene
 
@@ -28,3 +29,8 @@ class Adventure(Base):
         back_populates="adventure", foreign_keys="Scene.adventure_id", order_by="Scene.id"
     )
     players: Mapped[list["Player"]] = relationship(back_populates="adventure", order_by="Player.id")
+    # Image behind the tiles of the Admin, one per theme; set only via seed or database.
+    background_dark_media_id: Mapped[int | None] = mapped_column(ForeignKey("media.id"))
+    background_dark: Mapped["Media | None"] = relationship(foreign_keys=[background_dark_media_id])
+    background_tavern_media_id: Mapped[int | None] = mapped_column(ForeignKey("media.id"))
+    background_tavern: Mapped["Media | None"] = relationship(foreign_keys=[background_tavern_media_id])

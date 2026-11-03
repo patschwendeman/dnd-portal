@@ -1,5 +1,5 @@
-"""Seeder: adventures, players, media entries with content type and size from the media folder (missing files only log
-a warning) and scenes.
+"""Seeder: adventures (with background images), players, media entries with content type and size from the media
+folder (missing files only log a warning) and scenes.
 
 The seeding test runs in a transaction on the shared test DB that is rolled back afterwards.
 """
@@ -76,7 +76,15 @@ def test_seed_data_creates_adventure_media_scenes_and_players_with_references(
     db: Session, seed_media_dir: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
     data: dict[str, Any] = {
-        "adventures": [{"name": "Adventure", "description": "Test", "global_level": 3}],
+        "adventures": [
+            {
+                "name": "Adventure",
+                "description": "Test",
+                "global_level": 3,
+                "background_dark_media_id": 1,
+                "background_tavern_media_id": None,
+            }
+        ],
         "media": [
             {"kind": "image", "name": "Wall", "storage_key": WALL_KEY},
             {"kind": "image", "name": "Ground", "storage_key": GROUND_KEY},
@@ -130,6 +138,9 @@ def test_seed_data_creates_adventure_media_scenes_and_players_with_references(
     adventure = db.scalars(select(Adventure)).one()
     assert (adventure.name, adventure.description, adventure.global_level) == ("Adventure", "Test", 3)
     assert adventure.active_scene_id is None
+    assert adventure.background_dark is not None
+    assert adventure.background_dark.storage_key == WALL_KEY
+    assert adventure.background_tavern is None
     assert [s.id for s in adventure.scenes] == [scene.id]
     assert [
         (p.player_name, p.character_name, p.race, p.character_class, p.avatar.storage_key if p.avatar else None)

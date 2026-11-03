@@ -92,7 +92,7 @@ src/screens/         Screens
 src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin, mit ErrorBar), JoinDialog, ThemeMenu, NavRail (Navigationsleiste im Admin),
                      SideBarLeftElement (Eintrag im Panel, Button), DocumentNavigation (Notizen-Einträge im Panel),
                      SceneNavigation (Szenenliste im Panel), DocumentReader (Notizen des gewählten Eintrags),
-                     SceneBackground (Szenenbild hinter den Kacheln im Admin),
+                     AdventureBackground (Hintergrundbild des Abenteuers hinter den Kacheln im Admin),
                      Dashboard (Spalte rechts im Admin) mit DashboardPanel (Rahmen), ActiveScenePanel (Bühne),
                      AudioPanel (MusicControl, SoundBoard), GameTablePanel (Spieltisch), PlayersPanel mit
                      PlayerListItem (Spielerzeile) und LevelStepper (Level im Kopf der Party), PlayerHeroCard
@@ -111,8 +111,9 @@ src/models/models.ts API-Typen AdventureSummary, AdventureDetail, Player, SceneD
 src/utils/utils.ts   Musiktitel (getMusicTitle), filterSceneByKey
 src/utils/groundGrid.ts GROUND_GRID_CELL_SIZE (100–200, Schritt 10), gridLineColor, toCellSize (Slider-Wert → Zellgröße)
 src/utils/navRail.ts nextOpenPanel (welches Panel neben der Navigationsleiste offen ist)
-src/utils/sceneBackground.ts sceneBackgroundReducer (Szenenbild hinter den Kacheln: geladen, Überblendung, Rückfall),
-                     useSceneBackground.ts (Hook dazu im Admin, SCENE_FADE_MS)
+src/utils/adventureBackground.ts adventureBackgroundSource (Bild des Abenteuers zum Theme), adventureBackgroundReducer
+                     (Bild hinter den Kacheln: geladen, Überblendung, Rückfall), useAdventureBackground.ts (Hook dazu
+                     im Admin, BACKGROUND_FADE_MS)
 src/utils/adminError.ts mostImportantError (welcher Fehler in der Kopfzeile des Admins steht)
 src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
 src/utils/playerTheme.ts Theme-Abweichung des Players lesen/schreiben, effectiveTheme, Altschlüssel verwerfen

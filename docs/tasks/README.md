@@ -45,3 +45,4 @@
 | DND-39 | feat | Vollbild-Overlay beim Hovern auf Wall und Ground | Fertig | [DND-39-screen-fullscreen-overlay.md](DND-39-screen-fullscreen-overlay.md) |
 | DND-40 | feat | Kachel-Layout im Admin Screen mit fester Kopfzeile | Fertig | [DND-40-admin-tile-layout.md](DND-40-admin-tile-layout.md) |
 | DND-41 | feat | Szenenbild als Hintergrund im Admin, durchscheinende Kacheln | Fertig | [DND-41-admin-scene-background.md](DND-41-admin-scene-background.md) |
+| DND-42 | feat | Hintergrundbild pro Abenteuer und Theme im Admin | Im Review | [DND-42-adventure-background.md](DND-42-adventure-background.md) |
