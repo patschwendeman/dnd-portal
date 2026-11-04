@@ -33,6 +33,8 @@ gilt der Code.
 | `resource.spell.strong` · `.muted` | `#2487ff` · `#001229` | gleich |
 | `resource.special.strong` · `.muted` | `#ff2424` · `#290000` | gleich |
 | `resource.empty` | `#707070` | gleich |
+| `combatant.enemy.text` · `.surface` · `.border` | `#ff6b6b` · `#290000` · `#ff2424` | gleich |
+| `combatant.ally.text` · `.surface` · `.border` | `#3fd033` · `#072900` · `#099000` | gleich |
 
 ## Kontrastmessung
 
@@ -88,6 +90,11 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `resource.*.strong` auf `resource.*.muted` | Rahmen, verfügbare Icons und Plätze | 3,0 | 3,8–11,7 | 3,8–11,7 | ✓ beide |
 | `resource.*.strong` auf `secondary` | Rahmen gegen die Karte | 3,0 | 4,0–13,0 | 3,2–10,5 | ✓ beide |
 | `resource.empty` auf `resource.*.muted` | verbrauchte Icons und Plätze | 3,0 | 3,1–3,9 | 3,1–3,9 | ✓ beide |
+| `combatant.*.text` auf `combatant.*.surface` | Nummer im Avatar eines NPCs (Kampf), Totenkopf „ausgeschieden“ (Gegner-Töne) | 4,5 | 6,9 (Gegner) · 7,8 (Verbündete) | gleich | ✓ beide |
+| `combatant.enemy.text` auf `secondary` | Fehlermeldung beim Hinzufügen im Panel „Kampf“ | 4,5 | 6,2 | 5,0 | ✓ beide |
+| `combatant.enemy.text` auf `background` | Schloss im Hinweis „Kampf läuft“ (Panel „Szenen“) | 3,0 | 6,8 | 7,1 | ✓ beide |
+| `combatant.*.border` auf `background` | Rand des NPC-Avatars in den Zeilen (Panel „Kampf“, Initiative) | 3,0 | 5,0 (Gegner) · 4,5 (Verbündete) | 5,2 · 4,7 | ✓ beide |
+| `combatant.enemy.border` auf `secondary` | Punkt am Menüpunkt „Kampf“ (laufender Kampf) | 3,0 | 4,6 | 3,7 | ✓ beide |
 
 **Anmerkungen**
 

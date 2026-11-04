@@ -5,8 +5,8 @@
  ┌──────────┐  ┌──────────┐  ┌──────────┐                            ┌──────────┐
  │ /admin   │  │ /wall    │  │ /ground  │                            │ /        │ × n
  └────┬─────┘  └────┬─────┘  └────┬─────┘                            └────┬─────┘
-      │ HTTP GET/PATCH/POST (axios, /api/...)                             │ nur WebSocket (Theme)
-      │ WebSocket /ws?screen=… (Snapshots, Audio, Ping, an Admins Screen-Zahlen; Admin → Server: Audio-Meldungen)
+      │ HTTP GET/PATCH/POST/PUT/DELETE (axios, /api/...)                  │ nur WebSocket (Theme)
+      │ WebSocket /ws?screen=… (Snapshots, Audio, Ping, an Admins Screen-Zahlen und Kampf; Admin → Server: Audio-Meldungen)
       └─────────────┴─────────────┴──────────────────────────────────────┘
                     │ gleicher Origin: Vite-Proxy (Dev :5173) bzw. nginx (Prod :8080)
                     │ /api/… → API (Präfix entfernt), /ws → API
@@ -63,6 +63,19 @@
   deshalb mit genau einem Worker (Default, so in beiden Compose-Stacks).
 - **Audio** (Musik, Soundeffekte) folgt demselben Muster, siehe [Audio](#audio): Der Server hält den Musikzustand,
   ein Admin-Fenster spielt ihn ab, gesteuert wird per REST.
+- **Kampf:** Der laufende Kampf des aktiven Abenteuers steht in der Datenbank (`fight`, `combatant`) und übersteht
+  Reloads und Neustarts der API. Er ist nicht Teil des Snapshots: Der Server schickt ihn **nur an Admins** als
+  `{"type": "fight", "payload": FightState | null}` direkt nach dem Verbinden und nach jeder erfolgreichen Änderung
+  (Endpoints unter `/table/fight`, Background-Task nach dem Commit) sowie nach jedem `PATCH /table`, das
+  `active_adventure_id` setzt (`null`: kein Kampf). Die Bezeichnungen der NPCs sieht so nur der Spielleiter; ein Zug
+  löst keinen `state`-Push aus, auf den Wall und Ground mit Neuladen reagieren würden. Der Admin schreibt ohne lokale
+  Vorwegnahme (der letzte Schreibzugriff gewinnt), nur die Vorbereitung vor „Kampf starten“ ist lokaler Zustand des
+  Admin-Fensters. Im Frontend stellt der `GameTableProvider` den Kampf im `FightContext` bereit (bis zur ersten
+  Nachricht `null`). Solange das aktive Abenteuer einen Kampf hat, lehnt der Server einen Wechsel des aktiven
+  Abenteuers (`PATCH /table`, auch auf `null`) und der aktiven Szene dieses Abenteuers (`PATCH /adventures/{id}`) mit
+  409 `{"detail": "Fight in progress"}` ab (der ganze Request, auch andere Felder darin); derselbe Wert ist kein
+  Wechsel. Die Schreibzugriffe auf den Kampf sperren seine Zeile (`SELECT … FOR UPDATE`), damit gleichzeitige Klicks
+  aus mehreren Admin-Fenstern nacheinander wirken.
 - Der **Player Screen** (Smartphones) nutzt vom Spieltisch nur das Theme; `state`, `audio` und `sound` empfängt er,
   zeigt sie aber nicht an, und er sendet nichts. Er zeigt keinen Verbindungsstatus. Im Settings-Menü kann ein Spieler
   auf seinem Gerät vom Spieltisch-Theme abweichen („Wie Spieltisch“, „Dunkel“, „Taverne“): gespeichert in
@@ -83,6 +96,7 @@ Server → Client:
 | `{"type": "audio", "payload": AudioState}` | alle | direkt nach dem Verbinden (nach `state`), nach jeder Änderung des Musikzustands (Audio-Endpoints, Wechsel der aktiven Szene nach dem `state`-Push, Ausgabe bereit bzw. getrennt, Trackende) |
 | `{"type": "audio_output", "payload": {"active": bool}}` | betroffener Admin | `true` an den Admin, der per `audio_ready` Ausgabe wird; `false` an die bisherige Ausgabe, die die Rolle verliert |
 | `{"type": "sound", "payload": {"name": SoundName}}` | nur die Ausgabe | nach `POST /table/sounds`; ohne Ausgabe verfällt der Sound |
+| `{"type": "fight", "payload": FightState \| null}` | nur Admins | direkt nach dem Verbinden eines Admins (nach `screens`), nach jeder erfolgreichen Änderung am Kampf (Endpoints unter `/table/fight`; ein veraltetes `POST /table/fight/turn` ändert nichts und pusht nicht) und nach jedem `PATCH /table` mit `active_adventure_id`; `null` ohne Kampf des aktiven Abenteuers |
 | `{"type": "screens", "payload": {"wall": int, "ground": int, "player": int}}` | nur Admins | direkt nach dem Verbinden eines Admins (nach `state` und `audio`) und an alle Admins, sobald sich die Zahl der Verbindungen eines Typs ändert (Verbinden, Trennen, Entfernen nach fehlgeschlagenem Senden); Admins werden nicht gezählt |
 | `{"type": "ping"}` | alle | alle 15 s (Heartbeat) |
 
@@ -159,17 +173,25 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
   (einmalig `docker compose -f compose.dev.yaml down -v` bzw. `… compose.prod.yaml down -v`). Ablauf für
   Schemaänderungen: `backend/CLAUDE.md`, Abschnitt „Migrationen“. `import app.main` allein baut keine DB-Verbindung auf.
 
-### Endpoints (GET, Abenteuer und Spieltisch zusätzlich PATCH, Audio-Befehle POST; keine Auth)
+### Endpoints (GET, Abenteuer und Spieltisch zusätzlich PATCH, Audio-Befehle POST, Kampf POST/PATCH/PUT/DELETE; keine Auth)
 
 | Pfad | Liefert |
 |---|---|
 | `/adventures` | `list[AdventureSummary]`: alle Abenteuer nach ID (200, ggf. `[]`) |
 | `/adventures/{adventure_id}` | `AdventureDetail` inkl. Spieler und Hintergrundbildern (200) bzw. 404 `{"detail": "Adventure not found"}` |
-| `PATCH /adventures/{adventure_id}` | Body `AdventureUpdate`, Antwort `AdventureDetail` (200); 404 wie oben; 422 `{"detail": "Scene does not belong to adventure"}`, wenn `active_scene_id` nicht existiert oder zu einem anderen Abenteuer gehört (nichts wird geändert), 422 im FastAPI-Standardformat bei `global_level` außerhalb 1–20 |
+| `PATCH /adventures/{adventure_id}` | Body `AdventureUpdate`, Antwort `AdventureDetail` (200); 404 wie oben; 422 `{"detail": "Scene does not belong to adventure"}`, wenn `active_scene_id` nicht existiert oder zu einem anderen Abenteuer gehört (nichts wird geändert), 422 im FastAPI-Standardformat bei `global_level` außerhalb 1–20; 409 `{"detail": "Fight in progress"}` bei einer anderen aktiven Szene, solange das Abenteuer einen Kampf hat (nichts wird geändert) |
 | `/adventures/{adventure_id}/scenes` | `list[SceneDetail]`: Szenen des Abenteuers nach ID (200, ggf. `[]`); 404 wie oben |
 | `/scenes/{scene_id}` | `SceneDetail` (200) bzw. 404 `{"detail": "Scene not found"}` |
 | `/table` | `GameTableState`: Zustand des Spieltischs (200) |
-| `PATCH /table` | Body `GameTableUpdate`, Antwort `GameTableState` (200); 422 `{"detail": "Adventure not found"}` bei unbekanntem Abenteuer (nichts wird geändert), 422 im FastAPI-Standardformat bei ungültigem `theme`, `wall_overlay`, `ground_grid` oder `ground_grid_cell_size` |
+| `PATCH /table` | Body `GameTableUpdate`, Antwort `GameTableState` (200); 422 `{"detail": "Adventure not found"}` bei unbekanntem Abenteuer (nichts wird geändert), 422 im FastAPI-Standardformat bei ungültigem `theme`, `wall_overlay`, `ground_grid` oder `ground_grid_cell_size`; 409 `{"detail": "Fight in progress"}` bei einem anderen aktiven Abenteuer (auch `null`), solange das aktive einen Kampf hat (nichts wird geändert) |
+| `/table/fight` | `FightState \| null`: Kampf des aktiven Abenteuers, `null` ohne Kampf oder ohne aktives Abenteuer (200) |
+| `POST /table/fight` | Body `FightStart`, Antwort `FightState` (201): Runde 1, der erste Teilnehmer ist am Zug, `scene_id` = aktive Szene; 409 `{"detail": "No active adventure"}`, `"No active scene"` bzw. `"Fight in progress"`; 422 bei leerer Liste, doppeltem Spieler oder doppelter Nummer, `kind` passt nicht zu den Feldern (FastAPI-Standardformat) und `{"detail": "Player does not belong to the active adventure"}` |
+| `DELETE /table/fight` | beendet den Kampf (204); 404 `{"detail": "No fight"}` |
+| `POST /table/fight/turn` | Body `TurnRequest`, Antwort `FightState` (200): am Zug ist der nächste nicht ausgeschiedene Teilnehmer, über das Listenende hinaus steigt `round`; ist `from_combatant_id` nicht mehr am Zug, ändert sich nichts (200 mit dem aktuellen Stand, kein Push) |
+| `POST /table/fight/combatants` | Body `CombatantCreate`, Antwort `FightState` (201), Teilnehmer am Ende; 422 `{"detail": "Player already takes part"}`, `"Number already taken"`, `"Player does not belong to the active adventure"` |
+| `PATCH /table/fight/combatants/{combatant_id}` | Body `CombatantUpdate`, Antwort `FightState` (200); 404 `{"detail": "Combatant not found"}` |
+| `DELETE /table/fight/combatants/{combatant_id}` | Antwort `FightState` (200); war er am Zug, ist der nächste nicht ausgeschiedene am Zug (ohne Rundenwechsel); 404 wie oben |
+| `PUT /table/fight/order` | Body `FightOrder`, Antwort `FightState` (200); 422 `{"detail": "combatant_ids must contain each combatant of the fight exactly once"}` |
 | `/table/audio` | `AudioState`: Musikzustand (200), siehe [Audio](#audio) |
 | `PATCH /table/audio` | Body `AudioUpdate`, Antwort `AudioState` (200); 422 im FastAPI-Standardformat bei `volume` außerhalb 0–100 bzw. `null`; `playing: true` bei leerer Playlist ändert `playing` nicht |
 | `POST /table/sounds` | Body `SoundRequest`, 204 (auch ohne Audioausgabe); 422 bei unbekanntem Namen |
@@ -181,6 +203,13 @@ Globale Listen (`GET /scenes`, `GET /maps/main|side`) gibt es seit DND-24 nicht 
 Abenteuer. Die Kartenübersichten je Abenteuer (`GET /adventures/{id}/maps/main|side`, Schema `MapEntry`) sind seit
 DND-29 entfernt (404), weil es keine Kampf-/Nicht-Kampfszenen mehr gibt. `/scenes/{scene_id}` bleibt der Einstieg für Wall, Ground und die Karte „Aktive Szene“ im Admin, weil die
 Szenen-ID global eindeutig ist.
+
+Alle Endpoints unter `/table/fight` wirken auf den Kampf des aktiven Abenteuers: Ohne aktives Abenteuer antworten
+die schreibenden mit 409 `{"detail": "No active adventure"}`, ohne Kampf (außer `POST`) mit 404 `{"detail": "No
+fight"}`. Abgelehnte Requests ändern nichts. Ist niemand am Zug und kommt (durch Hinzufügen oder Zurücknehmen von
+`defeated`) ein nicht ausgeschiedener Teilnehmer dazu, ist der erste davon in der Reihenfolge am Zug; wer als
+ausgeschieden markiert wird, während er am Zug ist, bleibt es bis zum nächsten `turn`. CORS erlaubt weiterhin nur
+`GET`/`PATCH`; der Admin erreicht die API über denselben Origin (Proxy `/api/`), wie schon bei `POST /table/sounds`.
 
 Kanonische Pfade sind ohne Slash am Ende (mit Slash antwortet FastAPI mit 307-Redirect). Fehler im Default-Format
 `{"detail": "..."}`.
@@ -215,6 +244,17 @@ AudioUpdate      { playing?: bool, volume?: int (0–100) }                     
 SoundRequest     { name: SoundName }                                            Request-Body von POST /table/sounds
 SoundName        "heal" | "bottle" | "buff" | "music_1" | "music_2" | "spell_1" | "spell_2"
                  | "debuff_1" | "debuff_2" | "lock"
+
+FightState       { round: int, active_combatant_id: int | null, scene_id: int,
+                   combatants: list[Combatant] }                                combatants in Initiative-Reihenfolge
+Combatant        { id: int, kind: "player" | "enemy" | "ally", player_id: int | null,
+                   number: int | null, label: str | null, defeated: bool }
+CombatantCreate  { kind, player_id?: int, number?: int (1–99), label?: str (getrimmt, leer = null, max. 60) }
+                   Spieler: nur player_id; Gegner/Verbündete: number, optional label
+FightStart       { combatants: list[CombatantCreate] (mindestens einer, ohne doppelte Spieler/Nummern) }
+TurnRequest      { from_combatant_id: int }
+CombatantUpdate  { defeated: bool }
+FightOrder       { combatant_ids: list[int] }                                   genau die IDs der Teilnehmer
 ```
 
 Alle Felder sind Pflicht; nullable sind nur `description` und `active_scene_id` des Abenteuers sowie `avatar` des
@@ -234,8 +274,8 @@ also z. B. `/api/media/images/ground_screen/main_1.jpg` über den Proxy).
 `backend/scripts/export_openapi.py` schreibt `app.openapi()` deterministisch dorthin (ohne DB-Verbindung, die
 `Settings`-Werte aus `.env` bzw. Umgebung reichen). Das Frontend erzeugt daraus per `openapi-typescript`
 `frontend/src/api/schema.d.ts` (versioniert, von ESLint ausgenommen); `src/models/models.ts` leitet `SceneDetail`,
-`Image`, `Track`, `GameTableState`, `Theme`, `WallOverlay`, `GroundGrid`, `AudioState`, `AudioUpdate` und
-`SoundName` davon ab. Das Nachrichtenformat des
+`Image`, `Track`, `GameTableState`, `Theme`, `WallOverlay`, `GroundGrid`, `AudioState`, `AudioUpdate`,
+`SoundName`, `FightState`, `Combatant`, `CombatantKind` und `CombatantCreate` davon ab. Das Nachrichtenformat des
 WebSockets `/ws` ist nicht Teil der OpenAPI, es steht oben unter [WebSocket `/ws`](#websocket-ws).
 
 Ablauf bei einer Vertragsänderung:
@@ -265,6 +305,15 @@ Media     → media     (id, kind: 'image' | 'audio', name, storage_key (unique)
 GameTable → game_table (id (CHECK id = 1), active_adventure_id → adventure (nullable, ON DELETE SET NULL),
                         theme (Text, Default 'dark', CHECK theme IN ('dark', 'tavern')))
               GameTable.active_adventure: N:1; genau eine Zeile (ein Server = ein Spieltisch)
+Fight     → fight     (id, adventure_id → adventure (unique, ON DELETE CASCADE),
+                       scene_id → scene (ON DELETE CASCADE), round (CHECK ≥ 1, Default 1),
+                       active_combatant_id → combatant (nullable, ON DELETE SET NULL))
+              Fight.combatants: 1:N nach position; höchstens ein Kampf je Abenteuer
+Combatant → combatant (id, fight_id → fight (ON DELETE CASCADE), position, kind: 'player' | 'enemy' | 'ally',
+                       player_id → player (nullable, ON DELETE CASCADE), number (nullable, CHECK 1–99),
+                       label (Text, nullable), defeated (Default false))
+              unique (fight_id, position) DEFERRABLE INITIALLY DEFERRED, unique (fight_id, player_id),
+              unique (fight_id, number); CHECK kind = 'player' ⇔ player_id gesetzt ⇔ number leer, label nur bei NPCs
 ```
 
 Ein Abenteuer bündelt Szenen und Spieler (je 1:N); `media` ist global. Ein Spieler-Datensatz steht für „diese Person
@@ -273,10 +322,15 @@ Datensatz. `race` und `character_class` sind Freitext (`character_class`, weil `
 ist). Die aktive Szene und das globale Level stehen persistent im Abenteuer; dass `active_scene_id` zu einer Szene
 desselben Abenteuers gehört, prüft der Service (nicht die DB). Wegen der zirkulären Fremdschlüssel `adventure` ↔ `scene`
 legt die Migration den FK `active_scene_id` zuletzt an (im Model `use_alter=True`, Relation mit `post_update=True`).
+Ebenso `fight` ↔ `combatant`: der FK `active_combatant_id` entsteht zuletzt (`use_alter=True`), der Service setzt ihn
+nach dem Anlegen der Teilnehmer. Die Eindeutigkeit von `position` prüft PostgreSQL erst am Ende der Transaktion, damit
+das Umsortieren Positionen tauschen kann. Gelöschte Abenteuer, Szenen bzw. Spieler nehmen ihren Kampf bzw.
+Teilnehmer mit; dass Spieler zum Abenteuer des Kampfes gehören, prüft der Service.
 
 Nullable sind nur `media.size`, `adventure.description`, `adventure.active_scene_id`,
 `adventure.background_dark_media_id`, `adventure.background_tavern_media_id`, `player.avatar_media_id` und
-`game_table.active_adventure_id`. `kind` beschreibt die Dateiart, nicht die Verwendung: Eine Datei ist
+`game_table.active_adventure_id` sowie `fight.active_combatant_id`, `combatant.player_id`, `combatant.number` und
+`combatant.label`. `kind` beschreibt die Dateiart, nicht die Verwendung: Eine Datei ist
 genau ein Datensatz und kann mehrfach genutzt werden (z. B. das Level-Up-Bild als Wall- und Ground-Bild).
 `storage_key` ist der Pfad relativ zum Medienordner (z. B. `images/wall_screen/forest.jpg`); die API bildet daraus
 `source`. Constraint-Namen folgen der Namenskonvention in `app/db/base.py` (z. B. `pk_scene`,
@@ -303,8 +357,9 @@ Bilder, Tracks und die aktive Szene bleiben erhalten. `downgrade` legt sie wiede
 `false`), die frühere Einteilung ist dann verloren. `0006` ergänzt `adventure.background_dark_media_id` und
 `adventure.background_tavern_media_id` (Hintergrundbild des Admins je Theme) und trägt für jedes vorhandene Abenteuer
 die Standardbilder ein, gesucht über `storage_key` (`images/wall_screen/fight.jpg` bzw. `images/wall_screen/tavern.jpg`);
-fehlt ein Bild in `media`, bleibt die Spalte leer. `downgrade` entfernt beide Spalten. Bestehende Datenbanken laufen
-jeweils ohne Reset weiter.
+fehlt ein Bild in `media`, bleibt die Spalte leer. `downgrade` entfernt beide Spalten. `0007` legt `fight` und
+`combatant` an (bestehende Daten bleiben unberührt, der Seeder legt keinen Kampf an); `downgrade` entfernt beide
+Tabellen. Bestehende Datenbanken laufen jeweils ohne Reset weiter.
 
 **Seed-Daten:** Listen `adventures` (`name`, `description`, `global_level`, `background_dark_media_id`,
 `background_tavern_media_id`), `media` (`kind`, `name`, `storage_key`),
@@ -321,9 +376,9 @@ Datensatz trotzdem an (`size` = NULL).
 
 - React 18, Vite 5, TypeScript 5 (strict), react-router-dom 6, styled-components 6 (Haupt-Styling, zwei Themes),
   MUI nur für `Box`/`Slider`, axios, react-markdown, react-svg.
-- State: React-State + vier Contexts (`ActiveAdventureContext`, `ActiveSceneContext`, `GameTableContext` mit Theme,
+- State: React-State + fünf Contexts (`ActiveAdventureContext`, `ActiveSceneContext`, `GameTableContext` mit Theme,
   Wall-Overlay, Ground-Raster, Verbindungsstatus und `reconnectNow`, `GameAudioContext` mit `AudioState`, Ausgabe-Rolle des Admins, `audio_ready`/
-  `track_ended` und Soundeffekten; `src/context/context.ts`), gespeist vom `GameTableProvider` aus dem
+  `track_ended` und Soundeffekten, `FightContext` mit dem Kampf, nur im Admin gefüllt; `src/context/context.ts`), gespeist vom `GameTableProvider` aus dem
   WebSocket-Snapshot (siehe [Synchronisation](#synchronisation)). Kein Store-Framework. Der aktive Eintrag im Panel
   „Szenen“ des Admins ergibt sich aus `activeSceneId` (Vergleich mit der Szenen-ID, Attribute `aria-current` und
   `data-active`); ist sie `null`, ist kein Eintrag hervorgehoben. Die Wahl des Default-Abenteuers trifft
@@ -335,7 +390,7 @@ Datensatz trotzdem an (`size` = NULL).
   `src/audio` (Soundliste `sounds.ts`, Wiedergabe im Admin `audioPlayer.ts` und `useAudioPlayback.ts`),
   `src/api` (axios-Client, Base-URL aus `VITE_API_URL`, Default `/api/`, Timeout 5000 ms; `wsUrl` leitet daraus die
   WebSocket-URL ab), `src/models`, `src/utils` (Musiktitel, Filter, Panel der Navigationsleiste,
-  Fehlerbehandlung `loadSafely`), `src/style` (Themes, `appTheme`), `src/context`.
+  Fehlerbehandlung `loadSafely`, Logik des Kampfes `fight.ts` und Vorbereitung `useFightPreparation.ts`), `src/style` (Themes, `appTheme`), `src/context`.
 - Fehlerbehandlung beim Datenladen: `getData` reicht Fehler weiter. Die Services laden über `loadData`
   (`src/api/loadData.ts`) und werfen einen `LoadError`, dessen Meldung Netzwerkfehler/Timeout („backend not
   reachable“), HTTP-Status („HTTP 500“) und leere Antwort („… not found“) unterscheidet. Die Screens fangen genau
@@ -347,10 +402,10 @@ Datensatz trotzdem an (`size` = NULL).
   danach eintreffende Ergebnisse und Fehler werden verworfen. Beim schnellen Szenen- bzw. Tab-Wechsel zählt so nur die
   Antwort zum aktuellen Stand. Die HTTP-Requests selbst werden nicht abgebrochen. Der Retry im Admin Screen erhöht nur
   einen Zähler (`reloadCount`), von dem alle Lade-Effects (Abenteuerliste, Daten des Abenteuers, aktive Szene) abhängen.
-- Fehlerbehandlung beim Speichern: `patchData`/`postData` (`src/api/apiMethods.ts`) reichen Fehler weiter, `saveData`
-  bzw. `postCommand` (`src/api/saveData.ts`) werfen einen `SaveError` mit derselben Aufbereitung wie `loadData`
+- Fehlerbehandlung beim Speichern: `patchData`/`postData`/`putData`/`deleteData` (`src/api/apiMethods.ts`) reichen
+  Fehler weiter, `saveData`, `postCommand`, `replaceData` bzw. `deleteCommand` (`src/api/saveData.ts`) werfen einen `SaveError` mit derselben Aufbereitung wie `loadData`
   („Saving … failed: backend not reachable“ bzw. „HTTP 422“). Der Admin wertet nur das Ergebnis des jüngsten
-  Speicherns aus (Szene, Abenteuer, Theme, Level, Wall-Overlay, Ground-Raster und Musik-Befehle gemeinsam).
+  Speicherns aus (Szene, Abenteuer, Theme, Level, Wall-Overlay, Ground-Raster, Kampf und Musik-Befehle gemeinsam).
 - Assets in `public/`: `assets/sounds` (Soundeffekte, im Admin abgespielt), `assets/icons`, `story/**`
   (Markdown-Notizen, deutsch) sowie das fest eingebundene Medium `assets/images/ground_screen/mapOverview.jpg`
   (Weltkarte im Wall Screen). Szenenbilder und Musik, auch die Standardmusik, kommen vom Backend (`/media/...`, siehe

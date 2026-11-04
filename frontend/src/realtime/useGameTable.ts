@@ -6,7 +6,9 @@ import { ConnectionStatus, createGameTableConnection, GameTableConnection } from
 import { ScreenCounts } from './messages'
 import { API_BASE_URL } from '../api/apiClient'
 import wsUrl from '../api/wsUrl'
-import { AudioState, GameTableState, SoundName } from '../models/models'
+import {
+  AudioState, FightState, GameTableState, SoundName,
+} from '../models/models'
 
 export type GameTableScreen = 'admin' | 'wall' | 'ground' | 'player'
 
@@ -21,6 +23,8 @@ export interface GameTable {
   isAudioOutput: boolean
   // Only for the Admin: connected screens per type; null until the first counts arrived
   screens: ScreenCounts | null
+  // Only for the Admin: the fight of the active adventure; null without one or until it arrived
+  fight: FightState | null
   // false once the connection broke or could not be established; the first attempt counts as
   // connected, so the Admin does not show the hint on every load
   connected: boolean
@@ -39,6 +43,7 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
   const [audio, setAudio] = useState<AudioState | null>(null)
   const [isAudioOutput, setIsAudioOutput] = useState<boolean>(false)
   const [screens, setScreens] = useState<ScreenCounts | null>(null)
+  const [fight, setFight] = useState<FightState | null>(null)
   const [status, setStatus] = useState<ConnectionStatus>('connecting')
   const connection = useRef<GameTableConnection | null>(null)
   // Set by the first user interaction without an output, cleared when another Admin takes over
@@ -58,6 +63,8 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
           setIsAudioOutput(message.payload.active)
         } else if (message.type === 'screens') {
           setScreens(message.payload)
+        } else if (message.type === 'fight') {
+          setFight(message.payload)
         } else {
           soundListeners.current.forEach((listener) => listener(message.payload.name))
         }
@@ -106,6 +113,7 @@ export const useGameTable = (screen: GameTableScreen): GameTable => {
     audio,
     isAudioOutput,
     screens,
+    fight,
     connected: status !== 'closed',
     reconnectNow,
     requestAudioOutput,

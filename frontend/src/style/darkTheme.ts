@@ -29,6 +29,11 @@ const darkTheme = {
       special: { strong: '#ff2424', muted: '#290000' },
       empty: '#707070',
     },
+    // Kind of an NPC in a fight (avatar with its number); the same in both themes
+    combatant: {
+      enemy: { text: '#ff6b6b', surface: '#290000', border: '#ff2424' },
+      ally: { text: '#3fd033', surface: '#072900', border: '#099000' },
+    },
   },
 }
 

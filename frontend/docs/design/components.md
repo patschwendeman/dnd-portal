@@ -46,7 +46,7 @@ sind die Icon-Buttons zu Kacheln gruppiert.
 
 Komponente `SideBarLeftElement` ([src/components/SideBarLeftElement.tsx](../../src/components/SideBarLeftElement.tsx)),
 gemeinsam für die Notizen- und die Szenenliste im Panel (`DocumentNavigation`, `SceneNavigation`). Props `name`,
-`isActive`, `onSelect`.
+`isActive`, `onSelect`, `isDisabled`.
 
 | Eigenschaft | Wert |
 |---|---|
@@ -54,23 +54,24 @@ gemeinsam für die Notizen- und die Szenenliste im Panel (`DocumentNavigation`, 
 | Höhe | nach [1.2](../../DESIGN.md#12-tokens) Größen |
 | Innenabstand | `0 space.3`, linksbündig |
 | Schrift | `text.sm` `medium`, einzeilig; zu lange Namen enden mit „…“ (`text-overflow: ellipsis`), der volle Name steht als `title` |
-| Zustände | aktiv: Fläche `primary`, Text `onPrimary`, `aria-current="true"`; inaktiv: ohne eigene Fläche (`transparent`, also `secondary` der Panel-Kachel), Text `text.color`; Hover (inaktiv): Fläche `background`. Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`), wie beim Menüpunkt der [Navigationsleiste](#navigationsleiste) |
+| Zustände | aktiv: Fläche `primary`, Text `onPrimary`, `aria-current="true"`; inaktiv: ohne eigene Fläche (`transparent`, also `secondary` der Panel-Kachel), Text `text.color`; Hover (inaktiv): Fläche `background`. Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`), wie beim Menüpunkt der [Navigationsleiste](#navigationsleiste). Gesperrt (`isDisabled`, Szenen während eines Kampfes): `aria-disabled="true"` (bleibt fokussierbar), Klick ohne Wirkung, `cursor: not-allowed`, nicht aktive Einträge mit Deckkraft 0,45 und ohne Hover-Fläche; der aktive bleibt voll sichtbar |
 
 ## Navigationsleiste
 
 Nur im Admin, Komponente `NavRail` ([src/components/NavRail.tsx](../../src/components/NavRail.tsx)) mit dem Panel
-daneben (`AdminScreen`). Die Menüpunkte kommen als Liste (id, Name, Icon, Panel-Inhalt) aus dem `AdminScreen`; zwei
-Menüpunkte: „Notizen“ (`notes.svg`, Panel `DocumentNavigation`) und darunter „Szenen“ (`scenes.svg`, Panel
-`SceneNavigation`).
+daneben (`AdminScreen`). Die Menüpunkte kommen als Liste (id, Name, Icon, Punkt, Panel-Inhalt) aus dem `AdminScreen`;
+drei Menüpunkte: „Notizen“ (`notes.svg`, Panel `DocumentNavigation`), darunter „Szenen“ (`scenes.svg`, Panel
+`SceneNavigation`) und „Kampf“ (`swords.svg`, Panel `FightPanel`, siehe [Panel „Kampf“](#panel-kampf)).
 
 | Eigenschaft | Wert |
 |---|---|
-| Breite | Leiste `NAV_RAIL_WIDTH`, Panel `LEFT_COLUMN_WIDTH` ([screen-layouts.md](screen-layouts.md#layout-konstanten)) |
+| Breite | Leiste `NAV_RAIL_WIDTH`, Panel `LEFT_COLUMN_WIDTH`, Panel „Kampf“ `FIGHT_PANEL_WIDTH` ([screen-layouts.md](screen-layouts.md#layout-konstanten)) |
 | Fläche | Leiste und Panel sind je eine [Kachel](#kachel) über beide Zeilen des Admins, mit `space.5` Abstand zum oberen und unteren Rand; keine Trennlinien |
 | Leiste | Spalte, horizontal zentriert, Innenabstand `space.5` oben/unten, `gap` `space.2` zwischen den Menüpunkten |
 | Menüpunkt | [Icon-Button](#icon-button) (`<button type="button">`, `size.control.md`, `radius.md`), Icon abweichend `size.iconLg` (24px); Name als `aria-label` und `title`, `aria-pressed` für den Zustand, `aria-controls` aufs Panel |
 | Zustände | wie beim [Navigationseintrag](#navigationseintrag): aktiv (Panel offen): Fläche `primary`, Icon `onPrimary`, auch bei Hover; inaktiv: ohne eigene Fläche (`transparent`, also `secondary` der Kachel), Icon `text.color`; Hover (inaktiv): Fläche `background`; eingeklappt: kein Menüpunkt aktiv. Anders als der allgemeine [Icon-Button](#icon-button), der inaktiv gefüllt bleibt. Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`) |
-| Panel | Innenabstand `space.5` oben/unten, `space.4` seitlich, scrollt bei Überlänge innerhalb seiner Kachel; Inhalt des aktiven Menüpunkts: bei „Notizen“ Label „Notizen“ und die [Navigationseinträge](#navigationseintrag) der Notizen, bei „Szenen“ Label „Szenen“ und je Szene ein Navigationseintrag (Reihenfolge der API), ohne Szenen der Hinweis „Keine Szenen“ (`text.sm`, Innenabstand `0 space.3`) |
+| Panel | Innenabstand `space.5` oben/unten, `space.4` seitlich, scrollt bei Überlänge innerhalb seiner Kachel; Inhalt des aktiven Menüpunkts: bei „Notizen“ Label „Notizen“ und die [Navigationseinträge](#navigationseintrag) der Notizen, bei „Szenen“ Label „Szenen“ und je Szene ein Navigationseintrag (Reihenfolge der API), ohne Szenen der Hinweis „Keine Szenen“ (`text.sm`, Innenabstand `0 space.3`); während eines Kampfes darüber der Hinweis „Kampf läuft. …“ (Fläche `background`, `radius.md`, Innenabstand `space.3`, `text.sm`, links das Schloss `padlock.svg` in `size.icon` und `combatant.enemy.text`, `gap` `space.2`) und gesperrte Einträge; bei „Kampf“ das [Panel „Kampf“](#panel-kampf) |
+| Punkt | bei laufendem Kampf am Menüpunkt „Kampf“, solange sein Panel nicht offen ist (anderes Panel oder eingeklappt): Kreis `BADGE_SIZE` oben rechts im Button (`BADGE_INSET`), Fläche `combatant.enemy.border`, Ring `borderWidth.thick` in `secondary`, `aria-hidden`; Name und Tooltip dann „Kampf (läuft)“ |
 | Bedienung | Klick (Enter/Leertaste) auf den aktiven Menüpunkt klappt das Panel ein, auf einen anderen bzw. im eingeklappten Zustand öffnet er dessen Panel (`nextOpenPanel` in `src/utils/navRail.ts`). Start: „Notizen“ offen |
 
 ## Label
@@ -187,7 +188,9 @@ Eine Zeile je Screen: Wall, Ground, Spieler.
 
 ## Spielerzeile
 
-Nur im Panel „Party“, Komponente `PlayerListItem` ([src/components/PlayerListItem.tsx](../../src/components/PlayerListItem.tsx))
+Nur im Panel „Party“, Komponente `PlayerListItem` ([src/components/PlayerListItem.tsx](../../src/components/PlayerListItem.tsx);
+Zeile, Name und Details als gemeinsame Styled Components `ListRow`, `RowInfo`, `RowName`, `RowDetails`, `RowList` in
+[ListRow.tsx](../../src/components/ListRow.tsx), auch für die [Initiative-Zeile](#initiative-zeile))
 nach dem Mockup [player-card-compact.html](mockup/player-card-compact.html), ohne Level-Chip (das Level steht einmal im
 Kopf) und ohne hervorgehobene Zeile (es gibt keine Auswahl). Prop `player`.
 
@@ -196,7 +199,7 @@ Kopf) und ohne hervorgehobene Zeile (es gibt keine Auswahl). Prop `player`.
 | Element | `<li>` mit dem Charakternamen als `aria-label`, `lang="de"` |
 | Fläche | `background`, Innenabstand `space.2`, `radius.lg` |
 | Aufbau | `display: flex`, vertikal zentriert, `gap` `space.3`: links der Avatar, rechts Charaktername (`text.sm` `medium`) und darunter „Volk · Klasse · Spielername“ (`text.sm`, `text.muted`), beide umbrechend mit Silbentrennung |
-| Avatar | `PLAYER_AVATAR_SIZE` × `PLAYER_AVATAR_SIZE`, Fläche `secondary`, Rand `borderWidth.thin` in `border`, `radius.md`; Bild aus `avatar` über `mediaUrl` mit `object-fit: cover`, ohne Bild die Initialen (`characterInitials`) in `text.sm` `medium`, Farbe `initials` |
+| Avatar | [Kampf-Avatar](#kampf-avatar) eines Spielers in Größe `md` (40px): Fläche `secondary`, Rand `borderWidth.thin` in `border`, `radius.md`; Bild aus `avatar` über `mediaUrl` mit `object-fit: cover`, ohne Bild die Initialen (`characterInitials`) in `text.sm` `medium`, Farbe `initials` |
 
 ## Level-Stepper
 
@@ -211,20 +214,58 @@ Nur im Kopf des Panels „Party“, Komponente `LevelStepper` ([src/components/L
 
 ## Hero-Karte
 
-Derzeit nicht verwendet: Komponente `PlayerHeroCard`
-([src/components/PlayerHeroCard.tsx](../../src/components/PlayerHeroCard.tsx)) nach dem Mockup
-[player-card-hero.html](mockup/player-card-hero.html), Variante ohne Effekte. Props `player`, `level`. Bis DND-38 im
-Panel „Spieler“ des Admins; bleibt für wählbare Dashboard-Layouts im Code (eigener Eintrag in `knip.jsonc`).
+Im Panel „Am Zug“ des Admins während eines Kampfes, Komponente `HeroCard`
+([src/components/HeroCard.tsx](../../src/components/HeroCard.tsx), bis DND-43 `PlayerHeroCard`, nicht verwendet) nach
+dem Mockup [admin-fight-mockup.html](mockup/admin-fight-mockup.html). Props `avatar`, `caption`, `name`, `chips`,
+`level` (nur bei Spielern).
 
 | Eigenschaft | Wert |
 |---|---|
-| Element | `<article>` mit dem Charakternamen als `aria-label`, `lang="de"` |
-| Fläche | `background` (Fläche auf Fläche im Panel), `radius.lg`, Innenabstand `space.5` wie die [Karte](#karte) |
-| Aufbau | `display: flex`, vertikal zentriert, `gap` `space.5`: links Avatar mit Level-Badge, rechts eine Spalte (`gap` `space.1`) aus Spielername ([Label](#label) in `text.muted`), Charaktername (`text.2xl` `medium`, bricht um mit Silbentrennung) und den Chips (`padding-top` `space.1`) |
-| Avatar | `size.avatar.width` × `size.avatar.height`, Fläche `secondary`, Rand `borderWidth.thin` in `border`, `radius.lg`; Bild aus `avatar` über `mediaUrl` mit `object-fit: cover`, ohne Bild die Initialen des Charakternamens (`characterInitials` in `src/utils/player.ts`: erster Buchstabe des ersten und des letzten Worts) in `text.2xl` `medium`, Farbe `initials` |
-| Level-Badge | über der oberen linken Ecke des Avatars (`top`/`left` −`space.2`), `size.badge`, `radius.pill`, Fläche `primary`, Zahl `onPrimary` `text.sm` `medium` `tabular-nums`, Ring `borderWidth.thick` in `background` (Farbe der Karte); zeigt das Level des Abenteuers |
-| Chips | Volk und Klasse, umbrechend mit `gap` `space.1`; Innenabstand `0 space.2`, `text.sm`, Fläche `secondary`, Rand `borderWidth.thin` in `border`, `radius.md` |
-| Nicht umgesetzt | Effektzeile, Variante „Kachel“ aus den Mockups (die Variante „kompakt“ ist die [Spielerzeile](#spielerzeile)) |
+| Element | `<article>` mit dem Namen als `aria-label`, `lang="de"`; ohne eigene Fläche (steht direkt im Dashboard-Panel) |
+| Aufbau | `display: flex`, vertikal zentriert, `gap` `space.5`: links Avatar mit Level-Badge, rechts eine Spalte (`gap` `space.1`) aus Überschrift ([Label](#label): Spielername bzw. „Gegner“/„Verbündeter“; anders als im Mockup nicht gedämpft, weil `text.muted` auf `secondary` in Tavern 4,5:1 verfehlt), Name (`text.xl` `semibold`, bricht um mit Silbentrennung) und den Chips (`padding-top` `space.1`) |
+| Avatar | [Kampf-Avatar](#kampf-avatar) in Größe `hero`: `size.avatar.width` × `size.avatar.height`, `radius.lg`; Initialen bzw. Nummer in `text.2xl` `medium` |
+| Level-Badge | nur bei Spielern, über der oberen linken Ecke des Avatars (`top`/`left` −`space.2`), `size.badge`, `radius.pill`, Fläche `primary`, Zahl `onPrimary` `text.sm` `medium` `tabular-nums`, Ring `borderWidth.thick` in `secondary` (Farbe der Kachel); zeigt das Level des Abenteuers |
+| Chips | Volk und Klasse bzw. die Bezeichnung eines NPCs (ohne Bezeichnung keine), umbrechend mit `gap` `space.1`; Innenabstand `0 space.2`, `text.sm`, Fläche `background`, Rand `borderWidth.thin` in `border`, `radius.md` |
+| Fuß im Panel „Am Zug“ | `TurnPanel`: unter der Karte eine Trennlinie (`borderWidth.thin` `border`, `padding-top` `space.3`), links „Als Nächstes:“ bzw. „Runde N+1:“ (`text.sm`) mit kleinem Kampf-Avatar und Name (`text.sm` `medium`, einzeilig mit Ellipse), rechts der [Text-Button](#text-button) „Zug beenden“ (`active`); ohne Zug nur „Niemand am Zug – alle Teilnehmer sind ausgeschieden.“ (`text.sm`) |
+| Nicht umgesetzt | Effektzeile, Variante „Kachel“ aus [player-card-hero.html](mockup/player-card-hero.html) |
+
+## Kampf-Avatar
+
+Komponente `CombatantAvatar` ([src/components/CombatantAvatar.tsx](../../src/components/CombatantAvatar.tsx)), für
+Spielerzeile, Panel „Kampf“, Initiative, „Als Nächstes“ und Hero-Karte. Props `kind`, `text`, `image`, `size`.
+
+| Eigenschaft | Wert |
+|---|---|
+| Größe | `sm` 32px und `md` 40px (`AVATAR_SIZE`, `radius.md`, Schrift `text.sm`), `hero` `size.avatar.*` (`radius.lg`, `text.2xl`); Schrift `medium`, `tabular-nums` |
+| Spieler | Fläche `secondary`, Rand `borderWidth.thin` in `border`, Initialen in `initials`; mit Bild das Bild (`object-fit: cover`) |
+| Gegner / Verbündeter | Nummer statt Initialen; Fläche `combatant.<art>.surface`, Rand `combatant.<art>.border`, Zahl `combatant.<art>.text` (in beiden Themes gleich) |
+
+## Panel „Kampf“
+
+Inhalt des Menüpunkts „Kampf“, Komponente `FightPanel` ([src/components/FightPanel.tsx](../../src/components/FightPanel.tsx)).
+Ohne Kampf die lokale Vorbereitung, im Kampf die Liste des Servers; derselbe Aufbau.
+
+| Eigenschaft | Wert |
+|---|---|
+| Aufbau | Spalte, `gap` `space.3`, mindestens so hoch wie das Panel: Kopf ([Label](#label) „Kampf vorbereiten“ bzw. „Kampf“ und rechts das Label „Runde N“), Hinweis „Reihenfolge = Initiative“ (`text.sm`, Innenabstand `0 space.1`), Liste, Trennlinie, Label „Hinzufügen“ bzw. „Verstärkung“, [Segment-Control](#segment-control) „Gegner“/„Verbündeter“, Nummer und Bezeichnung, Hinweis, ggf. Fehlermeldung, Text-Button „Hinzufügen“ (`cancel`), Buttons „+ Vorname“, unten (`margin-top: auto`) „Kampf starten“ (`active`, deaktiviert mit Deckkraft 0,5) bzw. „Kampf beenden“ (`cancel`) |
+| Zeile | `<li>` im `<ol>` (`gap` `space.1`), Grid `AVATAR_COLUMN minmax(0, 1fr) auto`, `gap` `space.2`, Innenabstand `space.1`, Fläche `background`, `radius.md`: [Kampf-Avatar](#kampf-avatar) `sm`, Name (`text.sm` `medium`) und Details (`text.xs` `text.muted`), beide einzeilig mit Ellipse; rechts die Mini-Buttons. Am Zug: innerer Rahmen `borderWidth.thick` in `primary`; ausgeschieden: Deckkraft 0,5 |
+| Mini-Buttons | `MiniButton` ([src/components/MiniButton.tsx](../../src/components/MiniButton.tsx)): „Nach vorn“/„Nach hinten“ (`chevronUp.svg`/`chevronDown.svg`) übereinander je `MINI_BUTTON_SIZE` × `MOVE_BUTTON_HEIGHT`, daneben „Entfernen“ (`close.svg`) `MINI_BUTTON_SIZE`; Icon `MINI_ICON_SIZE` in `text.muted`, ohne Fläche, Hover Fläche `secondary` und Icon `text.color`; an den Enden deaktiviert (Deckkraft 0,25); Name als `aria-label` und `title` |
+| Felder | Grid `NUMBER_FIELD_WIDTH minmax(0, 1fr)`, `gap` `space.2`; je `size.control.md` hoch, Fläche `background`, Rand `borderWidth.thin` in `border`, `radius.md`, `text.sm`, Platzhalter `text.muted`; Nummer vorbelegt mit der kleinsten freien Nummer, Enter in einem Feld wirkt wie „Hinzufügen“ |
+| Fehlermeldung | „Nummer N ist schon vergeben.“ bzw. „Nummer 1–99 eingeben.“, `text.sm` in `combatant.enemy.text`, `role="alert"`; verschwindet bei der nächsten Eingabe |
+| Buttons „+ Vorname“ | Spieler, die nicht in der Liste stehen; Höhe `size.control.md` − `space.2`, Innenabstand `0 space.3`, Fläche `background`, `text.sm` `medium`, `radius.md`; Hover Fläche `primary`, Text `onPrimary` |
+
+## Initiative-Zeile
+
+Im Panel „Initiative“ des Dashboards während eines Kampfes, Komponente `InitiativePanel`
+([src/components/InitiativePanel.tsx](../../src/components/InitiativePanel.tsx)) auf Basis der
+[Spielerzeile](#spielerzeile). Kopf des Panels: „Initiative · N“ und rechts „Spieler n · Gegner n · Verbündete n“
+(`text.sm`); im Kopf von „Am Zug“ rechts das Label „Runde N“.
+
+| Eigenschaft | Wert |
+|---|---|
+| Zeile | wie die Spielerzeile (`ListRow`, Fläche `background`, `radius.lg`, `gap` `space.3`), `aria-current="step"` beim Teilnehmer am Zug: innerer Rahmen `borderWidth.thick` in `primary` und das Label „Am Zug“ in `primary`; ausgeschieden: Deckkraft 0,5 |
+| Inhalt | [Kampf-Avatar](#kampf-avatar) `md`, Name (`text.sm` `medium`) und Details (`text.sm` `text.muted`: Spieler „Volk, Klasse · Spielername“, NPCs die Bezeichnung; ausgeschieden davor „Tot“ bzw. „Besiegt“) |
+| Totenkopf | Icon-Button `size.control.md` (`skull.svg`, `size.icon`) ohne Fläche, Hover `secondary`; `aria-pressed`, zugänglicher Name „Tot“ bzw. „Besiegt“, Tooltip „Als tot markieren“/„Als besiegt markieren“ bzw. markiert „Wieder im Kampf“; markiert Fläche `combatant.enemy.surface`, Icon `combatant.enemy.text` |
 
 ## Status-Punkt
 
@@ -283,6 +324,12 @@ Element eingebunden.
 | Abstände | nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“ und „Innenabstand von Flächen“ |
 | Button-Reihenfolge | Abbrechen links, Hauptaktion rechts außen |
 
+Ohne Bild: Bestätigungsdialog `ConfirmDialog` ([src/components/ConfirmDialog.tsx](../../src/components/ConfirmDialog.tsx),
+„Kampf beenden?“): `layer.dialog` über `overlay`, Kasten höchstens `CONFIRM_DIALOG_MAX_WIDTH` breit, Fläche `secondary`,
+Rand `borderWidth.thin` in `border`, `radius.lg`, Innenabstand `space.5`, `gap` `space.3`; Titel `text.lg` `semibold`,
+Text `text.sm`, Decline (`cancel`) und Confirm (`active`) rechts mit `gap` `space.2`; Esc entspricht
+Decline. `role="dialog"`, `aria-modal`.
+
 ## Dialog „Spieler verbinden“
 
 Nur im Admin, Komponente `JoinDialog` ([src/components/JoinDialog.tsx](../../src/components/JoinDialog.tsx)), geöffnet
@@ -320,7 +367,7 @@ zeichnet. Bisher nur die Abenteuer-Auswahl ([src/components/AdventureSelect.tsx]
 | Eigenschaft | Wert |
 |---|---|
 | Button | die ganze [Kachel](#kachel) in der [Kopfzeile](#kopfzeile) (so hoch wie die Button-Gruppen, Breite bis zu ihnen), Inhalt zentriert, Innenabstand `0 space.5`, Text `text.color`; Fokus als Outline `borderWidth.thick` in `primary`, nach innen versetzt (`outline-offset` −`borderWidth.thick`), damit sie auf der Kachel und nicht auf dem Szenenbild liegt (`:focus-visible`); ohne Einträge deaktiviert. `aria-haspopup="listbox"`, `aria-expanded` |
-| Chevron | rechts im Button, SVG-`polygon` (`viewBox 0 0 20 20`), `size.icon`, `fill` `text.color`; geöffnet um 180° gedreht |
+| Chevron | rechts im Button, SVG-`polygon` (`viewBox 0 0 20 20`), `size.icon`, `fill` `text.color`; geöffnet um 180° gedreht. Während eines Kampfes statt des Chevrons das Schloss (`padlock.svg`, `text.muted`), `aria-disabled="true"`, `cursor: not-allowed`, Tooltip „Während des Kampfes nicht wechselbar“; die Liste öffnet sich nicht |
 | Liste | direkt unter dem Button und mittig zu ihm (`position: absolute`, `top: calc(100% + space.1)`, `left: 50%`, `translateX(-50%)`), so breit wie ihr Inhalt; Fläche `secondary`, Rand `borderWidth.thin` in `border`, `radius.lg`, Innenabstand `space.1`, `gap` `space.1`, ohne `box-shadow`; höchstens `ADVENTURE_LIST_MAX_HEIGHT` hoch, darüber scrollt sie; Ebene `layer.popover` |
 | Eintrag | Höhe, Innenabstand und Schrift wie beim [Navigationseintrag](#navigationseintrag) (`text.sm` `medium`, `radius.md`), Fläche nicht gewählter Einträge aber wie die Liste. Gewählt: Fläche `primary`, Text `onPrimary`. Hover und Fokus: Fläche `background`. Gewählt mit Tastatur-Fokus (`:focus-visible`): bleibt `primary`, dazu Outline `borderWidth.thick` in `onPrimary`, nach innen versetzt (`outline-offset` −`borderWidth.thick`), damit die scrollende Liste sie nicht abschneidet. Nicht gewählt mit Tastatur-Fokus: Fläche `background`, dazu dieselbe innere Outline in `primary`. Hover und Maus ohne Outline. `role="option"`, `aria-selected` |
 | Bedienung | Klick auf den Button öffnet und schließt. Am Button öffnen Enter, Leertaste und Pfeil runter/hoch, der Fokus steht dann auf dem gewählten Eintrag. In der Liste bewegen Pfeile (ohne Umlauf) und Pos1/Ende; Enter/Leertaste wählen und schließen; Esc schließt und setzt den Fokus zurück auf den Button; Tab und Klick außerhalb schließen. Den gewählten Eintrag erneut zu wählen schließt nur |

@@ -9,6 +9,8 @@ interface NavRailItem {
   // Accessible name and tooltip of the icon button
   name: string
   icon: string
+  // Red dot: something runs there (the fight) while its panel is not shown
+  hasBadge?: boolean
 }
 
 const Rail = styled.nav<TileSurfaceProps>`
@@ -22,6 +24,7 @@ const Rail = styled.nav<TileSurfaceProps>`
 `
 
 const RailButton = styled.button<{ $isActive: boolean }>`
+  position: relative;
   display: grid;
   place-items: center;
   width: ${(props) => props.theme.size.control.md};
@@ -55,6 +58,23 @@ const RailButton = styled.button<{ $isActive: boolean }>`
   }
 `
 
+// Small enough to sit in the corner of the 24px icon
+const BADGE_SIZE = '8px'
+const BADGE_INSET = '5px'
+
+// The ring in the color of the rail separates the dot from the icon below it
+const Badge = styled.span`
+  position: absolute;
+  top: ${BADGE_INSET};
+  right: ${BADGE_INSET};
+  width: ${BADGE_SIZE};
+  height: ${BADGE_SIZE};
+  background-color: ${(props) => props.theme.colors.combatant.enemy.border};
+  border-radius: ${(props) => props.theme.radius.pill};
+  box-shadow: 0 0 0 ${(props) => props.theme.borderWidth.thick}
+    ${(props) => props.theme.colors.secondary};
+`
+
 interface NavRailProps {
   items: NavRailItem[]
   // Menu item whose panel is open, null while the panel is collapsed
@@ -75,6 +95,7 @@ function NavRail({
     <Rail aria-label="Navigation" data-test-id="nav-rail" $isTranslucent={isTranslucent}>
       {items.map((item) => {
         const isActive = item.id === openItemId
+        const showsBadge = (item.hasBadge ?? false) && !isActive
         return (
           <RailButton
             key={item.id}
@@ -94,6 +115,7 @@ function NavRail({
                 svg.setAttribute('style', `fill: ${fill}`)
               }}
             />
+            {showsBadge && <Badge aria-hidden="true" data-test-id={`nav-badge-${item.id}`} />}
           </RailButton>
         )
       })}

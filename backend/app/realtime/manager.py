@@ -88,9 +88,11 @@ class ConnectionManager:
             if counts == self.pushed_counts:
                 return
             self.pushed_counts = counts
-            admins = [connection for connection in self.connections if connection.screen == "admin"]
-            message = screens_message(counts)
-            await asyncio.gather(*(self.send(admin, message) for admin in admins))
+            await self.send_admins(screens_message(counts))
+
+    async def send_admins(self, message: dict[str, Any]) -> None:
+        admins = [connection for connection in self.connections if connection.screen == "admin"]
+        await asyncio.gather(*(self.send(admin, message) for admin in admins))
 
     async def broadcast(self, message: dict[str, Any]) -> None:
         connections = list(self.connections)

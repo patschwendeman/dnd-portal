@@ -82,6 +82,8 @@ interface AdminHeaderProps {
   adventures: AdventureSummary[]
   activeAdventureId: number | null
   onSelectAdventure: (adventureId: number) => void
+  // During a fight the adventure cannot change
+  isAdventureLocked?: boolean
   // Replaces the adventure select while it is set, so no adventure can be switched meanwhile
   errorNotice: ErrorNotice | null
   isDashboardOpen: boolean
@@ -100,6 +102,7 @@ function AdminHeader({
   isDashboardOpen,
   dashboardId,
   onToggleDashboard,
+  isAdventureLocked = false,
   isTranslucent = false,
 }: AdminHeaderProps): ReactElement {
   const theme = useTheme()
@@ -114,6 +117,7 @@ function AdminHeader({
           adventures={adventures}
           activeAdventureId={activeAdventureId}
           onSelectAdventure={onSelectAdventure}
+          isLocked={isAdventureLocked}
           isTranslucent={isTranslucent}
         />
       )}

@@ -1,4 +1,6 @@
-import { patchData, postData } from './apiMethods'
+import {
+  deleteData, patchData, postData, putData,
+} from './apiMethods'
 import { describeFailure } from './loadData'
 
 export class SaveError extends Error {
@@ -25,4 +27,12 @@ export const saveData = async (what: string, path: string, body: object) => (
 
 export const postCommand = async (what: string, path: string, body?: object) => (
   asSave(what, () => postData(path, body))
+)
+
+export const replaceData = async (what: string, path: string, body: object) => (
+  asSave(what, () => putData(path, body))
+)
+
+export const deleteCommand = async (what: string, path: string) => (
+  asSave(what, () => deleteData(path))
 )

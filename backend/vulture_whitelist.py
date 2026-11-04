@@ -21,3 +21,8 @@ ground_grid_cell_size
 
 # pytest fixture requested only for its side effect, tests/test_audio.py
 first_track
+
+# Column and Pydantic field of the fight, read by `FightState.model_validate` (from_attributes) and incremented in
+# app/services/fight.py
+round
+_.round

@@ -6,8 +6,9 @@ from starlette.concurrency import run_in_threadpool
 from app.db.session import SessionLocal
 from app.realtime.audio import audio
 from app.realtime.manager import Connection, manager
-from app.schemas import AudioState, AudioUpdate, GameTableState, SoundName, Track
+from app.schemas import AudioState, AudioUpdate, FightState, GameTableState, SoundName, Track
 from app.services import audio as audio_service
+from app.services import fight as fight_service
 from app.services import game_table as game_table_service
 
 
@@ -15,6 +16,11 @@ def _read_state() -> GameTableState:
     # Own session: the push runs after the response, independent of the session of the request.
     with SessionLocal() as db:
         return game_table_service.get_state(db)
+
+
+def _read_fight() -> FightState | None:
+    with SessionLocal() as db:
+        return fight_service.get_fight(db)
 
 
 def _read_state_and_playlist(scene_id: int | None) -> tuple[GameTableState, list[Track] | None]:
@@ -39,6 +45,10 @@ def audio_message() -> dict[str, Any]:
     return {"type": "audio", "payload": audio.state().model_dump(mode="json")}
 
 
+def fight_message(fight: FightState | None) -> dict[str, Any]:
+    return {"type": "fight", "payload": fight.model_dump(mode="json") if fight is not None else None}
+
+
 def audio_output_message(active: bool) -> dict[str, Any]:
     return {"type": "audio_output", "payload": {"active": active}}
 
@@ -61,6 +71,13 @@ async def push_audio() -> None:
         await manager.broadcast(audio_message())
 
 
+async def push_fight() -> None:
+    """Sends the fight of the active adventure (or null) to all Admins: only they see the labels of the NPCs."""
+    async with manager.state_lock:
+        fight = await run_in_threadpool(_read_fight)
+        await manager.send_admins(fight_message(fight))
+
+
 async def update_audio(update: AudioUpdate) -> AudioState:
     async with manager.state_lock:
         audio.update(update)
@@ -69,14 +86,17 @@ async def update_audio(update: AudioUpdate) -> AudioState:
 
 async def send_initial_state(connection: Connection) -> bool:
     """Registers the connection and sends it the current state and audio state, to an Admin also the connection
-    counts; False if a send failed. A new Wall, Ground or Player changes the counts the Admins see.
+    counts and the fight; False if a send failed. A new Wall, Ground or Player changes the counts the Admins see.
     """
     async with manager.state_lock:
         manager.add(connection)
         state = await run_in_threadpool(_read_state)
         sent = await manager.send(connection, state_message(state)) and await manager.send(connection, audio_message())
         if connection.screen == "admin":
-            return sent and await manager.send_screens(connection)
+            if not (sent and await manager.send_screens(connection)):
+                return False
+            fight = await run_in_threadpool(_read_fight)
+            return await manager.send(connection, fight_message(fight))
         await manager.push_screens()
         return sent
 

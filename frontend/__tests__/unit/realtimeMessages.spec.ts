@@ -191,3 +191,62 @@ describe('parseServerMessage for screens', () => {
     expect(parseServerMessage(JSON.stringify(message))).toBeNull()
   })
 })
+
+describe('parseServerMessage for fight', () => {
+  const fight = {
+    round: 3,
+    active_combatant_id: 12,
+    scene_id: 5,
+    combatants: [
+      {
+        id: 11, kind: 'player', player_id: 2, number: null, label: null, defeated: false,
+      },
+      {
+        id: 12, kind: 'enemy', player_id: null, number: 1, label: 'Ghul', defeated: true,
+      },
+      {
+        id: 13, kind: 'ally', player_id: null, number: 2, label: null, defeated: false,
+      },
+    ],
+  }
+
+  it('parses a running fight', () => {
+    expect(parseServerMessage(JSON.stringify({ type: 'fight', payload: fight })))
+      .toEqual({ type: 'fight', payload: fight })
+  })
+
+  it('parses null as no fight', () => {
+    expect(parseServerMessage(JSON.stringify({ type: 'fight', payload: null })))
+      .toEqual({ type: 'fight', payload: null })
+  })
+
+  it('accepts a fight without anybody on turn and without combatants', () => {
+    const empty = { ...fight, active_combatant_id: null, combatants: [] }
+    expect(parseServerMessage(JSON.stringify({ type: 'fight', payload: empty })))
+      .toEqual({ type: 'fight', payload: empty })
+  })
+
+  it('keeps only the known fields of the fight and its combatants', () => {
+    const extra = {
+      ...fight,
+      extra: true,
+      combatants: fight.combatants.map((combatant) => ({ ...combatant, extra: 1 })),
+    }
+    expect(parseServerMessage(JSON.stringify({ type: 'fight', payload: extra })))
+      .toEqual({ type: 'fight', payload: fight })
+  })
+
+  it.each([
+    ['a missing payload', undefined],
+    ['round 0', { ...fight, round: 0 }],
+    ['no scene', { ...fight, scene_id: null }],
+    ['combatants that are no list', { ...fight, combatants: {} }],
+    ['an unknown kind', { ...fight, combatants: [{ ...fight.combatants[0], kind: 'monster' }] }],
+    ['a label that is no text', { ...fight, combatants: [{ ...fight.combatants[1], label: 3 }] }],
+    ['defeated that is no boolean', {
+      ...fight, combatants: [{ ...fight.combatants[1], defeated: 'yes' }],
+    }],
+  ])('rejects %s', (_, payload) => {
+    expect(parseServerMessage(JSON.stringify({ type: 'fight', payload }))).toBeNull()
+  })
+})

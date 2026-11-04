@@ -35,7 +35,7 @@ FOREIGN_ORIGIN = "http://evil.example"
 RECEIVE_TIMEOUT_SECONDS = 2.0
 
 
-def receive_any(websocket: WebSocketTestSession) -> Any:
+def receive_message(websocket: WebSocketTestSession) -> Any:
     """Like `websocket.receive_json()`, but fails after a timeout instead of blocking forever when nothing is sent."""
 
     async def receive() -> Any:
@@ -46,6 +46,16 @@ def receive_any(websocket: WebSocketTestSession) -> Any:
     message = websocket.portal.call(receive)
     assert message["type"] == "websocket.send", message
     return json.loads(message["text"])
+
+
+def receive_any(websocket: WebSocketTestSession) -> Any:
+    """The next message except `fight`: Admins receive it after connecting and after changes to the fight, which the
+    other tests do not care about. The fight tests (tests/test_fight.py) read with `receive_message`.
+    """
+    message = receive_message(websocket)
+    while message["type"] == "fight":
+        message = receive_message(websocket)
+    return message
 
 
 def receive_json(websocket: WebSocketTestSession) -> Any:

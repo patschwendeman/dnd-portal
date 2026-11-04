@@ -57,9 +57,10 @@ defineFeature(feature, (test) => {
     then('I see the navigation rail with the active menu item Notizen', async () => {
       const rail = await waitForElement(driver, RAIL)
       const buttons = await rail.findElements({ css: 'button' })
-      expect(buttons).toHaveLength(2)
+      expect(buttons).toHaveLength(3)
       expect(await buttons[0].getAttribute('data-test-id')).toBe('nav-item-docs')
       expect(await buttons[1].getAttribute('data-test-id')).toBe('nav-item-scenes')
+      expect(await buttons[2].getAttribute('data-test-id')).toBe('nav-item-fight')
       const item = await waitForElement(driver, NOTES_ITEM)
       expect(await item.getAttribute('title')).toBe('Notizen')
       expect(await item.getAttribute('aria-label')).toBe('Notizen')

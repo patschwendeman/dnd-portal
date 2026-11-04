@@ -5,10 +5,6 @@
     // False positive: generated from ../backend/openapi.json (npm run generate:api), exports are not ours to trim.
     "src/api/schema.d.ts": ["exports", "types"],
 
-    // Reserved for selectable dashboard layouts (DND-38): the hero card is not used by the current
-    // layout. Not part of the baseline; drop it once a layout uses the card again.
-    "src/components/PlayerHeroCard.tsx": ["files"],
-
     // Baseline (DND-31): existing findings, cleaned up in follow-up tasks. Do not add new entries.
     "__tests__/bdd/support/helpers.ts": ["exports"],
     "src/api/loadData.ts": ["exports"],

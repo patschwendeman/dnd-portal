@@ -73,7 +73,7 @@ src/app/App.tsx      Routing; alle vier Screens je im GameTableProvider; Theme-A
                      (localStorage playerThemeOverride, Prop themeOverride), entfernt den Altschlüssel isDarkTheme
 src/realtime/        WebSocket-Client des Spieltischs: GameTableProvider (ThemeProvider + Contexts aus dem Snapshot,
                      optional themeOverride),
-                     useGameTable(screen) → { state, audio, isAudioOutput, screens, connected, reconnectNow, requestAudioOutput,
+                     useGameTable(screen) → { state, audio, isAudioOutput, screens, fight, connected, reconnectNow, requestAudioOutput,
                      reportTrackEnded, subscribeSound }, connection.ts (Reconnect, Heartbeat, send nur bei offener
                      Verbindung, sofortiger Reconnect beim Sichtbarwerden), messages.ts (parseServerMessage,
                      ClientMessage), backoff.ts (reconnectDelay), heartbeat.ts (Watchdog 35 s), visibility.ts
@@ -82,7 +82,8 @@ src/context/         ActiveAdventureContext, ActiveSceneContext (IDs number | nu
                      (hasState, snapshot: letzter Spieltisch-Zustand, neues Objekt je Push, theme, wallOverlay,
                      groundGrid, groundGridCellSize, connected,
                      reconnectNow, screens: Verbindungszahlen nur für den Admin), GameAudioContext (audio, isAudioOutput,
-                     requestAudioOutput, reportTrackEnded, subscribeSound)
+                     requestAudioOutput, reportTrackEnded, subscribeSound), FightContext (fight: Kampf des aktiven
+                     Abenteuers, nur im Admin gefüllt, sonst null)
 src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Panel „Audio“), audioPlayer.ts
                      (AudioPlayer: Wiedergabe im Admin nach dem AudioState, Audio-Fabrik injizierbar für vitest),
                      useAudioPlayback.ts (bindet den AudioPlayer im Admin an den GameAudioContext),
@@ -95,25 +96,34 @@ src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin, mit ErrorBar
                      AdventureBackground (Hintergrundbild des Abenteuers hinter den Kacheln im Admin),
                      Dashboard (Spalte rechts im Admin) mit DashboardPanel (Rahmen), ActiveScenePanel (Bühne),
                      AudioPanel (MusicControl, SoundBoard), GameTablePanel (Spieltisch), PlayersPanel mit
-                     PlayerListItem (Spielerzeile) und LevelStepper (Level im Kopf der Party), PlayerHeroCard
-                     (Hero-Karte, derzeit nicht verwendet), PanelButton (Icon-Button in Panels), OptionButtons
+                     PlayerListItem (Spielerzeile) und LevelStepper (Level im Kopf der Party), ListRow (Zeilen-Bausteine
+                     von Party und Initiative), CombatantAvatar (Avatar von Spielern und NPCs), FightPanel (Panel
+                     „Kampf“), TurnPanel (Dashboard „Am Zug“) mit HeroCard (Hero-Karte), InitiativePanel (Dashboard
+                     „Initiative“), MiniButton (↑/↓/Entfernen im Panel „Kampf“), ConfirmDialog („Kampf beenden?“),
+                     PanelButton (Icon-Button in Panels), OptionButtons
                      (Segment-Control in Panels), PanelSlider (Slider in Panels), FullscreenHoverOverlay (Vollbild-Overlay auf Wall und
                      Ground), Dialogue, GridOverlay,
                      ResourceBarPlayer …)
 src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
                      getJoinInfo, saveActiveScene, saveGlobalLevel, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
                      getGroundScreenData …); gameTable.ts: saveWallOverlay, saveGroundGrid,
-                     saveGroundGridCellSize (nur vom Admin genutzt)
-src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData/patchData/postData (apiMethods.ts), loadData,
-                     saveData/postCommand, mediaUrl (mediaUrl.ts), wsUrl (wsUrl.ts); schema.d.ts generiert
+                     saveGroundGridCellSize (nur vom Admin genutzt); fight.ts: startFight, endFight, endTurn,
+                     addCombatant, saveDefeated, removeCombatant, saveFightOrder (nur vom Admin genutzt)
+src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData/patchData/postData/putData/deleteData
+                     (apiMethods.ts), loadData, saveData/postCommand/replaceData/deleteCommand, mediaUrl (mediaUrl.ts), wsUrl (wsUrl.ts); schema.d.ts generiert
 src/models/models.ts API-Typen AdventureSummary, AdventureDetail, Player, SceneDetail, Image, Track, GameTableState, Theme,
-                     WallOverlay, GroundGrid, JoinInfo, AudioState, AudioUpdate, SoundName aus src/api/schema.d.ts
+                     WallOverlay, GroundGrid, JoinInfo, AudioState, AudioUpdate, SoundName, FightState, Combatant,
+                     CombatantKind, CombatantCreate aus src/api/schema.d.ts
 src/utils/utils.ts   Musiktitel (getMusicTitle), filterSceneByKey
 src/utils/groundGrid.ts GROUND_GRID_CELL_SIZE (100–200, Schritt 10), gridLineColor, toCellSize (Slider-Wert → Zellgröße)
 src/utils/navRail.ts nextOpenPanel (welches Panel neben der Navigationsleiste offen ist)
 src/utils/adventureBackground.ts adventureBackgroundSource (Bild des Abenteuers zum Theme), adventureBackgroundReducer
                      (Bild hinter den Kacheln: geladen, Überblendung, Rückfall), useAdventureBackground.ts (Hook dazu
                      im Admin, BACKGROUND_FADE_MS)
+src/utils/fight.ts   Logik des Kampfes: Vorbereitung (initialPreparation, preparedPlayer/preparedNpc,
+                     toCombatantCreate), smallestFreeNumber, numberError, moveItem, missingPlayers, Namen und Details
+                     der Teilnehmer, nextOnTurn („Als Nächstes“), countByKind; useFightPreparation.ts (Vorbereitung
+                     als lokaler Zustand des Admin-Fensters, zurückgesetzt bei Abenteuerwechsel, Start und Ende)
 src/utils/adminError.ts mostImportantError (welcher Fehler in der Kopfzeile des Admins steht)
 src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
 src/utils/playerTheme.ts Theme-Abweichung des Players lesen/schreiben, effectiveTheme, Altschlüssel verwerfen
@@ -139,7 +149,10 @@ bzw. `PATCH table`) **ohne lokale Vorwegnahme**; der Server pusht danach den neu
 per `scenes/{id}` neu laden (ohne aktive Szene kein Request, nur Hintergrund). Nur der Admin zeigt Speicher- und
 Verbindungsfehler. Der Player nutzt vom Snapshot nur das Theme (`Abweichung ?? Spieltisch-Theme`), sendet nichts und
 zeigt keinen Verbindungsstatus. Der QR-Code-Dialog im Admin (`JoinDialog`, geöffnet aus dem Panel „Spieltisch“) lädt beim Öffnen `table/join`. Nur an
-Admins schickt der Server die Zahl der verbundenen Wall-, Ground- und Player-Verbindungen (`screens`).
+Admins schickt der Server die Zahl der verbundenen Wall-, Ground- und Player-Verbindungen (`screens`) und den Kampf
+des aktiven Abenteuers (`fight`, `FightContext`). Den Kampf schreibt der Admin per REST unter `table/fight` ohne
+lokale Vorwegnahme; nur die Vorbereitung vor „Kampf starten“ ist lokal. Während eines Kampfes sind Szenenliste und
+Abenteuer-Auswahl gesperrt (der Server lehnt Wechsel mit 409 ab).
 Spieler und Level (`global_level`) stehen nicht im Snapshot: Der Admin lädt `adventures/{id}` beim Laden, bei einem
 Abenteuerwechsel und nach jedem Snapshot (`snapshot` im `GameTableContext`) neu; das Level schreibt er per
 `PATCH adventures/{id}` ohne lokale Vorwegnahme, der Server pusht danach einen Snapshot.
@@ -195,7 +208,7 @@ nichts. Details: `../docs/architecture.md#audio`.
   in `WallScreen`, `GroundScreen`, `Dialogue` und im `AudioPlayer` (Musik im Admin).
 - Alle Szenen sind gleich (kein `main` mehr). Das Panel „Szenen“ (`SceneNavigation`) zeigt sie in der Reihenfolge der
   API; aktiv ist der Eintrag mit `scene.id === activeSceneId`. Klick auf die aktive Szene tut nichts, sonst öffnet
-  `handleSceneSelection` im `AdminScreen` den Dialog „Szene wechseln“.
+  `handleSceneSelection` im `AdminScreen` den Dialog „Szene wechseln“ (nicht während eines Kampfes).
 - `DocumentReader` sammelt Markdown per `import.meta.glob` aus `public/story/**` – neue Notizen dort ablegen.
 - Player-Ressourcen (`ResourceBarPlayer`) sind reiner lokaler State; Zauberplatz-Maxima sind hart codiert (`SpellMax`).
 - Die Ressource „Bewegung“ ist Work in Progress; `/spells` ist auf dem Branch `feature/spells-screen` geparkt; `v1-roguelike` (Tags `archive/*`) ist verworfen.

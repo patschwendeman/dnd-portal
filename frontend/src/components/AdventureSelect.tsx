@@ -1,12 +1,15 @@
 import {
   KeyboardEvent, ReactElement, useEffect, useRef, useState,
 } from 'react'
+import { ReactSVG } from 'react-svg'
 import styled from 'styled-components'
 
 import { AdventureSummary } from '../models/models'
 import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 import { getListboxNextIndex, getListboxStartIndex, isListboxNavigationKey } from '../utils/listbox'
+
+import lockIcon from '/assets/icons/padlock.svg'
 
 const ADVENTURE_LIST_MAX_HEIGHT = '320px'
 
@@ -36,6 +39,10 @@ const Trigger = styled.button<TileSurfaceProps>`
         cursor: default;
     }
 
+    &[aria-disabled="true"] {
+        cursor: not-allowed;
+    }
+
     /* Inset, so the outline stays on the tile: outside it would lie on the scene image, where
        primary misses 3:1 in Tavern over a bright image */
     &:focus-visible {
@@ -58,6 +65,17 @@ const Chevron = styled.svg<{ $isOpen: boolean }>`
     height: ${(props) => props.theme.size.icon};
     fill: ${(props) => props.theme.colors.text.color};
     transform: ${(props) => (props.$isOpen ? 'rotate(180deg)' : 'none')};
+`
+
+const LockIcon = styled.span`
+    flex-shrink: 0;
+    color: ${(props) => props.theme.colors.text.muted};
+
+    svg {
+        display: block;
+        width: ${(props) => props.theme.size.icon};
+        height: ${(props) => props.theme.size.icon};
+    }
 `
 
 const List = styled.div`
@@ -126,6 +144,8 @@ interface AdventureSelectProps {
   adventures: AdventureSummary[]
   activeAdventureId: number | null
   onSelectAdventure: (adventureId: number) => void
+  // During a fight: the list does not open, a lock replaces the arrow
+  isLocked?: boolean
   // While the scene image lies behind the tiles
   isTranslucent?: boolean
 }
@@ -134,6 +154,7 @@ function AdventureSelect({
   adventures,
   activeAdventureId,
   onSelectAdventure,
+  isLocked = false,
   isTranslucent = false,
 }: AdventureSelectProps): ReactElement {
   const [isOpen, setIsOpen] = useState(false)
@@ -166,7 +187,13 @@ function AdventureSelect({
     return () => document.removeEventListener('mousedown', closeOnOutsidePointer)
   }, [isOpen])
 
+  // A fight that starts in another Admin window closes an open list
+  const isListShown = isOpen && !isLocked
+
   const open = () => {
+    if (isLocked) {
+      return
+    }
     setFocusIndex(getListboxStartIndex(selectedIndex, adventures.length))
     setIsOpen(true)
   }
@@ -217,17 +244,26 @@ function AdventureSelect({
         $isTranslucent={isTranslucent}
         aria-label="Abenteuer"
         aria-haspopup="listbox"
-        aria-expanded={isOpen}
+        aria-expanded={isListShown}
+        // aria-disabled instead of disabled, so the tooltip shows and the button keeps its focus
+        aria-disabled={isLocked || undefined}
+        title={isLocked ? 'Während des Kampfes nicht wechselbar' : undefined}
         disabled={adventures.length === 0}
-        onClick={() => (isOpen ? setIsOpen(false) : open())}
+        onClick={() => (isListShown ? setIsOpen(false) : open())}
         onKeyDown={handleTriggerKeyDown}
       >
         <TriggerLabel>{activeAdventure?.name ?? ''}</TriggerLabel>
-        <Chevron $isOpen={isOpen} viewBox="0 0 20 20" aria-hidden="true">
-          <polygon points="5,7 15,7 10,13" />
-        </Chevron>
+        {isLocked ? (
+          <LockIcon aria-hidden="true" data-test-id="adventure-lock">
+            <ReactSVG src={lockIcon} />
+          </LockIcon>
+        ) : (
+          <Chevron $isOpen={isListShown} viewBox="0 0 20 20" aria-hidden="true">
+            <polygon points="5,7 15,7 10,13" />
+          </Chevron>
+        )}
       </Trigger>
-      {isOpen && (
+      {isListShown && (
         <List role="listbox" aria-label="Abenteuer" onKeyDown={handleListKeyDown}>
           {adventures.map((adventure, index) => (
             <Option

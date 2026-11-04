@@ -184,6 +184,212 @@
         "title": "AudioUpdate",
         "type": "object"
       },
+      "Combatant": {
+        "description": "A participant of the fight: a player (`player_id`) or an NPC (`enemy`/`ally`) with the `number` of its figure on\nthe table and an optional `label` that only the Admin shows.",
+        "properties": {
+          "defeated": {
+            "title": "Defeated",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kind": {
+            "enum": [
+              "player",
+              "enemy",
+              "ally"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Number"
+          },
+          "player_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Player Id"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "player_id",
+          "number",
+          "label",
+          "defeated"
+        ],
+        "title": "Combatant",
+        "type": "object"
+      },
+      "CombatantCreate": {
+        "description": "A player (`player_id`, nothing else) or an NPC (`number`, optional `label`; trimmed, empty = none).",
+        "properties": {
+          "kind": {
+            "enum": [
+              "player",
+              "enemy",
+              "ally"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "number": {
+            "anyOf": [
+              {
+                "maximum": 99.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Number"
+          },
+          "player_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Player Id"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "CombatantCreate",
+        "type": "object"
+      },
+      "CombatantUpdate": {
+        "properties": {
+          "defeated": {
+            "title": "Defeated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "defeated"
+        ],
+        "title": "CombatantUpdate",
+        "type": "object"
+      },
+      "FightOrder": {
+        "description": "The new initiative order: exactly the IDs of the current combatants.",
+        "properties": {
+          "combatant_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Combatant Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "combatant_ids"
+        ],
+        "title": "FightOrder",
+        "type": "object"
+      },
+      "FightStart": {
+        "properties": {
+          "combatants": {
+            "items": {
+              "$ref": "#/components/schemas/CombatantCreate"
+            },
+            "minItems": 1,
+            "title": "Combatants",
+            "type": "array"
+          }
+        },
+        "required": [
+          "combatants"
+        ],
+        "title": "FightStart",
+        "type": "object"
+      },
+      "FightState": {
+        "description": "The running fight of the active adventure; `combatants` in initiative order, `null` turn: nobody is left.",
+        "properties": {
+          "active_combatant_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Combatant Id"
+          },
+          "combatants": {
+            "items": {
+              "$ref": "#/components/schemas/Combatant"
+            },
+            "title": "Combatants",
+            "type": "array"
+          },
+          "round": {
+            "title": "Round",
+            "type": "integer"
+          },
+          "scene_id": {
+            "title": "Scene Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "round",
+          "active_combatant_id",
+          "scene_id",
+          "combatants"
+        ],
+        "title": "FightState",
+        "type": "object"
+      },
       "GameTableState": {
         "description": "State of the game table shared by Admin, Wall and Ground; `active_scene_id` belongs to the active adventure.\n\n`wall_overlay` is what the Walls show above the scene image (`world`: the world map); it is kept in memory only and\nset to `off` whenever the active scene or adventure changes. `ground_grid` (line colour or `off`) and\n`ground_grid_cell_size` (in px) are the grid of the Grounds; also kept in memory only, but unchanged by scene or\nadventure changes.",
         "properties": {
@@ -492,6 +698,20 @@
         "title": "Track",
         "type": "object"
       },
+      "TurnRequest": {
+        "description": "Ends the turn of `from_combatant_id`; if it is no longer the turn of that combatant, nothing changes.",
+        "properties": {
+          "from_combatant_id": {
+            "title": "From Combatant Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "from_combatant_id"
+        ],
+        "title": "TurnRequest",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -646,6 +866,9 @@
           "404": {
             "description": "Adventure not found"
           },
+          "409": {
+            "description": "Fight in progress: the active scene cannot change"
+          },
           "422": {
             "description": "Scene does not belong to adventure, or validation error"
           }
@@ -793,6 +1016,9 @@
             },
             "description": "Successful Response"
           },
+          "409": {
+            "description": "Fight in progress: the active adventure cannot change"
+          },
           "422": {
             "description": "Adventure not found, or validation error"
           }
@@ -854,6 +1080,300 @@
         "summary": "Update Audio",
         "tags": [
           "audio"
+        ]
+      }
+    },
+    "/table/fight": {
+      "delete": {
+        "operationId": "end_fight_table_fight_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "No fight"
+          },
+          "409": {
+            "description": "No active adventure"
+          }
+        },
+        "summary": "End Fight",
+        "tags": [
+          "fight"
+        ]
+      },
+      "get": {
+        "description": "The fight of the active adventure; null without one.",
+        "operationId": "read_fight_table_fight_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/FightState"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Read Fight Table Fight Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Read Fight",
+        "tags": [
+          "fight"
+        ]
+      },
+      "post": {
+        "operationId": "start_fight_table_fight_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FightStart"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FightState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "409": {
+            "description": "No active adventure, no active scene, or fight in progress"
+          },
+          "422": {
+            "description": "Player of another adventure, duplicate player or number, or validation error"
+          }
+        },
+        "summary": "Start Fight",
+        "tags": [
+          "fight"
+        ]
+      }
+    },
+    "/table/fight/combatants": {
+      "post": {
+        "operationId": "add_combatant_table_fight_combatants_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CombatantCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FightState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "No fight"
+          },
+          "409": {
+            "description": "No active adventure"
+          },
+          "422": {
+            "description": "Player of another adventure, player or number already taking part, or validation error"
+          }
+        },
+        "summary": "Add Combatant",
+        "tags": [
+          "fight"
+        ]
+      }
+    },
+    "/table/fight/combatants/{combatant_id}": {
+      "delete": {
+        "operationId": "remove_combatant_table_fight_combatants__combatant_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "combatant_id",
+            "required": true,
+            "schema": {
+              "title": "Combatant Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FightState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "No fight, or combatant not found"
+          },
+          "409": {
+            "description": "No active adventure"
+          },
+          "422": {
+            "description": "Validation error"
+          }
+        },
+        "summary": "Remove Combatant",
+        "tags": [
+          "fight"
+        ]
+      },
+      "patch": {
+        "operationId": "update_combatant_table_fight_combatants__combatant_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "combatant_id",
+            "required": true,
+            "schema": {
+              "title": "Combatant Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CombatantUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FightState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "No fight, or combatant not found"
+          },
+          "409": {
+            "description": "No active adventure"
+          },
+          "422": {
+            "description": "Validation error"
+          }
+        },
+        "summary": "Update Combatant",
+        "tags": [
+          "fight"
+        ]
+      }
+    },
+    "/table/fight/order": {
+      "put": {
+        "operationId": "reorder_table_fight_order_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FightOrder"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FightState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "No fight"
+          },
+          "409": {
+            "description": "No active adventure"
+          },
+          "422": {
+            "description": "Not exactly the IDs of the current combatants, or validation error"
+          }
+        },
+        "summary": "Reorder",
+        "tags": [
+          "fight"
+        ]
+      }
+    },
+    "/table/fight/turn": {
+      "post": {
+        "description": "If it is no longer the turn of `from_combatant_id`, the current state is returned and nothing is pushed.",
+        "operationId": "end_turn_table_fight_turn_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TurnRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FightState"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "No fight"
+          },
+          "409": {
+            "description": "No active adventure"
+          },
+          "422": {
+            "description": "Validation error"
+          }
+        },
+        "summary": "End Turn",
+        "tags": [
+          "fight"
         ]
       }
     },

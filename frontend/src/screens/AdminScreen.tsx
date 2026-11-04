@@ -9,21 +9,37 @@ import ActiveScenePanel from '../components/ActiveScenePanel'
 import AdminHeader from '../components/AdminHeader'
 import AdventureBackground from '../components/AdventureBackground'
 import AudioPanel from '../components/AudioPanel'
+import ConfirmDialog from '../components/ConfirmDialog'
 import Dashboard from '../components/Dashboard'
 import DashboardPanel from '../components/DashboardPanel'
 import Dialogue from '../components/Dialogue'
 import DocumentNavigation from '../components/DocumentNavigation'
 import DocumentReader from '../components/DocumentReader'
+import FightPanel from '../components/FightPanel'
 import GameTablePanel from '../components/GameTablePanel'
+import InitiativePanel from '../components/InitiativePanel'
+import Label from '../components/Label'
 import LevelStepper from '../components/LevelStepper'
 import { NavRail, NavRailItem } from '../components/NavRail'
 import PlayersPanel from '../components/PlayersPanel'
 import SceneNavigation from '../components/SceneNavigation'
+import TurnPanel from '../components/TurnPanel'
 import {
-  ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext,
+  ActiveAdventureContext,
+  ActiveSceneContext,
+  FightContext,
+  GameAudioContext,
+  GameTableContext,
 } from '../context/context'
 import {
-  AdventureDetail, AdventureSummary, GroundGrid, SceneDetail, SoundName, WallOverlay,
+  AdventureDetail,
+  AdventureSummary,
+  Combatant,
+  GroundGrid,
+  Player,
+  SceneDetail,
+  SoundName,
+  WallOverlay,
 } from '../models/models'
 import {
   getAdminData,
@@ -37,21 +53,44 @@ import {
   saveGlobalLevel,
   saveTheme,
 } from '../service/adminScreen'
+import {
+  addCombatant,
+  endFight,
+  endTurn,
+  removeCombatant,
+  saveDefeated,
+  saveFightOrder,
+  startFight,
+} from '../service/fight'
 import { saveGroundGrid, saveGroundGridCellSize, saveWallOverlay } from '../service/gameTable'
+import { textStyle } from '../style/tokens'
 import GlobalStyle, { hoverScrollbar, tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import mostImportantError from '../utils/adminError'
 import selectDefaultAdventureId from '../utils/adventure'
+import {
+  countByKind,
+  FightRow,
+  moveItem,
+  NpcKind,
+  preparedNpc,
+  preparedPlayer,
+  toCombatantCreate,
+} from '../utils/fight'
 import { loadLatest } from '../utils/loadSafely'
 import nextOpenPanel from '../utils/navRail'
 import { useAdventureBackground } from '../utils/useAdventureBackground'
+import useFightPreparation from '../utils/useFightPreparation'
 import { filterSceneByKey } from '../utils/utils'
 
 import notesIcon from '/assets/icons/notes.svg'
 import scenesIcon from '/assets/icons/scenes.svg'
+import swordsIcon from '/assets/icons/swords.svg'
 
 // Icon button (size.control.md, 40px) plus space.3 on both sides
 const NAV_RAIL_WIDTH = '64px'
 const LEFT_COLUMN_WIDTH = '240px'
+// Wider, so names and the controls of each combatant fit side by side
+const FIGHT_PANEL_WIDTH = '280px'
 // Below this width the rows of the panel "Spieltisch" get too narrow for their controls
 const DASHBOARD_MIN_WIDTH = '400px'
 // Above this width the stage would push the panel "Audio" out of sight on large monitors
@@ -65,27 +104,28 @@ const NAV_PANEL_ID = 'admin-nav-panel'
 const DASHBOARD_ID = 'admin-dashboard'
 
 interface LayoutProps {
-  $isPanelOpen: boolean
+  // Width of the open panel, null while it is collapsed
+  $panelWidth: string | null
   $isDashboardOpen: boolean
 }
 
 // Dashboard one third of the width of notes and dashboard (between DASHBOARD_MIN_WIDTH and
 // DASHBOARD_MAX_WIDTH), the notes the rest; without the dashboard the notes take all of it
-const screenColumns = ({ $isPanelOpen, $isDashboardOpen }: LayoutProps, gap: string): string => {
-  const panel = $isPanelOpen ? ` ${LEFT_COLUMN_WIDTH}` : ''
+const screenColumns = ({ $panelWidth, $isDashboardOpen }: LayoutProps, gap: string): string => {
+  const panel = $panelWidth !== null ? ` ${$panelWidth}` : ''
   if (!$isDashboardOpen) {
     return `${NAV_RAIL_WIDTH}${panel} minmax(0, 1fr)`
   }
-  const besideContent = $isPanelOpen
-    ? `${NAV_RAIL_WIDTH} - ${LEFT_COLUMN_WIDTH} - 2 * ${gap}`
+  const besideContent = $panelWidth !== null
+    ? `${NAV_RAIL_WIDTH} - ${$panelWidth} - 2 * ${gap}`
     : `${NAV_RAIL_WIDTH} - ${gap}`
   const third = `calc((100% - ${besideContent} - ${gap}) / 3)`
   return `${NAV_RAIL_WIDTH}${panel} minmax(0, 1fr) `
     + `clamp(${DASHBOARD_MIN_WIDTH}, ${third}, ${DASHBOARD_MAX_WIDTH})`
 }
 
-const screenAreas = ({ $isPanelOpen, $isDashboardOpen }: LayoutProps): string => {
-  const panel = $isPanelOpen ? ' panel' : ''
+const screenAreas = ({ $panelWidth, $isDashboardOpen }: LayoutProps): string => {
+  const panel = $panelWidth !== null ? ' panel' : ''
   const header = $isDashboardOpen ? 'header header' : 'header'
   const content = $isDashboardOpen ? 'notes dashboard' : 'notes'
   return `"rail${panel} ${header}" "rail${panel} ${content}"`
@@ -137,6 +177,15 @@ const NavPanel = styled.div<TileSurfaceProps>`
     padding: ${(props) => props.theme.space[5]} ${(props) => props.theme.space[4]};
 `
 
+const KindCounts = styled.span`
+  ${textStyle('sm')}
+`
+
+const kindCounts = (combatants: Combatant[]): string => {
+  const counts = countByKind(combatants)
+  return `Spieler ${counts.player} · Gegner ${counts.enemy} · Verbündete ${counts.ally}`
+}
+
 // A write to the API; the screens change only with the push of the server that follows it
 type Save = () => Promise<unknown>
 
@@ -154,6 +203,8 @@ function AdminScreen(): ReactElement {
     reconnectNow,
   } = useContext(GameTableContext)
   const { audio } = useContext(GameAudioContext)
+  const { fight } = useContext(FightContext)
+  const isFighting = fight !== null
   useAudioPlayback()
   useAutoAudioOutput()
   const isMusicPlaying = audio?.playing ?? false
@@ -164,6 +215,7 @@ function AdminScreen(): ReactElement {
 
   const [dialogueVisibility, setDialogueVisibility] = useState<boolean>(false)
   const [sceneOption, setSceneOption] = useState<SceneDetail | undefined>()
+  const [isEndFightDialogOpen, setIsEndFightDialogOpen] = useState<boolean>(false)
 
   // Neither kept on the server nor in localStorage: after a reload the notes panel is open again
   const [openPanel, setOpenPanel] = useState<string | null>('docs')
@@ -351,7 +403,7 @@ function AdminScreen(): ReactElement {
   }, [hasState, adventures, activeAdventureId, runSave])
 
   const handleAdventureSelection = (adventureId: number) => {
-    if (adventureId === activeAdventureId) {
+    if (adventureId === activeAdventureId || isFighting) {
       return
     }
     runSave(() => saveActiveAdventure(adventureId))
@@ -400,7 +452,7 @@ function AdminScreen(): ReactElement {
   // The active scene is already on the game table: no dialog, and no write that would only switch
   // the track
   const handleSceneSelection = (sceneId: number) => {
-    if (sceneId === activeSceneId) {
+    if (sceneId === activeSceneId || isFighting) {
       return
     }
     const scene = filterSceneByKey('id', sceneId, scenesDetails)
@@ -417,6 +469,78 @@ function AdminScreen(): ReactElement {
       const adventureId = loadedAdventureId
       runSave(() => saveActiveScene(adventureId, selected.id))
     }
+  }
+
+  const players = adventureDetail?.players ?? []
+  const level = adventureDetail?.global_level ?? null
+
+  const [preparation, setPreparation] = useFightPreparation(
+    adventureDetail?.id ?? null,
+    players,
+    isFighting,
+  )
+  const fightRows: FightRow[] = fight
+    ? fight.combatants.map((combatant) => ({ key: `combatant-${combatant.id}`, combatant }))
+    : preparation.map((combatant) => ({ key: combatant.key, combatant }))
+  const activeFightKey = fight?.active_combatant_id != null
+    ? `combatant-${fight.active_combatant_id}`
+    : null
+
+  // During the fight every change goes to the server; before it the preparation changes locally
+  const handleFightMove = (index: number, step: -1 | 1) => {
+    if (fight) {
+      const order = moveItem(fight.combatants.map((combatant) => combatant.id), index, step)
+      runSave(() => saveFightOrder(order))
+    } else {
+      setPreparation(moveItem(preparation, index, step))
+    }
+  }
+
+  const handleFightRemove = (index: number) => {
+    if (fight) {
+      const combatantId = fight.combatants[index].id
+      runSave(() => removeCombatant(combatantId))
+    } else {
+      setPreparation(preparation.filter((_, i) => i !== index))
+    }
+  }
+
+  const handleAddNpc = (kind: NpcKind, number: number, label: string) => {
+    const npc = preparedNpc(kind, number, label)
+    if (fight) {
+      runSave(() => addCombatant(toCombatantCreate(npc)))
+    } else {
+      setPreparation([...preparation, npc])
+    }
+  }
+
+  const handleAddPlayer = (player: Player) => {
+    const prepared = preparedPlayer(player)
+    if (fight) {
+      runSave(() => addCombatant(toCombatantCreate(prepared)))
+    } else {
+      setPreparation([...preparation, prepared])
+    }
+  }
+
+  const handleStartFight = () => {
+    const combatants = preparation.map(toCombatantCreate)
+    runSave(() => startFight(combatants))
+  }
+
+  const handleEndFightDialog = (confirmed: boolean) => {
+    setIsEndFightDialogOpen(false)
+    if (confirmed) {
+      runSave(endFight)
+    }
+  }
+
+  const handleEndTurn = (combatantId: number) => {
+    runSave(() => endTurn(combatantId))
+  }
+
+  const handleToggleDefeated = (combatant: Combatant) => {
+    runSave(() => saveDefeated(combatant.id, !combatant.defeated))
   }
 
   const errorNotices = {
@@ -446,10 +570,40 @@ function AdminScreen(): ReactElement {
       id: 'scenes',
       name: 'Szenen',
       icon: scenesIcon,
-      panel: <SceneNavigation scenes={scenesDetails} onSelectScene={handleSceneSelection} />,
+      panel: (
+        <SceneNavigation
+          scenes={scenesDetails}
+          onSelectScene={handleSceneSelection}
+          isLocked={isFighting}
+        />
+      ),
+    },
+    {
+      id: 'fight',
+      name: isFighting ? 'Kampf (läuft)' : 'Kampf',
+      icon: swordsIcon,
+      hasBadge: isFighting,
+      panel: (
+        <FightPanel
+          rows={fightRows}
+          players={players}
+          isFighting={isFighting}
+          round={fight?.round ?? null}
+          activeKey={activeFightKey}
+          canStart={preparation.length > 0 && activeSceneId !== null}
+          onMove={handleFightMove}
+          onRemove={handleFightRemove}
+          onAddNpc={handleAddNpc}
+          onAddPlayer={handleAddPlayer}
+          onStart={handleStartFight}
+          onEnd={() => setIsEndFightDialogOpen(true)}
+        />
+      ),
     },
   ]
   const openNavItem = navItems.find((item) => item.id === openPanel)
+  const openPanelWidth = openNavItem?.id === 'fight' ? FIGHT_PANEL_WIDTH : LEFT_COLUMN_WIDTH
+  const panelWidth = openNavItem ? openPanelWidth : null
 
   const handleNavSelect = (id: string) => {
     setOpenPanel((open) => nextOpenPanel(open, id))
@@ -462,9 +616,6 @@ function AdminScreen(): ReactElement {
     gameTableTheme,
   )
   const isTranslucent = background.isImageShown
-
-  const players = adventureDetail?.players ?? []
-  const level = adventureDetail?.global_level ?? null
 
   return (
     <>
@@ -480,7 +631,17 @@ function AdminScreen(): ReactElement {
         handleDialogueOption={handleDialogueOption}
         isVisible={dialogueVisibility}
       />
-      <Screen $isPanelOpen={openNavItem !== undefined} $isDashboardOpen={isDashboardOpen}>
+      {isEndFightDialogOpen && (
+        <ConfirmDialog
+          title="Kampf beenden?"
+          text={'Reihenfolge, Runde und Nummern werden verworfen. Szene und Abenteuer lassen sich '
+            + 'danach wieder wechseln.'}
+          onDecline={() => handleEndFightDialog(false)}
+          onConfirm={() => handleEndFightDialog(true)}
+          testId="end-fight-dialog"
+        />
+      )}
+      <Screen $panelWidth={panelWidth} $isDashboardOpen={isDashboardOpen}>
         <RailArea $area="rail">
           <NavRail
             items={navItems}
@@ -506,6 +667,7 @@ function AdminScreen(): ReactElement {
             adventures={adventures ?? []}
             activeAdventureId={activeAdventureId}
             onSelectAdventure={handleAdventureSelection}
+            isAdventureLocked={isFighting}
             errorNotice={shownError === null ? null : errorNotices[shownError]}
             isDashboardOpen={isDashboardOpen}
             dashboardId={DASHBOARD_ID}
@@ -519,7 +681,43 @@ function AdminScreen(): ReactElement {
         {isDashboardOpen && (
           <Area $area="dashboard">
             <Dashboard id={DASHBOARD_ID}>
-              <ActiveScenePanel activeScene={activeScene} testId="dashboard-panel-stage" />
+              {fight ? (
+                <>
+                  <DashboardPanel
+                    label="Am Zug"
+                    headEnd={(
+                      <Label data-test-id="turn-round">{`Runde ${fight.round}`}</Label>
+                    )}
+                    testId="dashboard-panel-turn"
+                    isTranslucent={isTranslucent}
+                  >
+                    <TurnPanel
+                      combatants={fight.combatants}
+                      activeCombatantId={fight.active_combatant_id}
+                      round={fight.round}
+                      players={players}
+                      level={level}
+                      onEndTurn={handleEndTurn}
+                    />
+                  </DashboardPanel>
+                  <DashboardPanel
+                    label="Initiative"
+                    title={`Initiative · ${fight.combatants.length}`}
+                    headEnd={<KindCounts>{kindCounts(fight.combatants)}</KindCounts>}
+                    testId="dashboard-panel-initiative"
+                    isTranslucent={isTranslucent}
+                  >
+                    <InitiativePanel
+                      combatants={fight.combatants}
+                      activeCombatantId={fight.active_combatant_id}
+                      players={players}
+                      onToggleDefeated={handleToggleDefeated}
+                    />
+                  </DashboardPanel>
+                </>
+              ) : (
+                <ActiveScenePanel activeScene={activeScene} testId="dashboard-panel-stage" />
+              )}
               <DashboardPanel
                 label="Audio"
                 testId="dashboard-panel-audio"
@@ -548,15 +746,17 @@ function AdminScreen(): ReactElement {
                   onGroundGridCellSizeCommit={handleGroundGridCellSizeCommit}
                 />
               </DashboardPanel>
-              <DashboardPanel
-                label="Party"
-                title={`Party · ${players.length}`}
-                headEnd={<LevelStepper level={level} onChange={handleLevelChange} />}
-                testId="dashboard-panel-party"
-                isTranslucent={isTranslucent}
-              >
-                <PlayersPanel players={players} />
-              </DashboardPanel>
+              {!fight && (
+                <DashboardPanel
+                  label="Party"
+                  title={`Party · ${players.length}`}
+                  headEnd={<LevelStepper level={level} onChange={handleLevelChange} />}
+                  testId="dashboard-panel-party"
+                  isTranslucent={isTranslucent}
+                >
+                  <PlayersPanel players={players} />
+                </DashboardPanel>
+              )}
             </Dashboard>
           </Area>
         )}

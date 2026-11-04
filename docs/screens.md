@@ -17,10 +17,12 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 
 ### Soll
 - Szenen auswählen und aktivieren. Alle Szenen sind gleich; einen Kampf startet der Spielleiter in jeder Szene über
-  den Menüpunkt „Kampf“ (geplant).
+  den Menüpunkt „Kampf“ (umgesetzt im Admin; die Anzeige auf Wall, Ground und Player ist geplant).
 - Notizen (Markdown) einsehen: Story, NPCs, Kämpfe.
-- Navigationsleiste links mit Menüpunkten, die das Panel daneben füllen: „Notizen“ und „Szenen“ (umgesetzt), geplant
-  „Kampf“ (Kampf starten). Die Mitte zeigt dabei weiter die Notizen.
+- Navigationsleiste links mit Menüpunkten, die das Panel daneben füllen: „Notizen“, „Szenen“ und „Kampf“ (umgesetzt).
+  Die Mitte zeigt dabei weiter die Notizen.
+- Kampf: Initiative-Reihenfolge, Zug und Runde im Blick, NPCs mit der Nummer ihrer Figur (umgesetzt); geplant:
+  Trefferpunkte, Effekte mit Rundenzahl, „Zug beenden“ auf dem Smartphone, NPC-Katalog je Abenteuer.
 - Ruhiges, einheitliches Kachel-Layout mit fester Kopfzeile, unter der Notizen und Dashboard scrollen, dahinter
   ein Hintergrundbild des Abenteuers je Theme, das durch die Kacheln scheint und nicht mit der Szene wechselt
   (umgesetzt; die Bilder werden über Seed bzw. Datenbank festgelegt, nicht im Admin).
@@ -50,7 +52,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Abenteuer lädt oder wenn das Bild nicht geladen werden kann, ist der Hintergrund einfarbig und die Kacheln sind
   deckend.
 - **Dashboard:** eine Spalte mit vier Panels in fester Reihenfolge (kein Verschieben): oben die Bühne („Aktive
-  Szene“), darunter „Audio“, „Spieltisch“ und „Party“. Jedes Panel ist so hoch wie sein Inhalt – die Panels scrollen
+  Szene“), darunter „Audio“, „Spieltisch“ und „Party“; während eines Kampfes „Am Zug“, „Initiative“, „Audio“ und
+  „Spieltisch“ (siehe **Kampf**). Jedes Panel ist so hoch wie sein Inhalt – die Panels scrollen
   nicht für sich und schneiden keinen Text ab; sind sie zusammen höher als der Hauptbereich, scrollt das Dashboard als
   Ganzes. Der Icon-Button „Dashboard“ rechts
   in der Kopfzeile (links vom Theme-Umschalter, hervorgehoben solange das Dashboard offen ist) blendet es aus – Notizen
@@ -58,7 +61,9 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   (die Musik spielt im Ausgabe-Fenster weiter) – und wieder ein. Auswahl und
   Scrollposition der Notizen bleiben erhalten; der Zustand wird nicht gespeichert, nach einem Reload ist das Dashboard
   offen.
-- **Navigationsleiste:** schmale Leiste mit Icon-Buttons „Notizen“ und darunter „Szenen“ (Tooltip mit dem Namen);
+- **Navigationsleiste:** schmale Leiste mit Icon-Buttons „Notizen“, darunter „Szenen“ und „Kampf“ (gekreuzte
+  Schwerter; Tooltip mit dem Namen). Läuft ein Kampf und ist ein anderes Panel offen oder das Panel eingeklappt, trägt
+  „Kampf“ einen roten Punkt und den Tooltip „Kampf (läuft)“. Das Panel „Kampf“ ist 280px breit, die anderen 240px;
   beim Laden ist „Notizen“ aktiv und hervorgehoben. Klick (oder Enter/Leertaste) auf einen anderen Menüpunkt wechselt
   das Panel, die Mitte zeigt dabei weiter die Notizen. Klick auf den aktiven Menüpunkt klappt das Panel ein,
   die Notizen werden breiter und kein Menüpunkt ist hervorgehoben; ein weiterer Klick klappt es wieder aus. Auswahl und
@@ -69,7 +74,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   aktiviert (mit nur einem Abenteuer also ohne Zutun); ohne Abenteuer ist die Auswahl leer und deaktiviert, es werden
   keine Szenen geladen. Gezeigt werden nur die Szenen des aktiven Abenteuers. Ein Wechsel wird gespeichert und gilt für
   alle Spieltisch-Screens; Admin, Wall und Ground zeigen danach direkt die im neuen Abenteuer gespeicherte Szene (bzw.
-  keine), nie kurz die eines anderen Abenteuers.
+  keine), nie kurz die eines anderen Abenteuers. Während eines Kampfes ist die Auswahl gesperrt: Schloss statt Pfeil,
+  Tooltip „Während des Kampfes nicht wechselbar“, die Liste öffnet sich nicht.
 - **Szenenauswahl:** Das Panel „Szenen“ listet unter dem Label „Szenen“ alle Szenen des aktiven Abenteuers in der
   Reihenfolge, in der sie angelegt sind (Seed: Default, Shop, Tavern, Level Up, Fight 1 … Fight 25), nur mit Namen;
   zu lange Namen enden mit „…“, der volle Name steht im Tooltip. Die aktive Szene ist hervorgehoben. Die Einträge sind
@@ -77,6 +83,38 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Bestätigungsdialog „Szene wechseln“ mit Wall-Bild, Name und Beschreibung; „Confirm“ speichert die Szene, und alle
   verbundenen Screens (auch andere Admin-Fenster) wechseln, sobald der Server den neuen Stand schickt; „Decline“ bricht
   ab. Klick auf die bereits aktive Szene tut nichts. Ohne Abenteuer oder ohne Szenen steht dort „Keine Szenen“.
+  Während eines Kampfes steht über der Liste der Hinweis „Kampf läuft. Die Szene lässt sich erst nach „Kampf beenden“
+  wechseln.“ mit Schloss; die Einträge sind ausgegraut (die aktive bleibt hervorgehoben), ein Klick öffnet keinen Dialog.
+- **Kampf:** Das Panel „Kampf“ zeigt ohne Kampf „Kampf vorbereiten“: den Hinweis „Reihenfolge = Initiative“ und die
+  Liste der Teilnehmer in Initiative-Reihenfolge (vorbelegt mit allen Spielern des Abenteuers in der Reihenfolge der
+  Party). Jede Zeile hat einen kleinen Avatar (Spieler mit Initialen bzw. Bild, Gegner rot und Verbündete grün mit ihrer
+  Nummer), Name und zweite Zeile (Spieler: „Volk, Klasse · Spielername“, NPCs: Bezeichnung) sowie die Buttons „Nach
+  vorn“, „Nach hinten“ und „Entfernen“. Darunter „Hinzufügen“: Segment „Gegner“/„Verbündeter“, Nummer (vorgeschlagen
+  ist die kleinste freie Nummer der gemeinsamen Reihe 1–99, änderbar) und optionale Bezeichnung, die nur der
+  Spielleiter sieht, Button „Hinzufügen“ (Enter in einem der Felder wirkt ebenso). Eine vergebene Nummer meldet „Nummer
+  N ist schon vergeben.“, eine ungültige „Nummer 1–99 eingeben.“; die Liste bleibt dann unverändert. Entfernte Spieler
+  stehen als Buttons „+ Vorname“ darunter. Unten „Kampf starten“, deaktiviert ohne Teilnehmer oder ohne aktive Szene.
+  Die Vorbereitung gilt nur in diesem Admin-Fenster; ein Reload, ein Abenteuerwechsel, Start oder Ende eines Kampfes
+  setzen sie zurück. „Kampf starten“ legt den Kampf auf dem Server an (Runde 1, der erste Teilnehmer ist am Zug), alle
+  Admin-Fenster zeigen ihn. Im Kampf heißt das Panel „Kampf“ mit „Runde N“, der Teilnehmer am Zug ist umrahmt,
+  Ausgeschiedene sind ausgegraut; ↑/↓, Entfernen, „Verstärkung“ (wie „Hinzufügen“, neue Teilnehmer kommen ans Ende)
+  und „+ Vorname“ wirken sofort auf den Kampf. Unten „Kampf beenden“: der Dialog „Kampf beenden?“ („Reihenfolge, Runde
+  und Nummern werden verworfen. Szene und Abenteuer lassen sich danach wieder wechseln.“) mit Decline/Confirm;
+  „Confirm“ löscht den Kampf, alle Admin-Fenster zeigen wieder Bühne und Party.
+- **Am Zug / Initiative:** Im Kampf zeigt das Dashboard statt der Bühne das Panel „Am Zug“ (Kopf „Runde N“): eine
+  Hero-Karte mit großem Avatar (bei Spielern mit Level-Badge), darüber Spielername bzw. „Gegner“/„Verbündeter“, Name
+  und Chips (Volk und Klasse bzw. Bezeichnung); im Fuß „Als Nächstes:“ (bzw. „Runde N+1:“, wenn danach eine neue Runde
+  beginnt) mit kleinem Avatar und Name und rechts „Zug beenden“. „Zug beenden“ gibt den Zug an den nächsten nicht
+  ausgeschiedenen Teilnehmer, über das Listenende hinaus steigt die Runde; ein Doppelklick schaltet nur einen Zug
+  weiter. Ist niemand übrig: „Niemand am Zug – alle Teilnehmer sind ausgeschieden.“ Statt der Party steht das Panel
+  „Initiative · N“ (Kopf mit „Spieler n · Gegner n · Verbündete n“): alle Teilnehmer in Reihenfolge, der am Zug mit
+  Rahmen und „Am Zug“, je Zeile ein Totenkopf, der einen Teilnehmer als ausgeschieden markiert (Spieler „Tot“, NPCs
+  „Besiegt“ vor der Bezeichnung; Tooltip „Als tot markieren“ bzw. „Als besiegt markieren“, markiert „Wieder im
+  Kampf“). Wer am Zug ist, bleibt es bis „Zug beenden“; danach werden Ausgeschiedene übersprungen. Wird der
+  Teilnehmer am Zug entfernt, ist der nächste am Zug (ohne Rundenwechsel); ist niemand am Zug und kommt ein
+  Teilnehmer hinzu oder zurück, ist der erste davon am Zug. Der Kampf steht auf dem Server, übersteht Reloads und
+  Neustarts der API und wird nur an Admins geschickt; Wall, Ground und Player zeigen ihn (noch) nicht. Musik, Sounds,
+  Raster und Wall-Overlay ändern sich bei Start und Ende nicht.
 - **Wall-Overlay:** Die Zeile „Wall“ im Panel „Spieltisch“ hat ein Segment-Control „Weltkarte“/„Aus“;
   hervorgehoben (`aria-pressed`) ist der Zustand, den der Server zuletzt geschickt hat. Ein Klick
   auf den anderen Button speichert ihn, alle Walls blenden die Weltkarte ein bzw. aus, sobald der Server den neuen
@@ -92,7 +130,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Wall-Overlay und Ground-Raster stehen ebenfalls auf dem Server, aber nur im Speicher: Reloads überstehen sie, nach
   einem Neustart der API sind beide „Aus“ (Zellgröße 100).
   Mehrere Admin-Fenster dürfen gleichzeitig schreiben, der letzte Schreibzugriff gewinnt.
-- **Speicherfehler:** Schlägt das Speichern von Szene, Abenteuer, Theme, Level, Wall-Overlay, Ground-Raster oder ein Musik-Befehl fehl, ändert sich auf keinem Screen etwas,
+- **Speicherfehler:** Schlägt das Speichern von Szene, Abenteuer, Theme, Level, Wall-Overlay, Ground-Raster, eine
+  Änderung am Kampf oder ein Musik-Befehl fehl, ändert sich auf keinem Screen etwas,
   und in der Kopfzeile erscheint die Hinweisleiste „Änderung konnte nicht gespeichert werden“; „Erneut versuchen“
   wiederholt den zuletzt fehlgeschlagenen Schreibzugriff, bei Erfolg verschwindet sie.
 - **Verbindung:** Bricht die Verbindung zum Server ab (spätestens nach etwa 35 s ohne Nachricht erkannt), zeigt der
@@ -216,8 +255,9 @@ entfernt und auf dem Branch `feature/spells-screen` geparkt (siehe CONTRIBUTING.
 
 ### Soll
 Atmosphäre: Hintergrundbild abhängig von der aktiven Szene (z. B. Dungeon bei Kampf, Shop-Inneres bei Shop-Szene).
-Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets. Was die Wall bei einem Kampf zeigt,
-legt der geplante Menüpunkt „Kampf“ im Admin fest.
+Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets. Während eines Kampfes (gestartet im
+Admin über den Menüpunkt „Kampf“) soll die Wall die Initiative als Kacheln zeigen, ohne die Bezeichnungen der NPCs
+(geplant, eigener Task).
 
 ### Ist
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Vollbild-Hintergrund = Wall-Bild der aktiven Szene,

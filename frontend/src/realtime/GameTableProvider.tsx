@@ -3,7 +3,11 @@ import { ThemeProvider } from 'styled-components'
 
 import { GameTableScreen, useGameTable } from './useGameTable'
 import {
-  ActiveAdventureContext, ActiveSceneContext, GameAudioContext, GameTableContext,
+  ActiveAdventureContext,
+  ActiveSceneContext,
+  FightContext,
+  GameAudioContext,
+  GameTableContext,
 } from '../context/context'
 import { Theme } from '../models/models'
 import appTheme from '../style/appTheme'
@@ -19,9 +23,10 @@ interface GameTableProviderProps {
 
 // Connects the screen to the game table of the server and passes the state on: active adventure,
 // active scene, theme, overlay of the Walls and grid of the Grounds, the audio state and (Admin
-// only) the number of connected screens. Until the first snapshot nothing is active, the theme is
-// dark and there is neither overlay nor grid; after a disconnect the last state stays. A theme
-// override only changes the look of this screen; the contexts keep the theme of the game table.
+// only) the number of connected screens and the fight. Until the first snapshot nothing is active,
+// the theme is dark and there is neither overlay nor grid; after a disconnect the last state
+// stays. A theme override only changes the look of this screen; the contexts keep the theme of the
+// game table.
 function GameTableProvider({
   screen,
   themeOverride = null,
@@ -32,6 +37,7 @@ function GameTableProvider({
     audio,
     isAudioOutput,
     screens,
+    fight,
     connected,
     reconnectNow,
     requestAudioOutput,
@@ -68,6 +74,7 @@ function GameTableProvider({
     }),
     [audio, isAudioOutput, requestAudioOutput, reportTrackEnded, subscribeSound],
   )
+  const fightValue = useMemo(() => ({ fight }), [fight])
   const styledTheme = useMemo(
     () => appTheme(effectiveTheme(themeOverride, theme)),
     [themeOverride, theme],
@@ -79,7 +86,9 @@ function GameTableProvider({
         <ActiveAdventureContext.Provider value={adventure}>
           <ActiveSceneContext.Provider value={scene}>
             <GameAudioContext.Provider value={gameAudio}>
-              {children}
+              <FightContext.Provider value={fightValue}>
+                {children}
+              </FightContext.Provider>
             </GameAudioContext.Provider>
           </ActiveSceneContext.Provider>
         </ActiveAdventureContext.Provider>

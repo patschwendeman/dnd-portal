@@ -1,7 +1,7 @@
 # DND-43: Kampfmodus im Admin Screen
 
 **Typ:** feat
-**Status:** Entwurf
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -179,34 +179,34 @@ die Nummern der NPCs entsprechen den Figuren auf dem Tisch.
 ### Schritt 1: Kampf vorbereiten, führen und beenden
 
 #### Vertrag
-- [ ] `FightState`, `Combatant`, `CombatantCreate`, `FightStart`, `TurnRequest` (E3); `GET`/`POST`/`DELETE
+- [x] `FightState`, `Combatant`, `CombatantCreate`, `FightStart`, `TurnRequest` (E3); `GET`/`POST`/`DELETE
       /table/fight`, `POST /table/fight/turn`; 409 bei Szenen- und Abenteuerwechsel (E6). `openapi.json` und
       `schema.d.ts` neu erzeugen.
 
 #### Backend
-- [ ] Models `Fight`, `Combatant`, Migration `0007` (E2), Migrationstest wie `test_migration_0006.py`.
-- [ ] Service/CRUD: Kampf starten (Validierung E3, E7), Zug beenden (E5), beenden.
-- [ ] Sperre in `services/game_table.py` und `services/adventure.py` (E6).
-- [ ] WebSocket `fight` nur an Admins, beim Verbinden und nach Änderungen (E4).
-- [ ] Tests: Start inkl. aller 409/422; Zugwechsel (Überspringen, Rundenwechsel, veraltetes
+- [x] Models `Fight`, `Combatant`, Migration `0007` (E2), Migrationstest wie `test_migration_0006.py`.
+- [x] Service/CRUD: Kampf starten (Validierung E3, E7), Zug beenden (E5), beenden.
+- [x] Sperre in `services/game_table.py` und `services/adventure.py` (E6).
+- [x] WebSocket `fight` nur an Admins, beim Verbinden und nach Änderungen (E4).
+- [x] Tests: Start inkl. aller 409/422; Zugwechsel (Überspringen, Rundenwechsel, veraltetes
       `from_combatant_id`); Sperre beider Wechsel, gleicher Wert erlaubt; Push nur an Admins, neuer Admin erhält den
       Kampf; Kampf nach Neustart lesbar (DB); Löschen von Abenteuer/Szene/Spieler kaskadiert.
 
 #### Frontend
-- [ ] Modelle in `src/models/models.ts`; `fight` in `parseServerMessage`, Bereitstellung im Context (nur Admin).
-- [ ] Navigationsleiste: Menüpunkt „Kampf“ mit Punkt (E9); `nextOpenPanel` erweitern; Panelbreite 280px.
-- [ ] Panel „Kampf“: Vorbereitung als lokaler Zustand (E1, E7), Start, Liste im Kampf (ohne Bearbeiten),
+- [x] Modelle in `src/models/models.ts`; `fight` in `parseServerMessage`, Bereitstellung im Context (nur Admin).
+- [x] Navigationsleiste: Menüpunkt „Kampf“ mit Punkt (E9); `nextOpenPanel` erweitern; Panelbreite 280px.
+- [x] Panel „Kampf“: Vorbereitung als lokaler Zustand (E1, E7), Start, Liste im Kampf (ohne Bearbeiten),
       „Kampf beenden“ mit Dialog. Reine Logik (Vorbelegung, kleinste freie Nummer, Prüfung, Verschieben) als
       Funktionen in `src/utils/` mit Unit-Tests.
-- [ ] Dashboard: „Am Zug“ (bestehende `PlayerHeroCard` nutzen bzw. erweitern) und „Initiative“ (auf Basis von
+- [x] Dashboard: „Am Zug“ (bestehende `PlayerHeroCard` nutzen bzw. erweitern) und „Initiative“ (auf Basis von
       `PlayerListItem`), Reihenfolge der Panels (E9); Farbrolle in beiden Themes.
-- [ ] Sperre: Szenenliste und Abenteuer-Auswahl (E6).
-- [ ] Speicherfehler über die bestehende Hinweisleiste mit „Erneut versuchen“.
-- [ ] BDD `adminFight.feature`: vorbereiten, starten, Zug beenden mit Rundenwechsel, Szene gesperrt, beenden.
+- [x] Sperre: Szenenliste und Abenteuer-Auswahl (E6).
+- [x] Speicherfehler über die bestehende Hinweisleiste mit „Erneut versuchen“.
+- [x] BDD `adminFight.feature`: vorbereiten, starten, Zug beenden mit Rundenwechsel, Szene gesperrt, beenden.
       Jedes Szenario beendet einen offenen Kampf im Aufräumen, damit die anderen Suites Szenen wechseln können.
 
 #### Doku
-- [ ] `docs/screens.md` (Admin Soll/Ist), `docs/architecture.md` (Datenmodell, Migration, Endpoints, WebSocket,
+- [x] `docs/screens.md` (Admin Soll/Ist), `docs/architecture.md` (Datenmodell, Migration, Endpoints, WebSocket,
       Synchronisation), `docs/domain.md` (Kampf, Kampfteilnehmer, Runde, Initiative, Nummer; „NPC“ ohne
       Datenmodell anpassen), `frontend/DESIGN.md` und `frontend/docs/design/` (Farbrolle, Kontrast, Panelbreite,
       Bausteine), `frontend/CLAUDE.md`, `backend/CLAUDE.md`.
@@ -214,20 +214,20 @@ die Nummern der NPCs entsprechen den Figuren auf dem Tisch.
 ### Schritt 2: Bearbeiten während des Kampfes
 
 #### Vertrag
-- [ ] `POST /table/fight/combatants`, `PATCH`/`DELETE /table/fight/combatants/{id}`, `PUT /table/fight/order` (E3);
+- [x] `POST /table/fight/combatants`, `PATCH`/`DELETE /table/fight/combatants/{id}`, `PUT /table/fight/order` (E3);
       `openapi.json`, `schema.d.ts`.
 
 #### Backend
-- [ ] Endpoints mit Regeln aus E5 (Entfernen des aktiven, Zurücknehmen bei niemand am Zug) und E7.
-- [ ] Tests: je Endpoint Erfolg, 404, 422; Umsortieren ohne Constraint-Verletzung; Push nach jeder Änderung.
+- [x] Endpoints mit Regeln aus E5 (Entfernen des aktiven, Zurücknehmen bei niemand am Zug) und E7.
+- [x] Tests: je Endpoint Erfolg, 404, 422; Umsortieren ohne Constraint-Verletzung; Push nach jeder Änderung.
 
 #### Frontend
-- [ ] Panel „Kampf“ im Kampf: ↑/↓ (sendet die ganze Reihenfolge), Entfernen, „Verstärkung“, fehlende Spieler.
-- [ ] Initiative: Totenkopf mit „Tot“/„Besiegt“ (E8).
-- [ ] BDD: Ausgeschiedene werden übersprungen, Verstärkung erscheint am Ende, Entfernen des aktiven Teilnehmers.
+- [x] Panel „Kampf“ im Kampf: ↑/↓ (sendet die ganze Reihenfolge), Entfernen, „Verstärkung“, fehlende Spieler.
+- [x] Initiative: Totenkopf mit „Tot“/„Besiegt“ (E8).
+- [x] BDD: Ausgeschiedene werden übersprungen, Verstärkung erscheint am Ende, Entfernen des aktiven Teilnehmers.
 
 #### Doku
-- [ ] Wie Schritt 1, um Bearbeiten und Ausscheiden ergänzt.
+- [x] Wie Schritt 1, um Bearbeiten und Ausscheiden ergänzt.
 
 ## Akzeptanzkriterien
 

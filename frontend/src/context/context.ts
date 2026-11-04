@@ -1,7 +1,7 @@
 import { createContext } from 'react'
 
 import {
-  AudioState, GameTableState, GroundGrid, SoundName, Theme, WallOverlay,
+  AudioState, FightState, GameTableState, GroundGrid, SoundName, Theme, WallOverlay,
 } from '../models/models'
 import { ScreenCounts } from '../realtime/messages'
 import { GROUND_GRID_CELL_SIZE } from '../utils/groundGrid'
@@ -73,3 +73,11 @@ export const GameAudioContext = createContext<GameAudioContextType>({
   reportTrackEnded: () => {},
   subscribeSound: () => () => {},
 })
+
+// Only for the Admin: the fight of the active adventure, null without one; other screens never
+// receive it
+interface FightContextType {
+  fight: FightState | null
+}
+
+export const FightContext = createContext<FightContextType>({ fight: null })

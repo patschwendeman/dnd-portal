@@ -68,8 +68,8 @@ Die Werte stehen nur in [tokens.ts](src/style/tokens.ts).
 | `size.iconLg` | Icons in den Menüpunkten der Navigationsleiste (Admin), 24px |
 | `size.scrollbar` | Breite der Scrollleiste (Notizen im Admin) |
 | `size.button.minWidth` | Mindestbreite von Text-Buttons |
-| `size.avatar.width` · `size.avatar.height` | Avatar der Hero-Karte (Admin, derzeit nicht verwendet), 96 × 128px (Hochformat 3:4) |
-| `size.badge` | Level-Badge der Hero-Karte (Admin, derzeit nicht verwendet), 36px |
+| `size.avatar.width` · `size.avatar.height` | Avatar der Hero-Karte (Admin, Panel „Am Zug“), 96 × 128px (Hochformat 3:4) |
+| `size.badge` | Level-Badge der Hero-Karte (Admin, Panel „Am Zug“), 36px |
 
 **Ebenen (`z-index`):** `z-index` nur über `layer.*`, nie als freie Zahl. Was im Grid-Layout ohnehin richtig
 liegt, bekommt keinen `z-index`. `layer.raised` gilt nur innerhalb einer Komponente mit eigenem Stapelkontext.
@@ -131,12 +131,12 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 
 | Stufe | Gewicht | Verwendung |
 |---|---|---|
-| `text.2xl` | `medium` / `bold` | Charaktername und Initialen der Hero-Karte (`medium`, Admin, derzeit nicht verwendet), h1 in den Notizen (`bold`) |
-| `text.xl` | `semibold` | h2 in den Notizen, Überschrift des Wall-Panels, Zahl im Ressourcen-Button (Player), Szenenname auf der Bühne (Admin) |
+| `text.2xl` | `medium` / `bold` | Initialen bzw. Nummer im Avatar der Hero-Karte (`medium`, Admin), h1 in den Notizen (`bold`) |
+| `text.xl` | `semibold` | h2 in den Notizen, Überschrift des Wall-Panels, Zahl im Ressourcen-Button (Player), Szenenname auf der Bühne und Name in der Hero-Karte (Admin) |
 | `text.lg` | `semibold` | Titel von Karte und Dialog, Text im Vollbild-Overlay (Wall, Ground), Ziffer der Zauberstufe I–IV (Player), Level und Zeichen „−“ und „+“ im Level-Stepper (Admin) |
 | `text.md` | `regular` / `medium` / `semibold` / `bold` | Standard und Listen in den Notizen (`ul`, `ol`, `li`, auch Absätze in Listeneinträgen des Inhaltsverzeichnisses) (`regular`), Hinweis im Overlay „Handy drehen“ (`medium`, Player), h3 und h4 in den Notizen (`semibold`), Abenteuer-Auswahl in der Kopfzeile (`bold`) |
-| `text.sm` | `regular` / `medium` / `semibold` | Werte, Beschreibungen (auch auf der Bühne), Statustexte, Zustand der Musik, Volk · Klasse · Spieler der Spielerzeile, Chips der Hero-Karte (`regular`), Navigation, Musiktitel, Charaktername und Initialen der Spielerzeile, Text der Hinweisleiste und Zahl im Level-Badge (`medium`), Buttons (auch im Segment-Control), Slider-Wert, Namen der Screens im Panel „Spieltisch“, h5 und h6 in den Notizen (`semibold`) |
-| `text.xs` | `semibold` | Labels (auch auf den Bildern der Bühne) |
+| `text.sm` | `regular` / `medium` / `semibold` | Werte, Beschreibungen (auch auf der Bühne), Statustexte, Zustand der Musik, Volk · Klasse · Spieler der Spielerzeile, Chips der Hero-Karte (`regular`), Navigation, Musiktitel, Charaktername und Initialen der Spielerzeile, Namen im Panel „Kampf“ und in der Initiative, Nummer im Avatar eines NPCs, Buttons „+ Vorname“, Text der Hinweisleiste und Zahl im Level-Badge (`medium`), Buttons (auch im Segment-Control), Slider-Wert, Namen der Screens im Panel „Spieltisch“, h5 und h6 in den Notizen (`semibold`) |
+| `text.xs` | `regular` / `semibold` | Details der Zeilen im Panel „Kampf“ (`regular`), Labels (auch auf den Bildern der Bühne) (`semibold`) |
 | `text.reading` | `regular` | nur Fließtext (Absätze) in den Notizen |
 
 Überschriften h3–h6 in den Notizen: Abstand `space.5` oben, `space.2` unten (h2: `space.6` / `space.3`).
@@ -163,9 +163,12 @@ Titel und normale Texte wie „Confirm“.
 | Segment-Control (Buttons darin `radius.md`) | `radius.lg` |
 | Sound-Gruppe im Panel „Audio“ | `radius.md` |
 | Spielerzeile (Admin) | `radius.lg` |
-| Avatar der Spielerzeile (Admin) | `radius.md` |
+| Avatar der Spielerzeile, Initiative-Zeile und im Panel „Kampf“ (Admin) | `radius.md` |
+| Initiative-Zeile (Admin) | `radius.lg` |
+| Zeile, Felder, Mini-Buttons und Buttons „+ Vorname“ im Panel „Kampf“, Hinweis „Kampf läuft“ (Admin) | `radius.md` |
+| Punkt am Menüpunkt „Kampf“ (Admin) | `radius.pill` |
 | Status-Punkt im Panel „Spieltisch“ | `radius.pill` |
-| Hero-Karte und ihr Avatar (Admin) | `radius.lg` |
+| Avatar der Hero-Karte, Bestätigungsdialog (Admin) | `radius.lg` |
 | Chips der Hero-Karte (Admin) | `radius.md` |
 | Level-Badge der Hero-Karte (Admin) | `radius.pill` |
 | Slider-Schiene | `radius.pill` |
@@ -214,7 +217,10 @@ Wiederkehrende Elemente werden in den Components gleich umgesetzt, am besten als
 gemeinsame Komponenten gibt es `TextButton` ([TextButton.tsx](src/components/TextButton.tsx)), `Label`
 ([Label.tsx](src/components/Label.tsx)), `PanelButton` ([PanelButton.tsx](src/components/PanelButton.tsx), Icon-Button
 in Dashboard-Panels), `OptionButtons` ([OptionButtons.tsx](src/components/OptionButtons.tsx), Segment-Control in
-Dashboard-Panels) und `PanelSlider` ([PanelSlider.tsx](src/components/PanelSlider.tsx), Slider in Dashboard-Panels, mit
+Dashboard-Panels), `MiniButton` ([MiniButton.tsx](src/components/MiniButton.tsx), kleine Icon-Buttons im Panel „Kampf“),
+`CombatantAvatar` ([CombatantAvatar.tsx](src/components/CombatantAvatar.tsx), Avatar von Spielern und NPCs),
+`ConfirmDialog` ([ConfirmDialog.tsx](src/components/ConfirmDialog.tsx), Rückfrage ohne Bild), die Zeilen-Bausteine aus
+[ListRow.tsx](src/components/ListRow.tsx) und `PanelSlider` ([PanelSlider.tsx](src/components/PanelSlider.tsx), Slider in Dashboard-Panels, mit
 `PanelSliderArea` und `SliderValue`). Als gemeinsame CSS-Helper gibt es `tileSurface` (Kachel im Admin) und
 `hoverScrollbar` (Scrollleiste), beide in [GlobalStyle.ts](src/style/GlobalStyle.ts); `tileSurface` mit Schalter für
 durchscheinende Kacheln ([1.4](#14-regeln)).
@@ -225,7 +231,7 @@ Aufbau je Baustein in [components.md](docs/design/components.md): [Icon-Button](
 [Karte](docs/design/components.md#karte), [Kachel](docs/design/components.md#kachel) (Admin), [Abenteuer-Hintergrund](docs/design/components.md#abenteuer-hintergrund) (Admin), [Dashboard-Panel](docs/design/components.md#dashboard-panel) (Admin), [Bühne](docs/design/components.md#bühne) (Admin),
 [Segment-Control](docs/design/components.md#segment-control) (Admin), [Spieltisch-Zeile](docs/design/components.md#spieltisch-zeile) (Admin),
 [Spielerzeile](docs/design/components.md#spielerzeile) (Admin), [Level-Stepper](docs/design/components.md#level-stepper) (Admin),
-[Hero-Karte](docs/design/components.md#hero-karte) (Admin, derzeit nicht verwendet), [Status-Punkt](docs/design/components.md#status-punkt) (Admin), [Ressourcen-Button](docs/design/components.md#ressourcen-button) (Player),
+[Hero-Karte](docs/design/components.md#hero-karte) (Admin), [Kampf-Avatar](docs/design/components.md#kampf-avatar) (Admin), [Panel „Kampf“](docs/design/components.md#panel-kampf) (Admin), [Initiative-Zeile](docs/design/components.md#initiative-zeile) (Admin), [Status-Punkt](docs/design/components.md#status-punkt) (Admin), [Ressourcen-Button](docs/design/components.md#ressourcen-button) (Player),
 [Overlay-Panel](docs/design/components.md#overlay-panel) (Wall), [Vollbild-Overlay](docs/design/components.md#vollbild-overlay) (Wall, Ground),
 [Dialog](docs/design/components.md#dialog), [Dialog „Spieler verbinden“](docs/design/components.md#dialog-spieler-verbinden) (Admin), [Kopfzeile](docs/design/components.md#kopfzeile) (Admin),
 [Theme-Menü](docs/design/components.md#theme-menü) (Player), [Hinweisleiste](docs/design/components.md#hinweisleiste) (Admin),
@@ -258,17 +264,17 @@ Wechselt mit dem Theme.
 
 | Rolle | Bedeutung | Verwendung |
 |---|---|---|
-| `background` | Grundfläche | Hintergrund von Admin (unter dem Hintergrundbild, ohne Bild sichtbar) und Ground, Wall-Panel, Fläche im Vollbild-Overlay, Nebenaktion ([2.4](#24-zustände)); Hover in Navigationsleiste, Panel und Kopfzeile im Admin, Nach-oben-Button der Notizen; leere Bildflächen der Bühne; Flächen in Dashboard-Panels (Play-Button ohne Musik, Slider-Schienen, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, Segment-Control, Sound-Gruppen, Spielerzeilen, Hero-Karte), Ring um das Level-Badge |
-| `secondary` | erhöhte Fläche | Karten, Kacheln im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Notizseiten, Dashboard-Panels; ohne Hintergrundbild), Dialog, Avatar der Spielerzeile, Avatar und Chips der Hero-Karte, Hover der Buttons im Segment-Control, Hintergrund der Wall, inaktiver Zustand ([2.4](#24-zustände)) |
+| `background` | Grundfläche | Hintergrund von Admin (unter dem Hintergrundbild, ohne Bild sichtbar) und Ground, Wall-Panel, Fläche im Vollbild-Overlay, Nebenaktion ([2.4](#24-zustände)); Hover in Navigationsleiste, Panel und Kopfzeile im Admin, Nach-oben-Button der Notizen; leere Bildflächen der Bühne; Flächen in Dashboard-Panels (Play-Button ohne Musik, Slider-Schienen, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, Segment-Control, Sound-Gruppen, Spielerzeilen, Chips der Hero-Karte, Zeilen, Felder und Buttons „+ Vorname“ im Panel „Kampf“, Initiative-Zeilen), Hinweis „Kampf läuft“ im Panel „Szenen“ |
+| `secondary` | erhöhte Fläche | Karten, Kacheln im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Notizseiten, Dashboard-Panels; ohne Hintergrundbild), Dialog, Avatar von Spielern (Spielerzeile, Kampf, Hero-Karte), Ring um das Level-Badge und den Punkt am Menüpunkt „Kampf“, Hover der Mini-Buttons und des Totenkopfs, Hover der Buttons im Segment-Control, Hintergrund der Wall, inaktiver Zustand ([2.4](#24-zustände)) |
 | `secondaryTranslucent` | erhöhte Fläche über einem Bild (`secondary` mit 75 % Deckkraft in Dark, 92 % in Tavern) | Kacheln im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Notizseiten, Dashboard-Panels), solange das Hintergrundbild dahinter liegt ([1.4](#14-regeln)) |
-| `primary` | Akzent, aktiv | Links, Slider-Füllung, Status-Punkt „verbunden“, Level-Badge der Hero-Karte, aktiver Zustand ([2.4](#24-zustände)) |
-| `border` | Linien | Trennlinien in Karten und den Panels „Audio“ und „Spieltisch“, Rand und Lichtkante der Kacheln im Admin (auch Bühne und Hinweisleiste), Rand des Avatars der Spielerzeile, Rand von Avatar und Chips der Hero-Karte, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |
+| `primary` | Akzent, aktiv | Links, Slider-Füllung, Status-Punkt „verbunden“, Level-Badge der Hero-Karte, Rahmen und Label „Am Zug“ des Teilnehmers am Zug, aktiver Zustand ([2.4](#24-zustände)) |
+| `border` | Linien | Trennlinien in Karten und den Panels „Audio“ und „Spieltisch“, Rand und Lichtkante der Kacheln im Admin (auch Bühne und Hinweisleiste), Rand des Avatars von Spielern, Rand der Chips der Hero-Karte, Rand der Felder im Panel „Kampf“, Trennlinien im Panel „Kampf“ und im Fuß von „Am Zug“, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |
 | `overlay` | Abdunklung | Hintergrund hinter dem Dialog |
 | `backdrop` | leichte Abdunklung des ganzen Screens | Abdunklung des Hintergrundbilds hinter den Kacheln im Admin; Vollbild-Overlay auf Wall und Ground (Text und Icon stehen auf einer Fläche `background`, nicht auf `backdrop`) |
 | `scrim` | Abdunklung auf Bildern | Verlauf unter dem Text der Bühne, Fläche der Labels „Wall“ und „Ground“ auf der Bühne, Rand des Ground-Bilds |
 | `onScrim` | Vordergrund auf `scrim` | Label, Szenenname und Beschreibung auf der Bühne, Text der Labels „Wall“ und „Ground“ |
 | `text.color` | Vordergrund | Text, Icon-Füllung, Slider-Griff, Ring des Status-Punkts „nicht verbunden“ |
-| `text.muted` | gedämpfter Vordergrund (`text.color` mit Transparenz) | Volk · Klasse · Spieler der Spielerzeile, Spielername (Label) der Hero-Karte, Lautsprecher-Icon im Panel „Audio“, Zeichen deaktivierter Buttons ([2.4](#24-zustände)); nicht für Text direkt auf `secondary` (Tavern verfehlt dort 4,5:1) |
+| `text.muted` | gedämpfter Vordergrund (`text.color` mit Transparenz) | Volk · Klasse · Spieler der Spielerzeile, Details in Initiative und Panel „Kampf“ (auf `background`), Icons der Mini-Buttons, Schloss der Abenteuer-Auswahl, Lautsprecher-Icon im Panel „Audio“, Zeichen deaktivierter Buttons ([2.4](#24-zustände)); nicht für Text direkt auf `secondary` (Tavern verfehlt dort 4,5:1) |
 | `initials` | Initialen | Initialen im Avatar von Spielerzeile und Hero-Karte ohne Bild (Dark: wie `primary`, Tavern: wie `text.color`) |
 | `onPrimary` | Vordergrund auf Akzent | aktiver Zustand ([2.4](#24-zustände)), Zahl im Level-Badge |
 | `error` | Fläche für Fehler | Hinweisleiste in der Kopfzeile des Admins |
@@ -277,15 +283,18 @@ Wechselt mit dem Theme.
 | `resource.<art>.strong` | kräftiger Ton einer Ressource (`action`, `bonus`, `movement`, `spell`, `special`) | Rahmen des Ressourcen-Buttons, verfügbare Icons und Plätze (Player) |
 | `resource.<art>.muted` | dunkler Ton einer Ressource | Fläche des Ressourcen-Buttons (Player) |
 | `resource.empty` | verbraucht | verbrauchte Icons und Plätze (Player) |
+| `combatant.<art>.text` | Vordergrund einer NPC-Art (`enemy`, `ally`) | Nummer im Avatar; `enemy` auch: Totenkopf „ausgeschieden“, Fehlermeldung im Panel „Kampf“, Schloss im Hinweis „Kampf läuft“ (Admin) |
+| `combatant.<art>.surface` | Fläche einer NPC-Art | Fläche des NPC-Avatars; `enemy` auch: markierter Totenkopf (Admin) |
+| `combatant.<art>.border` | Rand einer NPC-Art | Rand des NPC-Avatars; `enemy` auch: Punkt am Menüpunkt „Kampf“ (Admin) |
 
 ### 2.3 Themes
 
 Zwei Themes: Dark (`darkTheme`, [darkTheme.ts](src/style/darkTheme.ts)) und Tavern (`tavernTheme`,
-[tavernTheme.ts](src/style/tavernTheme.ts)). `resource.*`, `qr.*`, `error` und `onError` sind in beiden Themes
+[tavernTheme.ts](src/style/tavernTheme.ts)). `resource.*`, `combatant.*`, `qr.*`, `error` und `onError` sind in beiden Themes
 gleich, weil sie Bedeutung tragen, nicht Stimmung; `scrim` und `onScrim` ebenfalls, weil sie auf beliebigen Bildern
 lesbar sein müssen, und `backdrop`, weil es beliebige Bilder abdunkelt. `secondaryTranslucent` ist in jedem Theme
 dessen `secondary` mit verringerter Deckkraft: in Dark 75 %, in Tavern 92 % (erst damit erreicht `primary` auf der
-Kachel auch über einem hellen Bild 3:1). Die `resource.*`-Töne sind so gewählt, dass alle Grafik-Paare 3:1 erreichen. Werte: [contrast.md](docs/design/contrast.md#theme-werte).
+Kachel auch über einem hellen Bild 3:1). Die `resource.*`-Töne sind so gewählt, dass alle Grafik-Paare 3:1 erreichen; die `combatant.*`-Töne (aus dem Mockup des Kampfes) erreichen mit ihrer Fläche 4,5:1. Dass in Tavern `primary` ebenfalls rot ist wie die Gegner, ist so gewollt. Werte: [contrast.md](docs/design/contrast.md#theme-werte).
 
 ### 2.4 Zustände
 

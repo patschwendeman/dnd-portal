@@ -7,6 +7,7 @@ from app.models import Adventure, Scene
 from app.realtime.push import push_state
 from app.schemas import AdventureDetail, AdventureSummary, AdventureUpdate, SceneDetail
 from app.services import adventure as adventure_service
+from app.services import fight as fight_service
 
 router = APIRouter()
 
@@ -14,6 +15,7 @@ NOT_FOUND_DETAIL = "Adventure not found"
 NOT_FOUND: dict[int | str, dict[str, Any]] = {404: {"description": NOT_FOUND_DETAIL}}
 UPDATE_RESPONSES: dict[int | str, dict[str, Any]] = {
     **NOT_FOUND,
+    409: {"description": "Fight in progress: the active scene cannot change"},
     422: {"description": "Scene does not belong to adventure, or validation error"},
 }
 
@@ -43,6 +45,8 @@ def update_adventure(
         adventure = adventure_service.update_adventure(db, adventure_id, update)
     except adventure_service.SceneNotInAdventureError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
+    except fight_service.FightInProgressError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
     if adventure is None:
         raise _not_found()
     # Always pushed, also for an adventure that is not active: the snapshot is cheap.

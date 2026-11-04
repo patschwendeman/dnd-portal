@@ -112,6 +112,100 @@ export interface paths {
         patch: operations["update_audio_table_audio_patch"];
         trace?: never;
     };
+    "/table/fight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Fight
+         * @description The fight of the active adventure; null without one.
+         */
+        get: operations["read_fight_table_fight_get"];
+        put?: never;
+        /** Start Fight */
+        post: operations["start_fight_table_fight_post"];
+        /** End Fight */
+        delete: operations["end_fight_table_fight_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/table/fight/combatants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Combatant */
+        post: operations["add_combatant_table_fight_combatants_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/table/fight/combatants/{combatant_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Combatant */
+        delete: operations["remove_combatant_table_fight_combatants__combatant_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Combatant */
+        patch: operations["update_combatant_table_fight_combatants__combatant_id__patch"];
+        trace?: never;
+    };
+    "/table/fight/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Reorder */
+        put: operations["reorder_table_fight_order_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/table/fight/turn": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * End Turn
+         * @description If it is no longer the turn of `from_combatant_id`, the current state is returned and nothing is pushed.
+         */
+        post: operations["end_turn_table_fight_turn_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/table/join": {
         parameters: {
             query?: never;
@@ -211,6 +305,77 @@ export interface components {
             playing?: boolean;
             /** Volume */
             volume?: number;
+        };
+        /**
+         * Combatant
+         * @description A participant of the fight: a player (`player_id`) or an NPC (`enemy`/`ally`) with the `number` of its figure on
+         *     the table and an optional `label` that only the Admin shows.
+         */
+        Combatant: {
+            /** Defeated */
+            defeated: boolean;
+            /** Id */
+            id: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "player" | "enemy" | "ally";
+            /** Label */
+            label: string | null;
+            /** Number */
+            number: number | null;
+            /** Player Id */
+            player_id: number | null;
+        };
+        /**
+         * CombatantCreate
+         * @description A player (`player_id`, nothing else) or an NPC (`number`, optional `label`; trimmed, empty = none).
+         */
+        CombatantCreate: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "player" | "enemy" | "ally";
+            /** Label */
+            label?: string | null;
+            /** Number */
+            number?: number | null;
+            /** Player Id */
+            player_id?: number | null;
+        };
+        /** CombatantUpdate */
+        CombatantUpdate: {
+            /** Defeated */
+            defeated: boolean;
+        };
+        /**
+         * FightOrder
+         * @description The new initiative order: exactly the IDs of the current combatants.
+         */
+        FightOrder: {
+            /** Combatant Ids */
+            combatant_ids: number[];
+        };
+        /** FightStart */
+        FightStart: {
+            /** Combatants */
+            combatants: components["schemas"]["CombatantCreate"][];
+        };
+        /**
+         * FightState
+         * @description The running fight of the active adventure; `combatants` in initiative order, `null` turn: nobody is left.
+         */
+        FightState: {
+            /** Active Combatant Id */
+            active_combatant_id: number | null;
+            /** Combatants */
+            combatants: components["schemas"]["Combatant"][];
+            /** Round */
+            round: number;
+            /** Scene Id */
+            scene_id: number;
         };
         /**
          * GameTableState
@@ -338,6 +503,14 @@ export interface components {
             /** Source */
             source: string;
         };
+        /**
+         * TurnRequest
+         * @description Ends the turn of `from_combatant_id`; if it is no longer the turn of that combatant, nothing changes.
+         */
+        TurnRequest: {
+            /** From Combatant Id */
+            from_combatant_id: number;
+        };
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -444,6 +617,13 @@ export interface operations {
             };
             /** @description Adventure not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Fight in progress: the active scene cannot change */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -576,6 +756,13 @@ export interface operations {
                     "application/json": components["schemas"]["GameTableState"];
                 };
             };
+            /** @description Fight in progress: the active adventure cannot change */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description Adventure not found, or validation error */
             422: {
                 headers: {
@@ -628,6 +815,321 @@ export interface operations {
                 };
             };
             /** @description Volume out of range, or validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    read_fight_table_fight_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FightState"] | null;
+                };
+            };
+        };
+    };
+    start_fight_table_fight_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FightStart"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FightState"];
+                };
+            };
+            /** @description No active adventure, no active scene, or fight in progress */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Player of another adventure, duplicate player or number, or validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    end_fight_table_fight_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No fight */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active adventure */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    add_combatant_table_fight_combatants_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CombatantCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FightState"];
+                };
+            };
+            /** @description No fight */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active adventure */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Player of another adventure, player or number already taking part, or validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    remove_combatant_table_fight_combatants__combatant_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                combatant_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FightState"];
+                };
+            };
+            /** @description No fight, or combatant not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active adventure */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    update_combatant_table_fight_combatants__combatant_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                combatant_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CombatantUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FightState"];
+                };
+            };
+            /** @description No fight, or combatant not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active adventure */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    reorder_table_fight_order_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FightOrder"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FightState"];
+                };
+            };
+            /** @description No fight */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active adventure */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not exactly the IDs of the current combatants, or validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    end_turn_table_fight_turn_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TurnRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FightState"];
+                };
+            };
+            /** @description No fight */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No active adventure */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation error */
             422: {
                 headers: {
                     [name: string]: unknown;

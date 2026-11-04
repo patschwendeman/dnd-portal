@@ -27,3 +27,10 @@ export type JoinInfo = Schemas['JoinInfo']
 export type AudioState = Schemas['AudioState']
 export type AudioUpdate = Schemas['AudioUpdate']
 export type SoundName = Schemas['SoundRequest']['name']
+
+// The running fight of the active adventure (GET /table/fight, pushed only to Admins); combatants
+// in initiative order
+export type FightState = Schemas['FightState']
+export type Combatant = Schemas['Combatant']
+export type CombatantKind = Combatant['kind']
+export type CombatantCreate = Schemas['CombatantCreate']

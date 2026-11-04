@@ -1,18 +1,10 @@
 import { ReactElement } from 'react'
 import styled from 'styled-components'
 
+import { RowList } from './ListRow'
 import PlayerListItem from './PlayerListItem'
 import { Player } from '../models/models'
 import { textStyle } from '../style/tokens'
-
-// Always one column: one player per row reads faster at the table than a grid
-const List = styled.ul`
-  display: flex;
-  flex-direction: column;
-  gap: ${(props) => props.theme.space[2]};
-  padding: 0;
-  list-style: none;
-`
 
 const NoPlayers = styled.p`
   ${textStyle('sm')}
@@ -29,9 +21,9 @@ function PlayersPanel({ players }: PlayersPanelProps): ReactElement {
     return <NoPlayers data-test-id="no-players">Keine Spieler</NoPlayers>
   }
   return (
-    <List>
+    <RowList>
       {players.map((player) => <PlayerListItem key={player.id} player={player} />)}
-    </List>
+    </RowList>
   )
 }
 

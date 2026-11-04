@@ -1,6 +1,15 @@
 import { isSoundName } from '../audio/sounds'
 import {
-  AudioState, GameTableState, GroundGrid, SoundName, Theme, Track, WallOverlay,
+  AudioState,
+  Combatant,
+  CombatantKind,
+  FightState,
+  GameTableState,
+  GroundGrid,
+  SoundName,
+  Theme,
+  Track,
+  WallOverlay,
 } from '../models/models'
 import { GROUND_GRID_CELL_SIZE } from '../utils/groundGrid'
 
@@ -20,6 +29,8 @@ export type ServerMessage = { type: 'state', payload: GameTableState }
   | { type: 'sound', payload: { name: SoundName } }
   // Only to Admins: sent after connecting and whenever a count changes
   | { type: 'screens', payload: ScreenCounts }
+  // Only to Admins: sent after connecting and after every change; null without a fight
+  | { type: 'fight', payload: FightState | null }
   | { type: 'ping' }
 
 // Sent only by the Admin; the server ignores messages of the other screens
@@ -29,6 +40,7 @@ export type ClientMessage = { type: 'audio_ready' }
 const THEMES: readonly Theme[] = ['dark', 'tavern']
 const WALL_OVERLAYS: readonly WallOverlay[] = ['world', 'off']
 const GROUND_GRIDS: readonly GroundGrid[] = ['black', 'white', 'off']
+const COMBATANT_KINDS: readonly CombatantKind[] = ['player', 'enemy', 'ally']
 
 const isRecord = (value: unknown): value is Record<string, unknown> => (
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -133,6 +145,56 @@ const parseScreens = (payload: unknown): ScreenCounts | null => {
   return { wall, ground, player }
 }
 
+const parseCombatant = (value: unknown): Combatant | null => {
+  if (!isRecord(value)) {
+    return null
+  }
+  const {
+    id, kind, player_id: playerId, number, label, defeated,
+  } = value
+  if (
+    !isPositiveInteger(id)
+    || !COMBATANT_KINDS.includes(kind as CombatantKind)
+    || !isId(playerId)
+    || !isId(number)
+    || (label !== null && typeof label !== 'string')
+    || typeof defeated !== 'boolean'
+  ) {
+    return null
+  }
+  return {
+    id, kind: kind as CombatantKind, player_id: playerId, number, label, defeated,
+  }
+}
+
+// undefined: invalid; null: no fight
+const parseFight = (payload: unknown): FightState | null | undefined => {
+  if (payload === null) {
+    return null
+  }
+  if (!isRecord(payload) || !Array.isArray(payload.combatants)) {
+    return undefined
+  }
+  const {
+    round, active_combatant_id: activeCombatantId, scene_id: sceneId,
+  } = payload
+  const combatants = payload.combatants.map(parseCombatant)
+  if (
+    !isPositiveInteger(round)
+    || !isId(activeCombatantId)
+    || !isPositiveInteger(sceneId)
+    || combatants.some((combatant) => combatant === null)
+  ) {
+    return undefined
+  }
+  return {
+    round,
+    active_combatant_id: activeCombatantId,
+    scene_id: sceneId,
+    combatants: combatants as Combatant[],
+  }
+}
+
 // Returns null for anything that is not a valid, known message, so a newer server can add message
 // types
 export const parseServerMessage = (data: unknown): ServerMessage | null => {
@@ -170,6 +232,10 @@ export const parseServerMessage = (data: unknown): ServerMessage | null => {
   if (message.type === 'screens') {
     const payload = parseScreens(message.payload)
     return payload === null ? null : { type: 'screens', payload }
+  }
+  if (message.type === 'fight') {
+    const payload = parseFight(message.payload)
+    return payload === undefined ? null : { type: 'fight', payload }
   }
   return null
 }

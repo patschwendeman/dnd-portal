@@ -6,6 +6,7 @@ from app.crud import game_table as game_table_crud
 from app.realtime.ground_grid import ground_grid
 from app.realtime.wall_overlay import wall_overlay
 from app.schemas import GameTableState, GameTableUpdate, JoinInfo
+from app.services import fight as fight_service
 
 
 class AdventureNotFoundError(ValueError):
@@ -38,6 +39,8 @@ def update_state(db: Session, update: GameTableUpdate) -> GameTableState:
 
     game_table = game_table_crud.read_game_table(db)
     adventure_changed = "active_adventure_id" in values and adventure_id != game_table.active_adventure_id
+    if adventure_changed and game_table.active_adventure_id is not None:
+        fight_service.check_unlocked(db, game_table.active_adventure_id)
     game_table_crud.update_game_table(db, game_table, values)
     # Set together with the stored fields, so that a single push follows; an overlay set in the same request wins.
     if overlay is not None:
