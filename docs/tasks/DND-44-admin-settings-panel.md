@@ -1,7 +1,7 @@
 # DND-44: Menüpunkt „Einstellungen“ im Admin Screen
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -174,3 +174,40 @@ noch, was man im Spiel braucht.
 - keine
 
 ## Review
+
+### Runde 1 – 2026-11-04
+**Empfehlung:** Abnahme
+
+Geprüft: Commit `fe4dbb6` gegen Basis `a27af89` (ohne `frontend/docs/design/mockup/`), inklusive der Umbenennung
+`AdventureSelect.tsx` → `SelectList.tsx`, die versehentlich im docs-Commit `f8cc357` liegt. Alle 7 AK erfüllt (Code,
+BDD, Backend-Tests auf frischer DB, Live-Prüfung AK7 mit API-Neustart und AK4 mit gestoppter API). Manuelle
+Prüfschritte 1, 2 (Player) und 5 (Kontrast mit Hintergrundbild in beiden Themes) stehen noch aus.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | Menüpunkt `settings` mit `placement: 'bottom'`, `BottomGroup` in `NavRail.tsx`, `splitByPlacement`; BDD „I open the settings from the lower end of the navigation rail“, `navRail.spec.ts` |
+| AK2 | erfüllt (nur per Code) | `handleAdventureSelection`/`saveActiveAdventure` unverändert, Header-Name aus `activeAdventureId`; kein Test, Dev-DB hat nur ein Abenteuer |
+| AK3 | erfüllt | `SelectList` mit `canOpen: !isLocked`, `aria-disabled`, `adventure-select-lock`; BDD `adminFight` „Scene and adventure are locked during a fight“ |
+| AK4 | erfüllt | `AdminHeader.tsx` mit `adventure-name`, Fallback „Kein Abenteuer“; BDD „The header shows the active adventure and no settings button“; live: Auswahl bei getrennter Verbindung deaktiviert |
+| AK5 | erfüllt | `SettingsPanel` mit Theme-`SelectList`; BDD „I switch the theme with the keyboard and the mouse“ (Server-Theme, Wall-Farbe) |
+| AK6 | erfüllt | `CellSizeControl` in `SettingsPanel.tsx`, nicht mehr in `GameTablePanel`; BDD `groundGrid` |
+| AK7 | erfüllt | Migration `0008`, `get_state` liest aus `game_table`; `test_cell_size_is_stored_and_the_grid_colour_is_not`; live nach `docker restart`: `off`, `150` |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- Umbenennung `AdventureSelect.tsx` → `SelectList.tsx` liegt im fremden docs-Commit `f8cc357`; dort baut das Frontend nicht. Noch nicht gepusht, Bereinigung entscheidet der User.
+- Kein eigener Plan-Commit; Plan kam erst mit `fe4dbb6` ins Repo (zulässig, weicht vom Muster bei DND-43 ab).
+- Dev-DB: CHECK `ck_game_table_ground_grid_cell_size` per `ALTER TABLE` nachgezogen (früher Migrationsentwurf ohne CHECK lief); auf frischer DB korrekt (`test_migration_0008.py`).
+- E2E `adminDashboard` „The first interaction makes an admin window the audio output“ rot an der Vorbedingung `output_ready` – umgebungsbedingt, Datei unverändert.
+- jscpd-Schwellwert 1,35 → 0,28 (ein Duplikat verbleibt, 0,27 %); zulässig laut `frontend/CLAUDE.md`.
+- Doku über den Plan hinaus angepasst (`domain.md`, `DESIGN.md`, `components.md`, `contrast.md`, `screen-layouts.md`, beide Teil-`CLAUDE.md`); Stichproben stimmen mit dem Code.
+- `ThemeMenu` (Player) nutzt jetzt `useListbox`; Verhalten unverändert, kein eigener Test ergänzt.
+- Auswahlliste optisch als Panel-Feld (Outline außen), Kontrast nicht gemessen (manueller Schritt 5).
+- Keine automatischen Tests für AK2 und die deaktivierte Auswahl bei Hinweisleiste.
+- Einzelne neue Kommentare knapp beschreibend (z. B. in `useListbox.ts`), nicht blockierend.
+
+**Checks:** Backend ruff, format, mypy, `make check-quality` grün, `openapi.json` ohne Diff, pytest 319/319 auf
+frischer DB. Frontend lint, typecheck, unit 265/265, build, knip, jscpd grün, `generate:api` ohne Diff. E2E betroffene
+Suites 14/14, gesamt 29/30 (siehe Hinweis).
