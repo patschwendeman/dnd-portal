@@ -69,7 +69,7 @@ const Badge = styled.span`
   right: ${BADGE_INSET};
   width: ${BADGE_SIZE};
   height: ${BADGE_SIZE};
-  background-color: ${(props) => props.theme.colors.combatant.enemy.border};
+  background-color: ${(props) => props.theme.colors.negative.border};
   border-radius: ${(props) => props.theme.radius.pill};
   box-shadow: 0 0 0 ${(props) => props.theme.borderWidth.thick}
     ${(props) => props.theme.colors.secondary};

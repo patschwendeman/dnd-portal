@@ -165,9 +165,18 @@ die Nummern der NPCs entsprechen den Figuren auf dem Tisch.
     alle Teilnehmer sind ausgeschieden.“), „Initiative · N“ (Kompakt-Liste in Reihenfolge mit Zahl je Art, aktive
     Zeile mit Rahmen in Hauptfarbe und „Am Zug“, Totenkopf je Zeile), „Audio“, „Spieltisch“. Bühne und Party
     (samt Level) sind während des Kampfes nicht zu sehen.
-  - Neue Farbrolle für die Art (in beiden Themes gleich, Werte aus dem Mockup): Gegner Text `#ff6b6b`, Fläche
-    `#290000`, Rand `#ff2424`; Verbündete `#3fd033`, `#072900`, `#099000`. Spieler-Avatare bleiben wie in der Party.
-    Dass in Tavern die Hauptfarbe ebenfalls rot ist, bleibt so (Entscheidung im Dialog).
+  - Fläche der Spieler-Avatare richtet sich nach dem Untergrund: direkt auf der Kachel (Hero in „Am Zug“, Avatar bei
+    „Als Nächstes“) `background`, auf Zeilen mit Fläche `background` (Initiative, Liste im Panel „Kampf“, Party)
+    `secondary`. NPC-Avatare behalten überall die Farben ihrer Art (Entscheidung nach Runde 1).
+  - Farbrollen `negative` und `positive` (je `text`, `surface`, `border`, in beiden Themes gleich) statt
+    `combatant.enemy`/`combatant.ally`: `negative` Text `#ff6b6b`, Fläche `#290000`, Rand `#ff2424` – Gegner-Avatar,
+    markierter Totenkopf, Fehlertext im Panel „Kampf“, Schloss im Hinweis „Kampf läuft“, Punkt am Menüpunkt;
+    `positive` `#3fd033`, `#072900`, `#099000` – Verbündeten-Avatar. Fläche und Rand teilen ihre Werte mit
+    `resource.special` bzw. `resource.action` über gemeinsame Konstanten in den Theme-Dateien (die Rollen bleiben
+    getrennt, Ressourcen-Farben tragen eine andere Bedeutung); neu sind nur die beiden Textfarben. Die Rollen sind
+    auch für spätere Effekt-Chips (positiv/negativ) gedacht. Kontrast der Textfarben auf `secondaryTranslucent`
+    messen und in `contrast.md` eintragen (Entscheidung nach Runde 1). Dass in Tavern die Hauptfarbe ebenfalls rot
+    ist, bleibt so (Entscheidung im Dialog).
 
 ### E10: Schnitt in zwei Schritte
 - **Entscheidung:** Ein Task, zwei vertikale Schritte (je lauffähig, je eine Review-Runde möglich): Schritt 1
@@ -319,3 +328,63 @@ die Nummern der NPCs entsprechen den Figuren auf dem Tisch.
 Keine.
 
 ## Review
+
+### Runde 1 – 2026-11-04
+**Empfehlung:** Abnahme
+
+Geprüft: Commit `684e876` gegen Basis `d757c38`. Alle 9 AK erfüllt (Code, Backend-Tests 308/308 auf frischer DB,
+Unit-Tests). Manuelle Prüfschritte 1–3 (Mockup-Vergleich in beiden Themes) stehen noch aus.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | `initialPreparation`, `useFightPreparation.ts`, `numberError`, `moveItem`/`missingPlayers`; `fight.spec.ts`, BDD „I prepare a fight“ |
+| AK2 | erfüllt | Dashboard-Reihenfolge in `AdminScreen.tsx`; `push_fight` → `send_admins`; `test_every_change_is_pushed` |
+| AK3 | erfüllt | `end_turn` mit `with_for_update`, veraltetes `from_combatant_id` ignoriert; `test_stale_end_turn_changes_nothing` |
+| AK4 | erfüllt | Sperre in `SideBarLeftElement`, `SceneNavigation.tsx`, `AdventureSelect`; Server `check_unlocked`; Tests zu 409 |
+| AK5 | erfüllt | `ConfirmDialog` + `runSave(endFight)`; `test_end_deletes_the_fight`, BDD „I end the fight“ |
+| AK6 | erfüllt | Migration `0007`, `test_fight_survives_a_restart`, `test_new_admin_receives_the_running_fight`; Punkt in `NavRail.tsx` |
+| AK7 | erfüllt | Totenkopf mit `aria-pressed` (`InitiativePanel.tsx`); Tests zu besiegten Teilnehmern, BDD „Defeated combatants are skipped“ |
+| AK8 | erfüllt | `test_added_combatant_is_appended`, `test_reorder_keeps_the_turn_…` (Constraint deferred), `test_removing_the_active_combatant_…` |
+| AK9 | erfüllt | Schreibzugriffe über `runSave` → bestehende Hinweisleiste; `test_failed_and_stale_changes_are_not_pushed`; kein eigener Frontend-Test |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- `GET /table/fight` ohne aktives Abenteuer liefert `null` statt 409 – weicht vom Wortlaut von E3 ab, passt aber zum
+  Push (E4); dokumentiert in `docs/architecture.md`, Test `test_get_returns_null_without_active_adventure`. Entscheidung beim User.
+- Normale statt gedämpfter Textfarbe auf der Kachel folgt `DESIGN.md` (Tavern verfehlt 4,5:1). Plausibel.
+- Hero-Karte (24px semibold, ohne Fläche) entspricht dem Mockup; `PlayerHeroCard` → `HeroCard`.
+- Neue Icons selbst gezeichnet, `fill="currentColor"`.
+- CORS weiter nur GET/PATCH, wie bisher bei `POST /table/sounds` – bestehende Lücke, ggf. in `docs/known-issues.md` aufnehmen.
+- Test-Helfer: `receive_any` überspringt `fight`, keine Assertion aufgeweicht; `TRUNCATE` in `test_seed.py` nötig.
+- 3 rote BDD-Szenarien (`adminDashboard`, `screenFullscreen`) hängen nicht an DND-43: `screenFullscreen` einzeln grün,
+  keine 409/5xx im API-Log, Aufräumschritte in `adminFight` greifen.
+- In der Dev-DB lief zum Prüfzeitpunkt ein manuell gestarteter Kampf (`fight` 337); vor dem nächsten E2E-Lauf beenden.
+  Robuster wäre `DELETE /table/fight` im Setup der anderen Suites (nicht im Plan).
+- Kleinigkeiten: `RowInfo` jetzt `flex: 1 1 auto`; endet der Kampf in einem anderen Fenster, bleibt ein offener
+  „Kampf beenden?“-Dialog stehen (Confirm → 404 + Hinweisleiste); Kontrast von `combatant.enemy.text` auf
+  `secondaryTranslucent` nicht gemessen.
+
+**Checks:** Backend ruff, format, mypy, `make check-quality`, OpenAPI ohne Diff; pytest 308/308 (frische DB).
+Frontend lint, typecheck, unit 262/262, build, knip, jscpd 0,85 %, `generate:api` ohne Diff. E2E nur `screenFullscreen`
+(2/2); Gesamtlauf nicht gestartet, um den laufenden manuellen Kampf nicht zu beenden.
+
+### Runde 2 – 2026-11-04 (Feedback User)
+**Empfehlung:** Nacharbeiten
+
+Manueller Vergleich mit dem Mockup (offen aus Runde 1) durch den User, dazu Prüfung der neuen Farbrollen. Diese
+Runde betrifft nur Farben; die Entscheidungen stehen in E9 (markiert „Entscheidung nach Runde 1“).
+
+**Blockierende Befunde**
+- [x] Spieler-Avatar in „Am Zug“ (und bei „Als Nächstes“) hat `secondary` und hebt sich nicht von der Kachel ab;
+      `CombatantAvatar.tsx` setzt für Spieler immer `secondary` – Fläche nach Untergrund wie in E9.
+- [x] `combatant.*` dupliziert vier Werte von `resource.special`/`resource.action`: ersetzen durch
+      `negative`/`positive` mit gemeinsamen Konstanten (E9); Nutzungen in `CombatantAvatar.tsx`,
+      `InitiativePanel.tsx`, `FightPanel.tsx`, `SceneNavigation.tsx`, `NavRail.tsx`; `DESIGN.md`, `contrast.md`
+      (inkl. Kontrast auf `secondaryTranslucent`) und `components.md` nachziehen.
+
+**Hinweise**
+- Nicht Teil dieser Runde: die Höhe des Panels „Am Zug“ (Avatar 96×128, Badge 36px statt 80×104 und 32px im
+  Mockup) bleibt, ebenso der offene Dialog „Kampf beenden?“, wenn der Kampf in einem anderen Fenster endet.
+- Weitere Abweichungen zum Mockup außerhalb des Panels „Am Zug“ sind nicht gemeldet.

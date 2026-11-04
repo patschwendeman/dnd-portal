@@ -33,8 +33,8 @@ gilt der Code.
 | `resource.spell.strong` · `.muted` | `#2487ff` · `#001229` | gleich |
 | `resource.special.strong` · `.muted` | `#ff2424` · `#290000` | gleich |
 | `resource.empty` | `#707070` | gleich |
-| `combatant.enemy.text` · `.surface` · `.border` | `#ff6b6b` · `#290000` · `#ff2424` | gleich |
-| `combatant.ally.text` · `.surface` · `.border` | `#3fd033` · `#072900` · `#099000` | gleich |
+| `negative.text` · `.surface` · `.border` | `#ff6b6b` · `#290000` (= `resource.special.muted`) · `#ff2424` (= `resource.special.strong`) | gleich |
+| `positive.text` · `.surface` · `.border` | `#3fd033` · `#072900` (= `resource.action.muted`) · `#099000` (= `resource.action.strong`) | gleich |
 
 ## Kontrastmessung
 
@@ -72,7 +72,6 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `text.color` auf `background` | Charaktername der Hero-Karte (32px, derzeit nicht verwendet) | 3,0 | 17,4 | 9,2 | ✓ beide |
 | `text.muted` auf `background` | Spielername der Hero-Karte (12px, derzeit nicht verwendet) | 4,5 | 8,6 | 4,8 | ✓ beide |
 | `text.color` auf `secondary` | Chips der Hero-Karte (14px, derzeit nicht verwendet) | 4,5 | 15,9 | 6,5 | ✓ beide |
-| `initials` auf `secondary` | Initialen im Avatar der Hero-Karte (32px, groß, derzeit nicht verwendet) | 3,0 | 5,6 | 6,5 | ✓ beide |
 | `onPrimary` auf `primary` | Zahl im Level-Badge der Hero-Karte (14px, derzeit nicht verwendet) | 4,5 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `background` | Level-Badge gegen die Hero-Karte (derzeit nicht verwendet) | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `border` auf `background` | Rand von Avatar und Chips gegen die Hero-Karte (derzeit nicht verwendet) | 3,0 | **1,5** | 4,3 | bewusst ✗ Dark, siehe Anmerkung |
@@ -90,11 +89,15 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `resource.*.strong` auf `resource.*.muted` | Rahmen, verfügbare Icons und Plätze | 3,0 | 3,8–11,7 | 3,8–11,7 | ✓ beide |
 | `resource.*.strong` auf `secondary` | Rahmen gegen die Karte | 3,0 | 4,0–13,0 | 3,2–10,5 | ✓ beide |
 | `resource.empty` auf `resource.*.muted` | verbrauchte Icons und Plätze | 3,0 | 3,1–3,9 | 3,1–3,9 | ✓ beide |
-| `combatant.*.text` auf `combatant.*.surface` | Nummer im Avatar eines NPCs (Kampf), Totenkopf „ausgeschieden“ (Gegner-Töne) | 4,5 | 6,9 (Gegner) · 7,8 (Verbündete) | gleich | ✓ beide |
-| `combatant.enemy.text` auf `secondary` | Fehlermeldung beim Hinzufügen im Panel „Kampf“ | 4,5 | 6,2 | 5,0 | ✓ beide |
-| `combatant.enemy.text` auf `background` | Schloss im Hinweis „Kampf läuft“ (Panel „Szenen“) | 3,0 | 6,8 | 7,1 | ✓ beide |
-| `combatant.*.border` auf `background` | Rand des NPC-Avatars in den Zeilen (Panel „Kampf“, Initiative) | 3,0 | 5,0 (Gegner) · 4,5 (Verbündete) | 5,2 · 4,7 | ✓ beide |
-| `combatant.enemy.border` auf `secondary` | Punkt am Menüpunkt „Kampf“ (laufender Kampf) | 3,0 | 4,6 | 3,7 | ✓ beide |
+| `negative.text` · `positive.text` auf ihrer Fläche | Nummer im Avatar eines Gegners bzw. Verbündeten (Kampf), markierter Totenkopf (`negative`) | 4,5 | 6,9 (`negative`) · 7,8 (`positive`) | gleich | ✓ beide |
+| `negative.text` auf `secondary` | Fehlermeldung beim Hinzufügen im Panel „Kampf“ (ohne Hintergrundbild) | 4,5 | 6,2 | 5,0 | ✓ beide |
+| `positive.text` auf `secondary` | derzeit nicht verwendet (spätere Effekt-Chips) | 4,5 | 8,5 | 6,8 | ✓ beide |
+| `negative.text` auf `secondaryTranslucent` | Fehlermeldung beim Hinzufügen im Panel „Kampf“ auf der durchscheinenden Kachel; ungünstigster Fall über weißem Bild, über schwarzem Dark 6,6, Tavern 5,3 | 4,5 | 4,5 (knapp, siehe Anmerkung) | 4,6 | ✓ beide |
+| `positive.text` auf `secondaryTranslucent` | derzeit nicht verwendet (spätere Effekt-Chips); ungünstigster Fall über weißem Bild, über schwarzem Dark 9,0, Tavern 7,2 | 4,5 | 6,1 | 6,2 | ✓ beide |
+| `negative.text` auf `background` | Schloss im Hinweis „Kampf läuft“ (Panel „Szenen“) | 3,0 | 6,8 | 7,1 | ✓ beide |
+| `negative.border` · `positive.border` auf `background` | Rand des Avatars eines Gegners bzw. Verbündeten in den Zeilen (Panel „Kampf“, Initiative) | 3,0 | 5,0 (`negative`) · 4,5 (`positive`) | 5,2 · 4,7 | ✓ beide |
+| `negative.border` auf `secondary` | Punkt am Menüpunkt „Kampf“ (laufender Kampf) | 3,0 | 4,6 | 3,7 | ✓ beide |
+| `initials` auf `background` | Initialen im Avatar eines Spielers direkt auf der Kachel (Hero-Karte in „Am Zug“, „Als Nächstes“) | 3,0 (Hero, groß) · 4,5 (`sm`) | 6,1 | 9,2 | ✓ beide |
 
 **Anmerkungen**
 
@@ -130,6 +133,11 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
   dem Hintergrundbild daneben: über einem weißen Bild erreichte `primary` dort in Tavern nur 1,1:1 (Dark 1,3:1), auf
   der durchscheinenden Kachel 3,0:1 (Dark 4,0:1).
 - **Ressourcen (Player):** Die Spannen reichen über alle fünf Ressourcen.
+- **`negative.text` auf durchscheinender Kachel (Dark):** Über einem rein weißen Bild liegt der Wert genau an der
+  Grenze; je nach Rundung der Zwischenfarbe 4,48–4,51:1. Über realen, nicht rein weißen Bildern liegt er darüber.
+- **Avatar von Spielern (Admin):** Die Fläche richtet sich nach dem Untergrund, damit sich der Avatar abhebt: direkt auf
+  der Kachel (Hero-Karte in „Am Zug“, „Als Nächstes“) `background`, auf Zeilen mit Fläche `background` (Spielerzeile,
+  Initiative, Panel „Kampf“) `secondary`.
 - **Flächen in Dashboard-Panels (Admin):** Buttons und Slider-Schiene haben die Fläche `background` auf dem Panel in
   `secondary` (wie Decline im Dialog); die Fläche hebt sich nur schwach ab und ist nur ein Zusatzsignal, erkennbar sind
   die Bedienelemente an Icon, Text bzw. Griff, die das Ziel erreichen. Der Status-Punkt trägt den Zustand zusätzlich über

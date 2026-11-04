@@ -61,7 +61,7 @@ const Hint = styled.p`
 const ErrorText = styled.p`
   padding: 0 ${(props) => props.theme.space[1]};
   ${textStyle('sm')}
-  color: ${(props) => props.theme.colors.combatant.enemy.text};
+  color: ${(props) => props.theme.colors.negative.text};
 `
 
 const List = styled.ol`

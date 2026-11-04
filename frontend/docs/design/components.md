@@ -70,8 +70,8 @@ drei Menüpunkte: „Notizen“ (`notes.svg`, Panel `DocumentNavigation`), darun
 | Leiste | Spalte, horizontal zentriert, Innenabstand `space.5` oben/unten, `gap` `space.2` zwischen den Menüpunkten |
 | Menüpunkt | [Icon-Button](#icon-button) (`<button type="button">`, `size.control.md`, `radius.md`), Icon abweichend `size.iconLg` (24px); Name als `aria-label` und `title`, `aria-pressed` für den Zustand, `aria-controls` aufs Panel |
 | Zustände | wie beim [Navigationseintrag](#navigationseintrag): aktiv (Panel offen): Fläche `primary`, Icon `onPrimary`, auch bei Hover; inaktiv: ohne eigene Fläche (`transparent`, also `secondary` der Kachel), Icon `text.color`; Hover (inaktiv): Fläche `background`; eingeklappt: kein Menüpunkt aktiv. Anders als der allgemeine [Icon-Button](#icon-button), der inaktiv gefüllt bleibt. Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`) |
-| Panel | Innenabstand `space.5` oben/unten, `space.4` seitlich, scrollt bei Überlänge innerhalb seiner Kachel; Inhalt des aktiven Menüpunkts: bei „Notizen“ Label „Notizen“ und die [Navigationseinträge](#navigationseintrag) der Notizen, bei „Szenen“ Label „Szenen“ und je Szene ein Navigationseintrag (Reihenfolge der API), ohne Szenen der Hinweis „Keine Szenen“ (`text.sm`, Innenabstand `0 space.3`); während eines Kampfes darüber der Hinweis „Kampf läuft. …“ (Fläche `background`, `radius.md`, Innenabstand `space.3`, `text.sm`, links das Schloss `padlock.svg` in `size.icon` und `combatant.enemy.text`, `gap` `space.2`) und gesperrte Einträge; bei „Kampf“ das [Panel „Kampf“](#panel-kampf) |
-| Punkt | bei laufendem Kampf am Menüpunkt „Kampf“, solange sein Panel nicht offen ist (anderes Panel oder eingeklappt): Kreis `BADGE_SIZE` oben rechts im Button (`BADGE_INSET`), Fläche `combatant.enemy.border`, Ring `borderWidth.thick` in `secondary`, `aria-hidden`; Name und Tooltip dann „Kampf (läuft)“ |
+| Panel | Innenabstand `space.5` oben/unten, `space.4` seitlich, scrollt bei Überlänge innerhalb seiner Kachel; Inhalt des aktiven Menüpunkts: bei „Notizen“ Label „Notizen“ und die [Navigationseinträge](#navigationseintrag) der Notizen, bei „Szenen“ Label „Szenen“ und je Szene ein Navigationseintrag (Reihenfolge der API), ohne Szenen der Hinweis „Keine Szenen“ (`text.sm`, Innenabstand `0 space.3`); während eines Kampfes darüber der Hinweis „Kampf läuft. …“ (Fläche `background`, `radius.md`, Innenabstand `space.3`, `text.sm`, links das Schloss `padlock.svg` in `size.icon` und `negative.text`, `gap` `space.2`) und gesperrte Einträge; bei „Kampf“ das [Panel „Kampf“](#panel-kampf) |
+| Punkt | bei laufendem Kampf am Menüpunkt „Kampf“, solange sein Panel nicht offen ist (anderes Panel oder eingeklappt): Kreis `BADGE_SIZE` oben rechts im Button (`BADGE_INSET`), Fläche `negative.border`, Ring `borderWidth.thick` in `secondary`, `aria-hidden`; Name und Tooltip dann „Kampf (läuft)“ |
 | Bedienung | Klick (Enter/Leertaste) auf den aktiven Menüpunkt klappt das Panel ein, auf einen anderen bzw. im eingeklappten Zustand öffnet er dessen Panel (`nextOpenPanel` in `src/utils/navRail.ts`). Start: „Notizen“ offen |
 
 ## Label
@@ -232,13 +232,13 @@ dem Mockup [admin-fight-mockup.html](mockup/admin-fight-mockup.html). Props `ava
 ## Kampf-Avatar
 
 Komponente `CombatantAvatar` ([src/components/CombatantAvatar.tsx](../../src/components/CombatantAvatar.tsx)), für
-Spielerzeile, Panel „Kampf“, Initiative, „Als Nächstes“ und Hero-Karte. Props `kind`, `text`, `image`, `size`.
+Spielerzeile, Panel „Kampf“, Initiative, „Als Nächstes“ und Hero-Karte. Props `kind`, `text`, `image`, `size`, `onTile`.
 
 | Eigenschaft | Wert |
 |---|---|
 | Größe | `sm` 32px und `md` 40px (`AVATAR_SIZE`, `radius.md`, Schrift `text.sm`), `hero` `size.avatar.*` (`radius.lg`, `text.2xl`); Schrift `medium`, `tabular-nums` |
-| Spieler | Fläche `secondary`, Rand `borderWidth.thin` in `border`, Initialen in `initials`; mit Bild das Bild (`object-fit: cover`) |
-| Gegner / Verbündeter | Nummer statt Initialen; Fläche `combatant.<art>.surface`, Rand `combatant.<art>.border`, Zahl `combatant.<art>.text` (in beiden Themes gleich) |
+| Spieler | Fläche nach Untergrund: direkt auf der Kachel (`onTile`: Hero-Karte in „Am Zug“, „Als Nächstes“) `background`, auf Zeilen mit Fläche `background` (Spielerzeile, Initiative, Panel „Kampf“) `secondary`; Rand `borderWidth.thin` in `border`, Initialen in `initials`; mit Bild das Bild (`object-fit: cover`) |
+| Gegner / Verbündeter | Nummer statt Initialen; Gegner in `negative`, Verbündete in `positive` (Fläche `.surface`, Rand `.border`, Zahl `.text`; in beiden Themes gleich), unabhängig vom Untergrund |
 
 ## Panel „Kampf“
 
@@ -251,7 +251,7 @@ Ohne Kampf die lokale Vorbereitung, im Kampf die Liste des Servers; derselbe Auf
 | Zeile | `<li>` im `<ol>` (`gap` `space.1`), Grid `AVATAR_COLUMN minmax(0, 1fr) auto`, `gap` `space.2`, Innenabstand `space.1`, Fläche `background`, `radius.md`: [Kampf-Avatar](#kampf-avatar) `sm`, Name (`text.sm` `medium`) und Details (`text.xs` `text.muted`), beide einzeilig mit Ellipse; rechts die Mini-Buttons. Am Zug: innerer Rahmen `borderWidth.thick` in `primary`; ausgeschieden: Deckkraft 0,5 |
 | Mini-Buttons | `MiniButton` ([src/components/MiniButton.tsx](../../src/components/MiniButton.tsx)): „Nach vorn“/„Nach hinten“ (`chevronUp.svg`/`chevronDown.svg`) übereinander je `MINI_BUTTON_SIZE` × `MOVE_BUTTON_HEIGHT`, daneben „Entfernen“ (`close.svg`) `MINI_BUTTON_SIZE`; Icon `MINI_ICON_SIZE` in `text.muted`, ohne Fläche, Hover Fläche `secondary` und Icon `text.color`; an den Enden deaktiviert (Deckkraft 0,25); Name als `aria-label` und `title` |
 | Felder | Grid `NUMBER_FIELD_WIDTH minmax(0, 1fr)`, `gap` `space.2`; je `size.control.md` hoch, Fläche `background`, Rand `borderWidth.thin` in `border`, `radius.md`, `text.sm`, Platzhalter `text.muted`; Nummer vorbelegt mit der kleinsten freien Nummer, Enter in einem Feld wirkt wie „Hinzufügen“ |
-| Fehlermeldung | „Nummer N ist schon vergeben.“ bzw. „Nummer 1–99 eingeben.“, `text.sm` in `combatant.enemy.text`, `role="alert"`; verschwindet bei der nächsten Eingabe |
+| Fehlermeldung | „Nummer N ist schon vergeben.“ bzw. „Nummer 1–99 eingeben.“, `text.sm` in `negative.text`, `role="alert"`; verschwindet bei der nächsten Eingabe |
 | Buttons „+ Vorname“ | Spieler, die nicht in der Liste stehen; Höhe `size.control.md` − `space.2`, Innenabstand `0 space.3`, Fläche `background`, `text.sm` `medium`, `radius.md`; Hover Fläche `primary`, Text `onPrimary` |
 
 ## Initiative-Zeile
@@ -265,7 +265,7 @@ Im Panel „Initiative“ des Dashboards während eines Kampfes, Komponente `Ini
 |---|---|
 | Zeile | wie die Spielerzeile (`ListRow`, Fläche `background`, `radius.lg`, `gap` `space.3`), `aria-current="step"` beim Teilnehmer am Zug: innerer Rahmen `borderWidth.thick` in `primary` und das Label „Am Zug“ in `primary`; ausgeschieden: Deckkraft 0,5 |
 | Inhalt | [Kampf-Avatar](#kampf-avatar) `md`, Name (`text.sm` `medium`) und Details (`text.sm` `text.muted`: Spieler „Volk, Klasse · Spielername“, NPCs die Bezeichnung; ausgeschieden davor „Tot“ bzw. „Besiegt“) |
-| Totenkopf | Icon-Button `size.control.md` (`skull.svg`, `size.icon`) ohne Fläche, Hover `secondary`; `aria-pressed`, zugänglicher Name „Tot“ bzw. „Besiegt“, Tooltip „Als tot markieren“/„Als besiegt markieren“ bzw. markiert „Wieder im Kampf“; markiert Fläche `combatant.enemy.surface`, Icon `combatant.enemy.text` |
+| Totenkopf | Icon-Button `size.control.md` (`skull.svg`, `size.icon`) ohne Fläche, Hover `secondary`; `aria-pressed`, zugänglicher Name „Tot“ bzw. „Besiegt“, Tooltip „Als tot markieren“/„Als besiegt markieren“ bzw. markiert „Wieder im Kampf“; markiert Fläche `negative.surface`, Icon `negative.text` |
 
 ## Status-Punkt
 

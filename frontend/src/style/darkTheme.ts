@@ -1,3 +1,7 @@
+// Shared by resource.special/negative and resource.action/positive; the roles stay separate
+const RED = { surface: '#290000', border: '#ff2424' }
+const GREEN = { surface: '#072900', border: '#099000' }
+
 const darkTheme = {
   colors: {
     primary: '#4493F8',
@@ -22,18 +26,16 @@ const darkTheme = {
       background: '#ffffff',
     },
     resource: {
-      action: { strong: '#099000', muted: '#072900' },
+      action: { strong: GREEN.border, muted: GREEN.surface },
       bonus: { strong: '#db4400', muted: '#290e00' },
       movement: { strong: '#fae100', muted: '#292500' },
       spell: { strong: '#2487ff', muted: '#001229' },
-      special: { strong: '#ff2424', muted: '#290000' },
+      special: { strong: RED.border, muted: RED.surface },
       empty: '#707070',
     },
-    // Kind of an NPC in a fight (avatar with its number); the same in both themes
-    combatant: {
-      enemy: { text: '#ff6b6b', surface: '#290000', border: '#ff2424' },
-      ally: { text: '#3fd033', surface: '#072900', border: '#099000' },
-    },
+    // Negative (e.g. enemy, defeated) and positive (e.g. ally); the same in both themes
+    negative: { text: '#ff6b6b', ...RED },
+    positive: { text: '#3fd033', ...GREEN },
   },
 }
 

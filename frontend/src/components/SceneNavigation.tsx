@@ -36,7 +36,7 @@ const LockHint = styled.p`
     flex: none;
     width: ${(props) => props.theme.size.icon};
     height: ${(props) => props.theme.size.icon};
-    color: ${(props) => props.theme.colors.combatant.enemy.text};
+    color: ${(props) => props.theme.colors.negative.text};
   }
 `
 

@@ -264,8 +264,8 @@ Wechselt mit dem Theme.
 
 | Rolle | Bedeutung | Verwendung |
 |---|---|---|
-| `background` | Grundfläche | Hintergrund von Admin (unter dem Hintergrundbild, ohne Bild sichtbar) und Ground, Wall-Panel, Fläche im Vollbild-Overlay, Nebenaktion ([2.4](#24-zustände)); Hover in Navigationsleiste, Panel und Kopfzeile im Admin, Nach-oben-Button der Notizen; leere Bildflächen der Bühne; Flächen in Dashboard-Panels (Play-Button ohne Musik, Slider-Schienen, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, Segment-Control, Sound-Gruppen, Spielerzeilen, Chips der Hero-Karte, Zeilen, Felder und Buttons „+ Vorname“ im Panel „Kampf“, Initiative-Zeilen), Hinweis „Kampf läuft“ im Panel „Szenen“ |
-| `secondary` | erhöhte Fläche | Karten, Kacheln im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Notizseiten, Dashboard-Panels; ohne Hintergrundbild), Dialog, Avatar von Spielern (Spielerzeile, Kampf, Hero-Karte), Ring um das Level-Badge und den Punkt am Menüpunkt „Kampf“, Hover der Mini-Buttons und des Totenkopfs, Hover der Buttons im Segment-Control, Hintergrund der Wall, inaktiver Zustand ([2.4](#24-zustände)) |
+| `background` | Grundfläche | Hintergrund von Admin (unter dem Hintergrundbild, ohne Bild sichtbar) und Ground, Wall-Panel, Fläche im Vollbild-Overlay, Nebenaktion ([2.4](#24-zustände)); Hover in Navigationsleiste, Panel und Kopfzeile im Admin, Nach-oben-Button der Notizen; leere Bildflächen der Bühne; Flächen in Dashboard-Panels (Play-Button ohne Musik, Slider-Schienen, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, Segment-Control, Sound-Gruppen, Spielerzeilen, Chips der Hero-Karte, Zeilen, Felder und Buttons „+ Vorname“ im Panel „Kampf“, Initiative-Zeilen), Hinweis „Kampf läuft“ im Panel „Szenen“, Avatar von Spielern direkt auf der Kachel (Hero-Karte in „Am Zug“, „Als Nächstes“) |
+| `secondary` | erhöhte Fläche | Karten, Kacheln im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Notizseiten, Dashboard-Panels; ohne Hintergrundbild), Dialog, Avatar von Spielern auf Zeilen mit Fläche `background` (Spielerzeile, Initiative, Panel „Kampf“), Ring um das Level-Badge und den Punkt am Menüpunkt „Kampf“, Hover der Mini-Buttons und des Totenkopfs, Hover der Buttons im Segment-Control, Hintergrund der Wall, inaktiver Zustand ([2.4](#24-zustände)) |
 | `secondaryTranslucent` | erhöhte Fläche über einem Bild (`secondary` mit 75 % Deckkraft in Dark, 92 % in Tavern) | Kacheln im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Notizseiten, Dashboard-Panels), solange das Hintergrundbild dahinter liegt ([1.4](#14-regeln)) |
 | `primary` | Akzent, aktiv | Links, Slider-Füllung, Status-Punkt „verbunden“, Level-Badge der Hero-Karte, Rahmen und Label „Am Zug“ des Teilnehmers am Zug, aktiver Zustand ([2.4](#24-zustände)) |
 | `border` | Linien | Trennlinien in Karten und den Panels „Audio“ und „Spieltisch“, Rand und Lichtkante der Kacheln im Admin (auch Bühne und Hinweisleiste), Rand des Avatars von Spielern, Rand der Chips der Hero-Karte, Rand der Felder im Panel „Kampf“, Trennlinien im Panel „Kampf“ und im Fuß von „Am Zug“, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |
@@ -283,18 +283,18 @@ Wechselt mit dem Theme.
 | `resource.<art>.strong` | kräftiger Ton einer Ressource (`action`, `bonus`, `movement`, `spell`, `special`) | Rahmen des Ressourcen-Buttons, verfügbare Icons und Plätze (Player) |
 | `resource.<art>.muted` | dunkler Ton einer Ressource | Fläche des Ressourcen-Buttons (Player) |
 | `resource.empty` | verbraucht | verbrauchte Icons und Plätze (Player) |
-| `combatant.<art>.text` | Vordergrund einer NPC-Art (`enemy`, `ally`) | Nummer im Avatar; `enemy` auch: Totenkopf „ausgeschieden“, Fehlermeldung im Panel „Kampf“, Schloss im Hinweis „Kampf läuft“ (Admin) |
-| `combatant.<art>.surface` | Fläche einer NPC-Art | Fläche des NPC-Avatars; `enemy` auch: markierter Totenkopf (Admin) |
-| `combatant.<art>.border` | Rand einer NPC-Art | Rand des NPC-Avatars; `enemy` auch: Punkt am Menüpunkt „Kampf“ (Admin) |
+| `negative.text` · `positive.text` | Vordergrund mit negativer bzw. positiver Bedeutung | `negative`: Nummer im Avatar eines Gegners, markierter Totenkopf, Fehlermeldung im Panel „Kampf“, Schloss im Hinweis „Kampf läuft“; `positive`: Nummer im Avatar eines Verbündeten (Admin); auch für spätere Effekt-Chips gedacht |
+| `negative.surface` · `positive.surface` | Fläche mit negativer bzw. positiver Bedeutung (= `resource.special.muted` bzw. `resource.action.muted`) | Fläche des Avatars eines Gegners bzw. Verbündeten; `negative` auch: markierter Totenkopf (Admin) |
+| `negative.border` · `positive.border` | Rand mit negativer bzw. positiver Bedeutung (= `resource.special.strong` bzw. `resource.action.strong`) | Rand des Avatars eines Gegners bzw. Verbündeten; `negative` auch: Punkt am Menüpunkt „Kampf“ (Admin) |
 
 ### 2.3 Themes
 
 Zwei Themes: Dark (`darkTheme`, [darkTheme.ts](src/style/darkTheme.ts)) und Tavern (`tavernTheme`,
-[tavernTheme.ts](src/style/tavernTheme.ts)). `resource.*`, `combatant.*`, `qr.*`, `error` und `onError` sind in beiden Themes
+[tavernTheme.ts](src/style/tavernTheme.ts)). `resource.*`, `negative.*`, `positive.*`, `qr.*`, `error` und `onError` sind in beiden Themes
 gleich, weil sie Bedeutung tragen, nicht Stimmung; `scrim` und `onScrim` ebenfalls, weil sie auf beliebigen Bildern
 lesbar sein müssen, und `backdrop`, weil es beliebige Bilder abdunkelt. `secondaryTranslucent` ist in jedem Theme
 dessen `secondary` mit verringerter Deckkraft: in Dark 75 %, in Tavern 92 % (erst damit erreicht `primary` auf der
-Kachel auch über einem hellen Bild 3:1). Die `resource.*`-Töne sind so gewählt, dass alle Grafik-Paare 3:1 erreichen; die `combatant.*`-Töne (aus dem Mockup des Kampfes) erreichen mit ihrer Fläche 4,5:1. Dass in Tavern `primary` ebenfalls rot ist wie die Gegner, ist so gewollt. Werte: [contrast.md](docs/design/contrast.md#theme-werte).
+Kachel auch über einem hellen Bild 3:1). Die `resource.*`-Töne sind so gewählt, dass alle Grafik-Paare 3:1 erreichen; die Textfarben von `negative` und `positive` (aus dem Mockup des Kampfes) erreichen mit ihrer Fläche 4,5:1. Fläche und Rand von `negative`/`positive` teilen ihre Werte mit `resource.special` bzw. `resource.action` über gemeinsame Konstanten in den Theme-Dateien; die Rollen bleiben getrennt, weil die Ressourcen-Farben eine andere Bedeutung tragen. Dass in Tavern `primary` ebenfalls rot ist wie die Gegner, ist so gewollt. Werte: [contrast.md](docs/design/contrast.md#theme-werte).
 
 ### 2.4 Zustände
 

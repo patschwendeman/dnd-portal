@@ -45,8 +45,8 @@ const DefeatedToggle = styled.button`
   }
 
   &[aria-pressed="true"] {
-    background-color: ${(props) => props.theme.colors.combatant.enemy.surface};
-    color: ${(props) => props.theme.colors.combatant.enemy.text};
+    background-color: ${(props) => props.theme.colors.negative.surface};
+    color: ${(props) => props.theme.colors.negative.text};
   }
 
   &:focus-visible {

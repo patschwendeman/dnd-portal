@@ -97,6 +97,7 @@ function TurnPanel({
             text={combatantAvatarText(active, players)}
             image={player?.avatar ?? null}
             size="hero"
+            onTile
           />
         )}
         caption={active.kind === 'player' ? (player?.player_name ?? '') : kindName(active.kind)}
@@ -115,6 +116,7 @@ function TurnPanel({
                 text={combatantAvatarText(next.combatant, players)}
                 image={players.find((p) => p.id === next.combatant.player_id)?.avatar ?? null}
                 size="sm"
+                onTile
               />
               <NextName data-test-id="turn-next-name">
                 {combatantName(next.combatant, players)}
