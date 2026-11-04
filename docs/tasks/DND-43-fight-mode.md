@@ -1,7 +1,7 @@
 # DND-43: Kampfmodus im Admin Screen
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -388,3 +388,30 @@ Runde betrifft nur Farben; die Entscheidungen stehen in E9 (markiert „Entschei
 - Nicht Teil dieser Runde: die Höhe des Panels „Am Zug“ (Avatar 96×128, Badge 36px statt 80×104 und 32px im
   Mockup) bleibt, ebenso der offene Dialog „Kampf beenden?“, wenn der Kampf in einem anderen Fenster endet.
 - Weitere Abweichungen zum Mockup außerhalb des Panels „Am Zug“ sind nicht gemeldet.
+
+### Runde 3 – 2026-11-04
+**Empfehlung:** Abnahme (vorher Entscheidung des Users zum Kontrast-Grenzwert, siehe Hinweise)
+
+Geprüft: Commit `27bf831` gegen Basis `684e876`. Beide Befunde aus Runde 2 behoben, E9 („Entscheidung nach Runde 1“)
+umgesetzt; AK1–AK9 unberührt (nur CSS/Theme geändert, Markup und Tests unverändert).
+
+| Punkt | Ergebnis | Beleg |
+|---|---|---|
+| Spieler-Avatar nach Untergrund | erfüllt | `CombatantAvatar.tsx` (`$onTile` → `background`, sonst `secondary`); `TurnPanel.tsx` setzt `onTile` für Hero und „Als Nächstes“; Party, Initiative, Panel „Kampf“ ohne |
+| `negative`/`positive` statt `combatant.*` | erfüllt | Konstanten `RED`/`GREEN` in `darkTheme.ts`/`tavernTheme.ts`, geteilt mit `resource.special`/`resource.action`; Werte wie E9 |
+| Nutzungen umgestellt | erfüllt | `FightPanel.tsx`, `InitiativePanel.tsx`, `SceneNavigation.tsx`, `NavRail.tsx`, `CombatantAvatar.tsx`; keine `combatant.`-Reste |
+| Doku | erfüllt | `DESIGN.md` (2.2, 2.3), `components.md` (Kampf-Avatar mit `onTile`), `contrast.md` (Messzeilen nachgerechnet, passen) |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+- `negative.text` auf `secondaryTranslucent` (Dark, über rein weißem Bild): exakt 4,492:1 bei α = `0xbf`, nach der
+  Methode in `contrast.md` (Kachel `#30343a`) 4,50–4,51:1; eingetragen als „4,5 (knapp)“. Betrifft nur den Fehlertext
+  im Panel „Kampf“. Entscheidung beim User: so lassen oder Deckkraft in Dark auf `0xc0` anheben (`negative` 4,52,
+  `primary` 4,05; `DESIGN.md`/`contrast.md` nachziehen).
+- Kein automatischer Test für `onTile` (Tests prüfen keine Farben); bleibt beim manuellen Mockup-Vergleich.
+- Commit-Schema korrekt, keine KI-Signatur.
+
+**Checks:** Frontend lint, typecheck, unit 262/262, build, knip, jscpd 0,83 %. E2E und Backend nicht ausgeführt (nur
+Farben geändert, Backend unberührt).
