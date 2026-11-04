@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import { WebDriver, error } from 'selenium-webdriver'
+import { By, WebDriver, error } from 'selenium-webdriver'
 
 import {
   BASE_URL,
@@ -18,13 +18,17 @@ const WINDOW_RECT = { width: 1600, height: 1000 }
 
 const PANEL = '[data-test-id="dashboard-panel-table"]'
 const button = (grid: GroundGrid): string => `${PANEL} [data-test-id="ground-grid-${grid}"]`
-const CELL_SIZE_INPUT = `${PANEL} [data-test-id="ground-grid-cell-size"] input`
-const CELL_SIZE_THUMB = `${PANEL} [data-test-id="ground-grid-cell-size"] .MuiSlider-thumb`
-const CELL_SIZE_RAIL = `${PANEL} [data-test-id="ground-grid-cell-size"] .MuiSlider-rail`
-const CELL_SIZE_VALUE = `${PANEL} [data-test-id="ground-grid-cell-size-value"]`
+const SETTINGS = '[data-test-id="nav-panel"] [data-test-id="settings-ground-grid"]'
+const SETTINGS_ITEM = '[data-test-id="nav-item-settings"]'
+const CELL_SIZE_INPUT = `${SETTINGS} [data-test-id="ground-grid-cell-size"] input`
+const CELL_SIZE_THUMB = `${SETTINGS} [data-test-id="ground-grid-cell-size"] .MuiSlider-thumb`
+const CELL_SIZE_RAIL = `${SETTINGS} [data-test-id="ground-grid-cell-size"] .MuiSlider-rail`
+const CELL_SIZE_VALUE = `${SETTINGS} [data-test-id="ground-grid-cell-size-value"]`
 const GRID = '[data-test-id="ground-grid"]'
 const GROUND_IMAGE = '[data-test-id="groundImg"]'
 const GRIDS: GroundGrid[] = ['black', 'white', 'off']
+const STEP_MOVE_SLIDER = 'I move the slider Zellgröße in the panel Einstellungen to 150 '
+  + 'and release it'
 // Start of three more browsers plus the waits of the scenario
 const SCENARIO_TIMEOUT = 12 * WAIT_TIMEOUT
 
@@ -152,9 +156,13 @@ defineFeature(feature, (test) => {
           ...grounds.map((ground) => openScreen(ground, '/ground')),
         ])
         await expectGrounds('off', 100)
-        await expectPanel('off', 100)
       },
     )
+
+    and('the panel Einstellungen is open', async () => {
+      await clickElement(driver, SETTINGS_ITEM)
+      await expectPanel('off', 100)
+    })
 
     when('I click on Weiß in the row Ground of the panel Spieltisch', async () => {
       await clickElement(driver, button('white'))
@@ -168,7 +176,14 @@ defineFeature(feature, (test) => {
       },
     )
 
-    when('I move the slider Zellgröße to 150 and release it', async () => {
+    and('the panel Spieltisch shows no Zellgröße', async () => {
+      const panel = await waitForElement(driver, PANEL)
+      expect(await panel.findElements(By.css('[data-test-id^="ground-grid-cell-size"]')))
+        .toHaveLength(0)
+      expect(await panel.getText()).not.toContain('Zellgröße')
+    })
+
+    when(STEP_MOVE_SLIDER, async () => {
       const thumb = await waitForElement(driver, CELL_SIZE_THUMB)
       const rail = await waitForElement(driver, CELL_SIZE_RAIL)
       const { width } = await rail.getRect()

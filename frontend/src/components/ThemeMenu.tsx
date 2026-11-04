@@ -1,6 +1,4 @@
-import {
-  KeyboardEvent, ReactElement, useEffect, useRef, useState,
-} from 'react'
+import { ReactElement } from 'react'
 import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
 
@@ -8,7 +6,7 @@ import settingsIcon from '/assets/icons/settings.svg'
 
 import { Theme } from '../models/models'
 import { textStyle } from '../style/tokens'
-import { getListboxNextIndex, getListboxStartIndex, isListboxNavigationKey } from '../utils/listbox'
+import useListbox from '../utils/useListbox'
 
 interface ThemeOption {
   // null = follows the game table
@@ -110,75 +108,21 @@ interface ThemeMenuProps {
 
 function ThemeMenu({ themeOverride, onChangeThemeOverride }: ThemeMenuProps): ReactElement {
   const theme = useTheme()
-  const [isOpen, setIsOpen] = useState(false)
-  const [focusIndex, setFocusIndex] = useState(-1)
-  const wrapperRef = useRef<HTMLDivElement>(null)
-  const triggerRef = useRef<HTMLButtonElement>(null)
-  const optionRefs = useRef<(HTMLDivElement | null)[]>([])
-
   const selectedIndex = OPTIONS.findIndex((option) => option.value === themeOverride)
-
-  useEffect(() => {
-    if (isOpen && focusIndex >= 0) {
-      optionRefs.current[focusIndex]?.focus()
-    }
-  }, [isOpen, focusIndex])
-
-  useEffect(() => {
-    if (!isOpen) {
-      return undefined
-    }
-    // pointerdown instead of mousedown: a tap on a smartphone has to close the menu as well
-    const closeOnOutsidePointer = (event: PointerEvent) => {
-      if (!wrapperRef.current?.contains(event.target as Node)) {
-        setIsOpen(false)
+  const {
+    isOpen, close, open, wrapperRef, triggerRef, optionElement, focusOption, choose,
+    handleTriggerKeyDown, handleListKeyDown,
+  } = useListbox({
+    count: OPTIONS.length,
+    selectedIndex,
+    onChoose: (index) => {
+      if (OPTIONS[index].value !== themeOverride) {
+        onChangeThemeOverride(OPTIONS[index].value)
       }
-    }
-    document.addEventListener('pointerdown', closeOnOutsidePointer)
-    return () => document.removeEventListener('pointerdown', closeOnOutsidePointer)
-  }, [isOpen])
-
-  const open = () => {
-    setFocusIndex(getListboxStartIndex(selectedIndex, OPTIONS.length))
-    setIsOpen(true)
-  }
-
-  const closeAndFocusTrigger = () => {
-    setIsOpen(false)
-    triggerRef.current?.focus()
-  }
-
-  const choose = (value: Theme | null) => {
-    closeAndFocusTrigger()
-    if (value !== themeOverride) {
-      onChangeThemeOverride(value)
-    }
-  }
-
-  // Enter and Space reach the button as a click; only the arrows need their own handling.
-  const handleTriggerKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-    if (!isOpen && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
-      event.preventDefault()
-      open()
-    }
-  }
-
-  const handleListKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (isListboxNavigationKey(event.key)) {
-      event.preventDefault()
-      setFocusIndex(getListboxNextIndex(event.key, focusIndex, OPTIONS.length))
-    } else if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      if (focusIndex >= 0) {
-        choose(OPTIONS[focusIndex].value)
-      }
-    } else if (event.key === 'Escape') {
-      event.preventDefault()
-      closeAndFocusTrigger()
-    } else if (event.key === 'Tab') {
-      setIsOpen(false)
-    }
-  }
+    },
+    // A tap on a smartphone has to close the menu as well
+    outsideEvent: 'pointerdown',
+  })
 
   return (
     <Wrapper ref={wrapperRef}>
@@ -190,7 +134,7 @@ function ThemeMenu({ themeOverride, onChangeThemeOverride }: ThemeMenuProps): Re
         title="Darstellung"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        onClick={() => (isOpen ? setIsOpen(false) : open())}
+        onClick={() => (isOpen ? close() : open())}
         onKeyDown={handleTriggerKeyDown}
       >
         <ReactSVG
@@ -205,16 +149,14 @@ function ThemeMenu({ themeOverride, onChangeThemeOverride }: ThemeMenuProps): Re
           {OPTIONS.map((option, index) => (
             <Option
               key={option.label}
-              ref={(element) => {
-                optionRefs.current[index] = element
-              }}
+              ref={optionElement(index)}
               role="option"
               tabIndex={-1}
               aria-selected={index === selectedIndex}
               data-test-id={`theme-option-${option.value ?? 'table'}`}
               $isSelected={index === selectedIndex}
-              onClick={() => choose(option.value)}
-              onFocus={() => setFocusIndex(index)}
+              onClick={() => choose(index)}
+              onFocus={() => focusOption(index)}
             >
               {option.label}
             </Option>

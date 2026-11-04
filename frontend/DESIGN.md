@@ -84,7 +84,7 @@ Ressourcen, das Overlay „Handy drehen“ steht im JSX zuletzt und verdeckt bei
 | `layer.grid` | Raster-Ebene auf dem Ground |
 | `layer.panel` | Overlay-Panel auf der Wall |
 | `layer.control` | Vollbild-Overlay auf Wall und Ground (über Overlay-Panel und Raster) |
-| `layer.popover` | aufklappende Liste über dem Inhalt, z. B. Abenteuer-Auswahl im Admin |
+| `layer.popover` | aufklappende Liste über dem Inhalt, z. B. Abenteuer- und Theme-Auswahl im Admin |
 | `layer.dialog` | Dialog mit Abdunklung |
 
 ### 1.3 Layout-Konstanten
@@ -117,7 +117,7 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 | Spieltisch-Zeile | `space.3` oben/unten (erste Zeile oben, letzte unten `0`) |
 | Label auf einem Bild der Bühne | `0 space.1` |
 | Dialog | `space.5` seitlich und unten |
-| Kopfzeile im Admin | keiner; Abenteuer-Auswahl `space.5` seitlich, Button-Gruppen `space.1` |
+| Kopfzeile im Admin | keiner; Abenteuername `space.5` seitlich, Button-Gruppe `space.1` |
 | Notizen und Dashboard im Admin | `space.5` unten im Scrollbereich, oben keiner (der Abstand zur Kopfzeile ist das `gap` des Grids) |
 | Navigationsleiste im Admin | `space.5` oben/unten (seitlich aus `NAV_RAIL_WIDTH`) |
 | Panel der Navigationsleiste im Admin | `space.5` oben/unten, `space.4` seitlich |
@@ -134,7 +134,7 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 | `text.2xl` | `medium` / `bold` | Initialen bzw. Nummer im Avatar der Hero-Karte (`medium`, Admin), h1 in den Notizen (`bold`) |
 | `text.xl` | `semibold` | h2 in den Notizen, Überschrift des Wall-Panels, Zahl im Ressourcen-Button (Player), Szenenname auf der Bühne und Name in der Hero-Karte (Admin) |
 | `text.lg` | `semibold` | Titel von Karte und Dialog, Text im Vollbild-Overlay (Wall, Ground), Ziffer der Zauberstufe I–IV (Player), Level und Zeichen „−“ und „+“ im Level-Stepper (Admin) |
-| `text.md` | `regular` / `medium` / `semibold` / `bold` | Standard und Listen in den Notizen (`ul`, `ol`, `li`, auch Absätze in Listeneinträgen des Inhaltsverzeichnisses) (`regular`), Hinweis im Overlay „Handy drehen“ (`medium`, Player), h3 und h4 in den Notizen (`semibold`), Abenteuer-Auswahl in der Kopfzeile (`bold`) |
+| `text.md` | `regular` / `medium` / `semibold` / `bold` | Standard und Listen in den Notizen (`ul`, `ol`, `li`, auch Absätze in Listeneinträgen des Inhaltsverzeichnisses) (`regular`), Hinweis im Overlay „Handy drehen“ (`medium`, Player), h3 und h4 in den Notizen (`semibold`), Abenteuername in der Kopfzeile (`bold`) |
 | `text.sm` | `regular` / `medium` / `semibold` | Werte, Beschreibungen (auch auf der Bühne), Statustexte, Zustand der Musik, Volk · Klasse · Spieler der Spielerzeile, Chips der Hero-Karte (`regular`), Navigation, Musiktitel, Charaktername und Initialen der Spielerzeile, Namen im Panel „Kampf“ und in der Initiative, Nummer im Avatar eines NPCs, Buttons „+ Vorname“, Text der Hinweisleiste und Zahl im Level-Badge (`medium`), Buttons (auch im Segment-Control), Slider-Wert, Namen der Screens im Panel „Spieltisch“, h5 und h6 in den Notizen (`semibold`) |
 | `text.xs` | `regular` / `semibold` | Details der Zeilen im Panel „Kampf“ (`regular`), Labels (auch auf den Bildern der Bühne) (`semibold`) |
 | `text.reading` | `regular` | nur Fließtext (Absätze) in den Notizen |
@@ -191,8 +191,8 @@ Admin trennen keine Linien, sondern der Abstand zwischen den [Kacheln](docs/desi
 ([Abenteuer-Hintergrund](docs/design/components.md#abenteuer-hintergrund)), haben die Kacheln die Fläche
 `secondaryTranslucent` und zeichnen weich, was dahinter liegt (`backdrop-filter: blur(TILE_BLUR)`); Rand und
 Lichtkante bleiben. Nur mit Bild: ohne Hintergrundbild sind sie deckend `secondary` ohne Unschärfe. Deckend bleiben immer die
-Bühne, die Hinweisleiste und die Flächen in den Kacheln (`background`); ebenso die Abenteuer-Liste und der Dialog, die
-keine Kacheln sind. Schalter `$isTranslucent` an `tileSurface`.
+Bühne, die Hinweisleiste und die Flächen in den Kacheln (`background`); ebenso die Listen der Auswahllisten und der Dialog,
+die keine Kacheln sind. Schalter `$isTranslucent` an `tileSurface`.
 
 **Aktiv-Zustand:** Kein Leuchten (`box-shadow`). Buttons und Navigation zeigen den Aktiv-Zustand über die Farbe
 ([2.4](#24-zustände)).
@@ -255,7 +255,7 @@ Wechselt mit dem Theme.
 - Components verwenden nur **Farbrollen** aus `theme.colors`, nie Farbwerte direkt (kein `#…`, `white`, `black`).
 - Jede Rolle gibt es in **jedem** Theme. Ein Theme ist nur ein anderer Satz Werte für dieselben Rollen.
 - Eine neue Farbe ist immer eine neue Rolle und wird in **allen** Themes angelegt.
-- Der Theme-Wechsel läuft über den Settings-Button im Admin: Er speichert das Theme (`dark` | `tavern`) auf dem
+- Der Theme-Wechsel läuft über die Theme-Auswahl im Panel „Einstellungen“ des Admins: Sie speichert das Theme (`dark` | `tavern`) auf dem
   Server, der es per WebSocket an Admin, Wall, Ground und Player pusht ([Synchronisation](../docs/architecture.md#synchronisation)).
   Im Player kann ein Spieler über das Theme-Menü des Settings-Buttons nur für sein Gerät abweichen („Wie Spieltisch“,
   „Dunkel“, „Taverne“; `localStorage` `playerThemeOverride`).

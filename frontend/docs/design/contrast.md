@@ -44,7 +44,7 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | Paar | Verwendung | Ziel | Dark | Tavern | Ergebnis |
 |---|---|---|---|---|---|
 | `text.color` auf `background` | Wall-Panel, Panel-Einträge bei Hover (Admin) | 4,5 | 17,4 | 9,2 | ✓ beide |
-| `text.color` auf `secondary` | Karten, Kacheln im Admin (Notizseiten, Dashboard-Panels, Abenteuer-Auswahl), Dialog, inaktive Buttons, inaktive Panel-Einträge (Admin, ohne eigene Fläche) | 4,5 | 15,9 | 6,5 | ✓ beide |
+| `text.color` auf `secondary` | Karten, Kacheln im Admin (Notizseiten, Dashboard-Panels, Abenteuername in der Kopfzeile), Dialog, inaktive Buttons, inaktive Panel-Einträge (Admin, ohne eigene Fläche) | 4,5 | 15,9 | 6,5 | ✓ beide |
 | `onPrimary` auf `primary` | aktive Buttons (auch der gewählte Button im Segment-Control) und Navigation, Confirm (14px) | 4,5 | 6,1 | 4,7 | ✓ beide |
 | `onPrimary` auf `primary` | Fokus-Outline des gewählten Eintrags der Auswahlliste | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `secondary` | Links in den Notizen (16px, Inhaltsverzeichnisse) auf den Notizseiten | 4,5 | 5,6 | **3,3** | **✗ Tavern, offen, siehe Anmerkung** |
@@ -55,7 +55,7 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `text.color` auf `secondary` | Icon des inaktiven Menüpunkts der Navigationsleiste und der inaktiven Buttons der Kopfzeile (ohne eigene Fläche) | 3,0 | 15,9 | 6,5 | ✓ beide |
 | `text.color` auf `background` | Icon des inaktiven Menüpunkts der Navigationsleiste und der Buttons der Kopfzeile bei Hover | 3,0 | 17,4 | 9,2 | ✓ beide |
 | `onPrimary` auf `primary` | Icon des aktiven Menüpunkts der Navigationsleiste und der aktiven Icon-Buttons „Dashboard“ und „Vollbild“ | 3,0 | 6,1 | 4,7 | ✓ beide |
-| `primary` auf `secondary` | Fokus-Outline der Menüpunkte der Navigationsleiste, der Panel-Einträge (Notizen, Szenen), der Buttons „Vollbild“ und „Dashboard“ (auf ihrer Kachel) und der Abenteuer-Auswahl (nach innen versetzt, auf ihrer Kachel) | 3,0 | 5,6 | 3,3 | ✓ beide |
+| `primary` auf `secondary` | Fokus-Outline der Menüpunkte der Navigationsleiste, der Panel-Einträge (Notizen, Szenen), der Buttons „Vollbild“ und „Dashboard“ (auf ihrer Kachel) und der Auswahllisten im Panel „Einstellungen“ (auf der Panel-Kachel) | 3,0 | 5,6 | 3,3 | ✓ beide |
 | `text.color` auf `background` | Icons auf Flächen in Dashboard-Panels (Play-Button ohne Musik, „In neuem Fenster öffnen“, „QR-Code“) | 4,5 | 17,4 | 9,2 | ✓ beide |
 | `primary` auf `secondary` | Status-Punkt „verbunden“ im Panel „Spieltisch“ | 3,0 | 5,6 | 3,3 | ✓ beide |
 | `text.color` auf `secondary` | Ring des Status-Punkts „nicht verbunden“ | 3,0 | 15,9 | 6,5 | ✓ beide |
@@ -76,7 +76,7 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `primary` auf `background` | Level-Badge gegen die Hero-Karte (derzeit nicht verwendet) | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `border` auf `background` | Rand von Avatar und Chips gegen die Hero-Karte (derzeit nicht verwendet) | 3,0 | **1,5** | 4,3 | bewusst ✗ Dark, siehe Anmerkung |
 | `onError` auf `error` | Text der Hinweisleiste in der Kopfzeile (14px) | 4,5 | 9,0 | 9,0 | ✓ |
-| `text.color` auf `secondaryTranslucent` | Text und Icons auf durchscheinenden Kacheln (Notizseiten, Dashboard-Panels, Abenteuer-Auswahl, Panel-Einträge); ungünstigster Fall über weißem Bild, über schwarzem Dark 16,9, Tavern 6,8 | 4,5 | 11,5 | 5,9 | ✓ beide |
+| `text.color` auf `secondaryTranslucent` | Text und Icons auf durchscheinenden Kacheln (Notizseiten, Dashboard-Panels, Abenteuername, Panel-Einträge); ungünstigster Fall über weißem Bild, über schwarzem Dark 16,9, Tavern 6,8 | 4,5 | 11,5 | 5,9 | ✓ beide |
 | `primary` auf `secondaryTranslucent` | Status-Punkt „verbunden“ und Fokus-Outlines auf durchscheinenden Kacheln; ungünstigster Fall über weißem Bild, über schwarzem Dark 5,9, Tavern 3,5 | 3,0 | 4,0 | 3,0 | ✓ beide |
 | `primary` auf `secondaryTranslucent` | Links in den Notizen (16px) auf durchscheinenden Notizseiten; ungünstigster Fall über weißem Bild, über schwarzem Dark 5,9, Tavern 3,5 | 4,5 | **4,0** | **3,0** | **✗ beide, offen wie in Tavern auf `secondary`** |
 | `text.muted` auf `secondaryTranslucent` | Lautsprecher-Icon im Panel „Audio“; ungünstigster Fall über weißem Bild, über schwarzem Dark 8,4, Tavern 4,1 | 3,0 | 6,4 | 3,7 | ✓ beide |
@@ -129,9 +129,9 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
   Einfluss auf die Messung. Ohne Hintergrundbild sind die Kacheln deckend `secondary`, es gelten die Werte oben.
   `border` und die Flächen in `background` sind Gestaltung bzw. Zusatzsignal wie auf `secondary` (Ausnahmen in
   [2.6](../../DESIGN.md#26-kontrast)).
-- **Fokus-Outline der Abenteuer-Auswahl:** Die Outline ist nach innen versetzt und liegt so auf der Kachel, nicht auf
-  dem Hintergrundbild daneben: über einem weißen Bild erreichte `primary` dort in Tavern nur 1,1:1 (Dark 1,3:1), auf
-  der durchscheinenden Kachel 3,0:1 (Dark 4,0:1).
+- **Fokus-Outline der Auswahllisten:** Sie liegen im Panel „Einstellungen“ mit dessen Innenabstand; die Outline
+  außen um den Button liegt so auf der Panel-Kachel, nicht auf dem Hintergrundbild (dort erreichte `primary` über einem
+  weißen Bild in Tavern nur 1,1:1, Dark 1,3:1; auf der durchscheinenden Kachel 3,0:1, Dark 4,0:1).
 - **Ressourcen (Player):** Die Spannen reichen über alle fünf Ressourcen.
 - **`negative.text` auf durchscheinender Kachel (Dark):** Über einem rein weißen Bild liegt der Wert genau an der
   Grenze; je nach Rundung der Zwischenfarbe 4,48–4,51:1. Über realen, nicht rein weißen Bildern liegt er darüber.

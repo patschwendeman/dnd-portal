@@ -2,23 +2,41 @@ import { ReactElement } from 'react'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
-import AdventureSelect from './AdventureSelect'
 import ErrorBar from './ErrorBar'
-import { AdventureSummary } from '../models/models'
 import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
+import { textStyle } from '../style/tokens'
 import useDocumentFullscreen from '../utils/useDocumentFullscreen'
 
 import dashboardIcon from '/assets/icons/dashboard.svg'
 import fullscreenIcon from '/assets/icons/fullscreen.svg'
 import fullscreenExitIcon from '/assets/icons/fullscreenExit.svg'
-import settingsIcon from '/assets/icons/settings.svg'
 
-// The adventure select (or the error bar) stretches to the height of the button groups, so all
+// The adventure name (or the error bar) stretches to the height of the button groups, so all
 // tiles of the header are equally high
 const Header = styled.header`
     display: flex;
     gap: ${(props) => props.theme.space[4]};
     min-width: 0;
+`
+
+// Only shows the active adventure; it is switched in the panel "Einstellungen"
+const AdventureName = styled.div<TileSurfaceProps>`
+    ${tileSurface}
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    padding: 0 ${(props) => props.theme.space[5]};
+    ${textStyle('md')}
+    font-weight: ${(props) => props.theme.fontWeight.bold};
+`
+
+const AdventureNameText = styled.span`
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 `
 
 // space.1 around buttons in radius.md gives the outer radius radius.lg of the tile
@@ -77,14 +95,9 @@ interface ErrorNotice {
 }
 
 interface AdminHeaderProps {
-  // Switches the theme of the game table (Admin, Wall and Ground)
-  onToggleTheme: () => void
-  adventures: AdventureSummary[]
-  activeAdventureId: number | null
-  onSelectAdventure: (adventureId: number) => void
-  // During a fight the adventure cannot change
-  isAdventureLocked?: boolean
-  // Replaces the adventure select while it is set, so no adventure can be switched meanwhile
+  // Name of the active adventure; null without one, '' while it is loading
+  adventureName: string | null
+  // Replaces the adventure name while it is set
   errorNotice: ErrorNotice | null
   isDashboardOpen: boolean
   dashboardId: string
@@ -94,15 +107,11 @@ interface AdminHeaderProps {
 }
 
 function AdminHeader({
-  onToggleTheme,
-  adventures,
-  activeAdventureId,
-  onSelectAdventure,
+  adventureName,
   errorNotice,
   isDashboardOpen,
   dashboardId,
   onToggleDashboard,
-  isAdventureLocked = false,
   isTranslucent = false,
 }: AdminHeaderProps): ReactElement {
   const theme = useTheme()
@@ -113,13 +122,11 @@ function AdminHeader({
       {errorNotice ? (
         <ErrorBar message={errorNotice.message} onRetry={errorNotice.onRetry} />
       ) : (
-        <AdventureSelect
-          adventures={adventures}
-          activeAdventureId={activeAdventureId}
-          onSelectAdventure={onSelectAdventure}
-          isLocked={isAdventureLocked}
-          isTranslucent={isTranslucent}
-        />
+        <AdventureName data-test-id="adventure-name" $isTranslucent={isTranslucent}>
+          <AdventureNameText title={adventureName ?? undefined}>
+            {adventureName ?? 'Kein Abenteuer'}
+          </AdventureNameText>
+        </AdventureName>
       )}
       <ButtonGroup $isTranslucent={isTranslucent}>
         <ToggleButton
@@ -157,16 +164,6 @@ function AdminHeader({
             }}
           />
         </ToggleButton>
-      </ButtonGroup>
-      <ButtonGroup $isTranslucent={isTranslucent}>
-        <IconButton onClick={onToggleTheme}>
-          <ReactSVG
-            src={settingsIcon}
-            beforeInjection={(svg) => {
-              svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
-            }}
-          />
-        </IconButton>
       </ButtonGroup>
     </Header>
   )

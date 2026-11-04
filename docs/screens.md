@@ -19,8 +19,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - Szenen auswählen und aktivieren. Alle Szenen sind gleich; einen Kampf startet der Spielleiter in jeder Szene über
   den Menüpunkt „Kampf“ (umgesetzt im Admin; die Anzeige auf Wall, Ground und Player ist geplant).
 - Notizen (Markdown) einsehen: Story, NPCs, Kämpfe.
-- Navigationsleiste links mit Menüpunkten, die das Panel daneben füllen: „Notizen“, „Szenen“ und „Kampf“ (umgesetzt).
-  Die Mitte zeigt dabei weiter die Notizen.
+- Navigationsleiste links mit Menüpunkten, die das Panel daneben füllen: „Notizen“, „Szenen“ und „Kampf“, abgesetzt
+  ganz unten „Einstellungen“ für das, was man einmal einstellt (umgesetzt). Die Mitte zeigt dabei weiter die Notizen.
 - Kampf: Initiative-Reihenfolge, Zug und Runde im Blick, NPCs mit der Nummer ihrer Figur (umgesetzt); geplant:
   Trefferpunkte, Effekte mit Rundenzahl, „Zug beenden“ auf dem Smartphone, NPC-Katalog je Abenteuer.
 - Ruhiges, einheitliches Kachel-Layout mit fester Kopfzeile, unter der Notizen und Dashboard scrollen, dahinter
@@ -38,8 +38,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Hintergrund, ohne Trennlinien und ohne Bottom-Bar. Ganz links die Navigationsleiste, daneben das Panel des aktiven
   Menüpunkts (beide über die volle Höhe, mit Abstand zum oberen und unteren Rand), in der Mitte die Notizen (je Seite
   eine Kachel), rechts das Dashboard (ein Drittel der Breite von Notizen und Dashboard, mindestens 400px und höchstens
-  560px; die Notizen bekommen den Rest). Über Notizen und Dashboard steht eine feste Kopfzeile: links die
-  Abenteuer-Auswahl bis zu den Button-Gruppen, rechts eine Kachel mit „Vollbild“ und „Dashboard“ und eine mit Settings.
+  560px; die Notizen bekommen den Rest). Über Notizen und Dashboard steht eine feste Kopfzeile: links der Name des
+  aktiven Abenteuers bis zur Button-Gruppe, rechts eine Kachel mit „Vollbild“ und „Dashboard“.
   Notizen und Dashboard scrollen jeweils für sich unter der Kopfzeile, die stehen bleibt; der Abstand darunter bleibt
   frei, ganz nach unten gescrollt endet die letzte Kachel auf Höhe der Navigationsleiste.
 - **Abenteuer-Hintergrund:** Hinter den Kacheln liegt das Hintergrundbild des aktiven Abenteuers zum Theme des
@@ -56,26 +56,32 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   „Spieltisch“ (siehe **Kampf**). Jedes Panel ist so hoch wie sein Inhalt – die Panels scrollen
   nicht für sich und schneiden keinen Text ab; sind sie zusammen höher als der Hauptbereich, scrollt das Dashboard als
   Ganzes. Der Icon-Button „Dashboard“ rechts
-  in der Kopfzeile (links vom Theme-Umschalter, hervorgehoben solange das Dashboard offen ist) blendet es aus – Notizen
+  in der Kopfzeile (ganz rechts, hervorgehoben solange das Dashboard offen ist) blendet es aus – Notizen
   und Kopfzeile nehmen dann die volle Breite, Musik, Sounds, Wall-Overlay, Ground-Raster, Level und QR-Code sind nicht erreichbar
   (die Musik spielt im Ausgabe-Fenster weiter) – und wieder ein. Auswahl und
   Scrollposition der Notizen bleiben erhalten; der Zustand wird nicht gespeichert, nach einem Reload ist das Dashboard
   offen.
 - **Navigationsleiste:** schmale Leiste mit Icon-Buttons „Notizen“, darunter „Szenen“ und „Kampf“ (gekreuzte
-  Schwerter; Tooltip mit dem Namen). Läuft ein Kampf und ist ein anderes Panel offen oder das Panel eingeklappt, trägt
-  „Kampf“ einen roten Punkt und den Tooltip „Kampf (läuft)“. Das Panel „Kampf“ ist 280px breit, die anderen 240px;
+  Schwerter) und am unteren Ende, abgesetzt von den anderen, „Einstellungen“ (Zahnrad); Tooltip mit dem Namen. Läuft ein Kampf und ist ein anderes Panel offen oder das Panel eingeklappt, trägt
+  „Kampf“ einen roten Punkt und den Tooltip „Kampf (läuft)“. Das Panel „Kampf“ ist 280px breit, die anderen
+  (auch „Einstellungen“) 240px;
   beim Laden ist „Notizen“ aktiv und hervorgehoben. Klick (oder Enter/Leertaste) auf einen anderen Menüpunkt wechselt
   das Panel, die Mitte zeigt dabei weiter die Notizen. Klick auf den aktiven Menüpunkt klappt das Panel ein,
   die Notizen werden breiter und kein Menüpunkt ist hervorgehoben; ein weiterer Klick klappt es wieder aus. Auswahl und
   Scrollposition der Notizen bleiben dabei erhalten. Menüpunkt und Einklapp-Zustand werden nicht gespeichert, nach
   einem Reload ist „Notizen“ wieder offen.
-- **Abenteuer-Auswahl:** Links in der Kopfzeile eine Auswahlliste (die ganze Kachel ist der Button, die Liste klappt
-  mittig darunter auf; per Maus und Tastatur bedienbar) mit allen Abenteuern. Ist auf dem Spieltisch (Server) kein Abenteuer aktiv, wird automatisch das erste
+- **Kopfzeile:** Links steht in einer Kachel der Name des aktiven Abenteuers, nur zur Anzeige (kein Button); ohne
+  Abenteuer „Kein Abenteuer“. Rechts die Kachel mit „Vollbild“ und „Dashboard“.
+- **Einstellungen:** Das Panel „Einstellungen“ zeigt unter Labels die Abschnitte „Abenteuer“, „Darstellung“ und
+  „Ground-Raster“ (siehe die folgenden Punkte). Es öffnet, wechselt und klappt ein wie die anderen Panels.
+- **Abenteuer-Auswahl:** Im Abschnitt „Abenteuer“ des Panels „Einstellungen“ eine Auswahlliste über die Breite des
+  Panels (die Liste klappt darunter auf; per Maus und Tastatur bedienbar) mit allen Abenteuern. Ist auf dem Spieltisch (Server) kein Abenteuer aktiv, wird automatisch das erste
   aktiviert (mit nur einem Abenteuer also ohne Zutun); ohne Abenteuer ist die Auswahl leer und deaktiviert, es werden
   keine Szenen geladen. Gezeigt werden nur die Szenen des aktiven Abenteuers. Ein Wechsel wird gespeichert und gilt für
   alle Spieltisch-Screens; Admin, Wall und Ground zeigen danach direkt die im neuen Abenteuer gespeicherte Szene (bzw.
   keine), nie kurz die eines anderen Abenteuers. Während eines Kampfes ist die Auswahl gesperrt: Schloss statt Pfeil,
-  Tooltip „Während des Kampfes nicht wechselbar“, die Liste öffnet sich nicht.
+  Tooltip „Während des Kampfes nicht wechselbar“, die Liste öffnet sich nicht. Solange die Hinweisleiste steht, ist die
+  Auswahl deaktiviert.
 - **Szenenauswahl:** Das Panel „Szenen“ listet unter dem Label „Szenen“ alle Szenen des aktiven Abenteuers in der
   Reihenfolge, in der sie angelegt sind (Seed: Default, Shop, Tavern, Level Up, Fight 1 … Fight 25), nur mit Namen;
   zu lange Namen enden mit „…“, der volle Name steht im Tooltip. Die aktive Szene ist hervorgehoben. Die Einträge sind
@@ -120,15 +126,16 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   auf den anderen Button speichert ihn, alle Walls blenden die Weltkarte ein bzw. aus, sobald der Server den neuen
   Stand schickt; ein Klick auf den hervorgehobenen tut nichts. Ein Szenen- oder Abenteuerwechsel schaltet auf „Aus“.
 - **Ground-Raster:** Die Zeile „Ground“ im Panel „Spieltisch“ hat ein Segment-Control „Schwarz“/„Weiß“/„Aus“
-  (hervorgehoben ist der Zustand des Servers, ein Klick auf den hervorgehobenen tut nichts) und darunter die Zeile
-  „Zellgröße“ mit Slider (100–200 in Schritten von 10, Wert rechts daneben; per Tastatur mit den Pfeiltasten bedienbar). Während
+  (hervorgehoben ist der Zustand des Servers, ein Klick auf den hervorgehobenen tut nichts). Die Zellgröße steht im
+  Abschnitt „Ground-Raster“ des Panels „Einstellungen“: „Zellgröße“ mit dem Wert rechts daneben und darunter ein Slider
+  (100–200 in Schritten von 10; per Tastatur mit den Pfeiltasten bedienbar). Während
   des Ziehens zeigt der Slider den gezogenen Wert, beim Loslassen wird er gespeichert, danach zeigt er den Wert des
   Servers. Alle Grounds zeigen das Raster, sobald der Server den neuen Stand schickt; Szenen- und Abenteuerwechsel
   ändern es nicht.
 - **Zustand auf dem Server:** Abenteuer, aktive Szene und Theme stehen auf dem Server und gelten für alle
   Spieltisch-Screens, auch in anderen Browsern oder auf anderen Geräten; sie überstehen Reloads und Neustarts der API.
-  Wall-Overlay und Ground-Raster stehen ebenfalls auf dem Server, aber nur im Speicher: Reloads überstehen sie, nach
-  einem Neustart der API sind beide „Aus“ (Zellgröße 100).
+  Gleiches gilt für die Zellgröße des Ground-Rasters. Wall-Overlay und Rasterfarbe stehen ebenfalls auf dem Server,
+  aber nur im Speicher: Reloads überstehen sie, nach einem Neustart der API sind beide „Aus“.
   Mehrere Admin-Fenster dürfen gleichzeitig schreiben, der letzte Schreibzugriff gewinnt.
 - **Speicherfehler:** Schlägt das Speichern von Szene, Abenteuer, Theme, Level, Wall-Overlay, Ground-Raster, eine
   Änderung am Kampf oder ein Musik-Befehl fehl, ändert sich auf keinem Screen etwas,
@@ -137,8 +144,9 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Verbindung:** Bricht die Verbindung zum Server ab (spätestens nach etwa 35 s ohne Nachricht erkannt), zeigt der
   Admin die Hinweisleiste „Verbindung zum Server getrennt“ und behält den letzten Stand; er verbindet sich selbst neu
   (1 s, 2 s, 4 s … höchstens 10 s), „Erneut versuchen“ verbindet sofort. Danach verschwindet die Leiste.
-- **Hinweisleiste:** ersetzt in der Kopfzeile die Abenteuer-Auswahl an derselben Stelle und in derselben Größe (kein
-  Abenteuerwechsel, solange sie steht); die Buttons rechts bleiben. Stehen mehrere Fehler an, zeigt sie nur den
+- **Hinweisleiste:** ersetzt in der Kopfzeile den Abenteuernamen an derselben Stelle und in derselben Größe (kein
+  Abenteuerwechsel, solange sie steht: die Abenteuer-Auswahl im Panel „Einstellungen“ ist deaktiviert); die Buttons
+  rechts bleiben. Stehen mehrere Fehler an, zeigt sie nur den
   wichtigsten (Verbindung getrennt → Laden fehlgeschlagen → Speichern fehlgeschlagen); ist er behoben, erscheint der
   nächste.
 - **Aktive Szene (Bühne):** Das Wall-Bild der aktiven Szene über die volle Breite des Dashboards (16:9), das
@@ -178,11 +186,13 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Vollbild (Admin):** Icon-Button „Vollbild“ rechts in der Kopfzeile (links vom Icon-Button „Dashboard“) schaltet das
   Admin-Fenster in den Vollbildmodus des Browsers und wieder zurück; hervorgehoben, solange das Fenster im Vollbild ist
   (auch wenn es per Escape verlassen wird, folgt die Anzeige).
-- Theme-Umschalter (Settings-Icon rechts in der Kopfzeile): schaltet das Theme global für Admin, Wall, Ground und die
-  Player Screens um (außer auf Smartphones, deren Spieler lokal ein anderes Theme gewählt hat).
+- **Theme:** Im Abschnitt „Darstellung“ des Panels „Einstellungen“ eine Auswahlliste mit „Dunkel“ und „Taverne“
+  (wie die Abenteuer-Auswahl per Maus und Tastatur bedienbar); gewählt ist das Theme des Spieltischs. Eine Wahl
+  speichert es und gilt für Admin, Wall, Ground und die Player Screens (außer auf Smartphones, deren Spieler lokal ein
+  anderes Theme gewählt hat); die Wahl des aktiven Themes tut nichts.
 - **Spieltisch:** Panel mit je einer Zeile für Wall, Ground und Spieler, getrennt durch Linien. Wall und Ground: links
   Name, Status-Punkt und „verbunden“ bzw. „nicht verbunden“ (bei mehreren Verbindungen „2 verbunden“ usw.), in der
-  Mitte das Segment-Control (Wall-Overlay bzw. Ground-Raster, beim Ground darunter die Zellgröße), rechts der Icon-Button
+  Mitte das Segment-Control (Wall-Overlay bzw. Ground-Raster), rechts der Icon-Button
   „In neuem Fenster öffnen“ (`/wall` bzw. `/ground` in einem eigenen Fenster je Screen; ein weiterer Klick holt das
   offene Fenster nach vorn, ohne es neu zu laden). Spieler: links „Spieler“ und „N Spieler verbunden“, in der Mitte
   „Spieler QR-Code“, rechts der Icon-Button „QR-Code“. Die Zahlen schickt der Server bei jeder Änderung (Öffnen oder
@@ -297,8 +307,9 @@ optional mit **Grid** als Layout für taktische Kämpfe.
 - Reine Anzeige ohne Bedienelemente (keine Steuerleiste); Ausnahme wie auf der Wall das Vollbild-Overlay beim Hovern
   mit der Maus (liegt auch über dem Raster).
 - Grid nach dem Spieltisch-Zustand: Linienfarbe Schwarz oder Weiß bzw. kein Grid, Zellgröße 100–200 (mit dem
-  Pixelverhältnis des Geräts skaliert); eingestellt im Admin (Panel „Spieltisch“, Zeile „Ground“), gilt für alle Grounds und alle
-  Szenen. Standard (auch nach einem Neustart der API): kein Grid, Zellgröße 100. Ein neu geöffneter Ground zeigt sofort
+  Pixelverhältnis des Geräts skaliert); eingestellt im Admin (Farbe im Panel „Spieltisch“, Zeile „Ground“, Zellgröße
+  im Panel „Einstellungen“), gilt für alle Grounds und alle Szenen. Standard: kein Grid, Zellgröße 100; nach einem
+  Neustart der API ist das Grid aus, die Zellgröße bleibt. Ein neu geöffneter Ground zeigt sofort
   das aktuelle Raster.
 - Verbindung wie auf der Wall: folgt dem Spieltisch per WebSocket, auch auf einem anderen Gerät; nach einem Abbruch
   kein Hinweis, letzter Stand bleibt, Reconnect automatisch.

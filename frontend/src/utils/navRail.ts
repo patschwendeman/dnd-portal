@@ -4,4 +4,16 @@ const nextOpenPanel = <T extends string>(open: T | null, clicked: T): T | null =
   open === clicked ? null : clicked
 )
 
-export default nextOpenPanel
+type NavRailPlacement = 'top' | 'bottom'
+
+// Rarely used menu items (the settings) sit at the lower end of the rail, apart from the ones
+// needed during the game; both groups keep the order of the list
+const splitByPlacement = <T extends { placement?: NavRailPlacement }>(
+  items: readonly T[],
+): { top: T[], bottom: T[] } => ({
+  top: items.filter((item) => (item.placement ?? 'top') === 'top'),
+  bottom: items.filter((item) => item.placement === 'bottom'),
+})
+
+export type { NavRailPlacement }
+export { nextOpenPanel, splitByPlacement }

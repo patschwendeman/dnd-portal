@@ -23,7 +23,7 @@ def get_state(db: Session) -> GameTableState:
             "theme": game_table.theme,
             "wall_overlay": wall_overlay.value,
             "ground_grid": ground_grid.color,
-            "ground_grid_cell_size": ground_grid.cell_size,
+            "ground_grid_cell_size": game_table.ground_grid_cell_size,
         }
     )
 
@@ -32,7 +32,6 @@ def update_state(db: Session, update: GameTableUpdate) -> GameTableState:
     values = update.model_dump(exclude_unset=True)
     overlay = values.pop("wall_overlay", None)
     grid = values.pop("ground_grid", None)
-    cell_size = values.pop("ground_grid_cell_size", None)
     adventure_id = values.get("active_adventure_id")
     if adventure_id is not None and not adventure_crud.adventure_exists(db, adventure_id):
         raise AdventureNotFoundError("Adventure not found")
@@ -49,8 +48,6 @@ def update_state(db: Session, update: GameTableUpdate) -> GameTableState:
         wall_overlay.reset()
     if grid is not None:
         ground_grid.color = grid
-    if cell_size is not None:
-        ground_grid.cell_size = cell_size
     # Read again: after the commit the relationship to the (new) active adventure has to be reloaded.
     db.expire_all()
     return get_state(db)

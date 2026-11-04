@@ -90,7 +90,9 @@ src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Pan
                      useAutoAudioOutput.ts (erste Interaktion ohne Ausgabe meldet audio_ready), audioOutput.ts
                      (shouldRequestAudioOutput)
 src/screens/         Screens
-src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin, mit ErrorBar), JoinDialog, ThemeMenu, NavRail (Navigationsleiste im Admin),
+src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin: Abenteuername, mit ErrorBar), JoinDialog, ThemeMenu,
+                     SelectList (Auswahlliste) mit AdventureSelect, SettingsPanel (Panel „Einstellungen“: Abenteuer,
+                     Theme, Zellgröße), NavRail (Navigationsleiste im Admin, Menüpunkte oben bzw. unten),
                      SideBarLeftElement (Eintrag im Panel, Button), DocumentNavigation (Notizen-Einträge im Panel),
                      SceneNavigation (Szenenliste im Panel), DocumentReader (Notizen des gewählten Eintrags),
                      AdventureBackground (Hintergrundbild des Abenteuers hinter den Kacheln im Admin),
@@ -116,7 +118,9 @@ src/models/models.ts API-Typen AdventureSummary, AdventureDetail, Player, SceneD
                      CombatantKind, CombatantCreate aus src/api/schema.d.ts
 src/utils/utils.ts   Musiktitel (getMusicTitle), filterSceneByKey
 src/utils/groundGrid.ts GROUND_GRID_CELL_SIZE (100–200, Schritt 10), gridLineColor, toCellSize (Slider-Wert → Zellgröße)
-src/utils/navRail.ts nextOpenPanel (welches Panel neben der Navigationsleiste offen ist)
+src/utils/navRail.ts nextOpenPanel (welches Panel neben der Navigationsleiste offen ist), splitByPlacement
+                     (Menüpunkte oben und am unteren Ende der Leiste)
+src/utils/useListbox.ts Logik der Auswahllisten (SelectList, ThemeMenu): Öffnen, Tastatur, Fokus; listbox.ts dazu
 src/utils/adventureBackground.ts adventureBackgroundSource (Bild des Abenteuers zum Theme), adventureBackgroundReducer
                      (Bild hinter den Kacheln: geladen, Überblendung, Rückfall), useAdventureBackground.ts (Hook dazu
                      im Admin, BACKGROUND_FADE_MS)

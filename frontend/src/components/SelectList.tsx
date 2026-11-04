@@ -1,41 +1,41 @@
-import {
-  KeyboardEvent, ReactElement, useEffect, useRef, useState,
-} from 'react'
+import { ReactElement } from 'react'
 import { ReactSVG } from 'react-svg'
 import styled from 'styled-components'
 
-import { AdventureSummary } from '../models/models'
-import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
-import { getListboxNextIndex, getListboxStartIndex, isListboxNavigationKey } from '../utils/listbox'
+import useListbox from '../utils/useListbox'
 
 import lockIcon from '/assets/icons/padlock.svg'
 
-const ADVENTURE_LIST_MAX_HEIGHT = '320px'
+const SELECT_LIST_MAX_HEIGHT = '320px'
 
 const Wrapper = styled.div`
     position: relative;
     display: flex;
-    flex: 1 1 auto;
     min-width: 0;
 `
 
-const Trigger = styled.button<TileSurfaceProps>`
-    ${tileSurface}
+// A field on the panel tile like the other controls in panels (surface `background`)
+const Trigger = styled.button`
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     gap: ${(props) => props.theme.space[2]};
     width: 100%;
     min-width: 0;
-    padding: 0 ${(props) => props.theme.space[5]};
-    ${textStyle('md')}
+    height: ${(props) => props.theme.size.control.md};
+    padding: 0 ${(props) => props.theme.space[3]};
+    ${textStyle('sm')}
     font-family: inherit;
-    font-weight: ${(props) => props.theme.fontWeight.bold};
+    font-weight: ${(props) => props.theme.fontWeight.medium};
+    background-color: ${(props) => props.theme.colors.background};
     color: ${(props) => props.theme.colors.text.color};
+    border: none;
+    border-radius: ${(props) => props.theme.radius.md};
     cursor: pointer;
 
     &:disabled {
+        color: ${(props) => props.theme.colors.text.muted};
         cursor: default;
     }
 
@@ -43,16 +43,15 @@ const Trigger = styled.button<TileSurfaceProps>`
         cursor: not-allowed;
     }
 
-    /* Inset, so the outline stays on the tile: outside it would lie on the scene image, where
-       primary misses 3:1 in Tavern over a bright image */
     &:focus-visible {
         outline: ${(props) => props.theme.borderWidth.thick} solid
           ${(props) => props.theme.colors.primary};
-        outline-offset: -${(props) => props.theme.borderWidth.thick};
+        outline-offset: ${(props) => props.theme.borderWidth.thick};
     }
 `
 
-const TriggerLabel = styled.span`
+// Single line: long names in the narrow panel end with an ellipsis
+const Ellipsis = styled.span`
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -63,7 +62,7 @@ const Chevron = styled.svg<{ $isOpen: boolean }>`
     flex-shrink: 0;
     width: ${(props) => props.theme.size.icon};
     height: ${(props) => props.theme.size.icon};
-    fill: ${(props) => props.theme.colors.text.color};
+    fill: currentColor;
     transform: ${(props) => (props.$isOpen ? 'rotate(180deg)' : 'none')};
 `
 
@@ -81,14 +80,13 @@ const LockIcon = styled.span`
 const List = styled.div`
     position: absolute;
     top: calc(100% + ${(props) => props.theme.space[1]});
-    left: 50%;
-    transform: translateX(-50%);
+    right: 0;
+    left: 0;
     z-index: ${(props) => props.theme.layer.popover};
     display: flex;
     flex-direction: column;
     gap: ${(props) => props.theme.space[1]};
-    width: max-content;
-    max-height: ${ADVENTURE_LIST_MAX_HEIGHT};
+    max-height: ${SELECT_LIST_MAX_HEIGHT};
     overflow-y: auto;
     padding: ${(props) => props.theme.space[1]};
     background-color: ${(props) => props.theme.colors.secondary};
@@ -140,121 +138,78 @@ const Option = styled.div<{ $isSelected: boolean }>`
     }
 `
 
-interface AdventureSelectProps {
-  adventures: AdventureSummary[]
-  activeAdventureId: number | null
-  onSelectAdventure: (adventureId: number) => void
-  // During a fight: the list does not open, a lock replaces the arrow
-  isLocked?: boolean
-  // While the scene image lies behind the tiles
-  isTranslucent?: boolean
+interface SelectOption<T> {
+  value: T
+  label: string
 }
 
-function AdventureSelect({
-  adventures,
-  activeAdventureId,
-  onSelectAdventure,
+interface SelectListProps<T extends string | number> {
+  options: readonly SelectOption<T>[]
+  // null: no entry selected (the button shows no text)
+  value: T | null
+  onChange: (value: T) => void
+  // Accessible name of button and list
+  label: string
+  testId: string
+  // Test ids: entries `${optionTestIdPrefix}-${value}`, lock `${testId}-lock`
+  optionTestIdPrefix: string
+  // The list does not open, a lock replaces the arrow, `lockedTitle` is the tooltip
+  isLocked?: boolean
+  lockedTitle?: string
+  // Disabled like without entries
+  isDisabled?: boolean
+}
+
+function SelectList<T extends string | number>({
+  options,
+  value,
+  onChange,
+  label,
+  testId,
+  optionTestIdPrefix,
   isLocked = false,
-  isTranslucent = false,
-}: AdventureSelectProps): ReactElement {
-  const [isOpen, setIsOpen] = useState(false)
-  const [focusIndex, setFocusIndex] = useState(-1)
-  const wrapperRef = useRef<HTMLDivElement>(null)
-  const triggerRef = useRef<HTMLButtonElement>(null)
-  const optionRefs = useRef<(HTMLDivElement | null)[]>([])
-
-  const selectedIndex = adventures.findIndex((adventure) => adventure.id === activeAdventureId)
-  const activeAdventure = selectedIndex >= 0 ? adventures[selectedIndex] : undefined
-
-  // Moves the real focus, so the browser scrolls the entry into view and screen readers announce
-  // it.
-  useEffect(() => {
-    if (isOpen && focusIndex >= 0) {
-      optionRefs.current[focusIndex]?.focus()
-    }
-  }, [isOpen, focusIndex])
-
-  useEffect(() => {
-    if (!isOpen) {
-      return undefined
-    }
-    const closeOnOutsidePointer = (event: MouseEvent) => {
-      if (!wrapperRef.current?.contains(event.target as Node)) {
-        setIsOpen(false)
+  lockedTitle = undefined,
+  isDisabled = false,
+}: SelectListProps<T>): ReactElement {
+  const selectedIndex = options.findIndex((option) => option.value === value)
+  const selectedOption = selectedIndex >= 0 ? options[selectedIndex] : undefined
+  const isUnavailable = isDisabled || options.length === 0
+  const {
+    isOpen, close, open, wrapperRef, triggerRef, optionElement, focusOption, choose,
+    handleTriggerKeyDown, handleListKeyDown,
+  } = useListbox({
+    count: options.length,
+    selectedIndex,
+    canOpen: !isLocked,
+    onChoose: (index) => {
+      if (options[index].value !== value) {
+        onChange(options[index].value)
       }
-    }
-    document.addEventListener('mousedown', closeOnOutsidePointer)
-    return () => document.removeEventListener('mousedown', closeOnOutsidePointer)
-  }, [isOpen])
+    },
+  })
 
-  // A fight that starts in another Admin window closes an open list
-  const isListShown = isOpen && !isLocked
-
-  const open = () => {
-    if (isLocked) {
-      return
-    }
-    setFocusIndex(getListboxStartIndex(selectedIndex, adventures.length))
-    setIsOpen(true)
-  }
-
-  const closeAndFocusTrigger = () => {
-    setIsOpen(false)
-    triggerRef.current?.focus()
-  }
-
-  const choose = (adventureId: number) => {
-    closeAndFocusTrigger()
-    if (adventureId !== activeAdventureId) {
-      onSelectAdventure(adventureId)
-    }
-  }
-
-  // Enter and Space reach the button as a click; only the arrows need their own handling.
-  const handleTriggerKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-    if (!isOpen && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
-      event.preventDefault()
-      open()
-    }
-  }
-
-  const handleListKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (isListboxNavigationKey(event.key)) {
-      event.preventDefault()
-      setFocusIndex(getListboxNextIndex(event.key, focusIndex, adventures.length))
-    } else if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      if (focusIndex >= 0) {
-        choose(adventures[focusIndex].id)
-      }
-    } else if (event.key === 'Escape') {
-      event.preventDefault()
-      closeAndFocusTrigger()
-    } else if (event.key === 'Tab') {
-      setIsOpen(false)
-    }
-  }
+  // A lock that starts meanwhile (a fight from another Admin window, an error) closes an open list
+  const isListShown = isOpen && !isLocked && !isUnavailable
 
   return (
     <Wrapper ref={wrapperRef}>
       <Trigger
         ref={triggerRef}
         type="button"
-        data-test-id="adventure-select"
-        $isTranslucent={isTranslucent}
-        aria-label="Abenteuer"
+        data-test-id={testId}
+        aria-label={label}
         aria-haspopup="listbox"
         aria-expanded={isListShown}
         // aria-disabled instead of disabled, so the tooltip shows and the button keeps its focus
         aria-disabled={isLocked || undefined}
-        title={isLocked ? 'Während des Kampfes nicht wechselbar' : undefined}
-        disabled={adventures.length === 0}
-        onClick={() => (isListShown ? setIsOpen(false) : open())}
+        title={isLocked ? lockedTitle : undefined}
+        disabled={isUnavailable}
+        onClick={() => (isListShown ? close() : open())}
         onKeyDown={handleTriggerKeyDown}
       >
-        <TriggerLabel>{activeAdventure?.name ?? ''}</TriggerLabel>
+        <Ellipsis title={selectedOption?.label}>{selectedOption?.label ?? ''}</Ellipsis>
         {isLocked ? (
-          <LockIcon aria-hidden="true" data-test-id="adventure-lock">
+          <LockIcon aria-hidden="true" data-test-id={`${testId}-lock`}>
             <ReactSVG src={lockIcon} />
           </LockIcon>
         ) : (
@@ -264,22 +219,21 @@ function AdventureSelect({
         )}
       </Trigger>
       {isListShown && (
-        <List role="listbox" aria-label="Abenteuer" onKeyDown={handleListKeyDown}>
-          {adventures.map((adventure, index) => (
+        <List role="listbox" aria-label={label} onKeyDown={handleListKeyDown}>
+          {options.map((option, index) => (
             <Option
-              key={adventure.id}
-              ref={(element) => {
-                optionRefs.current[index] = element
-              }}
+              key={option.value}
+              ref={optionElement(index)}
               role="option"
               tabIndex={-1}
               aria-selected={index === selectedIndex}
-              data-test-id={`adventure-option-${adventure.id}`}
+              data-test-id={`${optionTestIdPrefix}-${option.value}`}
+              title={option.label}
               $isSelected={index === selectedIndex}
-              onClick={() => choose(adventure.id)}
-              onFocus={() => setFocusIndex(index)}
+              onClick={() => choose(index)}
+              onFocus={() => focusOption(index)}
             >
-              {adventure.name}
+              <Ellipsis>{option.label}</Ellipsis>
             </Option>
           ))}
         </List>
@@ -288,4 +242,5 @@ function AdventureSelect({
   )
 }
 
-export default AdventureSelect
+export type { SelectOption }
+export { SelectList }

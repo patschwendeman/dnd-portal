@@ -23,6 +23,7 @@ import LevelStepper from '../components/LevelStepper'
 import { NavRail, NavRailItem } from '../components/NavRail'
 import PlayersPanel from '../components/PlayersPanel'
 import SceneNavigation from '../components/SceneNavigation'
+import SettingsPanel from '../components/SettingsPanel'
 import TurnPanel from '../components/TurnPanel'
 import {
   ActiveAdventureContext,
@@ -39,6 +40,7 @@ import {
   Player,
   SceneDetail,
   SoundName,
+  Theme,
   WallOverlay,
 } from '../models/models'
 import {
@@ -77,13 +79,14 @@ import {
   toCombatantCreate,
 } from '../utils/fight'
 import { loadLatest } from '../utils/loadSafely'
-import nextOpenPanel from '../utils/navRail'
+import { nextOpenPanel } from '../utils/navRail'
 import { useAdventureBackground } from '../utils/useAdventureBackground'
 import useFightPreparation from '../utils/useFightPreparation'
 import { filterSceneByKey } from '../utils/utils'
 
 import notesIcon from '/assets/icons/notes.svg'
 import scenesIcon from '/assets/icons/scenes.svg'
+import settingsIcon from '/assets/icons/settings.svg'
 import swordsIcon from '/assets/icons/swords.svg'
 
 // Icon button (size.control.md, 40px) plus space.3 on both sides
@@ -417,8 +420,10 @@ function AdminScreen(): ReactElement {
     runSave(() => saveGlobalLevel(adventureId, level))
   }
 
-  const handleThemeToggle = () => {
-    const nextTheme = gameTableTheme === 'dark' ? 'tavern' : 'dark'
+  const handleThemeChange = (nextTheme: Theme) => {
+    if (nextTheme === gameTableTheme) {
+      return
+    }
     runSave(() => saveTheme(nextTheme))
   }
 
@@ -554,6 +559,11 @@ function AdminScreen(): ReactElement {
     save: failedSave !== null,
   })
 
+  // Empty while the list of adventures is loading, so "Kein Abenteuer" does not flash up
+  const adventureName = activeAdventureId === null
+    ? null
+    : adventures?.find((adventure) => adventure.id === activeAdventureId)?.name ?? ''
+
   const navItems: (NavRailItem & { panel: ReactElement })[] = [
     {
       id: 'docs',
@@ -597,6 +607,26 @@ function AdminScreen(): ReactElement {
           onAddPlayer={handleAddPlayer}
           onStart={handleStartFight}
           onEnd={() => setIsEndFightDialogOpen(true)}
+        />
+      ),
+    },
+    {
+      id: 'settings',
+      name: 'Einstellungen',
+      icon: settingsIcon,
+      placement: 'bottom',
+      panel: (
+        <SettingsPanel
+          adventures={adventures ?? []}
+          activeAdventureId={activeAdventureId}
+          onSelectAdventure={handleAdventureSelection}
+          isAdventureLocked={isFighting}
+          isAdventureDisabled={shownError !== null}
+          theme={gameTableTheme}
+          onThemeChange={handleThemeChange}
+          groundGridCellSize={groundGridCellSize}
+          failedSave={failedSave}
+          onGroundGridCellSizeCommit={handleGroundGridCellSizeCommit}
         />
       ),
     },
@@ -663,11 +693,7 @@ function AdminScreen(): ReactElement {
         )}
         <HeaderArea $area="header">
           <AdminHeader
-            onToggleTheme={handleThemeToggle}
-            adventures={adventures ?? []}
-            activeAdventureId={activeAdventureId}
-            onSelectAdventure={handleAdventureSelection}
-            isAdventureLocked={isFighting}
+            adventureName={adventureName}
             errorNotice={shownError === null ? null : errorNotices[shownError]}
             isDashboardOpen={isDashboardOpen}
             dashboardId={DASHBOARD_ID}
@@ -739,11 +765,8 @@ function AdminScreen(): ReactElement {
                 <GameTablePanel
                   wallOverlay={wallOverlay}
                   groundGrid={groundGrid}
-                  groundGridCellSize={groundGridCellSize}
-                  failedSave={failedSave}
                   onWallOverlayChange={handleWallOverlayChange}
                   onGroundGridChange={handleGroundGridChange}
-                  onGroundGridCellSizeCommit={handleGroundGridCellSizeCommit}
                 />
               </DashboardPanel>
               {!fight && (

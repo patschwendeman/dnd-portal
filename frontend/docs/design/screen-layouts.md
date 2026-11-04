@@ -10,12 +10,12 @@ Regel: [1.3](../../DESIGN.md#13-layout-konstanten).
 | Wert | Wofür | Ort |
 |---|---|---|
 | 64px | Navigationsleiste im Admin (`NAV_RAIL_WIDTH`: Icon-Button `size.control.md` plus `space.3` auf beiden Seiten) | `AdminScreen` |
-| 240px | Panel neben der Navigationsleiste im Admin (`LEFT_COLUMN_WIDTH`) | `AdminScreen` |
+| 240px | Panel neben der Navigationsleiste im Admin (`LEFT_COLUMN_WIDTH`; auch „Einstellungen“) | `AdminScreen` |
 | 280px | Panel „Kampf“ (`FIGHT_PANEL_WIDTH`: Namen und Steuerung je Teilnehmer passen nebeneinander) | `AdminScreen` |
 | 8px · 5px | Punkt am Menüpunkt „Kampf“ bei laufendem Kampf, Größe und Abstand zur Ecke (`BADGE_SIZE`, `BADGE_INSET`) | `NavRail` |
 | 400px · 560px | Mindest- und Höchstbreite des Dashboards (`DASHBOARD_MIN_WIDTH`: darunter werden die Zeilen im Panel „Spieltisch“ zu schmal für ihre Steuerung; `DASHBOARD_MAX_WIDTH`: darüber schöbe die Bühne auf großen Monitoren das Panel „Audio“ aus dem sichtbaren Bereich) | `AdminScreen` |
 | 12px | Unschärfe hinter durchscheinenden Kacheln im Admin (`TILE_BLUR`, `backdrop-filter: blur`) | `GlobalStyle` (`tileSurface`) |
-| 320px | maximale Höhe der Abenteuer-Liste (`ADVENTURE_LIST_MAX_HEIGHT`) | `AdventureSelect` |
+| 320px | maximale Höhe der Liste einer Auswahlliste (`SELECT_LIST_MAX_HEIGHT`) | `SelectList` |
 | 68ch | maximale Zeilenlänge in den Notizen, zentriert auf der Notizseite (`LINE_MAX_WIDTH`) | `DocumentReader` |
 | 1440px | maximale Breite des Wall-Panels (`OVERLAY_PANEL_MAX_WIDTH`), siehe [Breite des Overlay-Panels](#breite-des-overlay-panels) | `WallScreen` |
 | 600px | Breite des Dialogs (`DIALOG_WIDTH`) | `Dialogue` |

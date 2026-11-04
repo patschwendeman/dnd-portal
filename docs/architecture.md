@@ -23,10 +23,10 @@
 ## Synchronisation
 
 - **Der Server ist die einzige Quelle** des Spieltisch-Zustands: aktives Abenteuer, dessen aktive Szene, Theme,
-  Wall-Overlay und Ground-Raster (Tabelle `game_table`, die aktive Szene steht in `adventure.active_scene_id`; das
-  Wall-Overlay `wall_overlay` und das Ground-Raster `ground_grid`/`ground_grid_cell_size` liegen wie der Musikzustand
-  nur im Speicher der API, `app/realtime/wall_overlay.py` bzw. `app/realtime/ground_grid.py`, nach einem Neustart
-  `off` bzw. `off`/100). Ein Server ist ein Spieltisch (eine
+  Wall-Overlay und Ground-Raster (Tabelle `game_table` mit Theme und Zellgröße `ground_grid_cell_size`, die aktive
+  Szene steht in `adventure.active_scene_id`; das Wall-Overlay `wall_overlay` und die Rasterfarbe `ground_grid` liegen
+  wie der Musikzustand nur im Speicher der API, `app/realtime/wall_overlay.py` bzw. `app/realtime/ground_grid.py`,
+  nach einem Neustart jeweils `off`). Ein Server ist ein Spieltisch (eine
   globale Session, kein Beitreten).
 - Admin, Wall, Ground und Player verbinden sich beim Laden per WebSocket mit `/ws?screen=admin|wall|ground|player`
   (`GameTableProvider`/`useGameTable`, `src/realtime/`). Der Server schickt direkt nach dem Verbinden und nach **jeder**
@@ -41,8 +41,9 @@
   {"active_adventure_id": <id>}`, die Szene per `PATCH /adventures/{id} {"active_scene_id": <id>}`, das Level per
   `PATCH /adventures/{id} {"global_level": <n>}` und das Theme per `PATCH /table {"theme": …}`; das Wall-Overlay
   per `PATCH /table {"wall_overlay": "world" | "off"}` (Panel „Spieltisch“, Zeile „Wall“) und das Ground-Raster per `PATCH /table
-  {"ground_grid": "black" | "white" | "off"}` bzw. `{"ground_grid_cell_size": 100–200, Schritt 10}` (Panel
-  „Spieltisch“, Zeile „Ground“, Slider beim Loslassen). Wall und Ground schreiben nichts. Ändert sich die aktive Szene des aktiven Abenteuers
+  {"ground_grid": "black" | "white" | "off"}` (Panel „Spieltisch“, Zeile „Ground“) bzw.
+  `{"ground_grid_cell_size": 100–200, Schritt 10}` (Panel „Einstellungen“, Slider beim Loslassen); das Theme wählt
+  er im Panel „Einstellungen“. Wall und Ground schreiben nichts. Ändert sich die aktive Szene des aktiven Abenteuers
   oder das aktive Abenteuer, setzt der Server `wall_overlay` im selben Schreibzugriff auf `off` (ein Push); setzt
   derselbe `PATCH /table` auch `wall_overlay`, gilt dieser Wert. Das Ground-Raster bleibt bei Szenen- und
   Abenteuerwechseln unverändert. Admin, Wall und Ground wechseln erst mit dem Push; ein Abenteuerwechsel liefert direkt
@@ -303,7 +304,8 @@ Scene     → scene     (id, adventure_id → adventure, name, description, wall
               Scene.tracks: N:M über scene_track(scene_id, media_id; PK aus beiden)
 Media     → media     (id, kind: 'image' | 'audio', name, storage_key (unique), content_type, size (Bytes, nullable))
 GameTable → game_table (id (CHECK id = 1), active_adventure_id → adventure (nullable, ON DELETE SET NULL),
-                        theme (Text, Default 'dark', CHECK theme IN ('dark', 'tavern')))
+                        theme (Text, Default 'dark', CHECK theme IN ('dark', 'tavern')),
+                        ground_grid_cell_size (int, Default 100, CHECK 100–200 und Vielfaches von 10))
               GameTable.active_adventure: N:1; genau eine Zeile (ein Server = ein Spieltisch)
 Fight     → fight     (id, adventure_id → adventure (unique, ON DELETE CASCADE),
                        scene_id → scene (ON DELETE CASCADE), round (CHECK ≥ 1, Default 1),
@@ -359,7 +361,9 @@ Bilder, Tracks und die aktive Szene bleiben erhalten. `downgrade` legt sie wiede
 die Standardbilder ein, gesucht über `storage_key` (`images/wall_screen/fight.jpg` bzw. `images/wall_screen/tavern.jpg`);
 fehlt ein Bild in `media`, bleibt die Spalte leer. `downgrade` entfernt beide Spalten. `0007` legt `fight` und
 `combatant` an (bestehende Daten bleiben unberührt, der Seeder legt keinen Kampf an); `downgrade` entfernt beide
-Tabellen. Bestehende Datenbanken laufen jeweils ohne Reset weiter.
+Tabellen. `0008` ergänzt `game_table.ground_grid_cell_size` (Default 100, CHECK 100–200 in 10er-Schritten), damit
+die Zellgröße einen Neustart übersteht; `downgrade` entfernt die Spalte. Bestehende Datenbanken laufen jeweils ohne
+Reset weiter.
 
 **Seed-Daten:** Listen `adventures` (`name`, `description`, `global_level`, `background_dark_media_id`,
 `background_tavern_media_id`), `media` (`kind`, `name`, `storage_key`),
@@ -389,7 +393,7 @@ Datensatz trotzdem an (`size` = NULL).
   `src/screens` (Screens), `src/components`, `src/service` (Datenladen und Schreibzugriffe je Screen),
   `src/audio` (Soundliste `sounds.ts`, Wiedergabe im Admin `audioPlayer.ts` und `useAudioPlayback.ts`),
   `src/api` (axios-Client, Base-URL aus `VITE_API_URL`, Default `/api/`, Timeout 5000 ms; `wsUrl` leitet daraus die
-  WebSocket-URL ab), `src/models`, `src/utils` (Musiktitel, Filter, Panel der Navigationsleiste,
+  WebSocket-URL ab), `src/models`, `src/utils` (Musiktitel, Filter, Panel und Gruppen der Navigationsleiste, Auswahlliste `useListbox`,
   Fehlerbehandlung `loadSafely`, Logik des Kampfes `fight.ts` und Vorbereitung `useFightPreparation.ts`), `src/style` (Themes, `appTheme`), `src/context`.
 - Fehlerbehandlung beim Datenladen: `getData` reicht Fehler weiter. Die Services laden über `loadData`
   (`src/api/loadData.ts`) und werfen einen `LoadError`, dessen Meldung Netzwerkfehler/Timeout („backend not

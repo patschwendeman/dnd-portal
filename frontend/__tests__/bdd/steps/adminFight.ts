@@ -38,6 +38,8 @@ const TURN_ROUND = `${TURN_PANEL} [data-test-id="turn-round"]`
 const END_TURN = `${TURN_PANEL} [data-test-id="end-turn"]`
 const INITIATIVE_ROWS = '[data-test-id="dashboard-panel-initiative"] li'
 const INITIATIVE_NAMES = `${INITIATIVE_ROWS} [data-test-id="combatant-name"]`
+const ADVENTURE_SELECT = '[data-test-id="nav-panel"] [data-test-id="adventure-select"]'
+const LOCKED_TITLE = 'Während des Kampfes nicht wechselbar'
 const SCENE_ENTRIES = '[data-test-id="nav-panel"] [data-test-id="scene-navigation"] button'
 
 interface Player { id: number, character_name: string }
@@ -325,11 +327,18 @@ defineFeature(feature, (test) => {
         .toBe(activeSceneBefore)
     })
 
-    and('the adventure select is locked', async () => {
-      const select = '[data-test-id="adventure-select"]'
-      expect(await waitForAttribute(driver, select, 'aria-disabled', 'true'))
+    when('I click on the menu item Einstellungen and on the adventure select', async () => {
+      await clickElement(driver, '[data-test-id="nav-item-settings"]')
+      await clickElement(driver, ADVENTURE_SELECT)
+    })
+
+    then('the adventure select is locked and no list opens', async () => {
+      expect(await waitForAttribute(driver, ADVENTURE_SELECT, 'aria-disabled', 'true'))
         .toBe('true')
-      expect(await waitForElement(driver, '[data-test-id="adventure-lock"]')).toBeTruthy()
+      expect(await waitForAttribute(driver, ADVENTURE_SELECT, 'title', LOCKED_TITLE))
+        .toBe(LOCKED_TITLE)
+      expect(await waitForElement(driver, '[data-test-id="adventure-select-lock"]')).toBeTruthy()
+      expect(await driver.findElements(By.css('[role="listbox"]'))).toHaveLength(0)
     })
   }, SCENARIO_TIMEOUT)
 

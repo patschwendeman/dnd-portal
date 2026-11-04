@@ -19,8 +19,8 @@ class GameTableState(BaseModel):
 
     `wall_overlay` is what the Walls show above the scene image (`world`: the world map); it is kept in memory only and
     set to `off` whenever the active scene or adventure changes. `ground_grid` (line colour or `off`) and
-    `ground_grid_cell_size` (in px) are the grid of the Grounds; also kept in memory only, but unchanged by scene or
-    adventure changes.
+    `ground_grid_cell_size` (in px) are the grid of the Grounds, unchanged by scene or adventure changes; the colour is
+    kept in memory only (`off` after a restart), the cell size is stored.
     """
 
     active_adventure_id: int | None

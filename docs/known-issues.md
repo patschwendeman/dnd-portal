@@ -28,7 +28,8 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - Der Musikzustand (Track, Play/Pause, Lautstärke, Audioausgabe) liegt nur im Speicher des API-Prozesses: Nach einem
   Neustart ist die Musik pausiert und die Lautstärke wieder 10 %. Die Wiedergabeposition wird nicht synchronisiert
   (eine neue Ausgabe startet den Track von vorn), Überblendungen gibt es nicht. Ebenso liegen Wall-Overlay und
-  Ground-Raster nur im Speicher: Nach einem Neustart ist beides aus (Zellgröße 100).
+  Rasterfarbe des Grounds nur im Speicher: Nach einem Neustart ist beides aus; die Zellgröße des Rasters steht seit
+  DND-44 in der Datenbank und bleibt.
 - Nach einem Reload ist das Admin-Fenster keine Audioausgabe mehr, bis dort wieder geklickt oder eine Taste gedrückt
   wird (der Browser gibt die Wiedergabe erst nach einer Nutzerinteraktion frei).
 - `POST` ist per CORS nicht freigegeben: Die Soundeffekte (`POST /table/sounds`) funktionieren über den Proxy
@@ -66,9 +67,8 @@ in Folge-Tasks, danach den Eintrag in der jeweiligen Ignore-Liste entfernen bzw.
   Exporte des generierten `src/api/schema.d.ts`. Keine Baseline, sondern bewusst reserviert (DND-38): die Datei
   `src/components/PlayerHeroCard.tsx` (Hero-Karte), die das Layout „Bühne“ nicht nutzt; sie bleibt für wählbare
   Dashboard-Layouts, der Eintrag entfällt, sobald ein Layout sie wieder verwendet.
-- jscpd (`frontend/.jscpd.json`, `threshold` 1,35 %, seit DND-36): 5 Duplikate, 75 von 6013 Zeilen (1,25 %, Stand DND-40):
-  `AdventureSelect.tsx` ↔ `ThemeMenu.tsx` (3 Blöcke, 11–16 Zeilen), `darkTheme.ts` ↔ `tavernTheme.ts` (19 Zeilen),
-  `NavRail.tsx` ↔ `SideBarLeftElement.tsx` (13 Zeilen).
+- jscpd (`frontend/.jscpd.json`, `threshold` 0,28 %, seit DND-44): 1 Duplikat, 22 von 8073 Zeilen (0,27 %, Stand
+  DND-44): `darkTheme.ts` ↔ `tavernTheme.ts` (22 Zeilen).
 
 **Backend**
 - vulture (`backend/vulture_baseline.py`): Relationship `Adventure.active_scene` wird nirgends gelesen (nur

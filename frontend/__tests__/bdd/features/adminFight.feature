@@ -28,7 +28,8 @@ Scenario: Scene and adventure are locked during a fight
     When I click on the menu item Szenen
     And I click on a scene that is not active
     Then no dialog opens and the panel says that the fight is running
-    And the adventure select is locked
+    When I click on the menu item Einstellungen and on the adventure select
+    Then the adventure select is locked and no list opens
 
 Scenario: I end the fight
     Given a fight is running

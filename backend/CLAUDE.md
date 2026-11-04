@@ -2,7 +2,7 @@
 
 REST-API, WebSocket und PostgreSQL für das DnD Portal. Liefert Abenteuer (mit Spielern, aktiver Szene und globalem Level) und
 Szenen mit ihren Wall-/Ground-Bildern und Musik-Playlists an das Frontend (`../frontend`), hält den Spieltisch-Zustand
-(aktives Abenteuer, aktive Szene, Theme; Wall-Overlay und Ground-Raster nur im Speicher) und den Musikzustand (im Speicher) und pusht beides per WebSocket (`/ws`) an Admin, Wall, Ground und Player, hält den laufenden Kampf je Abenteuer (`/table/fight`, Push nur an Admins), liefert die Player-URL für den QR-Code im
+(aktives Abenteuer, aktive Szene, Theme, Zellgröße des Ground-Rasters; Wall-Overlay und Rasterfarbe nur im Speicher) und den Musikzustand (im Speicher) und pusht beides per WebSocket (`/ws`) an Admin, Wall, Ground und Player, hält den laufenden Kampf je Abenteuer (`/table/fight`, Push nur an Admins), liefert die Player-URL für den QR-Code im
 Admin (`GET /table/join`, `Settings.player_url`) und die Mediendateien selbst (Ordner `../media`, unter `/media`). Projektübergreifender Kontext (Vision, Screens, Begriffe, bekannte Probleme) liegt
 eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 
@@ -51,9 +51,9 @@ CRUD-Funktion geprüft. Daneben prüfen `test_cors.py` (erlaubte Origins und Met
 (`Settings`, ohne DB), `test_migrate.py` (Alt-DB-Prüfung über eine Tabellenliste, ohne die Test-DB zu verändern),
 `test_media.py` (Auslieferung unter `/media` inkl. `Range`, 404 und Pfad-Traversal; `source`-Format; alle Seed-Dateien
 in `../media` vorhanden), `test_seed.py` (Seeder inkl. Abenteuer mit Hintergrundbildern, Spieler und fehlender Datei, in
-einer zurückgerollten Transaktion) sowie `test_migration_0002.py` bis `test_migration_0007.py` (Migration `0001` → `0002`,
-`0002` → `0003`, `0003` → `0004`, `0004` → `0005`, `0005` → `0006` bzw. `0006` → `0007` (inkl. Constraints und
-Kaskaden von `fight`/`combatant`) und zurück mit Daten, in einer eigenen temporären Datenbank – braucht
+einer zurückgerollten Transaktion) sowie `test_migration_0002.py` bis `test_migration_0008.py` (Migration `0001` → `0002`,
+`0002` → `0003`, `0003` → `0004`, `0004` → `0005`, `0005` → `0006`, `0006` → `0007` (inkl. Constraints und
+Kaskaden von `fight`/`combatant`) bzw. `0007` → `0008` (CHECK der Zellgröße) und zurück mit Daten, in einer eigenen temporären Datenbank – braucht
 `CREATE DATABASE`). `test_table.py` prüft `GET`/`PATCH /table` und `GET /table/join` (`player_url` per `monkeypatch` auf `settings`),
 `test_ws.py` den WebSocket `/ws` per
 `TestClient.websocket_connect` (Snapshot, Push nach `PATCH`, `screen`- und Origin-Prüfung, Ping mit per `monkeypatch`
@@ -66,8 +66,8 @@ IMMEDIATE`, Sperre von Szenen- und Abenteuerwechsel, Push `fight` nur an Admins,
 `TestClient` mit echtem Commit, Kaskaden beim Löschen von Spieler und Szene). `test_audio.py` prüft `GET`/`PATCH /table/audio`, die Track-Wahl beim Trackende und
 `POST /table/sounds` (Zufall per `monkeypatch` auf `audio.random` gesteuert). Der Musikzustand liegt im Speicher: Die
 Fixture `reset_audio` setzt ihn nach dem Test zurück (`test_audio.py`, `test_ws.py` und alle Tests mit `db`); das
-ebenfalls im Speicher gehaltene Wall-Overlay und Ground-Raster setzt die Fixture `db` nach dem Test auf `off`
-(Zellgröße 100) zurück.
+ebenfalls im Speicher gehaltene Wall-Overlay und die Rasterfarbe setzt die Fixture `db` nach dem Test auf `off`
+zurück (die Zellgröße steht in der Datenbank und wird mit der Transaktion zurückgerollt).
 Schreibende Tests (`PATCH` in `test_adventures.py`, `test_table.py`, `test_ws.py`, alle in `test_fight.py`) laufen über die Fixture `db`
 (`tests/conftest.py`): Sie ersetzt `get_db` per `app.dependency_overrides` und die Session des WebSocket-Push
 (`app.realtime.push.SessionLocal`) durch eine Session in einer äußeren, danach zurückgerollten Transaktion (Commits
@@ -135,18 +135,20 @@ app/realtime/             WebSocket: manager.py (ConnectionManager `manager` im 
                           `fight`), push_audio, send_sound, Ausgabe-Wechsel, reset_audio),
                           origin.py (is_origin_allowed: ohne Origin, CORS_ORIGINS oder gleicher Host/Port wie `Host`),
                           wall_overlay.py (WallOverlayState `wall_overlay`: Wall-Overlay im Speicher, Default `off`),
-                          ground_grid.py (GroundGridState `ground_grid`: Ground-Raster im Speicher, Default `off`/100)
+                          ground_grid.py (GroundGridState `ground_grid`: Rasterfarbe im Speicher, Default `off`;
+                          die Zellgröße steht in `game_table`)
 app/api/deps.py           SessionDep
 app/api/routes/*.py       je Ressource ein `router` (adventures inkl. Szenen je Abenteuer, scenes nur
                           Einzelszene, table, audio mit Prefix `/table` und Tag `audio`, fight mit Prefix `/table/fight`
                           und Tag `fight`, ws) – nur HTTP-Mapping
 tests/conftest.py         Fixtures: TestClient, Seed-Daten und daraus berechnete Erwartungen
 tests/test_*.py           Tests je Router (adventures inkl. Szenen, scenes, table, audio, fight), WebSocket (ws), Medien (media), CORS,
-                          Config, Migrationsstart (migrate), Seeder (seed), Migrationen 0002–0007 (migration_000n)
+                          Config, Migrationsstart (migrate), Seeder (seed), Migrationen 0002–0008 (migration_000n)
 alembic.ini               Alembic-Konfiguration (ohne DB-URL; Dateinamen <revision>_<slug>.py, ruff als post_write_hook)
 migrations/env.py         URL aus settings.database_url, target_metadata = Base.metadata, compare_type=True
 migrations/versions/      Migrationen, nummeriert (0001_initial_schema.py, 0002_…, 0003_adventure_and_player.py,
-                          0004_game_table.py, 0005_drop_scene_main.py, 0006_adventure_background.py, 0007_fight.py)
+                          0004_game_table.py, 0005_drop_scene_main.py, 0006_adventure_background.py, 0007_fight.py,
+                          0008_ground_grid_cell_size.py)
 scripts/export_openapi.py schreibt app.openapi() nach openapi.json (versioniert, Basis der Frontend-Typen)
 Makefile                  Qualitätsprüfungen (check-deadcode, check-deps, check-complexity, check-dupes, check-quality)
 vulture_whitelist.py      Falsch-Positive von vulture; vulture_baseline.py: bestehender toter Code (Baseline DND-31)

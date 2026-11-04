@@ -39,6 +39,7 @@ def test_get_returns_the_stored_state(client: TestClient, expected_adventures: l
         row = session.get(GameTable, 1)
         assert row is not None
         assert (body["active_adventure_id"], body["theme"]) == (row.active_adventure_id, row.theme)
+        assert body["ground_grid_cell_size"] == row.ground_grid_cell_size
     # Migration 0004 activates the smallest adventure, or none if the DB was empty before (the seeder runs after it).
     assert body["active_adventure_id"] in {None, expected_adventures[0]["id"]}
     assert body["active_scene_id"] is None
@@ -331,12 +332,39 @@ def test_scene_and_adventure_changes_keep_the_ground_grid(
     assert {key: client.get("/table").json()[key] for key in grid} == grid
 
 
-def test_ground_grid_is_off_with_cell_size_100_after_a_start() -> None:
+def test_ground_grid_is_off_after_a_start() -> None:
     from app.realtime.ground_grid import GroundGridState
 
-    state = GroundGridState()
+    assert GroundGridState().color == "off"
 
-    assert (state.color, state.cell_size) == ("off", 100)
+
+def test_cell_size_is_stored_and_the_grid_colour_is_not(
+    client: TestClient, db: Session, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.models import GameTable
+    from app.realtime.ground_grid import GroundGridState
+    from app.services import game_table as game_table_service
+
+    client.patch("/table", json={"ground_grid": "white", "ground_grid_cell_size": 150})
+    row = db.get(GameTable, 1)
+    assert row is not None
+    db.refresh(row)
+    assert row.ground_grid_cell_size == 150
+
+    # A restart of the API: new state in memory, same database.
+    monkeypatch.setattr(game_table_service, "ground_grid", GroundGridState())
+
+    body = client.get("/table").json()
+    assert (body["ground_grid"], body["ground_grid_cell_size"]) == ("off", 150)
+
+
+def test_database_rejects_invalid_cell_sizes(db: Session) -> None:
+    from sqlalchemy import text
+    from sqlalchemy.exc import IntegrityError
+
+    for cell_size in (90, 155, 210):
+        with pytest.raises(IntegrityError, match="ck_game_table_ground_grid_cell_size"), db.begin_nested():
+            db.execute(text("UPDATE game_table SET ground_grid_cell_size = :size"), {"size": cell_size})
 
 
 def test_deleting_the_active_adventure_clears_it(

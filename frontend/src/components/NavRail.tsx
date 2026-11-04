@@ -3,6 +3,7 @@ import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
 
 import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
+import { NavRailPlacement, splitByPlacement } from '../utils/navRail'
 
 interface NavRailItem {
   id: string
@@ -11,6 +12,8 @@ interface NavRailItem {
   icon: string
   // Red dot: something runs there (the fight) while its panel is not shown
   hasBadge?: boolean
+  // Default top; bottom: at the lower end of the rail
+  placement?: NavRailPlacement
 }
 
 const Rail = styled.nav<TileSurfaceProps>`
@@ -21,6 +24,14 @@ const Rail = styled.nav<TileSurfaceProps>`
   gap: ${(props) => props.theme.space[2]};
   padding: ${(props) => props.theme.space[5]} 0;
   min-height: 0;
+`
+
+const BottomGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${(props) => props.theme.space[2]};
+  margin-top: auto;
 `
 
 const RailButton = styled.button<{ $isActive: boolean }>`
@@ -90,35 +101,39 @@ function NavRail({
   items, openItemId, panelId, onSelect, isTranslucent = false,
 }: NavRailProps): ReactElement {
   const theme = useTheme()
+  const { top, bottom } = splitByPlacement(items)
+
+  const renderItem = (item: NavRailItem): ReactElement => {
+    const isActive = item.id === openItemId
+    const showsBadge = (item.hasBadge ?? false) && !isActive
+    return (
+      <RailButton
+        key={item.id}
+        type="button"
+        title={item.name}
+        aria-label={item.name}
+        aria-pressed={isActive}
+        aria-controls={panelId}
+        data-test-id={`nav-item-${item.id}`}
+        $isActive={isActive}
+        onClick={() => onSelect(item.id)}
+      >
+        <ReactSVG
+          src={item.icon}
+          beforeInjection={(svg) => {
+            const fill = isActive ? theme.colors.onPrimary : theme.colors.text.color
+            svg.setAttribute('style', `fill: ${fill}`)
+          }}
+        />
+        {showsBadge && <Badge aria-hidden="true" data-test-id={`nav-badge-${item.id}`} />}
+      </RailButton>
+    )
+  }
 
   return (
     <Rail aria-label="Navigation" data-test-id="nav-rail" $isTranslucent={isTranslucent}>
-      {items.map((item) => {
-        const isActive = item.id === openItemId
-        const showsBadge = (item.hasBadge ?? false) && !isActive
-        return (
-          <RailButton
-            key={item.id}
-            type="button"
-            title={item.name}
-            aria-label={item.name}
-            aria-pressed={isActive}
-            aria-controls={panelId}
-            data-test-id={`nav-item-${item.id}`}
-            $isActive={isActive}
-            onClick={() => onSelect(item.id)}
-          >
-            <ReactSVG
-              src={item.icon}
-              beforeInjection={(svg) => {
-                const fill = isActive ? theme.colors.onPrimary : theme.colors.text.color
-                svg.setAttribute('style', `fill: ${fill}`)
-              }}
-            />
-            {showsBadge && <Badge aria-hidden="true" data-test-id={`nav-badge-${item.id}`} />}
-          </RailButton>
-        )
-      })}
+      {top.map(renderItem)}
+      {bottom.length > 0 && <BottomGroup>{bottom.map(renderItem)}</BottomGroup>}
     </Rail>
   )
 }
