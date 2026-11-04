@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
 /* Initiative auf dem Wall Screen während eines Kampfes (Kachel-Stil aus player-card-tile.html, Kacheln wie im Admin).
-   - Leiste unten über die volle Breite, erscheint automatisch, solange ein Kampf läuft; keine Bedienelemente.
+   - Leiste oben über die volle Breite, Kacheln oben bündig; erscheint automatisch, solange ein Kampf läuft; keine Bedienelemente.
    - Warteschlange: links groß der Teilnehmer am Zug („Am Zug“, „Runde N“), rechts davon die Folgenden in
      Initiative-Reihenfolge. Nach jedem „Zug beenden“ im Admin rückt sie nach: der Aktive geht ans Ende, alle rücken
      auf, der Nächste wird groß (etwa 0,5 s; bei „Bewegung reduzieren“ ohne Animation).
@@ -19,9 +19,9 @@
      ihrer Art (negative/positive), „Gegner 3“ bzw. „Verbündeter 4“, nie die Bezeichnung aus dem Admin.
    - Besiegte NPCs verschwinden aus der Leiste; tote Spieler bleiben ausgegraut mit Totenkopf und „Tot“.
    - Passen nicht alle Kacheln in die Breite, fasst „+N weitere“ den Rest zusammen.
-   - Weltkarte (Wall-Overlay) bleibt oben möglich, ihr Panel endet über der Leiste.
+   - Weltkarte (Wall-Overlay) bleibt möglich, ihr Panel beginnt unter der Leiste.
    Avatar-Fläche der Spieler: background, weil der Avatar direkt auf der Kachel liegt (wie DND-43, Runde 2).
-   Zustände über die Mockup-Leiste oben links. */
+   Zustände über die Mockup-Leiste unten links. */
 :root {
   color-scheme: dark;
   --bg: #0e1117;
@@ -77,11 +77,11 @@ button:focus-visible { outline: 2px solid var(--pri); outline-offset: 2px; }
   border-radius: 12px;
 }
 
-/* ---------- Weltkarte (Wall-Overlay), endet über der Leiste ---------- */
+/* ---------- Weltkarte (Wall-Overlay), beginnt unter der Leiste ---------- */
 .map {
-  position: fixed; top: 48px; left: 50%; transform: translateX(-50%);
+  position: fixed; top: calc(32px + var(--strip-h, 300px) + 24px); left: 50%; transform: translateX(-50%);
   width: min(calc(100vw - 128px), 1100px);
-  height: calc(100vh - 48px - 24px - var(--strip-h, 300px) - 32px);
+  height: calc(100vh - 32px - var(--strip-h, 300px) - 24px - 48px);
   padding: 24px; display: none;
 }
 .map.on { display: block; }
@@ -89,8 +89,8 @@ button:focus-visible { outline: 2px solid var(--pri); outline-offset: 2px; }
 
 /* ---------- Initiative-Leiste ---------- */
 .strip {
-  position: fixed; left: 48px; right: 48px; bottom: 32px;
-  display: flex; align-items: flex-end; gap: 16px;
+  position: fixed; left: 48px; right: 48px; top: 32px;
+  display: flex; align-items: flex-start; gap: 16px;
 }
 .ct {
   flex: none; display: flex; flex-direction: column; align-items: center; text-align: center;
@@ -129,7 +129,7 @@ button:focus-visible { outline: 2px solid var(--pri); outline-offset: 2px; }
 .more { width: 96px; }
 
 /* ---------- nur im Mockup ---------- */
-.mock { position: fixed; top: 12px; left: 12px; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; max-width: calc(100vw - 24px); padding: 6px 6px 6px 14px; border-radius: 12px; background: var(--scrim); color: var(--onscrim); }
+.mock { position: fixed; bottom: 12px; left: 12px; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; max-width: calc(100vw - 24px); padding: 6px 6px 6px 14px; border-radius: 12px; background: var(--scrim); color: var(--onscrim); }
 .mock button { height: 32px; padding: 0 10px; border-radius: 8px; font-size: 13px; line-height: 18px; font-weight: 600; }
 .mock button:hover { background: rgba(255, 255, 255, .12); }
 .mock button[aria-pressed="true"] { background: rgba(255, 255, 255, .22); }
@@ -277,7 +277,7 @@ function render(animate) {
       .finished.then(() => g.remove());
   };
   const keys = new Set(items.map((it) => it.key));
-  before.forEach((b, key) => { if (!keys.has(key)) ghost(b, 'translateY(24px)'); });
+  before.forEach((b, key) => { if (!keys.has(key)) ghost(b, 'translateY(-24px)'); });
   els.forEach((el, idx) => {
     const b = before.get(el.dataset.key);
     if (!b || idx > b.idx) {
@@ -288,9 +288,9 @@ function render(animate) {
       return;
     }
     const r = el.getBoundingClientRect();
-    const t = `translate(${b.rect.left - r.left}px, ${b.rect.bottom - r.bottom}px) scale(${b.rect.width / r.width}, ${b.rect.height / r.height})`;
+    const t = `translate(${b.rect.left - r.left}px, ${b.rect.top - r.top}px) scale(${b.rect.width / r.width}, ${b.rect.height / r.height})`;
     if (t === 'translate(0px, 0px) scale(1, 1)') return;
-    el.animate([{ transformOrigin: 'left bottom', transform: t }, { transformOrigin: 'left bottom', transform: 'none' }],
+    el.animate([{ transformOrigin: 'left top', transform: t }, { transformOrigin: 'left top', transform: 'none' }],
       { duration: 500, easing: ease });
   });
 }
