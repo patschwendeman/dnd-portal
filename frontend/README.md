@@ -47,7 +47,7 @@ Build-Zeit ins Bundle ein: lokal per `.env` (Vorlage [`.env.example`](.env.examp
 | `npm run typecheck` | nur Typprüfung (`tsc -b`) |
 | `npm run lint` | ESLint |
 | `npm run test:unit` | Unit-Tests (vitest) |
-| `npm run test:e2e` | BDD/E2E (jest-cucumber + Selenium/Chrome); braucht laufendes Backend mit Seed-Daten, läuft nicht in CI |
+| `npm run test:e2e` | BDD/E2E (jest-cucumber + Selenium/Chrome); braucht laufendes Backend mit Seed-Daten, läuft nicht in CI; Chrome headless, mit `HEADED=1` sichtbar zum Debuggen |
 
 ## Weiterführend
 

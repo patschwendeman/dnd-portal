@@ -1,6 +1,7 @@
 import {
   Builder, By, error, until, WebDriver, WebElement,
 } from 'selenium-webdriver'
+import { Options } from 'selenium-webdriver/chrome'
 
 // Lives outside steps/ so jest (testMatch: __tests__/bdd/steps/*.ts) does not run it as a test file
 const BASE_URL = 'http://localhost:5173'
@@ -19,7 +20,15 @@ const getRandomNumber = (min: number, max: number): number => {
   return Math.floor(Math.random() * (upper - lower + 1)) + lower
 }
 
-const buildDriver = (): WebDriver => new Builder().forBrowser('chrome').build() as WebDriver
+// Headless by default; HEADED=1 shows the browser window for debugging. The fixed window size keeps
+// the layout of the screens the same as on a desktop monitor.
+const buildDriver = (): WebDriver => {
+  const options = new Options().addArguments('--window-size=1920,1080')
+  if (process.env.HEADED !== '1') {
+    options.addArguments('--headless=new')
+  }
+  return new Builder().forBrowser('chrome').setChromeOptions(options).build() as WebDriver
+}
 
 const openScreen = async (driver: WebDriver, path: string): Promise<void> => {
   await driver.get(`${BASE_URL}${path}`)

@@ -65,6 +65,12 @@ const waitForOverlayText = async (driver: WebDriver, expected: string): Promise<
   return actual
 }
 
+// Headless Chrome resizes the viewport when entering or leaving full screen and forgets the mouse
+// position, so the overlay would vanish; moving the mouse again keeps it over the screen
+const moveMouseOverScreen = async (driver: WebDriver): Promise<void> => {
+  await driver.actions().move({ ...MOUSE_POSITION, origin: Origin.VIEWPORT }).perform()
+}
+
 const expectOverlay = async (driver: WebDriver, text: string, pressed: boolean): Promise<void> => {
   expect(await waitForOverlayText(driver, text)).toBe(text)
   expect(await waitForAttribute(driver, OVERLAY, 'aria-label', text)).toBe(text)
@@ -101,7 +107,7 @@ defineFeature(feature, (test) => {
     })
 
     when(/^I move the mouse over the (\S+) screen$/, async () => {
-      await driver.actions().move({ ...MOUSE_POSITION, origin: Origin.VIEWPORT }).perform()
+      await moveMouseOverScreen(driver)
     })
 
     then('the overlay darkens the whole screen and shows the text Vollbild', async () => {
@@ -126,6 +132,7 @@ defineFeature(feature, (test) => {
       'the window is in full screen and the overlay shows the text Vollbild beenden',
       async () => {
         expect(await waitForFullscreen(driver, true)).toBe(true)
+        await moveMouseOverScreen(driver)
         await expectOverlay(driver, 'Vollbild beenden', true)
       },
     )
@@ -138,6 +145,7 @@ defineFeature(feature, (test) => {
       'the window is no longer in full screen and the overlay shows the text Vollbild',
       async () => {
         expect(await waitForFullscreen(driver, false)).toBe(false)
+        await moveMouseOverScreen(driver)
         await expectOverlay(driver, 'Vollbild', false)
       },
     )
