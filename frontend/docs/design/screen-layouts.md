@@ -18,10 +18,10 @@ Regel: [1.3](../../DESIGN.md#13-layout-konstanten).
 | 320px | maximale Höhe der Liste einer Auswahlliste (`SELECT_LIST_MAX_HEIGHT`) | `SelectList` |
 | 68ch | maximale Zeilenlänge in den Notizen, zentriert auf der Notizseite (`LINE_MAX_WIDTH`) | `DocumentReader` |
 | 1440px | maximale Breite des Wall-Panels (`OVERLAY_PANEL_MAX_WIDTH`), siehe [Breite des Overlay-Panels](#breite-des-overlay-panels) | `WallScreen` |
-| 176px · 168px × 176px · 240px | Wall-Kacheln: Party (`PARTY_TILE_WIDTH`), kleine Kachel der Initiative mit fester Höhe (`INITIATIVE_TILE`), Kachel am Zug (`TURN_TILE_WIDTH`) | `WallCharacterTile` |
+| 176px · 168px × 176px · 240px | Wall-Kacheln: Party, kleine Kachel der Initiative mit fester Höhe, Kachel am Zug (`WALL_TILE_SIZE`, Zahlen in px; auch Grundlage für den Überlauf der Initiative-Leiste) | `WallCharacterTile` |
 | 28px · 16px · 0,45 | Totenkopf-Badge am Avatar eines toten Spielers auf der Wall und sein Icon (`SKULL_BADGE_SIZE`, `SKULL_ICON_SIZE`); Deckkraft von Avatar und Text (`DEAD_OPACITY`) | `WallCharacterTile` |
 | 84 × 112px · 72 × 96px · 120 × 160px | Avatare auf der Wall: Party, Initiative, am Zug (`WALL_AVATAR_SIZE`) | `CombatantAvatar` |
-| 240 · 168 · 72 · 96 · 16 (px) | Breiten in der Initiative-Leiste als Zahlen für die Berechnung des Überlaufs: Kachel am Zug, kleine Kachel, Rundentrenner, „+N weitere“, Abstand (`WIDTHS`); Höhe von Trenner und „+N weitere“ wie die kleine Kachel (`STRIP_TILE_HEIGHT`, 176px) | `WallInitiative` |
+| 72 · 96 · 16 (px) | Breiten in der Initiative-Leiste für die Berechnung des Überlaufs: Rundentrenner, „+N weitere“, Abstand (`WIDTHS`; Kachel am Zug und kleine Kachel aus `WALL_TILE_SIZE`); Höhe von Trenner und „+N weitere“ wie die kleine Kachel (`STRIP_TILE_HEIGHT`) | `WallInitiative` |
 | 600px | Breite des Dialogs (`DIALOG_WIDTH`) | `Dialogue` |
 | 360px · 240px · 4 Module | Breite des Dialogs „Spieler verbinden“, Kantenlänge und Ruhezone des QR-Codes (`JOIN_DIALOG_WIDTH`, `QR_CODE_SIZE`, `QR_CODE_MARGIN`) | `JoinDialog` |
 | 16px | Griffgröße der Slider in Dashboard-Panels (`PANEL_SLIDER_THUMB_SIZE`) | `PanelSlider` |

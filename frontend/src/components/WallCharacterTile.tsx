@@ -9,11 +9,14 @@ import { textStyle } from '../style/tokens'
 
 import skullIcon from '/assets/icons/skull.svg'
 
-// Tile widths on the Wall; the tiles of the initiative strip also have a fixed height, so the
-// strip stays aligned while names and details change
-const PARTY_TILE_WIDTH = '176px'
-const INITIATIVE_TILE = { width: '168px', height: '176px' }
-const TURN_TILE_WIDTH = '240px'
+// Tile sizes in px on the Wall; the initiative strip also computes from them how many tiles fit.
+// The small tiles of the strip have a fixed height, so the strip stays aligned while names and
+// details change
+export const WALL_TILE_SIZE = {
+  party: { width: 176 },
+  initiative: { width: 168, height: 176 },
+  turn: { width: 240 },
+} as const
 // Badge with the skull on the avatar of a dead player
 const SKULL_BADGE_SIZE = '28px'
 const SKULL_ICON_SIZE = '16px'
@@ -29,21 +32,21 @@ interface TileProps extends TileSurfaceProps {
 const variantStyle = ({ $variant }: TileProps) => {
   if ($variant === 'party') {
     return css`
-      width: ${PARTY_TILE_WIDTH};
+      width: ${WALL_TILE_SIZE.party.width}px;
       padding: ${(props) => props.theme.space[4]} ${(props) => props.theme.space[3]};
       gap: ${(props) => props.theme.space[2]};
     `
   }
   if ($variant === 'initiative') {
     return css`
-      width: ${INITIATIVE_TILE.width};
-      height: ${INITIATIVE_TILE.height};
+      width: ${WALL_TILE_SIZE.initiative.width}px;
+      height: ${WALL_TILE_SIZE.initiative.height}px;
       padding: ${(props) => props.theme.space[3]};
       gap: ${(props) => props.theme.space[2]};
     `
   }
   return css`
-    width: ${TURN_TILE_WIDTH};
+    width: ${WALL_TILE_SIZE.turn.width}px;
     padding: ${(props) => props.theme.space[4]};
     gap: ${(props) => props.theme.space[3]};
   `
@@ -114,11 +117,11 @@ const Name = styled.span<{ $variant: TileVariant }>`
   font-weight: ${(props) => props.theme.fontWeight.semibold};
 `
 
-// An NPC has no details; the empty line keeps the height of the tile
+// An NPC has no details; the empty line keeps the height of the tile. Full text color: the tile
+// lets the scene image shine through, text.muted would miss the contrast over a bright image
 const Details = styled.span<{ $variant: TileVariant }>`
   ${(props) => textStyle(DETAILS_STEP[props.$variant])}
   min-height: ${(props) => props.theme.text[DETAILS_STEP[props.$variant]].lineHeight};
-  color: ${(props) => props.theme.colors.text.muted};
 `
 
 interface WallCharacterTileProps {

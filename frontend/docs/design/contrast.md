@@ -82,6 +82,13 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `text.muted` auf `secondaryTranslucent` | Lautsprecher-Icon im Panel „Audio“; ungünstigster Fall über weißem Bild, über schwarzem Dark 8,4, Tavern 4,1 | 3,0 | 6,4 | 3,7 | ✓ beide |
 | `border` auf `secondaryTranslucent` | Rand und Lichtkante durchscheinender Kacheln, Trennlinien darin; ungünstigster Fall über weißem Bild, über schwarzem Dark 1,5, Tavern 3,2 | 3,0 | **1,2** | **2,8** | bewusst ✗ beide |
 | `background` auf `secondaryTranslucent` | Hover-Flächen und Flächen in Dashboard-Panels auf durchscheinenden Kacheln; über weißem Bild, über schwarzem Dark 1,0, Tavern 1,4 | 3,0 | **1,5** | **1,6** | bewusst ✗ beide, siehe Anmerkung |
+| `text.color` auf `secondaryTranslucent` ohne `backdrop` | Wall-Kacheln (Party, Initiative): Name, Volk · Klasse bzw. „Tot“ (ab 14px), Labels „Runde N“, „Runde“ und „weitere“ (12px), Zahl im Rundentrenner und in „+N weitere“; ungünstigster Fall über weißem Szenenbild, über schwarzem Dark 16,9, Tavern 6,8 | 4,5 | 7,0 | 5,1 | ✓ beide |
+| `onPrimary` auf `primary` | Badge „Am Zug“ auf der Wall-Kachel am Zug (12px); deckende Fläche, unabhängig vom Szenenbild | 4,5 | 6,1 | 4,7 | ✓ beide |
+| `initials` auf `background` | Initialen im Avatar eines Spielers auf den Wall-Kacheln (`text.xl` bzw. `text.2xl`, groß); deckende Fläche | 3,0 | 6,1 | 9,2 | ✓ beide |
+| `primary` auf `secondaryTranslucent` ohne `backdrop` | Rahmen der Wall-Kachel am Zug; über weißem Szenenbild, über schwarzem Dark 5,9, Tavern 3,5 | 3,0 | **2,5** | **2,6** | **✗ beide, Zusatzsignal, siehe Anmerkung** |
+| `text.color` mit `DEAD_OPACITY` auf `secondaryTranslucent` ohne `backdrop` | Name und „Tot“ eines toten Spielers auf der Wall (ausgegraut); über weißem Szenenbild, über schwarzem Dark 4,3, Tavern 2,5 | 4,5 | **2,8** | **2,2** | **✗ beide, offen, siehe Anmerkung** |
+| `text.muted` · `primary` auf `secondaryTranslucent` ohne `backdrop` | nicht verwendet für Text auf den Wall-Kacheln: über weißem Szenenbild `text.muted` Dark 4,3, Tavern 3,3, `primary` Dark 2,5, Tavern 2,6 (über schwarzem 8,4 · 4,1 bzw. 5,9 · 3,5) | 4,5 | **4,3** · **2,5** | **3,3** · **2,6** | nicht verwendet |
+| `text.color` auf `secondaryTranslucent` über `overlay` | Icon und Text im Vollbild-Overlay (Wall, Ground), Überschrift „Weltkarte“ im Wall-Panel; ungünstigster Fall über weißem Bild, über schwarzem Dark 16,9, Tavern 6,8 | 4,5 | 15,4 | 6,6 | ✓ beide |
 | `qr.foreground` auf `qr.background` | QR-Code im Dialog „Spieler verbinden“ | 3,0 | 21,0 | 21,0 | ✓ |
 | `onError` auf `error` | Icon-Button und Fokus-Outline der Hinweisleiste | 3,0 | 9,0 | 9,0 | ✓ |
 | `border` auf `error` | Rand und Lichtkante der Hinweisleiste | 3,0 | **1,2** | **2,0** | bewusst ✗ beide |
@@ -118,9 +125,17 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 - **Bühne (Admin):** Der Verlauf unter dem Text ist nach `space.7` voll deckend, der Text beginnt erst darunter. Gemessen
   ist deshalb `onScrim` auf `scrim` über dem hellsten möglichen Bild (Weiß): `scrim` ergibt dort etwa `#404040`.
   `scrim` und `onScrim` sind in beiden Themes gleich.
-- **Vollbild-Overlay (Wall, Ground):** `backdrop` dunkelt nur ab und trägt keinen Text. Icon (`text.color`) und Text
-  (`text.color`, `text.lg`) stehen auf einer Fläche `background`, gemessen wie `text.color` auf `background`; es gibt
-  kein neues Kontrastpaar.
+- **Vollbild-Overlay und Weltkarte (Wall, Ground):** `overlay` dunkelt nur ab und trägt keinen Text. Icon und Text
+  des Vollbild-Overlays bzw. die Überschrift des Weltkarten-Panels (`text.color`) stehen auf einer durchscheinenden
+  Kachel über `overlay`: über einem weißen Bild ergibt `overlay` etwa `#262626`, die Kachel darüber etwa `#1a1e24`
+  (Dark) bzw. `#3b271d` (Tavern).
+- **Wall-Kacheln (Party, Initiative):** Sie liegen ohne Abdunklung direkt auf dem Szenenbild. Über einem weißen Bild
+  ergibt die Kachel etwa `#50545a` (Dark) bzw. `#4c382e` (Tavern), über einem schwarzen etwa `#10141a` bzw.
+  `#38241a`. Text steht darauf deshalb in `text.color`, nicht in `text.muted`; der Akzent „Am Zug“ ist ein Badge mit
+  eigener Fläche `primary` und Text `onPrimary`, weil `primary` als Textfarbe dort vom Bild abhinge. Der Rahmen der
+  Kachel am Zug in `primary` ist ein Zusatzsignal wie die Hover-Flächen: Wer am Zug ist, zeigen das Badge „Am Zug“,
+  Größe und Position der Kachel. Offen: Avatar und Text toter Spieler sind mit `DEAD_OPACITY` ausgegraut und
+  verfehlen 4,5:1; WCAG nimmt nur inaktive Bedienelemente aus ([known-issues.md](../../../docs/known-issues.md)).
 - **Durchscheinende Kacheln (Admin):** Die Fläche ist `secondaryTranslucent` (Dark 75 %, Tavern 92 % deckend) über dem
   Hintergrundbild des Abenteuers unter `backdrop`. Gemessen sind die beiden Extreme, nicht nur die gewählten Bilder:
   über einem weißen Bild ergibt `backdrop` etwa `#808080`, die Kachel darüber etwa `#30343a` (Dark) bzw. `#422e24`

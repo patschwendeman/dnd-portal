@@ -51,7 +51,8 @@ ist, wer folgt und in welcher Runde der Kampf steht.
 
 ### E3: Initiative im Kampf
 - **Entscheidung:** Läuft ein Kampf, ersetzt eine Leiste am oberen Rand (Kacheln oben bündig) die Party-Kacheln:
-  - Warteschlange ab dem Teilnehmer am Zug: links groß der Aktive (Label „Am Zug“ in der Hauptfarbe, „Runde N“,
+  - Warteschlange ab dem Teilnehmer am Zug: links groß der Aktive (Label „Am Zug“ in der Hauptfarbe – nach Review
+    Runde 1 als Badge mit Fläche `primary` und Text `onPrimary`, Texte der Kacheln in `text.color` –, „Runde N“,
     Rahmen in der Hauptfarbe, voller Name, „Volk · Klasse“), rechts die Folgenden in Initiative-Reihenfolge (Vorname
     bzw. „Gegner 3“/„Verbündeter 4“).
   - NPCs: Nummer im Avatar in `negative` (Gegner) bzw. `positive` (Verbündete); nie die Bezeichnung.
@@ -189,3 +190,39 @@ ist, wer folgt und in welcher Runde der Kampf steht.
 Keine.
 
 ## Review
+
+### Runde 1 – 2026-11-05
+
+**Empfehlung:** Nacharbeiten – ein blockierender Befund (Kontrast auf den Wall-Kacheln, `DESIGN.md` 2.6).
+Funktional sind alle sechs Akzeptanzkriterien erfüllt.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | `wallParty.ts` (ungerade Zahl: einer mehr links), `WallParty.tsx`, `WallScreen.tsx:171`; Unit `wallParty.spec.ts`, BDD `wallParty` grün |
+| AK2 | erfüllt | `FullscreenHoverOverlay.tsx:22` nutzt `overlay`; Weltkarte in `WorldMapLayer` (`layer.panel` über `layer.tiles`), Panel `tileSurface` durchscheinend; BDD `screenFullscreen`, `wallParty` grün |
+| AK3 | erfüllt | `push.py`: `wall_fight` ohne `label`, Push an Walls, Initialzustand; `test_fight.py:547/572/580/594`; `wallInitiative.ts`, `WallInitiative.tsx:126`; BDD „The wall follows the fight“ grün |
+| AK4 | erfüllt | Warteschlange und Rundentrenner `wallInitiative.ts:46-62` (Unit: erster, mittlerer, letzter am Zug); Animation `useInitiativeTransitions.ts` (500 ms, nicht bei reduzierter Bewegung) nur manuell prüfbar |
+| AK5 | erfüllt | `wallInitiative.ts:32-34` (besiegte NPCs weg, tote Spieler bleiben), `WallCharacterTile.tsx:156-166`, `fitToWidth` „+N weitere“; Unit grün |
+| AK6 | erfüllt | `WallScreen.tsx:170-171`; BDD „ends the fight“ grün |
+
+**Blockierende Befunde**
+- [x] **Kontrast auf durchscheinenden Wall-Kacheln verfehlt `DESIGN.md` 2.6** und ist weder gemessen noch dokumentiert.
+  Party- und Initiative-Kacheln liegen in `secondaryTranslucent` ohne `backdrop` direkt auf dem Szenenbild
+  (ungünstigster Fall: weißes Bild). Rechnung über Weiß: `text.muted` Dark 4,32:1, Tavern 3,30:1 (Tavern über
+  Schwarz 4,06:1); `primary` („Am Zug“) Dark 2,46:1, Tavern 2,62:1; Ziel 4,5:1. `text.color` erreicht das Ziel
+  (6,99 / 5,13). `contrast.md:69` schließt `text.muted` auf `secondary` bereits aus.
+
+**Hinweise**
+- `docs/domain.md` zusätzlich nachgeführt (Eintrag „Kampf“); funktional kein Scope-Überschreiten.
+- Gemeldete Abweichungen unkritisch: Mockup-Schriftgrößen auf nächste Tokens, `getWallScene` benannter Export,
+  kein Rundentrenner ohne Teilnehmer am Zug (in `screens.md` dokumentiert).
+- Veraltete Kommentare in `frontend/src/style/GlobalStyle.ts:34-35`, `:39` (Durchscheinen „nur im Admin“).
+- Kachelbreiten 168/240/176 doppelt in `WallInitiative.tsx` und `WallCharacterTile.tsx` gepflegt.
+- Vermutung, nicht verifiziert: `useInitiativeTransitions` bricht bei jedem Render laufende Animationen ab
+  (`useLayoutEffect` ohne Abhängigkeiten); Risiko gering.
+- Spieler werden nur beim Abenteuerwechsel geladen (E1); neu angelegte Spieler fehlen auf der Wall bis zum Neuladen.
+
+**Checks:** Backend ruff, format, mypy, `make check-quality` grün; pytest 318 grün, 3 rot in
+`test_adventures.py` (Dev-DB weicht vom Seed ab, nicht durch die Änderung). Frontend lint, typecheck, build,
+unit 285/285, knip, jscpd grün. BDD 31/32 (rot: „audio output“, Admin-Fenster außerhalb der Tests ist Ausgabe;
+„dashboard panels“ einmal flaky).

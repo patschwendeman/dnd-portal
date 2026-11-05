@@ -280,8 +280,8 @@ Bezeichnungen der NPCs (umgesetzt).
   Initialen), Vorname des Charakters, „Volk · Klasse“ (zu lang: gekürzt mit „…“). Ohne Spieler keine Kacheln. Die
   Wall lädt die Spieler (`GET /adventures/{id}`) beim Laden und bei jedem Wechsel des aktiven Abenteuers.
 - **Initiative** (während eines Kampfes, statt der Party): eine Leiste am oberen Rand, Kacheln oben bündig.
-  - Links groß der Teilnehmer am Zug („Am Zug“ in der Hauptfarbe, „Runde N“, Rahmen in der Hauptfarbe, voller Name,
-    „Volk · Klasse“), rechts die Folgenden in Initiative-Reihenfolge (Vorname bzw. „Gegner 3“/„Verbündeter 4“).
+  - Links groß der Teilnehmer am Zug („Am Zug“ als Badge in der Hauptfarbe, „Runde N“, Rahmen in der Hauptfarbe,
+    voller Name, „Volk · Klasse“), rechts die Folgenden in Initiative-Reihenfolge (Vorname bzw. „Gegner 3“/„Verbündeter 4“).
   - NPCs zeigen ihre Nummer im Avatar (Gegner rot, Verbündete grün), nie ihre Bezeichnung aus dem Admin.
   - Der Rundentrenner „Runde N+1“ steht dort, wo die Initiative-Reihenfolge von vorn beginnt (ist der Erste der
     Reihenfolge am Zug, am Ende der Leiste).

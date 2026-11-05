@@ -4,7 +4,7 @@ import {
 import styled from 'styled-components'
 
 import Label from './Label'
-import WallCharacterTile from './WallCharacterTile'
+import WallCharacterTile, { WALL_TILE_SIZE } from './WallCharacterTile'
 import { FightState, Player } from '../models/models'
 import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
@@ -14,13 +14,16 @@ import {
   fitToWidth, initiativeQueue, InitiativeItem, InitiativeWidths, wallDetails, wallName,
 } from '../utils/wallInitiative'
 
-// Widths in px of the tiles in the strip, also used to compute how many fit; the tiles themselves
-// set the widths of the combatant tiles
+// Widths in px of the tiles in the strip, used to compute how many fit
 const WIDTHS: InitiativeWidths = {
-  active: 240, combatant: 168, round: 72, more: 96, gap: 16,
+  active: WALL_TILE_SIZE.turn.width,
+  combatant: WALL_TILE_SIZE.initiative.width,
+  round: 72,
+  more: 96,
+  gap: 16,
 }
-// Height of the small tiles; divider and "+N weitere" are as high
-const STRIP_TILE_HEIGHT = '176px'
+// Divider and "+N weitere" are as high as the small tiles
+const STRIP_TILE_HEIGHT = `${WALL_TILE_SIZE.initiative.height}px`
 
 const Strip = styled.section`
   position: fixed;
@@ -59,10 +62,6 @@ const CountTile = styled.div<TileSurfaceProps & { $width: number }>`
   }
 `
 
-const MutedLabel = styled(Label)`
-  color: ${(props) => props.theme.colors.text.muted};
-`
-
 const TurnHeader = styled.div`
   display: flex;
   align-self: stretch;
@@ -70,8 +69,13 @@ const TurnHeader = styled.div`
   gap: ${(props) => props.theme.space[2]};
 `
 
+// A filled badge: primary as text color would depend on the scene image behind the translucent
+// tile and miss the contrast over a bright one
 const OnTurn = styled(Label)`
-  color: ${(props) => props.theme.colors.primary};
+  padding: 0 ${(props) => props.theme.space[1]};
+  background-color: ${(props) => props.theme.colors.primary};
+  color: ${(props) => props.theme.colors.onPrimary};
+  border-radius: ${(props) => props.theme.radius.sm};
 `
 
 interface WallInitiativeProps {
@@ -89,7 +93,7 @@ function renderItem(item: InitiativeItem, fight: FightState, players: Player[]):
         $width={WIDTHS.round}
         $isTranslucent
       >
-        <MutedLabel>Runde</MutedLabel>
+        <Label>Runde</Label>
         <strong>{item.round}</strong>
       </CountTile>
     )
@@ -104,7 +108,7 @@ function renderItem(item: InitiativeItem, fight: FightState, players: Player[]):
         $isTranslucent
       >
         <strong>{`+${item.count}`}</strong>
-        <MutedLabel>weitere</MutedLabel>
+        <Label>weitere</Label>
       </CountTile>
     )
   }
@@ -124,7 +128,7 @@ function renderItem(item: InitiativeItem, fight: FightState, players: Player[]):
       header={isActive && (
         <TurnHeader>
           <OnTurn>Am Zug</OnTurn>
-          <MutedLabel data-test-id="wall-turn-round">{`Runde ${fight.round}`}</MutedLabel>
+          <Label data-test-id="wall-turn-round">{`Runde ${fight.round}`}</Label>
         </TurnHeader>
       )}
       testId="wall-combatant"

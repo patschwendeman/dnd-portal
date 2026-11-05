@@ -319,10 +319,10 @@ Props `variant` (`party`, `initiative`, `turn`), `kind`, `avatarText`, `image`, 
 | Eigenschaft | Wert |
 |---|---|
 | Element | `<article>` mit dem Namen als `aria-label`, `lang="de"`; Fläche [Kachel](#kachel), durchscheinend |
-| Aufbau | Spalte, zentriert, Text zentriert: optional der Kopf, [Kampf-Avatar](#kampf-avatar) (`onTile`, Größe wie die Variante), darunter Name (`semibold`) und Details (`text.muted`), beide einzeilig mit Ellipse; Details ohne Inhalt behalten ihre Zeilenhöhe |
-| `party` | Breite `PARTY_TILE_WIDTH`, Innenabstand `space.4 space.3`, `gap` `space.2`; Name `text.lg`, Details `text.sm` |
-| `initiative` | `INITIATIVE_TILE` (Breite und feste Höhe), Innenabstand `space.3`, `gap` `space.2`; Name `text.md`, Details `text.sm` |
-| `turn` | Breite `TURN_TILE_WIDTH`, Innenabstand `space.4`, `gap` `space.3`; Name `text.xl`, Details `text.md`; Rahmen innen `borderWidth.thick` in `primary` (statt der Lichtkante), `aria-current="step"`; Kopf: [Label](#label) „Am Zug“ in `primary` links, „Runde N“ in `text.muted` rechts |
+| Aufbau | Spalte, zentriert, Text zentriert: optional der Kopf, [Kampf-Avatar](#kampf-avatar) (`onTile`, Größe wie die Variante), darunter Name (`semibold`) und Details, beide einzeilig mit Ellipse und in `text.color` (nicht `text.muted`, die Kachel liegt ohne Abdunklung auf dem Szenenbild); Details ohne Inhalt behalten ihre Zeilenhöhe |
+| `party` | Breite `WALL_TILE_SIZE.party`, Innenabstand `space.4 space.3`, `gap` `space.2`; Name `text.lg`, Details `text.sm` |
+| `initiative` | `WALL_TILE_SIZE.initiative` (Breite und feste Höhe), Innenabstand `space.3`, `gap` `space.2`; Name `text.md`, Details `text.sm` |
+| `turn` | Breite `WALL_TILE_SIZE.turn`, Innenabstand `space.4`, `gap` `space.3`; Name `text.xl`, Details `text.md`; Rahmen innen `borderWidth.thick` in `primary` (statt der Lichtkante), `aria-current="step"`; Kopf: [Label](#label) „Am Zug“ als Badge links (Fläche `primary`, Text `onPrimary`, Innenabstand seitlich `space.1`, `radius.sm`), Label „Runde N“ rechts |
 | Tot | nur Spieler: Avatar und Text mit Deckkraft `DEAD_OPACITY`, „Tot“ statt „Volk · Klasse“; Totenkopf-Badge unten rechts am Avatar (`right`/`bottom` −`space.2`), `SKULL_BADGE_SIZE`, `radius.pill`, Fläche `negative.surface`, Icon (`skull.svg`, `SKULL_ICON_SIZE`) `negative.text`, Ring `borderWidth.thick` in `secondary` |
 
 ## Initiative-Leiste
@@ -335,7 +335,7 @@ Auf der Wall während eines Kampfes, Komponente `WallInitiative`
 |---|---|
 | Position | `position: fixed`, `space.6` unter der Oberkante, `space.7` links und rechts, `layer.tiles`; Flex-Zeile, Kacheln oben bündig, `gap` `WIDTHS.gap` |
 | Reihenfolge | [Wall-Kachel](#wall-kachel) `turn` für den Teilnehmer am Zug, danach `initiative` in Initiative-Reihenfolge; besiegte NPCs fehlen (außer am Zug), tote Spieler bleiben. Ohne Teilnehmer am Zug nur `initiative`-Kacheln, ohne Rundentrenner |
-| Rundentrenner | Kachel `WIDTHS.round` breit, `STRIP_TILE_HEIGHT` hoch: [Label](#label) „Runde“ (`text.muted`) über der Zahl (`text.2xl` `semibold` `tabular-nums`); steht, wo die Reihenfolge von vorn beginnt |
+| Rundentrenner | Kachel `WIDTHS.round` breit, `STRIP_TILE_HEIGHT` hoch: [Label](#label) „Runde“ über der Zahl (`text.2xl` `semibold` `tabular-nums`); steht, wo die Reihenfolge von vorn beginnt |
 | „+N weitere“ | Kachel `WIDTHS.more` breit, `STRIP_TILE_HEIGHT` hoch: „+N“ (`text.2xl` `semibold`) über dem Label „weitere“; ersetzt die Teilnehmer, die nicht mehr in die Breite passen (gemessen per `ResizeObserver`) |
 | Nachrücken | nur wenn der Teilnehmer am Zug wechselt: Kacheln gleiten 500 ms an neue Stelle und Größe (FLIP über die Web Animations API, `cubic-bezier(.2, .7, .2, 1)`); ans Ende Gerückte verblassen an der alten Stelle (Kopie in einer leeren Ebene, 300 ms, nach links) und kommen von rechts herein (500 ms, 100 ms verzögert); Weggefallene verblassen nach oben. Bei `prefers-reduced-motion: reduce` keine Animation |
 

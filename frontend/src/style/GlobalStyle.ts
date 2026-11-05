@@ -31,14 +31,15 @@ export const hoverScrollbar = css`
 const TILE_BLUR = '12px'
 
 export interface TileSurfaceProps {
-  // Only while the scene image lies behind the tiles: over the plain background the translucent
-  // surface would give another tone than the one the contrast was measured for
+  // Only while an image lies behind the tile (background image in the Admin, scene on Wall and
+  // Ground): over the plain background the translucent surface would give another tone than the
+  // one the contrast was measured for
   $isTranslucent?: boolean
 }
 
-// Surface of a tile in the Admin. The inner light edge at the top is the only box-shadow of the
-// style guide; tiles cast no shadow. A tile with another surface sets its background-color after it
-// and leaves out $isTranslucent
+// Surface of the tiles in the Admin and of the panels, overlays and tiles on Wall and Ground. The
+// inner light edge at the top is the only box-shadow of the style guide; tiles cast no shadow. A
+// tile with another surface sets its background-color after it and leaves out $isTranslucent
 export const tileSurface = css<TileSurfaceProps>`
   background-color: ${(props) => (
     props.$isTranslucent ? props.theme.colors.secondaryTranslucent : props.theme.colors.secondary
