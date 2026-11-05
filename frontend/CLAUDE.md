@@ -83,7 +83,7 @@ src/context/         ActiveAdventureContext, ActiveSceneContext (IDs number | nu
                      groundGrid, groundGridCellSize, connected,
                      reconnectNow, screens: Verbindungszahlen nur für den Admin), GameAudioContext (audio, isAudioOutput,
                      requestAudioOutput, reportTrackEnded, subscribeSound), FightContext (fight: Kampf des aktiven
-                     Abenteuers, nur im Admin gefüllt, sonst null)
+                     Abenteuers, nur in Admin und Wall gefüllt (Wall ohne Bezeichnungen), sonst null)
 src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Panel „Audio“), audioPlayer.ts
                      (AudioPlayer: Wiedergabe im Admin nach dem AudioState, Audio-Fabrik injizierbar für vitest),
                      useAudioPlayback.ts (bindet den AudioPlayer im Admin an den GameAudioContext),
@@ -102,13 +102,15 @@ src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin: Abenteuernam
                      von Party und Initiative), CombatantAvatar (Avatar von Spielern und NPCs), FightPanel (Panel
                      „Kampf“), TurnPanel (Dashboard „Am Zug“) mit HeroCard (Hero-Karte), InitiativePanel (Dashboard
                      „Initiative“), MiniButton (↑/↓/Entfernen im Panel „Kampf“), ConfirmDialog („Kampf beenden?“),
-                     PanelButton (Icon-Button in Panels), OptionButtons
+                     PanelButton (Icon-Button in Panels), WallParty (Party-Kacheln links und rechts auf der Wall),
+                     WallInitiative (Initiative-Leiste auf der Wall) mit WallCharacterTile (Kachel eines
+                     Charakters auf der Wall), OptionButtons
                      (Segment-Control in Panels), PanelSlider (Slider in Panels), FullscreenHoverOverlay (Vollbild-Overlay auf Wall und
                      Ground), Dialogue, GridOverlay,
                      ResourceBarPlayer …)
 src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
                      getJoinInfo, saveActiveScene, saveGlobalLevel, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
-                     getGroundScreenData …); gameTable.ts: saveWallOverlay, saveGroundGrid,
+                     getWallPlayers, getGroundScreenData …); gameTable.ts: saveWallOverlay, saveGroundGrid,
                      saveGroundGridCellSize (nur vom Admin genutzt); fight.ts: startFight, endFight, endTurn,
                      addCombatant, saveDefeated, removeCombatant, saveFightOrder (nur vom Admin genutzt)
 src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData/patchData/postData/putData/deleteData
@@ -128,6 +130,10 @@ src/utils/fight.ts   Logik des Kampfes: Vorbereitung (initialPreparation, prepar
                      toCombatantCreate), smallestFreeNumber, numberError, moveItem, missingPlayers, Namen und Details
                      der Teilnehmer, nextOnTurn („Als Nächstes“), countByKind; useFightPreparation.ts (Vorbereitung
                      als lokaler Zustand des Admin-Fensters, zurückgesetzt bei Abenteuerwechsel, Start und Ende)
+src/utils/wallParty.ts splitParty (Party-Kacheln links und rechts auf der Wall)
+src/utils/wallInitiative.ts Initiative-Leiste der Wall: initiativeQueue (Warteschlange ab dem Teilnehmer am Zug,
+                     Filter, Rundentrenner), fitToWidth („+N weitere“), planTransitions (Nachrücken), wallName,
+                     wallDetails, playerDetails; useInitiativeTransitions.ts (Animation beim Nachrücken)
 src/utils/adminError.ts mostImportantError (welcher Fehler in der Kopfzeile des Admins steht)
 src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
 src/utils/playerTheme.ts Theme-Abweichung des Players lesen/schreiben, effectiveTheme, Altschlüssel verwerfen
@@ -138,7 +144,8 @@ src/utils/useDocumentFullscreen.ts Vollbild des eigenen Fensters (Admin: Kopfzei
 src/utils/playerUrl.ts selectPlayerUrl (URL der API, sonst Origin des Admins, nicht bei localhost/127.0.0.1/[::1])
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }), appTheme(theme),
                      styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden;
-                     CSS-Helper hoverScrollbar und tileSurface für die Kacheln im Admin, Schalter $isTranslucent)
+                     CSS-Helper hoverScrollbar und tileSurface für die Kacheln im Admin und die Panels und Overlays
+                     auf Wall und Ground, Schalter $isTranslucent)
 public/assets/       sounds (Soundeffekte, im Admin abgespielt), icons; dazu das fest eingebundene Medium
                      images/ground_screen/mapOverview.jpg (Weltkarte) – Szenenmedien und Standardmusik liegen in ../media
 public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mechanics), deutsch
@@ -153,11 +160,12 @@ bzw. `PATCH table`) **ohne lokale Vorwegnahme**; der Server pusht danach den neu
 per `scenes/{id}` neu laden (ohne aktive Szene kein Request, nur Hintergrund). Nur der Admin zeigt Speicher- und
 Verbindungsfehler. Der Player nutzt vom Snapshot nur das Theme (`Abweichung ?? Spieltisch-Theme`), sendet nichts und
 zeigt keinen Verbindungsstatus. Der QR-Code-Dialog im Admin (`JoinDialog`, geöffnet aus dem Panel „Spieltisch“) lädt beim Öffnen `table/join`. Nur an
-Admins schickt der Server die Zahl der verbundenen Wall-, Ground- und Player-Verbindungen (`screens`) und den Kampf
-des aktiven Abenteuers (`fight`, `FightContext`). Den Kampf schreibt der Admin per REST unter `table/fight` ohne
+Admins schickt der Server die Zahl der verbundenen Wall-, Ground- und Player-Verbindungen (`screens`); den Kampf
+des aktiven Abenteuers (`fight`, `FightContext`) an Admins und Walls (an Walls ohne die Bezeichnungen der NPCs). Den Kampf schreibt der Admin per REST unter `table/fight` ohne
 lokale Vorwegnahme; nur die Vorbereitung vor „Kampf starten“ ist lokal. Während eines Kampfes sind Szenenliste und
 Abenteuer-Auswahl gesperrt (der Server lehnt Wechsel mit 409 ab).
-Spieler und Level (`global_level`) stehen nicht im Snapshot: Der Admin lädt `adventures/{id}` beim Laden, bei einem
+Spieler und Level (`global_level`) stehen nicht im Snapshot: Die Wall lädt `adventures/{id}` beim Laden und bei einem
+Abenteuerwechsel (Party und Initiative); der Admin lädt es beim Laden, bei einem
 Abenteuerwechsel und nach jedem Snapshot (`snapshot` im `GameTableContext`) neu; das Level schreibt er per
 `PATCH adventures/{id}` ohne lokale Vorwegnahme, der Server pusht danach einen Snapshot.
 Details: `../docs/architecture.md#synchronisation`.

@@ -17,7 +17,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 
 ### Soll
 - Szenen auswählen und aktivieren. Alle Szenen sind gleich; einen Kampf startet der Spielleiter in jeder Szene über
-  den Menüpunkt „Kampf“ (umgesetzt im Admin; die Anzeige auf Wall, Ground und Player ist geplant).
+  den Menüpunkt „Kampf“ (umgesetzt im Admin, die Initiative zeigt auch die Wall; Ground und Player sind geplant).
 - Notizen (Markdown) einsehen: Story, NPCs, Kämpfe.
 - Navigationsleiste links mit Menüpunkten, die das Panel daneben füllen: „Notizen“, „Szenen“ und „Kampf“, abgesetzt
   ganz unten „Einstellungen“ für das, was man einmal einstellt (umgesetzt). Die Mitte zeigt dabei weiter die Notizen.
@@ -119,7 +119,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Kampf“). Wer am Zug ist, bleibt es bis „Zug beenden“; danach werden Ausgeschiedene übersprungen. Wird der
   Teilnehmer am Zug entfernt, ist der nächste am Zug (ohne Rundenwechsel); ist niemand am Zug und kommt ein
   Teilnehmer hinzu oder zurück, ist der erste davon am Zug. Der Kampf steht auf dem Server, übersteht Reloads und
-  Neustarts der API und wird nur an Admins geschickt; Wall, Ground und Player zeigen ihn (noch) nicht. Musik, Sounds,
+  Neustarts der API und wird an Admins und, ohne die Bezeichnungen der NPCs, an Walls geschickt (Initiative-Leiste,
+  siehe [Wall Screen](#wall-screen)); Ground und Player zeigen ihn (noch) nicht. Musik, Sounds,
   Raster und Wall-Overlay ändern sich bei Start und Ende nicht.
 - **Wall-Overlay:** Die Zeile „Wall“ im Panel „Spieltisch“ hat ein Segment-Control „Weltkarte“/„Aus“;
   hervorgehoben (`aria-pressed`) ist der Zustand, den der Server zuletzt geschickt hat. Ein Klick
@@ -265,33 +266,57 @@ entfernt und auf dem Branch `feature/spells-screen` geparkt (siehe CONTRIBUTING.
 
 ### Soll
 Atmosphäre: Hintergrundbild abhängig von der aktiven Szene (z. B. Dungeon bei Kampf, Shop-Inneres bei Shop-Szene).
-Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets. Während eines Kampfes (gestartet im
-Admin über den Menüpunkt „Kampf“) soll die Wall die Initiative als Kacheln zeigen, ohne die Bezeichnungen der NPCs
-(geplant, eigener Task).
+Zusätzlich als Overlay: Weltkarte oder Übersichtskarte des aktuellen Gebiets. Die Spieler sehen die Party am Rand
+und während eines Kampfes (gestartet im Admin über den Menüpunkt „Kampf“) die Initiative als Kacheln, ohne die
+Bezeichnungen der NPCs (umgesetzt).
 
 ### Ist
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): Vollbild-Hintergrund = Wall-Bild der aktiven Szene,
   unverzerrt und randlos. Ohne aktive Szene (auch bis der Server den ersten Stand geschickt hat) nur die
   Hintergrundfarbe des Themes, ohne Bild und ohne Panel.
+- **Party** (ohne Kampf, nur mit aktiver Szene): die Spieler des aktiven Abenteuers als durchscheinende Kacheln am
+  linken und rechten Rand, in der Reihenfolge der API: die erste Hälfte links, der Rest rechts, bei ungerader Zahl
+  einer mehr links (2 → 1/1, 4 → 2/2, 5 → 3/2); jede Seite für sich vertikal zentriert. Kachel: Avatar (Bild, sonst
+  Initialen), Vorname des Charakters, „Volk · Klasse“ (zu lang: gekürzt mit „…“). Ohne Spieler keine Kacheln. Die
+  Wall lädt die Spieler (`GET /adventures/{id}`) beim Laden und bei jedem Wechsel des aktiven Abenteuers.
+- **Initiative** (während eines Kampfes, statt der Party): eine Leiste am oberen Rand, Kacheln oben bündig.
+  - Links groß der Teilnehmer am Zug („Am Zug“ in der Hauptfarbe, „Runde N“, Rahmen in der Hauptfarbe, voller Name,
+    „Volk · Klasse“), rechts die Folgenden in Initiative-Reihenfolge (Vorname bzw. „Gegner 3“/„Verbündeter 4“).
+  - NPCs zeigen ihre Nummer im Avatar (Gegner rot, Verbündete grün), nie ihre Bezeichnung aus dem Admin.
+  - Der Rundentrenner „Runde N+1“ steht dort, wo die Initiative-Reihenfolge von vorn beginnt (ist der Erste der
+    Reihenfolge am Zug, am Ende der Leiste).
+  - Besiegte NPCs erscheinen nicht (außer sie sind am Zug); tote Spieler bleiben ausgegraut mit Totenkopf am Avatar
+    und „Tot“ statt „Volk · Klasse“.
+  - Passen nicht alle Kacheln in die Breite, fasst am Ende „+N weitere“ die übrigen Teilnehmer zusammen.
+  - Ist niemand am Zug (alle ausgeschieden), zeigt die Leiste die Teilnehmer in Initiative-Reihenfolge ohne große
+    Kachel und ohne Rundentrenner.
+  - Nach „Zug beenden“ rückt die Leiste nach: Die Kacheln gleiten in etwa 0,5 s an ihre neue Stelle und Größe, wer
+    ans Ende rückt, verblasst an der alten Stelle und kommt rechts herein, wer wegfällt, verblasst. Bei „Bewegung
+    reduzieren“ im System ohne Animation; andere Änderungen (Verstärkung, Umsortieren, Ausscheiden) erscheinen ohne
+    Animation.
+  - Den Kampf schickt der Server an jede Wall direkt nach dem Verbinden und nach jeder Änderung; eine später
+    geöffnete Wall zeigt sofort denselben Stand. Nach dem Kampfende stehen wieder die Party-Kacheln da.
 - Reine Anzeige ohne Bedienelemente: keine Steuerleiste, kein Ton. Einzige Ausnahme ist das **Vollbild-Overlay**:
-  Solange die Maus über dem Fenster ist (auch stillstehend), ist der ganze Screen abgedunkelt, mittig stehen das
-  Vollbild-Icon und „Vollbild“ (im Vollbild: Icon zum Beenden und „Vollbild beenden“). Ein Klick irgendwo darauf
+  Solange die Maus über dem Fenster ist (auch stillstehend), ist der ganze Screen so stark abgedunkelt wie unter
+  einem Dialog im Admin, mittig stehen in einer durchscheinenden Kachel das Vollbild-Icon und „Vollbild“ (im
+  Vollbild: Icon zum Beenden und „Vollbild beenden“). Es liegt über allem, auch über der Weltkarte. Ein Klick irgendwo darauf
   schaltet das Vollbild nur dieses Fensters um; der Zustand ist lokal pro Fenster (nicht auf dem Server) und folgt dem
   Browser, auch beim Verlassen mit Escape. Verlässt die Maus das Fenster, verschwindet das Overlay. Nur Maus, kein
   Touch; ohne Maus über dem Fenster bleibt alles unverdeckt.
-- Folgt dem Spieltisch per WebSocket (aktive Szene, Abenteuer, Theme, Overlay) und kann damit auch in einem anderen Browser oder
+- Folgt dem Spieltisch per WebSocket (aktive Szene, Abenteuer, Theme, Overlay, Kampf) und kann damit auch in einem anderen Browser oder
   auf einem anderen Gerät laufen (`http://<IP>:8080/wall`). Nach einem Verbindungsabbruch behält sie das Bild ohne
   Hinweis und verbindet sich selbst neu.
 - Overlay-Panel oben mittig; welches Overlay sie zeigt, steht auf dem Server (Spieltisch) und gilt für alle Walls.
   Umgeschaltet wird nur im Admin (Panel „Spieltisch“, Zeile „Wall“):
   - **Weltkarte:** Panel „Weltkarte“ mit einer fest eingebundenen Weltkarte (nicht aus dem Backend), vollständig
-    sichtbar (unten derselbe Abstand wie oben).
+    sichtbar (unten derselbe Abstand wie oben). Das Panel ist eine durchscheinende Kachel und liegt über Party bzw.
+    Initiative; darunter ist der ganze Screen so stark abgedunkelt wie unter einem Dialog im Admin.
   - **Aus:** Overlay ausgeblendet (Start, auch nach einem Neustart der API).
   Alle Walls wechseln mit dem Push des Servers. Eine neu geöffnete Wall zeigt sofort das aktuelle Overlay. Ein
   Szenen- oder Abenteuerwechsel schließt die Weltkarte auf allen Walls.
 - Eine szenen-/gebietsspezifische Übersichtskarte gibt es noch nicht.
-- **Ladefehler:** kein Hinweis für die Spieler; die Wall behält den zuletzt geladenen Stand, der nächste
-  Szenenwechsel lädt erneut.
+- **Ladefehler:** kein Hinweis für die Spieler; die Wall behält den zuletzt geladenen Stand (Szene bzw. Spieler),
+  der nächste Szenen- bzw. Abenteuerwechsel lädt erneut.
 
 ---
 
@@ -305,7 +330,8 @@ optional mit **Grid** als Layout für taktische Kämpfe.
 - Vollbild = Ground-Bild der aktiven Szene; Bild oder Video (läuft automatisch, in Schleife, stumm). Ohne aktive
   Szene nur die Hintergrundfarbe des Themes.
 - Reine Anzeige ohne Bedienelemente (keine Steuerleiste); Ausnahme wie auf der Wall das Vollbild-Overlay beim Hovern
-  mit der Maus (liegt auch über dem Raster).
+  mit der Maus (gleiche Abdunklung, Icon und Text in einer durchscheinenden Kachel; liegt auch über dem Raster).
+  Party und Kampf zeigt der Ground nicht.
 - Grid nach dem Spieltisch-Zustand: Linienfarbe Schwarz oder Weiß bzw. kein Grid, Zellgröße 100–200 (mit dem
   Pixelverhältnis des Geräts skaliert); eingestellt im Admin (Farbe im Panel „Spieltisch“, Zeile „Ground“, Zellgröße
   im Panel „Einstellungen“), gilt für alle Grounds und alle Szenen. Standard: kein Grid, Zellgröße 100; nach einem

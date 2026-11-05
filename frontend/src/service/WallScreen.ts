@@ -1,8 +1,14 @@
 import { loadData } from '../api/loadData'
-import { SceneDetail } from '../models/models'
+import { AdventureDetail, Player, SceneDetail } from '../models/models'
 
-const getWallScene = async (sceneId: number): Promise<SceneDetail> => (
+export const getWallScene = async (sceneId: number): Promise<SceneDetail> => (
   loadData('scene detail', `scenes/${sceneId}`)
 )
 
-export default getWallScene
+export const getWallPlayers = async (adventureId: number): Promise<Player[]> => {
+  const adventure: AdventureDetail = await loadData(
+    `adventure ${adventureId}`,
+    `adventures/${adventureId}`,
+  )
+  return adventure.players
+}

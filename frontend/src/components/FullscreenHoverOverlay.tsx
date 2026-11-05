@@ -2,6 +2,7 @@ import { ReactElement, useEffect, useState } from 'react'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
+import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 import useDocumentFullscreen from '../utils/useDocumentFullscreen'
 
@@ -18,20 +19,19 @@ const Backdrop = styled.button`
     height: 100%;
     padding: 0;
     z-index: ${(props) => props.theme.layer.control};
-    background-color: ${(props) => props.theme.colors.backdrop};
+    background-color: ${(props) => props.theme.colors.overlay};
     border: none;
     cursor: pointer;
     font: inherit;
 `
 
-const Content = styled.span`
+const Content = styled.span<TileSurfaceProps>`
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: ${(props) => props.theme.space[3]};
     padding: ${(props) => props.theme.space[5]};
-    background-color: ${(props) => props.theme.colors.background};
-    border-radius: ${(props) => props.theme.radius.lg};
+    ${tileSurface}
     color: ${(props) => props.theme.colors.text.color};
     ${textStyle('lg')}
     font-weight: ${(props) => props.theme.fontWeight.semibold};
@@ -91,7 +91,7 @@ function FullscreenHoverOverlay(): ReactElement | null {
       data-test-id="fullscreen-overlay"
       onClick={toggle}
     >
-      <Content>
+      <Content $isTranslucent>
         <ReactSVG
           wrapper="span"
           src={isFullscreen ? fullscreenExitIcon : fullscreenIcon}

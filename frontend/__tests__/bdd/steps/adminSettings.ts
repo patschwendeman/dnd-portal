@@ -35,7 +35,7 @@ const LISTBOX = `${PANEL} [role="listbox"]`
 const themeOption = (theme: Theme): string => (
   `${PANEL} [data-test-id="theme-select-option-${theme}"]`
 )
-const WALL_SCREEN = '[data-test-id="wall-world-map"]'
+const WALL_SCREEN = '[data-test-id="wall-world-map-layer"]'
 
 type Theme = 'dark' | 'tavern'
 

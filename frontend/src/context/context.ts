@@ -74,8 +74,8 @@ export const GameAudioContext = createContext<GameAudioContextType>({
   subscribeSound: () => () => {},
 })
 
-// Only for the Admin: the fight of the active adventure, null without one; other screens never
-// receive it
+// Only for the Admin and the Wall: the fight of the active adventure, null without one (the Wall
+// receives it without the labels of the NPCs); Ground and Player never receive it
 interface FightContextType {
   fight: FightState | null
 }

@@ -75,6 +75,8 @@ const layer = {
   raised: 1,
   media: 1,
   grid: 10,
+  // Party and initiative on the Wall; the Ground has its grid at this height
+  tiles: 10,
   panel: 20,
   control: 30,
   popover: 35,

@@ -29,7 +29,8 @@ export type ServerMessage = { type: 'state', payload: GameTableState }
   | { type: 'sound', payload: { name: SoundName } }
   // Only to Admins: sent after connecting and whenever a count changes
   | { type: 'screens', payload: ScreenCounts }
-  // Only to Admins: sent after connecting and after every change; null without a fight
+  // Only to Admins and (without labels) Walls: sent after connecting and after every change; null
+  // without a fight
   | { type: 'fight', payload: FightState | null }
   | { type: 'ping' }
 

@@ -95,10 +95,13 @@ und Laufweite nach [1.4](../../DESIGN.md#14-regeln).
 
 ## Kachel
 
-Nur im Admin: alle Bereiche sind frei stehende Kacheln über dem [Abenteuer-Hintergrund](#abenteuer-hintergrund), getrennt
+Im Admin sind alle Bereiche frei stehende Kacheln über dem [Abenteuer-Hintergrund](#abenteuer-hintergrund), getrennt
 durch Abstand statt Linien. Gemeinsamer CSS-Helper `tileSurface` ([src/style/GlobalStyle.ts](../../src/style/GlobalStyle.ts))
 mit dem Schalter `$isTranslucent`, den der `AdminScreen` setzt, solange das Hintergrundbild zu sehen ist (Prop
-`isTranslucent` an `NavRail`, `AdminHeader`, `DocumentReader` und `DashboardPanel`).
+`isTranslucent` an `NavRail`, `AdminHeader`, `DocumentReader` und `DashboardPanel`). Auf Wall und Ground haben alle
+Panels und Overlays dieselbe Fläche, immer durchscheinend: [Overlay-Panel](#overlay-panel), Fläche im
+[Vollbild-Overlay](#vollbild-overlay), [Wall-Kachel](#wall-kachel) (Party, Initiative) und die Kacheln „Runde N“ und
+„+N weitere“ der [Initiative-Leiste](#initiative-leiste).
 
 | Eigenschaft | Wert |
 |---|---|
@@ -106,8 +109,8 @@ mit dem Schalter `$isTranslucent`, den der `AdminScreen` setzt, solange das Hint
 | Rand | `borderWidth.thin` in `border` |
 | Lichtkante | innen oben: `box-shadow: inset 0 borderWidth.thin 0` in `border`; kein äußerer Schatten |
 | Abweichende Fläche | Hinweisleiste `error`, [Bühne](#bühne) `background`, beide immer deckend; Form, Rand und Lichtkante wie oben |
-| Durchscheinend | nur mit Hintergrundbild: Navigationsleiste und ihr Panel, Abenteuername und Button-Gruppe der Kopfzeile, Notizseiten, Dashboard-Panels. Flächen in den Kacheln (`background`) bleiben deckend |
-| Verwendung | [Navigationsleiste](#navigationsleiste) und ihr Panel, Kacheln der [Kopfzeile](#kopfzeile) (Abenteuername, Button-Gruppe, [Hinweisleiste](#hinweisleiste)), Notizseiten, [Dashboard-Panels](#dashboard-panel), [Bühne](#bühne) |
+| Durchscheinend | im Admin nur mit Hintergrundbild: Navigationsleiste und ihr Panel, Abenteuername und Button-Gruppe der Kopfzeile, Notizseiten, Dashboard-Panels; auf Wall und Ground immer. Flächen in den Kacheln (`background`) bleiben deckend |
+| Verwendung | [Navigationsleiste](#navigationsleiste) und ihr Panel, Kacheln der [Kopfzeile](#kopfzeile) (Abenteuername, Button-Gruppe, [Hinweisleiste](#hinweisleiste)), Notizseiten, [Dashboard-Panels](#dashboard-panel), [Bühne](#bühne); Wall und Ground siehe oben |
 | Notizseite | volle Breite der mittleren Spalte, Innenabstand `space.7` oben/unten, `space.8` seitlich; der Text darin höchstens `LINE_MAX_WIDTH` breit und zentriert; Abstand zwischen den Seiten `space.5`. Der Nach-oben-Button schwebt über den Kacheln und hat deshalb die Fläche `background` |
 
 ## Abenteuer-Hintergrund
@@ -233,12 +236,13 @@ dem Mockup [admin-fight-mockup.html](mockup/admin-fight-mockup.html). Props `ava
 ## Kampf-Avatar
 
 Komponente `CombatantAvatar` ([src/components/CombatantAvatar.tsx](../../src/components/CombatantAvatar.tsx)), für
-Spielerzeile, Panel „Kampf“, Initiative, „Als Nächstes“ und Hero-Karte. Props `kind`, `text`, `image`, `size`, `onTile`.
+Spielerzeile, Panel „Kampf“, Initiative, „Als Nächstes“, Hero-Karte und die [Wall-Kachel](#wall-kachel). Props `kind`,
+`text`, `image`, `size`, `onTile`.
 
 | Eigenschaft | Wert |
 |---|---|
-| Größe | `sm` 32px und `md` 40px (`AVATAR_SIZE`, `radius.md`, Schrift `text.sm`), `hero` `size.avatar.*` (`radius.lg`, `text.2xl`); Schrift `medium`, `tabular-nums` |
-| Spieler | Fläche nach Untergrund: direkt auf der Kachel (`onTile`: Hero-Karte in „Am Zug“, „Als Nächstes“) `background`, auf Zeilen mit Fläche `background` (Spielerzeile, Initiative, Panel „Kampf“) `secondary`; Rand `borderWidth.thin` in `border`, Initialen in `initials`; mit Bild das Bild (`object-fit: cover`) |
+| Größe | `sm` 32px und `md` 40px (`AVATAR_SIZE`, `radius.md`, Schrift `text.sm`), `hero` `size.avatar.*` (`radius.lg`, `text.2xl`); auf der Wall (`WALL_AVATAR_SIZE`, Hochformat 3:4) `party` 84 × 112px und `initiative` 72 × 96px (`radius.md`, `text.xl`), `turn` 120 × 160px (`radius.lg`, `text.2xl`); Schrift `medium`, `tabular-nums` |
+| Spieler | Fläche nach Untergrund: direkt auf der Kachel (`onTile`: Hero-Karte in „Am Zug“, „Als Nächstes“, Wall-Kachel) `background`, auf Zeilen mit Fläche `background` (Spielerzeile, Initiative, Panel „Kampf“) `secondary`; Rand `borderWidth.thin` in `border`, Initialen in `initials`; mit Bild das Bild (`object-fit: cover`) |
 | Gegner / Verbündeter | Nummer statt Initialen; Gegner in `negative`, Verbündete in `positive` (Fläche `.surface`, Rand `.border`, Zahl `.text`; in beiden Themes gleich), unabhängig vom Untergrund |
 
 ## Panel „Kampf“
@@ -294,13 +298,46 @@ Nur im Player.
 
 ## Overlay-Panel
 
-Nur auf der Wall.
+Nur auf der Wall (Weltkarte), nach dem Mockup [wall-party-mockup.html](mockup/wall-party-mockup.html), aber
+durchscheinend.
 
 | Eigenschaft | Wert |
 |---|---|
 | Breite | `min(OVERLAY_PANEL_MAX_WIDTH, 100vw − 2 × space.8, …)`, siehe [screen-layouts.md](screen-layouts.md#breite-des-overlay-panels) |
 | Position | `space.7` unter der Oberkante, horizontal mittig |
+| Fläche | [Kachel](#kachel), durchscheinend (`tileSurface` mit `$isTranslucent`), Innenabstand `space.6` |
+| Abdunklung | solange das Panel zu sehen ist, liegt darunter über dem ganzen Screen `overlay` (wie beim [Dialog](#dialog)); Panel und Abdunklung in `layer.panel`, über Party und Initiative (`layer.tiles`) |
 | Kopfzeile | Überschrift, `space.5` zum Inhalt |
+
+## Wall-Kachel
+
+Ein Charakter auf der Wall, Komponente `WallCharacterTile`
+([src/components/WallCharacterTile.tsx](../../src/components/WallCharacterTile.tsx)) nach den Mockups
+[wall-party-mockup.html](mockup/wall-party-mockup.html) und [wall-fight-mockup.html](mockup/wall-fight-mockup.html).
+Props `variant` (`party`, `initiative`, `turn`), `kind`, `avatarText`, `image`, `name`, `details`, `isDead`, `header`.
+
+| Eigenschaft | Wert |
+|---|---|
+| Element | `<article>` mit dem Namen als `aria-label`, `lang="de"`; Fläche [Kachel](#kachel), durchscheinend |
+| Aufbau | Spalte, zentriert, Text zentriert: optional der Kopf, [Kampf-Avatar](#kampf-avatar) (`onTile`, Größe wie die Variante), darunter Name (`semibold`) und Details (`text.muted`), beide einzeilig mit Ellipse; Details ohne Inhalt behalten ihre Zeilenhöhe |
+| `party` | Breite `PARTY_TILE_WIDTH`, Innenabstand `space.4 space.3`, `gap` `space.2`; Name `text.lg`, Details `text.sm` |
+| `initiative` | `INITIATIVE_TILE` (Breite und feste Höhe), Innenabstand `space.3`, `gap` `space.2`; Name `text.md`, Details `text.sm` |
+| `turn` | Breite `TURN_TILE_WIDTH`, Innenabstand `space.4`, `gap` `space.3`; Name `text.xl`, Details `text.md`; Rahmen innen `borderWidth.thick` in `primary` (statt der Lichtkante), `aria-current="step"`; Kopf: [Label](#label) „Am Zug“ in `primary` links, „Runde N“ in `text.muted` rechts |
+| Tot | nur Spieler: Avatar und Text mit Deckkraft `DEAD_OPACITY`, „Tot“ statt „Volk · Klasse“; Totenkopf-Badge unten rechts am Avatar (`right`/`bottom` −`space.2`), `SKULL_BADGE_SIZE`, `radius.pill`, Fläche `negative.surface`, Icon (`skull.svg`, `SKULL_ICON_SIZE`) `negative.text`, Ring `borderWidth.thick` in `secondary` |
+
+## Initiative-Leiste
+
+Auf der Wall während eines Kampfes, Komponente `WallInitiative`
+([src/components/WallInitiative.tsx](../../src/components/WallInitiative.tsx)); Logik in `src/utils/wallInitiative.ts`
+(Warteschlange, Filter, Rundentrenner, Überlauf, Übergänge) und `src/utils/useInitiativeTransitions.ts` (Animation).
+
+| Eigenschaft | Wert |
+|---|---|
+| Position | `position: fixed`, `space.6` unter der Oberkante, `space.7` links und rechts, `layer.tiles`; Flex-Zeile, Kacheln oben bündig, `gap` `WIDTHS.gap` |
+| Reihenfolge | [Wall-Kachel](#wall-kachel) `turn` für den Teilnehmer am Zug, danach `initiative` in Initiative-Reihenfolge; besiegte NPCs fehlen (außer am Zug), tote Spieler bleiben. Ohne Teilnehmer am Zug nur `initiative`-Kacheln, ohne Rundentrenner |
+| Rundentrenner | Kachel `WIDTHS.round` breit, `STRIP_TILE_HEIGHT` hoch: [Label](#label) „Runde“ (`text.muted`) über der Zahl (`text.2xl` `semibold` `tabular-nums`); steht, wo die Reihenfolge von vorn beginnt |
+| „+N weitere“ | Kachel `WIDTHS.more` breit, `STRIP_TILE_HEIGHT` hoch: „+N“ (`text.2xl` `semibold`) über dem Label „weitere“; ersetzt die Teilnehmer, die nicht mehr in die Breite passen (gemessen per `ResizeObserver`) |
+| Nachrücken | nur wenn der Teilnehmer am Zug wechselt: Kacheln gleiten 500 ms an neue Stelle und Größe (FLIP über die Web Animations API, `cubic-bezier(.2, .7, .2, 1)`); ans Ende Gerückte verblassen an der alten Stelle (Kopie in einer leeren Ebene, 300 ms, nach links) und kommen von rechts herein (500 ms, 100 ms verzögert); Weggefallene verblassen nach oben. Bei `prefers-reduced-motion: reduce` keine Animation |
 
 ## Vollbild-Overlay
 
@@ -310,8 +347,8 @@ Element eingebunden.
 
 | Eigenschaft | Wert |
 |---|---|
-| Ebene, Abdunklung | `layer.control`, `position: fixed`, `inset: 0`; Hintergrund `backdrop` |
-| Aufbau | ganze Fläche ist ein Button (`cursor: pointer`), mittig eine Fläche `background` mit `radius.lg` und Innenabstand `space.5`; darin als Spalte (`gap` `space.3`) das Icon (`fullscreen.svg` bzw. im Vollbild `fullscreenExit.svg`, `size.icon`, `text.color`) und darunter der Text „Vollbild“ bzw. „Vollbild beenden“ (`text.lg` `semibold`, `text.color`) |
+| Ebene, Abdunklung | `layer.control`, `position: fixed`, `inset: 0`; Hintergrund `overlay` (wie beim [Dialog](#dialog)) |
+| Aufbau | ganze Fläche ist ein Button (`cursor: pointer`), mittig eine durchscheinende [Kachel](#kachel) (`tileSurface` mit `$isTranslucent`) mit Innenabstand `space.5`; darin als Spalte (`gap` `space.3`) das Icon (`fullscreen.svg` bzw. im Vollbild `fullscreenExit.svg`, `size.icon`, `text.color`) und darunter der Text „Vollbild“ bzw. „Vollbild beenden“ (`text.lg` `semibold`, `text.color`) |
 | Sichtbarkeit | nur gerendert, solange die Maus über dem Fenster ist (`pointerenter`/`pointermove` mit `pointerType` `mouse`, ausgeblendet bei `pointerleave`); Touch zeigt es nicht |
 | Bedienung | Klick irgendwo schaltet das Vollbild des eigenen Fensters um (`useDocumentFullscreen`); `aria-label` wie der Text, `aria-pressed` = Vollbild-Zustand |
 

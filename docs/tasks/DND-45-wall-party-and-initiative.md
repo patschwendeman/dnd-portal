@@ -1,7 +1,7 @@
 # DND-45: Party und Initiative auf dem Wall Screen, Glas-Look für Wall und Ground
 
 **Typ:** feat
-**Status:** Entwurf
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -99,31 +99,31 @@ ist, wer folgt und in welcher Runde der Kampf steht.
 ### Schritt 1: Glas-Look und Party
 
 #### Frontend
-- [ ] Weltkarten-Panel und `FullscreenHoverOverlay` mit `tileSurface` (E5); Abdunklung `overlay` unter der
+- [x] Weltkarten-Panel und `FullscreenHoverOverlay` mit `tileSurface` (E5); Abdunklung `overlay` unter der
       Weltkarte und im Vollbild-Overlay (E5a); Ebenen (E6).
-- [ ] Wall lädt die Spieler des aktiven Abenteuers (E1).
-- [ ] Party-Kacheln links und rechts (E2); Aufteilung als Funktion in `src/utils/` mit Unit-Tests.
-- [ ] BDD: Wall zeigt die Spieler links und rechts; Weltkarte erscheint darüber.
+- [x] Wall lädt die Spieler des aktiven Abenteuers (E1).
+- [x] Party-Kacheln links und rechts (E2); Aufteilung als Funktion in `src/utils/` mit Unit-Tests.
+- [x] BDD: Wall zeigt die Spieler links und rechts; Weltkarte erscheint darüber.
 
 #### Doku
-- [ ] `docs/screens.md` (Wall, Ground), `frontend/DESIGN.md` und `frontend/docs/design/` (Bausteine, Layout-Konstanten),
+- [x] `docs/screens.md` (Wall, Ground), `frontend/DESIGN.md` und `frontend/docs/design/` (Bausteine, Layout-Konstanten),
       `frontend/CLAUDE.md`.
 
 ### Schritt 2: Initiative
 
 #### Backend
-- [ ] `fight` auch an Walls, mit `label: null` (E1); beim Verbinden einer Wall den laufenden Kampf senden.
-- [ ] Tests: Wall erhält `fight` ohne Bezeichnungen, beim Verbinden und nach Änderungen; Ground und Player nicht.
+- [x] `fight` auch an Walls, mit `label: null` (E1); beim Verbinden einer Wall den laufenden Kampf senden.
+- [x] Tests: Wall erhält `fight` ohne Bezeichnungen, beim Verbinden und nach Änderungen; Ground und Player nicht.
 
 #### Frontend
-- [ ] `fight` im Wall-Screen bereitstellen (heute nur im Admin gefüllt).
-- [ ] Initiative-Leiste (E3) mit Nachrücken (E4); Warteschlange, Rundentrenner, Filter und Überlauf als Funktionen
+- [x] `fight` im Wall-Screen bereitstellen (heute nur im Admin gefüllt).
+- [x] Initiative-Leiste (E3) mit Nachrücken (E4); Warteschlange, Rundentrenner, Filter und Überlauf als Funktionen
       in `src/utils/` mit Unit-Tests.
-- [ ] BDD: Kampf starten → Wall zeigt die Leiste mit dem Aktiven groß und keine Party-Kacheln; „Zug beenden“ →
+- [x] BDD: Kampf starten → Wall zeigt die Leiste mit dem Aktiven groß und keine Party-Kacheln; „Zug beenden“ →
       nächster Teilnehmer groß; Kampf beenden → Party-Kacheln wieder da. Aufräumen wie in `adminFight`.
 
 #### Doku
-- [ ] `docs/screens.md` (Wall), `docs/architecture.md` (WebSocket `fight` an Walls), `frontend/docs/design/`,
+- [x] `docs/screens.md` (Wall), `docs/architecture.md` (WebSocket `fight` an Walls), `frontend/docs/design/`,
       `frontend/CLAUDE.md`, `backend/CLAUDE.md`.
 
 ## Akzeptanzkriterien

@@ -18,7 +18,8 @@ const feature = loadFeature('__tests__/bdd/features/screenFullscreen.feature')
 
 const OVERLAY = '[data-test-id="fullscreen-overlay"]'
 const OVERLAY_ICON = `${OVERLAY} svg`
-const BACKDROP_COLOR = 'rgba(0, 0, 0, 0.5)'
+// The same dimming as below a dialog in the Admin
+const OVERLAY_COLOR = 'rgba(0, 0, 0, 0.85)'
 const MOUSE_POSITION = { x: 100, y: 100 }
 // Start of the browser plus the waits of the scenario
 const SCENARIO_TIMEOUT = 6 * WAIT_TIMEOUT
@@ -113,7 +114,7 @@ defineFeature(feature, (test) => {
         height: box.viewportHeight,
         viewportWidth: box.viewportWidth,
         viewportHeight: box.viewportHeight,
-        backgroundColor: BACKDROP_COLOR,
+        backgroundColor: OVERLAY_COLOR,
       })
     })
 

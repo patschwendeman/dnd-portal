@@ -7,7 +7,16 @@ import { textStyle } from '../style/tokens'
 
 const AVATAR_SIZE = { sm: '32px', md: '40px' }
 
-type AvatarSize = 'sm' | 'md' | 'hero'
+// Portraits (3:4) on the Wall: party tile, tile of the initiative strip and the tile on turn
+const WALL_AVATAR_SIZE = {
+  party: { width: '84px', height: '112px' },
+  initiative: { width: '72px', height: '96px' },
+  turn: { width: '120px', height: '160px' },
+}
+
+type WallAvatarSize = keyof typeof WALL_AVATAR_SIZE
+
+type AvatarSize = 'sm' | 'md' | 'hero' | WallAvatarSize
 
 interface FrameProps {
   $kind: CombatantKind
@@ -16,6 +25,22 @@ interface FrameProps {
 }
 
 const frameSize = ({ $size }: FrameProps) => {
+  if ($size === 'party' || $size === 'initiative') {
+    return css`
+      width: ${WALL_AVATAR_SIZE[$size].width};
+      height: ${WALL_AVATAR_SIZE[$size].height};
+      border-radius: ${(props) => props.theme.radius.md};
+      ${textStyle('xl')}
+    `
+  }
+  if ($size === 'turn') {
+    return css`
+      width: ${WALL_AVATAR_SIZE.turn.width};
+      height: ${WALL_AVATAR_SIZE.turn.height};
+      border-radius: ${(props) => props.theme.radius.lg};
+      ${textStyle('2xl')}
+    `
+  }
   if ($size === 'hero') {
     return css`
       width: ${(props) => props.theme.size.avatar.width};

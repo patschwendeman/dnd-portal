@@ -6,7 +6,7 @@
  │ /admin   │  │ /wall    │  │ /ground  │                            │ /        │ × n
  └────┬─────┘  └────┬─────┘  └────┬─────┘                            └────┬─────┘
       │ HTTP GET/PATCH/POST/PUT/DELETE (axios, /api/...)                  │ nur WebSocket (Theme)
-      │ WebSocket /ws?screen=… (Snapshots, Audio, Ping, an Admins Screen-Zahlen und Kampf; Admin → Server: Audio-Meldungen)
+      │ WebSocket /ws?screen=… (Snapshots, Audio, Ping, an Admins Screen-Zahlen, an Admins und Walls Kampf; Admin → Server: Audio-Meldungen)
       └─────────────┴─────────────┴──────────────────────────────────────┘
                     │ gleicher Origin: Vite-Proxy (Dev :5173) bzw. nginx (Prod :8080)
                     │ /api/… → API (Präfix entfernt), /ws → API
@@ -33,7 +33,8 @@
   erfolgreichen Änderung per `PATCH /table` oder `PATCH /adventures/{id}` einen vollständigen Snapshot an alle
   Verbindungen (auch an andere Admins; der letzte Schreibzugriff gewinnt, keine Sperren). Der Provider speist daraus
   `ActiveAdventureContext`, `ActiveSceneContext` (nur lesend), das Theme, das Wall-Overlay und das Ground-Raster (`GameTableContext`). Die Screens laden daraufhin neu vom
-  Backend: Wall und Ground die Szene, der Admin bei einem Abenteuerwechsel dessen Szenen und nach jedem Snapshot
+  Backend: Wall und Ground die Szene, die Wall bei einem Abenteuerwechsel dessen Spieler (`GET /adventures/{id}`, für
+  Party und Initiative), der Admin bei einem Abenteuerwechsel dessen Szenen und nach jedem Snapshot
   Spieler und Level des aktiven Abenteuers (`GET /adventures/{id}`; `global_level` steht nicht im Snapshot). Ohne aktive Szene zeigen Wall und Ground
   nur die Hintergrundfarbe und stellen keinen Request. Bis zum ersten Snapshot gilt „kein Abenteuer, keine Szene,
   Theme `dark`, kein Wall-Overlay, kein Ground-Raster (Zellgröße 100)“.
@@ -65,11 +66,13 @@
 - **Audio** (Musik, Soundeffekte) folgt demselben Muster, siehe [Audio](#audio): Der Server hält den Musikzustand,
   ein Admin-Fenster spielt ihn ab, gesteuert wird per REST.
 - **Kampf:** Der laufende Kampf des aktiven Abenteuers steht in der Datenbank (`fight`, `combatant`) und übersteht
-  Reloads und Neustarts der API. Er ist nicht Teil des Snapshots: Der Server schickt ihn **nur an Admins** als
-  `{"type": "fight", "payload": FightState | null}` direkt nach dem Verbinden und nach jeder erfolgreichen Änderung
-  (Endpoints unter `/table/fight`, Background-Task nach dem Commit) sowie nach jedem `PATCH /table`, das
-  `active_adventure_id` setzt (`null`: kein Kampf). Die Bezeichnungen der NPCs sieht so nur der Spielleiter; ein Zug
-  löst keinen `state`-Push aus, auf den Wall und Ground mit Neuladen reagieren würden. Der Admin schreibt ohne lokale
+  Reloads und Neustarts der API. Er ist nicht Teil des Snapshots: Der Server schickt ihn **nur an Admins und Walls**
+  als `{"type": "fight", "payload": FightState | null}` direkt nach dem Verbinden und nach jeder erfolgreichen
+  Änderung (Endpoints unter `/table/fight`, Background-Task nach dem Commit) sowie nach jedem `PATCH /table`, das
+  `active_adventure_id` setzt (`null`: kein Kampf). An Walls geht er mit `label: null` für jeden Teilnehmer
+  (`wall_fight` in `app/realtime/push.py`): Die Bezeichnungen der NPCs sieht so nur der Spielleiter. Ground und
+  Player bekommen ihn nicht. Ein Zug löst keinen `state`-Push aus, auf den Wall und Ground mit Neuladen reagieren
+  würden; die Wall zeigt den Kampf als Initiative-Leiste und lädt dafür nichts nach. Der Admin schreibt ohne lokale
   Vorwegnahme (der letzte Schreibzugriff gewinnt), nur die Vorbereitung vor „Kampf starten“ ist lokaler Zustand des
   Admin-Fensters. Im Frontend stellt der `GameTableProvider` den Kampf im `FightContext` bereit (bis zur ersten
   Nachricht `null`). Solange das aktive Abenteuer einen Kampf hat, lehnt der Server einen Wechsel des aktiven
@@ -97,7 +100,7 @@ Server → Client:
 | `{"type": "audio", "payload": AudioState}` | alle | direkt nach dem Verbinden (nach `state`), nach jeder Änderung des Musikzustands (Audio-Endpoints, Wechsel der aktiven Szene nach dem `state`-Push, Ausgabe bereit bzw. getrennt, Trackende) |
 | `{"type": "audio_output", "payload": {"active": bool}}` | betroffener Admin | `true` an den Admin, der per `audio_ready` Ausgabe wird; `false` an die bisherige Ausgabe, die die Rolle verliert |
 | `{"type": "sound", "payload": {"name": SoundName}}` | nur die Ausgabe | nach `POST /table/sounds`; ohne Ausgabe verfällt der Sound |
-| `{"type": "fight", "payload": FightState \| null}` | nur Admins | direkt nach dem Verbinden eines Admins (nach `screens`), nach jeder erfolgreichen Änderung am Kampf (Endpoints unter `/table/fight`; ein veraltetes `POST /table/fight/turn` ändert nichts und pusht nicht) und nach jedem `PATCH /table` mit `active_adventure_id`; `null` ohne Kampf des aktiven Abenteuers |
+| `{"type": "fight", "payload": FightState \| null}` | Admins und Walls (an Walls mit `label: null`) | direkt nach dem Verbinden eines Admins (nach `screens`) bzw. einer Wall (nach `audio`), nach jeder erfolgreichen Änderung am Kampf (Endpoints unter `/table/fight`; ein veraltetes `POST /table/fight/turn` ändert nichts und pusht nicht) und nach jedem `PATCH /table` mit `active_adventure_id`; `null` ohne Kampf des aktiven Abenteuers |
 | `{"type": "screens", "payload": {"wall": int, "ground": int, "player": int}}` | nur Admins | direkt nach dem Verbinden eines Admins (nach `state` und `audio`) und an alle Admins, sobald sich die Zahl der Verbindungen eines Typs ändert (Verbinden, Trennen, Entfernen nach fehlgeschlagenem Senden); Admins werden nicht gezählt |
 | `{"type": "ping"}` | alle | alle 15 s (Heartbeat) |
 
@@ -382,7 +385,7 @@ Datensatz trotzdem an (`size` = NULL).
   MUI nur für `Box`/`Slider`, axios, react-markdown, react-svg.
 - State: React-State + fünf Contexts (`ActiveAdventureContext`, `ActiveSceneContext`, `GameTableContext` mit Theme,
   Wall-Overlay, Ground-Raster, Verbindungsstatus und `reconnectNow`, `GameAudioContext` mit `AudioState`, Ausgabe-Rolle des Admins, `audio_ready`/
-  `track_ended` und Soundeffekten, `FightContext` mit dem Kampf, nur im Admin gefüllt; `src/context/context.ts`), gespeist vom `GameTableProvider` aus dem
+  `track_ended` und Soundeffekten, `FightContext` mit dem Kampf, nur in Admin und Wall gefüllt; `src/context/context.ts`), gespeist vom `GameTableProvider` aus dem
   WebSocket-Snapshot (siehe [Synchronisation](#synchronisation)). Kein Store-Framework. Der aktive Eintrag im Panel
   „Szenen“ des Admins ergibt sich aus `activeSceneId` (Vergleich mit der Szenen-ID, Attribute `aria-current` und
   `data-active`); ist sie `null`, ist kein Eintrag hervorgehoben. Die Wahl des Default-Abenteuers trifft
