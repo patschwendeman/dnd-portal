@@ -1,0 +1,178 @@
+# DND-45: Party und Initiative auf dem Wall Screen, Glas-Look für Wall und Ground
+
+**Typ:** feat
+**Status:** Entwurf
+
+## Kontext & Ziel
+
+Den Kampf (DND-43) sieht bisher nur der Spielleiter im Admin; die Spieler am Tisch wissen nicht, wer am Zug ist.
+Dieser Task bringt die Spieler auf die Wall: ohne Kampf als Kacheln am linken und rechten Rand, im Kampf als
+Initiative-Leiste am oberen Rand, die nach jedem Zug nachrückt (Mockups
+[wall-party-mockup.html](../../frontend/docs/design/mockup/wall-party-mockup.html) und
+[wall-fight-mockup.html](../../frontend/docs/design/mockup/wall-fight-mockup.html)). Dazu bekommen alle Panels und
+Overlays auf Wall und Ground den Glas-Look der Admin-Kacheln. Am Spieltisch sieht jeder auf einen Blick, wer am Zug
+ist, wer folgt und in welcher Runde der Kampf steht.
+
+## Scope / Non-Goals
+
+**Im Scope**
+- Wall ohne Kampf: Party-Kacheln links und rechts.
+- Wall im Kampf: Initiative-Leiste oben mit Nachrücken pro Zug, Rundentrenner und Überlauf.
+- Kampf an die Walls pushen, ohne die Bezeichnungen der NPCs.
+- Glas-Look für das Weltkarten-Panel der Wall und die Vollbild-Overlays von Wall und Ground.
+
+**Nicht im Scope**
+- Kampf oder Party auf Ground oder Player Screen.
+- Schalter im Admin, um Party oder Initiative auf der Wall aus- oder einzublenden.
+- Level, Effekte oder Trefferpunkte auf der Wall.
+- Änderungen am Admin oder an der Kampflogik.
+- Neue Mockups (die Entscheidungen zum Glas-Look stehen hier).
+
+## Entscheidungen
+
+### E1: Daten für die Wall
+- **Entscheidung:**
+  - Der Server schickt `fight` zusätzlich an alle Walls (direkt nach dem Verbinden und nach jeder Änderung, wie an
+    die Admins), dort mit `label: null` für jeden Teilnehmer. Ground und Player bekommen weiterhin kein `fight`.
+  - Die Wall lädt die Spieler des aktiven Abenteuers per `GET /adventures/{id}` beim Laden und bei jedem Wechsel
+    des aktiven Abenteuers (über `loadLatest`); Ladefehler nur per `console.error`, die Wall behält den letzten
+    Stand. Name, Volk, Klasse und Avatar kommen von dort.
+- **Verworfene Alternativen:** Spielerdaten im `fight`-Payload (die Party ohne Kampf bräuchte sie trotzdem);
+  eigene Nachricht für die Wall (gleicher Inhalt wie `fight`).
+- **Begründung:** Die Bezeichnungen sieht nur der Spielleiter (DND-43, E4/E7); `GET /adventures/{id}` gibt es
+  schon.
+
+### E2: Party ohne Kampf
+- **Entscheidung:** Ist eine Szene aktiv und kein Kampf läuft, zeigt die Wall die Spieler als Kacheln in der
+  Reihenfolge der API: die erste Hälfte links, der Rest rechts, bei ungerader Zahl einer mehr links (2 → 1/1,
+  4 → 2/2, 5 → 3/2). Jede Seite ist für sich vertikal zentriert, mit Abstand zum Rand. Kachel: Avatar (Bild, sonst
+  Initialen; Fläche `background`), Vorname des Charakters, „Volk · Klasse“ (gekürzt mit „…“). Ohne aktive Szene
+  zeigt die Wall wie bisher nur die Hintergrundfarbe; ohne Spieler keine Kacheln.
+
+### E3: Initiative im Kampf
+- **Entscheidung:** Läuft ein Kampf, ersetzt eine Leiste am oberen Rand (Kacheln oben bündig) die Party-Kacheln:
+  - Warteschlange ab dem Teilnehmer am Zug: links groß der Aktive (Label „Am Zug“ in der Hauptfarbe, „Runde N“,
+    Rahmen in der Hauptfarbe, voller Name, „Volk · Klasse“), rechts die Folgenden in Initiative-Reihenfolge (Vorname
+    bzw. „Gegner 3“/„Verbündeter 4“).
+  - NPCs: Nummer im Avatar in `negative` (Gegner) bzw. `positive` (Verbündete); nie die Bezeichnung.
+  - Rundentrenner „Runde N+1“ an der Stelle, an der die Initiative-Reihenfolge von vorn beginnt (steht der Erste der
+    Reihenfolge am Zug, am Ende der Leiste).
+  - Besiegte NPCs erscheinen nicht (außer sie sind am Zug); tote Spieler bleiben ausgegraut mit Totenkopf am Avatar
+    und „Tot“ statt „Volk · Klasse“.
+  - Passen nicht alle Kacheln in die Breite, fasst eine Kachel „+N weitere“ die restlichen Teilnehmer zusammen.
+  - Ist niemand am Zug (alle ausgeschieden), zeigt die Leiste die Teilnehmer ohne große Kachel.
+- **Begründung:** Wie im Mockup; die große Kachel bleibt immer an derselben Stelle.
+
+### E4: Nachrücken
+- **Entscheidung:** Ändert sich der Teilnehmer am Zug, gleiten die Kacheln in etwa 0,5 s an ihre neue Position und
+  Größe; wer ans Ende rückt, verblasst an der alten Stelle und kommt rechts herein; wer wegfällt, verblasst.
+  Bei „Bewegung reduzieren“ im System ohne Animation. Andere Änderungen (Verstärkung, Umsortieren) dürfen ohne
+  Animation erscheinen.
+
+### E5: Glas-Look auf Wall und Ground
+- **Entscheidung:** Alle Panels und Overlays auf Wall und Ground nutzen die Kachel-Fläche des Admins (`tileSurface`
+  mit `$isTranslucent`: `secondaryTranslucent`, Unschärfe, Rand und Lichtkante):
+  - Weltkarten-Panel der Wall: durchscheinend (Initiative und Party scheinen verschwommen durch), liegt über
+    Initiative-Leiste und Party-Kacheln.
+  - Vollbild-Overlay auf Wall und Ground: Die Abdunklung (`backdrop`) bleibt, Icon und Text sitzen in einer
+    Glas-Kachel in der Mitte (bisher Fläche `background`).
+  - Initiative- und Party-Kacheln ebenfalls mit dieser Fläche.
+- **Begründung:** Einheitlicher Look über alle Screens; die Weltkarte ist meist nur kurz eingeblendet.
+
+### E6: Größen und Ebenen
+- **Entscheidung:** Ausgelegt für 1920×1080, Werte als benannte Layout-Konstanten (in `screen-layouts.md`):
+  - Party-Kachel 176px breit, Avatar 84×112px; Seitenabstand 32px.
+  - Initiative: Leiste 32px vom oberen Rand, 48px links und rechts; kleine Kachel 168×176px mit Avatar 72×96px,
+    große Kachel 240px breit mit Avatar 120×160px; Rundentrenner 72px, „+N weitere“ 96px breit; Abstand 16px.
+  - Reihenfolge der Ebenen: Szenenbild < Party/Initiative < Weltkarte < Vollbild-Overlay.
+
+## Subtasks
+
+### Schritt 1: Glas-Look und Party
+
+#### Frontend
+- [ ] Weltkarten-Panel und `FullscreenHoverOverlay` mit `tileSurface` (E5); Ebenen (E6).
+- [ ] Wall lädt die Spieler des aktiven Abenteuers (E1).
+- [ ] Party-Kacheln links und rechts (E2); Aufteilung als Funktion in `src/utils/` mit Unit-Tests.
+- [ ] BDD: Wall zeigt die Spieler links und rechts; Weltkarte erscheint darüber.
+
+#### Doku
+- [ ] `docs/screens.md` (Wall, Ground), `frontend/DESIGN.md` und `frontend/docs/design/` (Bausteine, Layout-Konstanten),
+      `frontend/CLAUDE.md`.
+
+### Schritt 2: Initiative
+
+#### Backend
+- [ ] `fight` auch an Walls, mit `label: null` (E1); beim Verbinden einer Wall den laufenden Kampf senden.
+- [ ] Tests: Wall erhält `fight` ohne Bezeichnungen, beim Verbinden und nach Änderungen; Ground und Player nicht.
+
+#### Frontend
+- [ ] `fight` im Wall-Screen bereitstellen (heute nur im Admin gefüllt).
+- [ ] Initiative-Leiste (E3) mit Nachrücken (E4); Warteschlange, Rundentrenner, Filter und Überlauf als Funktionen
+      in `src/utils/` mit Unit-Tests.
+- [ ] BDD: Kampf starten → Wall zeigt die Leiste mit dem Aktiven groß und keine Party-Kacheln; „Zug beenden“ →
+      nächster Teilnehmer groß; Kampf beenden → Party-Kacheln wieder da. Aufräumen wie in `adminFight`.
+
+#### Doku
+- [ ] `docs/screens.md` (Wall), `docs/architecture.md` (WebSocket `fight` an Walls), `frontend/docs/design/`,
+      `frontend/CLAUDE.md`, `backend/CLAUDE.md`.
+
+## Akzeptanzkriterien
+
+### AK1: Party ohne Kampf (Schritt 1)
+- **Given** ein Abenteuer mit fünf Spielern, eine aktive Szene, kein Kampf
+- **When** die Wall geöffnet ist
+- **Then** stehen drei Spieler-Kacheln links und zwei rechts, jede Seite vertikal zentriert, mit Avatar bzw.
+  Initialen, Vorname und „Volk · Klasse“
+- **And** ohne aktive Szene zeigt die Wall keine Kacheln
+
+### AK2: Glas-Look (Schritt 1)
+- **Given** Wall und Ground sind geöffnet
+- **When** die Maus über einem der Fenster steht
+- **Then** liegt „Vollbild“ in einer durchscheinenden Kachel mit Rand über dem abgedunkelten Screen
+- **When** der Spielleiter die Weltkarte einblendet
+- **Then** liegt ihr Panel durchscheinend über den Party-Kacheln bzw. der Initiative
+
+### AK3: Initiative im Kampf (Schritt 2)
+- **Given** eine Wall ist geöffnet, der Spielleiter startet einen Kampf mit Spielern, Gegnern und einem Verbündeten
+- **Then** verschwinden die Party-Kacheln, oben erscheint die Leiste mit dem ersten Teilnehmer groß („Am Zug“,
+  „Runde 1“) und den übrigen in Initiative-Reihenfolge, NPCs als „Gegner N“/„Verbündeter N“ ohne Bezeichnung
+- **And** eine Wall, die erst danach geöffnet wird, zeigt sofort denselben Stand
+
+### AK4: Nachrücken und Runde (Schritt 2)
+- **Given** ein laufender Kampf
+- **When** der Spielleiter „Zug beenden“ klickt
+- **Then** rückt die Leiste nach: der bisherige Aktive steht am Ende, der Nächste groß links
+- **And** nach dem Letzten der Reihenfolge zeigt die große Kachel „Runde N+1“; der Trenner steht wieder vor dem, der
+  diese Runde schon dran war
+
+### AK5: Ausgeschiedene und Überlauf (Schritt 2)
+- **Given** ein laufender Kampf
+- **When** der Spielleiter einen Gegner als besiegt und einen Spieler als tot markiert
+- **Then** verschwindet der Gegner von der Wall, der Spieler bleibt ausgegraut mit Totenkopf und „Tot“
+- **When** so viele Teilnehmer im Kampf sind, dass nicht alle in die Breite passen
+- **Then** steht am Ende „+N weitere“ mit der Zahl der nicht gezeigten Teilnehmer
+
+### AK6: Kampfende (Schritt 2)
+- **Given** ein laufender Kampf
+- **When** der Spielleiter den Kampf beendet
+- **Then** verschwindet die Leiste, die Party-Kacheln stehen wieder links und rechts
+
+## Teststrategie / Verifikation
+
+**Automatisch**
+- Backend: Tests wie in den Subtasks; `ruff`, `mypy`, `make check-quality`, `pytest` grün.
+- Frontend: Unit-Tests für Aufteilung, Warteschlange, Rundentrenner, Filter und Überlauf; BDD für Wall; Lint,
+  Typecheck, Build, knip, jscpd grün.
+
+**Manuell**
+1. Wall in 1920×1080 mit 2, 4 und 5 Spielern (Seed anpassen oder DB) neben die Mockups legen, Dark und Tavern (AK1).
+2. Vollbild-Overlay auf Wall und Ground, Weltkarte ein- und ausblenden (AK2).
+3. Kampf im Admin starten, mehrere Runden durchklicken, Gegner besiegen, Spieler tot markieren, Verstärkung bis zum
+   Überlauf, Kampf beenden; zweite Wall nachträglich öffnen (AK3–AK6). Animation einmal mit „Bewegung reduzieren“.
+
+## Offene Fragen
+
+Keine.
+
+## Review
