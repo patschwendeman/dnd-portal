@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wall Mockup Party</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Wall Screen in einer Szene ohne Kampf: die Spieler des aktiven Abenteuers als Kacheln am linken und rechten Rand
+   (Kachel-Stil aus player-card-tile.html, Kacheln wie im Admin und in wall-fight-mockup.html).
+   - Verteilung in der Reihenfolge der Party: die erste Hälfte links, der Rest rechts; bei ungerader Zahl einer mehr
+     links (2 → 1/1, 4 → 2/2, 5 → 3/2). Jede Seite ist für sich vertikal zentriert.
+   - Kachel: Avatar (Bild oder Initialen, Fläche background), Vorname, Volk · Klasse.
+   - Keine Bedienelemente; startet ein Kampf, ersetzt die Initiative-Leiste oben (wall-fight-mockup.html) die Kacheln.
+   - Die Weltkarte (Wall-Overlay) liegt deckend über den Kacheln, sie ist meist nur kurz eingeblendet.
+   Zustände über die Mockup-Leiste unten links. */
+:root {
+  color-scheme: dark;
+  --bg: #0e1117;
+  --sec: #161b23;
+  --sec-t: color-mix(in srgb, #161b23 75%, transparent);
+  --pri: #4493F8;
+  --border: #3d444db3;
+  --text: #f0f6fc;
+  --muted: #f0f6fcb0;
+  --initials: #4493F8;
+  --scrim: rgba(0, 0, 0, 0.750);
+  --onscrim: #ffffff;
+}
+:root[data-theme="tavern"] {
+  --bg: #140701;
+  --sec: #3D271C;
+  --sec-t: color-mix(in srgb, #3D271C 92%, transparent);
+  --pri: #C05E5E;
+  --border: #956F01;
+  --text: #CBAB96;
+  --muted: #CBAB96b0;
+  --initials: #CBAB96;
+}
+
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: url("../../../../media/images/wall_screen/forest.jpg") center / cover no-repeat, var(--bg);
+  color: var(--text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+}
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; }
+button:focus-visible { outline: 2px solid var(--pri); outline-offset: 2px; }
+
+.lbl { font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.tile {
+  background: var(--sec-t);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 0 var(--border);
+  border-radius: 12px;
+}
+
+/* ---------- Spieler links und rechts, je Seite vertikal zentriert ---------- */
+.side {
+  position: fixed; top: 0; bottom: 0;
+  display: flex; flex-direction: column; justify-content: center; gap: 16px;
+  padding-block: 48px;
+}
+.side.left { left: 32px; }
+.side.right { right: 32px; }
+.pt {
+  flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;
+  width: 176px; padding: 16px 12px;
+}
+.av {
+  flex: none; display: grid; place-items: center;
+  width: 84px; height: 112px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--initials);
+  font-size: 28px; line-height: 36px; font-weight: 600;
+}
+.pt .t { display: flex; flex-direction: column; min-width: 0; max-width: 100%; }
+.pt .t span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.name { font-size: 18px; line-height: 24px; font-weight: 600; }
+.meta { font-size: 14px; line-height: 20px; color: var(--muted); }
+
+/* ---------- Weltkarte (Wall-Overlay): deckend über den Kacheln ---------- */
+.map {
+  position: fixed; top: 48px; left: 50%; z-index: 2; transform: translateX(-50%); background: var(--sec);
+  width: min(calc(100vw - 128px), 1100px);
+  height: calc(100vh - 96px);
+  padding: 24px; display: none;
+}
+.map.on { display: block; }
+.map img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+
+/* ---------- nur im Mockup ---------- */
+.mock { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 6px 6px 6px 14px; border-radius: 12px; background: var(--scrim); color: var(--onscrim); }
+.mock button { height: 32px; min-width: 32px; padding: 0 10px; border-radius: 8px; font-size: 13px; line-height: 18px; font-weight: 600; }
+.mock button:hover { background: rgba(255, 255, 255, .12); }
+.mock button[aria-pressed="true"] { background: rgba(255, 255, 255, .22); }
+</style>
+</head>
+<body>
+
+<section class="side left" id="left" aria-label="Party links"></section>
+<section class="side right" id="right" aria-label="Party rechts"></section>
+
+<div class="tile map" id="map" aria-label="Weltkarte"><img src="../../../public/assets/images/ground_screen/mapOverview.jpg" alt="Weltkarte"></div>
+
+<div class="mock" role="group" aria-label="Mockup-Steuerung (nur im Mockup)">
+  <span class="lbl">Spieler</span>
+  <span id="counts" style="display: contents"></span>
+  <button type="button" data-act="map" aria-pressed="false">Weltkarte</button>
+  <button type="button" data-act="theme">Theme</button>
+</div>
+
+<script>
+const PLAYERS = [
+  { c: 'Thalia Sturmwind', race: 'Elfe', cls: 'Magierin' },
+  { c: 'Brom Eisenfaust', race: 'Zwerg', cls: 'Kämpfer' },
+  { c: 'Kael Schattenschritt', race: 'Halbling', cls: 'Schurke' },
+  { c: 'Seraphine Morgenlicht', race: 'Mensch', cls: 'Klerikerin' },
+  { c: 'Orin Funkenbart', race: 'Gnom', cls: 'Erfinder' },
+  { c: 'Mira Dornhag', race: 'Halbelfe', cls: 'Druidin' },
+  { c: 'Garrick Steinwall', race: 'Mensch', cls: 'Paladin' },
+  { c: 'Ysolde Nachtweh', race: 'Tiefling', cls: 'Hexenmeisterin' },
+];
+const s = { count: 5, map: false };
+
+const $ = (id) => document.getElementById(id);
+const initials = (n) => n.split(' ').slice(0, 2).map((w) => w[0]).join('');
+const tile = (p) => `<article class="tile pt" aria-label="${p.c}"><div class="av">${initials(p.c)}</div>
+  <div class="t"><span class="name">${p.c.split(' ')[0]}</span><span class="meta">${p.race} · ${p.cls}</span></div></article>`;
+
+function render() {
+  const party = PLAYERS.slice(0, s.count);
+  // bei ungerader Zahl steht einer mehr links
+  const leftCount = Math.ceil(party.length / 2);
+  $('left').innerHTML = party.slice(0, leftCount).map(tile).join('');
+  $('right').innerHTML = party.slice(leftCount).map(tile).join('');
+  $('map').classList.toggle('on', s.map);
+  $('counts').innerHTML = [1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+    `<button type="button" data-act="count" data-n="${n}" aria-pressed="${n === s.count}">${n}</button>`)).join('');
+  document.querySelector('.mock [data-act="map"]').setAttribute('aria-pressed', String(s.map));
+}
+
+document.querySelector('.mock').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  if (b.dataset.act === 'count') s.count = Number(b.dataset.n);
+  if (b.dataset.act === 'map') s.map = !s.map;
+  if (b.dataset.act === 'theme') {
+    const root = document.documentElement;
+    root.dataset.theme = root.dataset.theme === 'tavern' ? 'dark' : 'tavern';
+  }
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

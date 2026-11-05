@@ -19,7 +19,7 @@
      ihrer Art (negative/positive), „Gegner 3“ bzw. „Verbündeter 4“, nie die Bezeichnung aus dem Admin.
    - Besiegte NPCs verschwinden aus der Leiste; tote Spieler bleiben ausgegraut mit Totenkopf und „Tot“.
    - Passen nicht alle Kacheln in die Breite, fasst „+N weitere“ den Rest zusammen.
-   - Weltkarte (Wall-Overlay) bleibt möglich, ihr Panel beginnt unter der Leiste.
+   - Weltkarte (Wall-Overlay) liegt als Overlay über der Leiste (meist nur kurz eingeblendet), deckend.
    Avatar-Fläche der Spieler: background, weil der Avatar direkt auf der Kachel liegt (wie DND-43, Runde 2).
    Zustände über die Mockup-Leiste unten links. */
 :root {
@@ -77,11 +77,11 @@ button:focus-visible { outline: 2px solid var(--pri); outline-offset: 2px; }
   border-radius: 12px;
 }
 
-/* ---------- Weltkarte (Wall-Overlay), beginnt unter der Leiste ---------- */
+/* ---------- Weltkarte (Wall-Overlay): deckend über der Leiste ---------- */
 .map {
-  position: fixed; top: calc(32px + var(--strip-h, 300px) + 24px); left: 50%; transform: translateX(-50%);
+  position: fixed; top: 48px; left: 50%; z-index: 2; transform: translateX(-50%); background: var(--sec);
   width: min(calc(100vw - 128px), 1100px);
-  height: calc(100vh - 32px - var(--strip-h, 300px) - 24px - 48px);
+  height: calc(100vh - 96px);
   padding: 24px; display: none;
 }
 .map.on { display: block; }
@@ -263,7 +263,6 @@ function render(animate) {
     return el;
   });
   strip.replaceChildren(...els);
-  document.documentElement.style.setProperty('--strip-h', `${strip.getBoundingClientRect().height}px`);
   $('map').classList.toggle('on', s.map);
 
   if (!animate || reduced()) return;
