@@ -52,9 +52,6 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
   Notizen (`primary`) verfehlen darauf in Tavern 4,5:1 (3,3:1, `frontend/docs/design/contrast.md`); auf den
   durchscheinenden Kacheln über einem hellen Hintergrundbild (seit DND-41, Werte seit DND-42) in Tavern 3,0:1 und
   auch in Dark 4,0:1. Lösung offen.
-- Kontrast (seit DND-45): Name und „Tot“ toter Spieler auf den Wall-Kacheln sind ausgegraut (`DEAD_OPACITY` 0,45) und
-  verfehlen über einem hellen Szenenbild 4,5:1 (Dark 2,8:1, Tavern 2,2:1, `frontend/docs/design/contrast.md`).
-  Lösung offen.
 
 ## Baseline der Qualitätsprüfungen
 

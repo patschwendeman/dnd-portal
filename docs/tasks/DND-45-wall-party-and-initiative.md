@@ -226,3 +226,47 @@ Funktional sind alle sechs Akzeptanzkriterien erfüllt.
 `test_adventures.py` (Dev-DB weicht vom Seed ab, nicht durch die Änderung). Frontend lint, typecheck, build,
 unit 285/285, knip, jscpd grün. BDD 31/32 (rot: „audio output“, Admin-Fenster außerhalb der Tests ist Ausgabe;
 „dashboard panels“ einmal flaky).
+
+### Runde 2 – 2026-11-05
+
+**Empfehlung:** Nacharbeiten – außer der User bestätigt das Ausgrauen toter Spieler als bewusste Ausnahme, dann
+Abnahme. Befund aus Runde 1 behoben, alle sechs Akzeptanzkriterien weiter erfüllt.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | unverändert: `WallScreen.tsx:171`, `wallParty.ts`; Unit und BDD `wallParty` grün |
+| AK2 | erfüllt | `FullscreenHoverOverlay.tsx:22/34`, `WallScreen.tsx:47-55`; BDD `screenFullscreen`, `wallParty` grün |
+| AK3 | erfüllt | `WallInitiative.tsx:130-131`: „Am Zug“ als Badge, „Runde N“ in `text.color`; BDD „The wall follows the fight“ grün |
+| AK4 | erfüllt | Logik unverändert (`wallInitiative.ts`), Unit grün; Animation nur manuell prüfbar |
+| AK5 | erfüllt | `WallCharacterTile.tsx:68-70/159-170`, `fitToWidth`; Unit grün; Kontrast siehe Befund |
+| AK6 | erfüllt | `WallScreen.tsx:170-171`; BDD „ends the fight“ grün |
+
+**Befund aus Runde 1:** behoben – `Details` erbt `text.color`, `MutedLabel` entfernt, `OnTurn` als Badge
+`primary`/`onPrimary` (`WallInitiative.tsx:74-79`), Kacheln weiter durchscheinend. Kontrast nachgerechnet:
+`onPrimary` auf `primary` Dark 6,10, Tavern 4,72; `text.color` auf Kachel über Weiß 6,97 / 5,13; Werte stimmen mit
+`contrast.md` überein.
+
+**Blockierende Befunde**
+- [x] **Tote Spieler verfehlen das Kontrastziel aus `DESIGN.md` 2.6.** Name und „Tot“ mit `DEAD_OPACITY` 0,45:
+  über Weiß Dark 2,78, Tavern 2,24 (Tavern über Schwarz 2,54); Ziel 4,5:1. Der Totenkopf wird mit ausgegraut und
+  erreicht auf seinem Badge nur 2,59 / 2,60 (Ziel 3:1) – damit erfüllt kein Merkmal für „tot“ das Ziel; dieser Teil
+  ist nicht dokumentiert. Plan (E3/AK5) verlangt „ausgegraut“, daher Entscheidung des Users: (a) dokumentierte
+  Ausnahme (dann Totenkopf in der Doku ergänzen) oder (b) nur das Avatarbild ausgrauen, Name, „Tot“ und Totenkopf
+  in voller Deckkraft.
+  Entscheidung User: Ausnahme dokumentiert (Variante a) – `DESIGN.md` 2.6, `contrast.md` (inkl. Totenkopf); aus
+  `known-issues.md` entfernt, da bewusste Entscheidung statt Lücke.
+
+**Hinweise**
+- Rahmen der Kachel am Zug in `primary` (2,45 / 2,62 über Weiß, Ziel 3:1): nicht blockierend, Zusatzsignal
+  (Badge, Größe, Position, `aria-current`); in `DESIGN.md` 2.6 und `contrast.md` dokumentiert.
+- `contrast.md`: Zeile „`text.color` auf `secondaryTranslucent` ohne `backdrop`“ nennt „Tot“, das nur ausgegraut
+  erscheint und allein in die `DEAD_OPACITY`-Zeile gehört.
+- Hinweise aus Runde 1 umgesetzt (`GlobalStyle.ts:34-42`, `WALL_TILE_SIZE` in `WallCharacterTile.tsx:15-19`).
+- Weiter offen, nicht verlangt: `useInitiativeTransitions` ohne Abhängigkeiten; Spieler nur beim Abenteuerwechsel
+  geladen.
+- Doku stimmig, Konventionen eingehalten, keine Regressionen.
+
+**Checks:** Backend ruff, format, mypy, `make check-quality` grün; pytest 318 grün, 3 rot in `test_adventures.py`
+(Dev-DB, wie Runde 1; ein einmaliger Abbruch mit 15 rot/60 Errors, danach zweimal stabil). Frontend lint,
+typecheck, build, unit 285/285, knip, jscpd grün. BDD 30/32 (rot: „audio output“ wie Runde 1, „dashboard panels“
+flaky, einzeln grün).

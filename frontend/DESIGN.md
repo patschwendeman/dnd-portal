@@ -333,7 +333,9 @@ Geprüft nach WCAG 2.1. Ziel AA:
   einem hellen Hintergrundbild 3,0:1, in Dark auf `secondaryTranslucent` über einem hellen Hintergrundbild 4,0:1.
   Betroffen sind die Text-Links der Inhaltsverzeichnisse in den Notizen, die auf Kacheln in
   `secondary` bzw. `secondaryTranslucent` liegen; eine Lösung ist offen ([known-issues.md](../docs/known-issues.md)).
-  Ebenso verfehlen Name und „Tot“ toter Spieler auf den Wall-Kacheln (ausgegraut mit `DEAD_OPACITY`) 4,5:1.
+- **Ausnahme (vom User entschieden, DND-45):** Tote Spieler auf den Wall-Kacheln sind bewusst ausgegraut
+  (`DEAD_OPACITY` 0,45 auf Avatar, Text und Totenkopf). Name und „Tot“ verfehlen damit 4,5:1, das Icon des Totenkopfs
+  auf seinem Badge 3:1: Das Ausgrauen ist selbst das Signal „tot, nicht mehr im Spiel“.
 - **Text auf durchscheinenden Kacheln:** Die Fläche hängt vom Hintergrundbild dahinter ab. Gemessen wird deshalb der
   ungünstigste Fall: `secondaryTranslucent` über einem weißen bzw. schwarzen Bild unter `backdrop`. Erreicht ein Paar
   sein Ziel nicht, wird die Deckkraft von `secondaryTranslucent` in diesem Theme erhöht, nicht die Abdunklung
