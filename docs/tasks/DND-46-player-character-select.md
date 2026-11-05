@@ -1,7 +1,7 @@
 # DND-46: Charakterauswahl auf dem Player Screen, Hintergrundbild und Glas-Look
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -237,3 +237,38 @@ Kacheln aus Admin, Wall und Ground (Mockup
   eine Fläche bekommen soll, steht aus.
 
 ## Review
+
+### Runde 1 – 2026-11-05
+**Empfehlung:** Abnahme. Keine blockierenden Befunde. Vier Dokumente beschreiben den Player noch nach altem Stand
+(Hinweis 1); Nachziehen vor dem Abschluss empfohlen, Entscheidung beim User.
+
+Grundlage: Runden-Commit `57a6d50 feat(DND-46): …`, geprüft als Diff `8d32105..57a6d50`. Backend unverändert.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 | erfüllt | BDD `playerSelect.feature` Szenario 1 grün (Abenteuername, Charaktere in API-Reihenfolge, „Party · 4“, keine Links zu `/admin`, `/wall`, `/ground`); Code `PlayerSelectScreen.tsx`, `PlayerRowContent.tsx` |
+| AK2 | erfüllt | BDD Szenario 2 grün: Tipp öffnet `/player/<id>`; keine Belegung, nichts verhindert Mehrfachwahl |
+| AK3 | erfüllt | BDD Szenario 2 grün: Menü mit Themes und „Charakter wechseln“, Trennlinie, Liste auf `layer.popover` und deckend; „Charakter wechseln“ führt ohne Hinweis zu `/` |
+| AK4 | erfüllt (Code und Unit-Test; End-to-End nicht ausgeführt) | `PlayerLayout.tsx:80-83`, `PlayerScreen.tsx:83-97`; Unit `playerRedirect`. Manueller Test 3 offen (nur ein Seed-Abenteuer, laufender Kampf blockiert Wechsel) |
+| AK5 | erfüllt | BDD Outline grün für `999999` und `abc`; fremdes Abenteuer nur per Unit-Test; `parsePlayerId` lehnt `0`, `-1`, `01`, `1.5` ab |
+| AK6 | erfüllt („Keine Verbindung“ selbst geprüft, Rest per Code und Unit-Test) | Selenium mit blockiertem WS/API: Offline-Zustand mit „Erneut versuchen“, danach Liste; Nachladen über `activeAdventureId` |
+| AK7 | erfüllt | Selenium 844×390 zweispaltig, 390×844 einspaltig ohne Dreh-Hinweis; auf dem Player Screen liegt das Dreh-Overlay (`layer.dialog`) über dem offenen Menü |
+| AK8 | erfüllt (Überblendung nur per Code) | Glas-Flächen `rgba(61,39,28,0.92)` + `blur(12px)`, Zeilen und Buttons deckend; ohne Bild kein `<img>`; Überblendung über `useAdventureBackground` mit `effectiveTheme` |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise**
+1. Veraltete Ist-Aussagen außerhalb der Doku-Subtasks (Player nutzt jetzt auch das aktive Abenteuer):
+   `CLAUDE.md:55`, `docs/domain.md:6`, `frontend/README.md:16`, `backend/README.md:7`.
+2. E2E `adminPlayers.ts` rot (0/3) wegen laufendem Kampf auf dem Dev-Server (Admin blendet „Party“ im Kampf aus,
+   `AdminScreen.tsx:770`); `AdminScreen.tsx` unverändert, Markup von `PlayerListItem` gleich. Nach Kampfende erneut laufen lassen.
+3. Kontrast im Kopf der Auswahl über sehr hellen Bildern ca. 3,6:1 (Dark) bzw. 1,8:1 (Tavern) statt 4,5:1;
+   dokumentiert in `contrast.md` und „Offene Fragen“, Umsetzung entspricht dem Mockup.
+4. Plan nicht separat per `docs(DND-46): …` eingecheckt, sondern im feat-Commit; Commit-Schema eingehalten.
+5. Manuelle Tests offen: Teststrategie Punkt 3 (AK4 mit zweitem Abenteuer), Punkt 1/2 auf echtem Smartphone.
+6. Scope eingehalten; `PlayerListItem` nur ohne sichtbare Änderung umgebaut, dazu Mockup und sechs Icons.
+7. Commit `57a6d50`: Schema korrekt, 5 Stichpunkte, keine KI-Signatur, Status „Im Review“, alle Subtasks abgehakt.
+
+**Checks:** Lint, Typecheck, Unit (299/299), `check:deadcode`, `check:dupes` (nur vorbestehender Klon), Build grün;
+E2E `playerSelect.ts` 4/4 grün, `adminPlayers.ts` 0/3 (Umgebung, Hinweis 2); eigene Selenium-Prüfungen für AK6–AK8.
