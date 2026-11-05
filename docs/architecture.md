@@ -80,8 +80,15 @@
   409 `{"detail": "Fight in progress"}` ab (der ganze Request, auch andere Felder darin); derselbe Wert ist kein
   Wechsel. Die Schreibzugriffe auf den Kampf sperren seine Zeile (`SELECT … FOR UPDATE`), damit gleichzeitige Klicks
   aus mehreren Admin-Fenstern nacheinander wirken.
-- Der **Player Screen** (Smartphones) nutzt vom Spieltisch nur das Theme; `state`, `audio` und `sound` empfängt er,
-  zeigt sie aber nicht an, und er sendet nichts. Er zeigt keinen Verbindungsstatus. Im Settings-Menü kann ein Spieler
+- **Charakterauswahl** (`/`) und **Player Screen** (`/player/:id`, Smartphones) teilen sich eine Verbindung als
+  `player` (Layout-Route `PlayerLayout`, ein `GameTableProvider`; ein Wechsel zwischen beiden verbindet nicht neu).
+  Vom Snapshot nutzen sie das aktive Abenteuer und das Theme; `audio` und `sound` empfangen sie, zeigen sie aber nicht
+  an, und sie senden nichts. Spieler und Hintergrundbilder stehen nicht im Snapshot: `PlayerLayout` lädt
+  `adventures/{id}` des aktiven Abenteuers beim Laden und bei jedem Abenteuerwechsel (`loadLatest`). Die Auswahl zeigt
+  „Keine Verbindung zum Spieltisch“, wenn die Verbindung vor dem ersten Snapshot getrennt ist oder das Laden
+  fehlschlägt; der Player Screen zeigt keinen Verbindungsstatus. Ob der Player Screen zur Auswahl zurückkehrt
+  (Charakter gehört nicht zum aktiven Abenteuer) und mit welchem Hinweis, entscheidet `playerRedirect`
+  (`src/utils/playerSelect.ts`). Im Settings-Menü kann ein Spieler
   auf seinem Gerät vom Spieltisch-Theme abweichen („Wie Spieltisch“, „Dunkel“, „Taverne“): gespeichert in
   `localStorage` `playerThemeOverride` (`dark` | `tavern`, fehlend oder ungültig = „Wie Spieltisch“,
   `src/utils/playerTheme.ts`); wirksam ist `Abweichung ?? Spieltisch-Theme` (Prop `themeOverride` des
@@ -390,7 +397,7 @@ Datensatz trotzdem an (`size` = NULL).
   „Szenen“ des Admins ergibt sich aus `activeSceneId` (Vergleich mit der Szenen-ID, Attribute `aria-current` und
   `data-active`); ist sie `null`, ist kein Eintrag hervorgehoben. Die Wahl des Default-Abenteuers trifft
   `selectDefaultAdventureId` (`src/utils/adventure.ts`).
-- Struktur: `src/app` (Routing, Theme-Abweichung des Player Screens), `src/realtime` (WebSocket-Client:
+- Struktur: `src/app` (Routing, Theme-Abweichung von Charakterauswahl und Player Screen), `src/realtime` (WebSocket-Client:
   `GameTableProvider`, `useGameTable`, Verbindung mit Reconnect `connection.ts`, `messages.ts`, `backoff.ts`,
   `heartbeat.ts`, `visibility.ts`),
   `src/screens` (Screens), `src/components`, `src/service` (Datenladen und Schreibzugriffe je Screen),
@@ -496,8 +503,8 @@ per Build-Argument. Eine andere URL erfordert einen neuen Build.
 8000 erlaubt die API per CORS weiterhin die Origins aus `CORS_ORIGINS` (`backend/.env`, JSON-Liste; Default
 `["http://localhost:5173","http://localhost:8080"]`), nur `GET` und `PATCH` (Preflight für JSON-Body), ohne
 Credentials. `POST` ist per CORS nicht freigegeben: Die Soundeffekte (`POST /table/sounds`)
-funktionieren über den Proxy (gleicher Origin), bei direktem Zugriff aus einem anderen Origin scheitert der Preflight. Der WebSocket prüft den Origin selbst (siehe [WebSocket `/ws`](#websocket-ws)). Der Player Screen ruft die
-REST-API nicht auf, er nutzt nur den WebSocket.
+funktionieren über den Proxy (gleicher Origin), bei direktem Zugriff aus einem anderen Origin scheitert der Preflight. Der WebSocket prüft den Origin selbst (siehe [WebSocket `/ws`](#websocket-ws)). Charakterauswahl und Player
+Screen rufen per REST nur `GET /adventures/{id}` auf (über den Proxy, gleicher Origin).
 
 ### Am Spieltisch (Production)
 
@@ -513,8 +520,9 @@ oben: `backend/.env`.
 | `docker compose -f compose.prod.yaml down` | stoppen; mit `-v` auch DB-Volume löschen (DB-Reset) |
 
 UI unter http://localhost:8080/admin, `/wall` und `/ground`; Wall und Ground können auch in anderen Browsern oder auf
-anderen Geräten laufen (`http://<IP des Rechners>:8080/wall`). Smartphones öffnen den Player Screen über
-`http://<IP des Rechners>:8080/` (gleicher Build, kein Sonder-Build): am einfachsten per QR-Code im Admin (Dashboard,
+anderen Geräten laufen (`http://<IP des Rechners>:8080/wall`). Smartphones öffnen die Charakterauswahl über
+`http://<IP des Rechners>:8080/` (gleicher Build, kein Sonder-Build) und von dort den Player Screen ihres Charakters
+(`/player/<id>`): am einfachsten per QR-Code im Admin (Dashboard,
 Panel „Spieltisch“, Icon-Button „QR-Code“) oder über die URL, die `dnd prod` ausgibt. Der Dialog nimmt `player_url` aus `GET /table/join`;
 ist sie `null` (Stack ohne Skript gestartet), nimmt er den Origin des Admins, sofern dieser nicht über `localhost`,
 `127.0.0.1` oder `[::1]` geöffnet ist (`selectPlayerUrl`, `src/utils/playerUrl.ts`), sonst zeigt er den Hinweis

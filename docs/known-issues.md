@@ -4,7 +4,8 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 
 ## Lücken gegenüber der Vision
 
-- Player-Ressourcen sind nur lokal, nicht persistiert und nicht pro Charakter konfigurierbar.
+- Player-Ressourcen sind nur lokal, nicht persistiert und nicht pro Charakter konfigurierbar (seit DND-46 hat
+  jeder Charakter einen eigenen Player Screen unter `/player/:id`, die Ressourcen sind dort aber für alle gleich).
 - Keine NPC-, Charakter- oder Kampfdaten im Datenmodell – nur Markdown-Notizen.
 - Einen Kampf kann der Spielleiter noch nicht starten: Seit DND-29 sind alle Szenen gleich, der Menüpunkt „Kampf“
   im Admin (und was Wall und Ground bei einem Kampf zeigen) folgt in einem eigenen Task.

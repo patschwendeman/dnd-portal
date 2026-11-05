@@ -65,13 +65,19 @@ Im Container liegt `node_modules` in einem eigenen Volume; nach Änderungen an `
 | `/admin` | Admin | `src/screens/AdminScreen.tsx` |
 | `/wall` | Wall | `src/screens/WallScreen.tsx` |
 | `/ground` | Ground | `src/screens/GroundScreen.tsx` |
-| `/` | Player | `src/screens/PlayerScreen.tsx` |
+| `/` | Player: Charakterauswahl (Ziel des QR-Codes) | `src/screens/PlayerSelectScreen.tsx` |
+| `/player/:id` | Player Screen des Charakters | `src/screens/PlayerScreen.tsx` |
+
+Beide Player-Routen liegen unter der Layout-Route `PlayerRoute` (`App.tsx`) mit einem gemeinsamen
+`GameTableProvider` und `PlayerLayout` (`src/screens/PlayerLayout.tsx`: lädt das aktive Abenteuer, Hintergrundbild,
+Hinweis nach Abenteuerwechsel; per `useOutletContext` als `usePlayerOutlet()`).
 
 ## Struktur & Datenfluss
 
 ```
-src/app/App.tsx      Routing; alle vier Screens je im GameTableProvider; Theme-Abweichung des Player Screens
-                     (localStorage playerThemeOverride, Prop themeOverride), entfernt den Altschlüssel isDarkTheme
+src/app/App.tsx      Routing; alle vier Screens je im GameTableProvider (Auswahl und Player Screen teilen sich
+                     einen); Theme-Abweichung der Player-Routen (localStorage playerThemeOverride, Prop
+                     themeOverride), entfernt den Altschlüssel isDarkTheme
 src/realtime/        WebSocket-Client des Spieltischs: GameTableProvider (ThemeProvider + Contexts aus dem Snapshot,
                      optional themeOverride),
                      useGameTable(screen) → { state, audio, isAudioOutput, screens, fight, connected, reconnectNow, requestAudioOutput,
@@ -90,17 +96,20 @@ src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Pan
                      useAudioPlayback.ts (bindet den AudioPlayer im Admin an den GameAudioContext),
                      useAutoAudioOutput.ts (erste Interaktion ohne Ausgabe meldet audio_ready), audioOutput.ts
                      (shouldRequestAudioOutput)
-src/screens/         Screens
-src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin: Abenteuername, mit ErrorBar), JoinDialog, ThemeMenu,
+src/screens/         Screens; PlayerLayout (gemeinsame Layout-Route von PlayerSelectScreen und PlayerScreen)
+src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin: Abenteuername, mit ErrorBar), JoinDialog, SettingsMenu
+                     (Settings-Menü der Player-Routen: Theme, optional „Charakter wechseln“),
                      SelectList (Auswahlliste) mit AdventureSelect, SettingsPanel (Panel „Einstellungen“: Abenteuer,
                      Theme, Zellgröße), NavRail (Navigationsleiste im Admin, Menüpunkte oben bzw. unten),
                      SideBarLeftElement (Eintrag im Panel, Button), DocumentNavigation (Notizen-Einträge im Panel),
                      SceneNavigation (Szenenliste im Panel), DocumentReader (Notizen des gewählten Eintrags),
-                     AdventureBackground (Hintergrundbild des Abenteuers hinter den Kacheln im Admin),
+                     AdventureBackground (Hintergrundbild des Abenteuers hinter den Kacheln im Admin und den
+                     Karten der Player-Routen),
                      Dashboard (Spalte rechts im Admin) mit DashboardPanel (Rahmen), ActiveScenePanel (Bühne),
                      AudioPanel (MusicControl, SoundBoard), GameTablePanel (Spieltisch), PlayersPanel mit
-                     PlayerListItem (Spielerzeile) und LevelStepper (Level im Kopf der Party), ListRow (Zeilen-Bausteine
-                     von Party und Initiative), CombatantAvatar (Avatar von Spielern und NPCs), FightPanel (Panel
+                     PlayerListItem (Spielerzeile, Inhalt PlayerRowContent, auch in der Charakterauswahl) und
+                     LevelStepper (Level im Kopf der Party), ListRow (Zeilen-Bausteine von Party, Initiative und
+                     Charakterauswahl), CombatantAvatar (Avatar von Spielern und NPCs), FightPanel (Panel
                      „Kampf“), TurnPanel (Dashboard „Am Zug“) mit HeroCard (Hero-Karte), InitiativePanel (Dashboard
                      „Initiative“), MiniButton (↑/↓/Entfernen im Panel „Kampf“), ConfirmDialog („Kampf beenden?“),
                      PanelButton (Icon-Button in Panels), WallParty (Party-Kacheln links und rechts auf der Wall),
@@ -111,7 +120,7 @@ src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin: Abenteuernam
                      ResourceBarPlayer …)
 src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
                      getJoinInfo, saveActiveScene, saveGlobalLevel, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
-                     getWallPlayers, getGroundScreenData …); gameTable.ts: saveWallOverlay, saveGroundGrid,
+                     getWallPlayers, getGroundScreenData, getPlayerAdventure …); gameTable.ts: saveWallOverlay, saveGroundGrid,
                      saveGroundGridCellSize (nur vom Admin genutzt); fight.ts: startFight, endFight, endTurn,
                      addCombatant, saveDefeated, removeCombatant, saveFightOrder (nur vom Admin genutzt)
 src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData/patchData/postData/putData/deleteData
@@ -123,10 +132,10 @@ src/utils/utils.ts   Musiktitel (getMusicTitle), filterSceneByKey
 src/utils/groundGrid.ts GROUND_GRID_CELL_SIZE (100–200, Schritt 10), gridLineColor, toCellSize (Slider-Wert → Zellgröße)
 src/utils/navRail.ts nextOpenPanel (welches Panel neben der Navigationsleiste offen ist), splitByPlacement
                      (Menüpunkte oben und am unteren Ende der Leiste)
-src/utils/useListbox.ts Logik der Auswahllisten (SelectList, ThemeMenu): Öffnen, Tastatur, Fokus; listbox.ts dazu
+src/utils/useListbox.ts Logik der Auswahllisten (SelectList, SettingsMenu): Öffnen, Tastatur, Fokus; listbox.ts dazu
 src/utils/adventureBackground.ts adventureBackgroundSource (Bild des Abenteuers zum Theme), adventureBackgroundReducer
                      (Bild hinter den Kacheln: geladen, Überblendung, Rückfall), useAdventureBackground.ts (Hook dazu
-                     im Admin, BACKGROUND_FADE_MS)
+                     im Admin und in PlayerLayout, BACKGROUND_FADE_MS)
 src/utils/fight.ts   Logik des Kampfes: Vorbereitung (initialPreparation, preparedPlayer/preparedNpc,
                      toCombatantCreate), smallestFreeNumber, numberError, moveItem, missingPlayers, Namen und Details
                      der Teilnehmer, nextOnTurn („Als Nächstes“), countByKind; useFightPreparation.ts (Vorbereitung
@@ -138,6 +147,8 @@ src/utils/wallInitiative.ts Initiative-Leiste der Wall: initiativeQueue (Wartesc
 src/utils/adminError.ts mostImportantError (welcher Fehler in der Kopfzeile des Admins steht)
 src/utils/adventure.ts selectDefaultAdventureId (aktives Abenteuer, falls vorhanden, sonst das erste der Liste)
 src/utils/playerTheme.ts Theme-Abweichung des Players lesen/schreiben, effectiveTheme, Altschlüssel verwerfen
+src/utils/playerSelect.ts playerSelectStatus (Zustand der Karte „Party“ der Auswahl), parsePlayerId,
+                     isPlayerOf, playerRedirect (Rückkehr des Player Screens zur Auswahl, mit oder ohne Hinweis)
 src/utils/player.ts  characterInitials (Initialen ohne Avatar), steppedLevel (Level −/+ in den Grenzen 1–20)
 src/utils/screenStatus.ts Statustexte des Panels „Spieltisch“ aus der Anzahl (screenStatusText, playerStatusText)
 src/utils/useDocumentFullscreen.ts Vollbild des eigenen Fensters (Admin: Kopfzeile; Wall und Ground:
@@ -145,8 +156,8 @@ src/utils/useDocumentFullscreen.ts Vollbild des eigenen Fensters (Admin: Kopfzei
 src/utils/playerUrl.ts selectPlayerUrl (URL der API, sonst Origin des Admins, nicht bei localhost/127.0.0.1/[::1])
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }), appTheme(theme),
                      styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden;
-                     CSS-Helper hoverScrollbar und tileSurface für die Kacheln im Admin und die Panels und Overlays
-                     auf Wall und Ground, Schalter $isTranslucent)
+                     CSS-Helper hoverScrollbar und tileSurface für die Kacheln im Admin, die Panels und Overlays
+                     auf Wall und Ground und die Karten der Player-Routen, Schalter $isTranslucent)
 public/assets/       sounds (Soundeffekte, im Admin abgespielt), icons; dazu das fest eingebundene Medium
                      images/ground_screen/mapOverview.jpg (Weltkarte) – Szenenmedien und Standardmusik liegen in ../media
 public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mechanics), deutsch
@@ -159,8 +170,10 @@ Contexts aus jedem Snapshot. Szenen-, Abenteuer-, Theme-, Overlay- und Raster-We
 haben keine Bedienelemente außer dem lokalen Vollbild-Overlay) per REST (`PATCH adventures/{id}`
 bzw. `PATCH table`) **ohne lokale Vorwegnahme**; der Server pusht danach den neuen Stand an alle Screens, die die Szene
 per `scenes/{id}` neu laden (ohne aktive Szene kein Request, nur Hintergrund). Nur der Admin zeigt Speicher- und
-Verbindungsfehler. Der Player nutzt vom Snapshot nur das Theme (`Abweichung ?? Spieltisch-Theme`), sendet nichts und
-zeigt keinen Verbindungsstatus. Der QR-Code-Dialog im Admin (`JoinDialog`, geöffnet aus dem Panel „Spieltisch“) lädt beim Öffnen `table/join`. Nur an
+Verbindungsfehler. Auswahl und Player Screen nutzen vom Snapshot das aktive Abenteuer und das Theme (`Abweichung ??
+Spieltisch-Theme`) und senden nichts; `PlayerLayout` lädt `adventures/{id}` beim Laden und bei jedem
+Abenteuerwechsel (Spieler, Hintergrundbilder). Nur die Auswahl zeigt „Keine Verbindung zum Spieltisch“; der Player
+Screen kehrt zur Auswahl zurück, sobald sein Charakter nicht zum aktiven Abenteuer gehört (`playerRedirect`). Der QR-Code-Dialog im Admin (`JoinDialog`, geöffnet aus dem Panel „Spieltisch“) lädt beim Öffnen `table/join`. Nur an
 Admins schickt der Server die Zahl der verbundenen Wall-, Ground- und Player-Verbindungen (`screens`); den Kampf
 des aktiven Abenteuers (`fight`, `FightContext`) an Admins und Walls (an Walls ohne die Bezeichnungen der NPCs). Den Kampf schreibt der Admin per REST unter `table/fight` ohne
 lokale Vorwegnahme; nur die Vorbereitung vor „Kampf starten“ ist lokal. Während eines Kampfes sind Szenenliste und
@@ -202,7 +215,7 @@ nichts. Details: `../docs/architecture.md#audio`.
   `props.theme.layer.dialog` …), feste px-Werte nur als benannte Layout-Konstante (siehe [DESIGN.md](DESIGN.md)).
   Das Theme ist typisiert (`src/style/styled.d.ts`), `tsc` prüft Zugriffe.
 - `GlobalStyle` (box-sizing, margin, Body-Schrift) wird nicht in `App.tsx`, sondern im Screen gerendert – in allen
-  vier Screens (`AdminScreen`, `WallScreen`, `GroundScreen`, `PlayerScreen`).
+  Screens (`AdminScreen`, `WallScreen`, `GroundScreen`, `PlayerSelectScreen`, `PlayerScreen`).
 - Icons als SVG über `react-svg` (Füllfarbe aus dem Theme), Pfade ab `/assets/...`.
 - API-Typen nicht von Hand pflegen: `src/api/schema.d.ts` wird aus `../backend/openapi.json` generiert
   (`npm run generate:api`, nicht editieren, von ESLint ausgenommen); `src/models/models.ts` leitet die Typen davon ab.

@@ -22,7 +22,7 @@ Größe nach [1.2](../../DESIGN.md#12-tokens) Größen, Icon nach [1.4](../../DE
 | Farbe | Hintergrund in der [Kopfzeile](#kopfzeile) und der Hinweisleiste transparent, sonst nach [2.2](../../DESIGN.md#22-rollen) und [2.4](../../DESIGN.md#24-zustände) |
 | Dashboard-Panels | gemeinsame Styled Component `PanelButton` ([src/components/PanelButton.tsx](../../src/components/PanelButton.tsx)): Fläche `background`, Fokus als Outline `borderWidth.thick` in `primary` (`:focus-visible`); „In neuem Fenster öffnen“, „QR-Code“ und „−“/„+“ im [Level-Stepper](#level-stepper) (dort Zeichen statt Icon, `text.lg` `semibold`; deaktiviert Zeichen in `text.muted`, `cursor: default`); die Sound-Buttons haben keine eigene Fläche, die Fläche ist ihre Gruppe |
 | Beispiele | Sound-Buttons, Dashboard (Kopfzeile, aktiv bei offenem Dashboard wie der Menüpunkt der [Navigationsleiste](#navigationsleiste); `aria-expanded`, `aria-controls`), Vollbild (Kopfzeile, aktiv im Vollbild; `aria-pressed`), In neuem Fenster öffnen, QR-Code, Play/Pause, Nach oben, Menüpunkte der [Navigationsleiste](#navigationsleiste) (dort abweichend inaktiv ohne eigene Fläche und Icon `size.iconLg`; der allgemeine Icon-Button bleibt gefüllt) |
-| Player | Hintergrund `secondary` (Settings-Button des Theme-Menüs) |
+| Player | Settings-Button des [Settings-Menüs](#settings-menü): Fläche, Rand und Lichtkante wie die [Kachel](#kachel) (mit Hintergrundbild durchscheinend), `radius.md` |
 
 ## Text-Button
 
@@ -91,7 +91,7 @@ und Laufweite nach [1.4](../../DESIGN.md#14-regeln).
 | Eigenschaft | Wert |
 |---|---|
 | Aufbau | optional Label, optional Titel, Inhalt. Zeilen getrennt durch Trennlinien ([1.4](../../DESIGN.md#14-regeln) Rahmen). |
-| Beispiele | Ressourcen (Player) |
+| Beispiele | Ressourcen, „Party“ der Charakterauswahl, Hinweis nach Abenteuerwechsel (Player); Fläche wie die [Kachel](#kachel) |
 
 ## Kachel
 
@@ -101,7 +101,9 @@ mit dem Schalter `$isTranslucent`, den der `AdminScreen` setzt, solange das Hint
 `isTranslucent` an `NavRail`, `AdminHeader`, `DocumentReader` und `DashboardPanel`). Auf Wall und Ground haben alle
 Panels und Overlays dieselbe Fläche, immer durchscheinend: [Overlay-Panel](#overlay-panel), Fläche im
 [Vollbild-Overlay](#vollbild-overlay), [Wall-Kachel](#wall-kachel) (Party, Initiative) und die Kacheln „Runde N“ und
-„+N weitere“ der [Initiative-Leiste](#initiative-leiste).
+„+N weitere“ der [Initiative-Leiste](#initiative-leiste). Im Player haben die Karten (Party, Hinweis, Ressourcen) und
+der Settings-Button dieselbe Fläche; durchscheinend, solange das Hintergrundbild zu sehen ist (`PlayerLayout` gibt
+`isTranslucent` per Outlet-Context weiter).
 
 | Eigenschaft | Wert |
 |---|---|
@@ -115,10 +117,11 @@ Panels und Overlays dieselbe Fläche, immer durchscheinend: [Overlay-Panel](#ove
 
 ## Abenteuer-Hintergrund
 
-Nur im Admin, Komponente `AdventureBackground` ([src/components/AdventureBackground.tsx](../../src/components/AdventureBackground.tsx)),
+Im Admin und im Player (Charakterauswahl und Player Screen, gerendert von `PlayerLayout` zum wirksamen Theme des
+Geräts), Komponente `AdventureBackground` ([src/components/AdventureBackground.tsx](../../src/components/AdventureBackground.tsx)),
 Zustand aus `useAdventureBackground` ([src/utils/useAdventureBackground.ts](../../src/utils/useAdventureBackground.ts), Logik in
-[src/utils/adventureBackground.ts](../../src/utils/adventureBackground.ts)). Im JSX vor dem Grid des Admins; beide sind
-`position: fixed`, die Reihenfolge legt die Ebenen fest (kein `z-index`).
+[src/utils/adventureBackground.ts](../../src/utils/adventureBackground.ts)). Im JSX vor dem Grid des Admins bzw. vor dem
+Inhalt der Player-Routen; beide sind `position: fixed`, die Reihenfolge legt die Ebenen fest (kein `z-index`).
 
 | Eigenschaft | Wert |
 |---|---|
@@ -192,7 +195,8 @@ Eine Zeile je Screen: Wall, Ground, Spieler.
 
 ## Spielerzeile
 
-Nur im Panel „Party“, Komponente `PlayerListItem` ([src/components/PlayerListItem.tsx](../../src/components/PlayerListItem.tsx);
+Nur im Panel „Party“, Komponente `PlayerListItem` ([src/components/PlayerListItem.tsx](../../src/components/PlayerListItem.tsx),
+Avatar und Text als `PlayerRowContent`, auch in der [Charakterzeile](#charakterzeile);
 Zeile, Name und Details als gemeinsame Styled Components `ListRow`, `RowInfo`, `RowName`, `RowDetails`, `RowList` in
 [ListRow.tsx](../../src/components/ListRow.tsx), auch für die [Initiative-Zeile](#initiative-zeile))
 nach dem Mockup [player-card-compact.html](mockup/player-card-compact.html), ohne Level-Chip (das Level steht einmal im
@@ -404,7 +408,7 @@ zeichnet. Komponente `SelectList` ([src/components/SelectList.tsx](../../src/com
 `options`, `value`, `onChange`, `label`, `isLocked`/`lockedTitle`, `isDisabled`); Abenteuer-Auswahl `AdventureSelect`
 und Theme-Auswahl im [Panel „Einstellungen“](#panel-einstellungen). Die Logik der Liste (Öffnen, Tastatur, Fokus,
 Schließen bei Klick außerhalb) steckt im Hook `useListbox` (`src/utils/useListbox.ts`), den auch das
-[Theme-Menü](#theme-menü) nutzt.
+[Settings-Menü](#settings-menü) nutzt.
 
 | Eigenschaft | Wert |
 |---|---|
@@ -414,17 +418,39 @@ Schließen bei Klick außerhalb) steckt im Hook `useListbox` (`src/utils/useList
 | Eintrag | Höhe, Innenabstand und Schrift wie beim [Navigationseintrag](#navigationseintrag) (`text.sm` `medium`, `radius.md`, einzeilig mit Ellipse, voller Name als `title`), Fläche nicht gewählter Einträge aber wie die Liste. Gewählt: Fläche `primary`, Text `onPrimary`. Hover und Fokus: Fläche `background`. Gewählt mit Tastatur-Fokus (`:focus-visible`): bleibt `primary`, dazu Outline `borderWidth.thick` in `onPrimary`, nach innen versetzt (`outline-offset` −`borderWidth.thick`), damit die scrollende Liste sie nicht abschneidet. Nicht gewählt mit Tastatur-Fokus: Fläche `background`, dazu dieselbe innere Outline in `primary`. Hover und Maus ohne Outline. `role="option"`, `aria-selected` |
 | Bedienung | Klick auf den Button öffnet und schließt. Am Button öffnen Enter, Leertaste und Pfeil runter/hoch, der Fokus steht dann auf dem gewählten Eintrag. In der Liste bewegen Pfeile (ohne Umlauf) und Pos1/Ende; Enter/Leertaste wählen und schließen; Esc schließt und setzt den Fokus zurück auf den Button; Tab und Klick außerhalb schließen. Den gewählten Eintrag erneut zu wählen schließt nur |
 
-## Theme-Menü
+## Settings-Menü
 
-Nur im Player, Komponente `ThemeMenu` ([src/components/ThemeMenu.tsx](../../src/components/ThemeMenu.tsx)). Aufbau und
-Bedienung wie die [Auswahlliste](#auswahlliste), mit diesen Abweichungen:
+Nur im Player (Charakterauswahl und Player Screen), Komponente `SettingsMenu`
+([src/components/SettingsMenu.tsx](../../src/components/SettingsMenu.tsx), Props `themeOverride`,
+`onChangeThemeOverride`, optional `onSwitchCharacter`, `placement`, `isTranslucent`). Aufbau und Bedienung wie die
+[Auswahlliste](#auswahlliste), mit diesen Abweichungen:
 
 | Eigenschaft | Wert |
 |---|---|
-| Button | Icon-Button mit Settings-Icon (Player: `size.control.lg`, Fläche `secondary`); zugänglicher Name „Darstellung“ |
-| Liste | ohne Höhenbegrenzung und ohne `z-index` (siehe [1.2](../../DESIGN.md#12-tokens) Ebenen) |
-| Einträge | „Wie Spieltisch“, „Dunkel“, „Taverne“; Höhe `size.control.lg` (Touch-Ziel), Innenabstand `0 space.4` |
+| Button | Icon-Button mit Settings-Icon, `size.control.lg`, Fläche nach [Icon-Button](#icon-button) (Player); zugänglicher Name „Einstellungen“, `aria-haspopup="menu"` |
+| Liste | `role="menu"`, deckend `secondary`, ohne Höhenbegrenzung, Ebene `layer.popover` (siehe [1.2](../../DESIGN.md#12-tokens) Ebenen); Player Screen links am Button (`placement` `start`), Charakterauswahl rechts (`end`) |
+| Einträge | „Wie Spieltisch“, „Dunkel“, „Taverne“ (`menuitemradio`, `aria-checked`); Höhe `size.control.lg` (Touch-Ziel), Innenabstand `0 space.4`. Nur im Player Screen danach eine Trennlinie (`borderWidth.thin` in `border`, seitlich `space.2` eingerückt) und „Charakter wechseln“ (`menuitem`, Wechsel-Icon `swap.svg` in `size.icon`, `gap` `space.3`), per Tastatur erreichbar wie die anderen |
 | Bedienung | zusätzlich schließt Tippen außerhalb (`pointerdown`) |
+
+## Charakterzeile
+
+Nur in der Charakterauswahl (`PlayerSelectScreen`): ein `<button>` je Charakter in einem `<li>`, aufgebaut aus
+`ListRow` und dem Inhalt der [Spielerzeile](#spielerzeile) (`PlayerRowContent`), rechts ein Pfeil
+(`chevronRight.svg`, `size.icon`, `text.muted`). Mindesthöhe `size.control.lg`; Fokus als Outline
+`borderWidth.thick` in `primary` mit `outline-offset` `borderWidth.thick`. Liste als Grid
+`repeat(auto-fill, minmax(min(100%, CHARACTER_COLUMN_MIN_WIDTH), 1fr))` mit `gap` `space.2`: im Hochformat eine
+Spalte, im Querformat mehrere.
+
+## Zustand der Karte „Party“
+
+Nur in der Charakterauswahl: Statt der Liste steht in der Karte (Label nur „Party“) beim Laden drei Platzhalter-Zeilen
+(Fläche wie die Zeile, Blöcke in `secondary`, pulsierend, ohne Animation bei „Bewegung reduzieren“), sonst mittig
+untereinander mit `gap` `space.3`: Icon (`STATE_ICON_SIZE`, `text.color`), Titel (`text.lg` `semibold`), Text
+(`text.sm`, höchstens `STATE_TEXT_MAX_WIDTH` breit) und bei „Keine Verbindung zum Spieltisch“ der
+[Text-Button](#text-button) „Erneut versuchen“ (Variante `cancel`, Höhe `size.control.lg`, mit `reload.svg`).
+Icons: `hourglass.svg` (kein Abenteuer), `people.svg` (keine Charaktere), `wifiOff.svg` (keine Verbindung). Der
+Hinweis nach Abenteuerwechsel steht als eigene [Karte](#karte) über der Party: Rand `primary`, `info.svg` in
+`primary`, Text `text.sm` `medium`, Innenabstand `space.3 space.4`, `role="status"`.
 
 ## Panel „Einstellungen“
 

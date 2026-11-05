@@ -3,8 +3,10 @@ import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
 
 import settingsIcon from '/assets/icons/settings.svg'
+import swapIcon from '/assets/icons/swap.svg'
 
 import { Theme } from '../models/models'
+import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 import useListbox from '../utils/useListbox'
 
@@ -20,19 +22,21 @@ const OPTIONS: ThemeOption[] = [
   { value: 'tavern', label: 'Taverne' },
 ]
 
+type MenuPlacement = 'start' | 'end'
+
 const Wrapper = styled.div`
   position: relative;
+  flex: none;
   align-self: flex-start;
 `
 
-const Trigger = styled.button`
+const Trigger = styled.button<TileSurfaceProps>`
   width: ${(props) => props.theme.size.control.lg};
   height: ${(props) => props.theme.size.control.lg};
   padding: 0;
   display: grid;
   place-items: center;
-  background-color: ${(props) => props.theme.colors.secondary};
-  border: none;
+  ${tileSurface}
   border-radius: ${(props) => props.theme.radius.md};
   cursor: pointer;
   div {
@@ -52,12 +56,14 @@ const Trigger = styled.button`
   }
 `
 
-// Positioned without z-index: it lies above the unpositioned resources, the overlay "Handy drehen"
-// comes later in the JSX and still covers it.
-const List = styled.div`
+// Above all other elements, also above the translucent cards (their blur makes each of them a
+// stacking context of its own); only the overlay "Handy drehen" lies above it. Opaque, like the
+// lists in the Admin.
+const List = styled.div<{ $placement: MenuPlacement }>`
   position: absolute;
   top: calc(100% + ${(props) => props.theme.space[1]});
-  left: 0;
+  ${(props) => (props.$placement === 'start' ? 'left' : 'right')}: 0;
+  z-index: ${(props) => props.theme.layer.popover};
   display: flex;
   flex-direction: column;
   gap: ${(props) => props.theme.space[1]};
@@ -68,9 +74,16 @@ const List = styled.div`
   border-radius: ${(props) => props.theme.radius.lg};
 `
 
+const Separator = styled.div`
+  height: ${(props) => props.theme.borderWidth.thin};
+  margin: 0 ${(props) => props.theme.space[2]};
+  background-color: ${(props) => props.theme.colors.border};
+`
+
 const Option = styled.div<{ $isSelected: boolean }>`
   display: flex;
   align-items: center;
+  gap: ${(props) => props.theme.space[3]};
   height: ${(props) => props.theme.size.control.lg};
   padding: 0 ${(props) => props.theme.space[4]};
   ${textStyle('sm')}
@@ -99,24 +112,48 @@ const Option = styled.div<{ $isSelected: boolean }>`
       ${(props) => (props.$isSelected ? props.theme.colors.onPrimary : props.theme.colors.primary)};
     outline-offset: -${(props) => props.theme.borderWidth.thick};
   }
+
+  div {
+    display: grid;
+    place-items: center;
+  }
+  svg {
+    width: ${(props) => props.theme.size.icon};
+    height: ${(props) => props.theme.size.icon};
+  }
 `
 
-interface ThemeMenuProps {
+interface SettingsMenuProps {
   themeOverride: Theme | null
   onChangeThemeOverride: (override: Theme | null) => void
+  // Adds the entry "Charakter wechseln" after the themes
+  onSwitchCharacter?: (() => void) | null
+  // Side of the button the list is aligned to
+  placement?: MenuPlacement
+  isTranslucent?: boolean
 }
 
-function ThemeMenu({ themeOverride, onChangeThemeOverride }: ThemeMenuProps): ReactElement {
+// Settings of this device: the theme and, on the Player Screen, the way back to the selection
+function SettingsMenu({
+  themeOverride,
+  onChangeThemeOverride,
+  onSwitchCharacter = null,
+  placement = 'start',
+  isTranslucent = false,
+}: SettingsMenuProps): ReactElement {
   const theme = useTheme()
   const selectedIndex = OPTIONS.findIndex((option) => option.value === themeOverride)
+  const switchIndex = onSwitchCharacter === null ? null : OPTIONS.length
   const {
     isOpen, close, open, wrapperRef, triggerRef, optionElement, focusOption, choose,
     handleTriggerKeyDown, handleListKeyDown,
   } = useListbox({
-    count: OPTIONS.length,
+    count: OPTIONS.length + (switchIndex === null ? 0 : 1),
     selectedIndex,
     onChoose: (index) => {
-      if (OPTIONS[index].value !== themeOverride) {
+      if (index === switchIndex) {
+        onSwitchCharacter?.()
+      } else if (OPTIONS[index].value !== themeOverride) {
         onChangeThemeOverride(OPTIONS[index].value)
       }
     },
@@ -129,13 +166,14 @@ function ThemeMenu({ themeOverride, onChangeThemeOverride }: ThemeMenuProps): Re
       <Trigger
         ref={triggerRef}
         type="button"
-        data-test-id="theme-menu"
-        aria-label="Darstellung"
-        title="Darstellung"
-        aria-haspopup="listbox"
+        data-test-id="settings-menu"
+        aria-label="Einstellungen"
+        title="Einstellungen"
+        aria-haspopup="menu"
         aria-expanded={isOpen}
         onClick={() => (isOpen ? close() : open())}
         onKeyDown={handleTriggerKeyDown}
+        $isTranslucent={isTranslucent}
       >
         <ReactSVG
           src={settingsIcon}
@@ -145,14 +183,19 @@ function ThemeMenu({ themeOverride, onChangeThemeOverride }: ThemeMenuProps): Re
         />
       </Trigger>
       {isOpen && (
-        <List role="listbox" aria-label="Darstellung" onKeyDown={handleListKeyDown}>
+        <List
+          role="menu"
+          aria-label="Einstellungen"
+          onKeyDown={handleListKeyDown}
+          $placement={placement}
+        >
           {OPTIONS.map((option, index) => (
             <Option
               key={option.label}
               ref={optionElement(index)}
-              role="option"
+              role="menuitemradio"
               tabIndex={-1}
-              aria-selected={index === selectedIndex}
+              aria-checked={index === selectedIndex}
               data-test-id={`theme-option-${option.value ?? 'table'}`}
               $isSelected={index === selectedIndex}
               onClick={() => choose(index)}
@@ -161,10 +204,32 @@ function ThemeMenu({ themeOverride, onChangeThemeOverride }: ThemeMenuProps): Re
               {option.label}
             </Option>
           ))}
+          {switchIndex !== null && (
+            <>
+              <Separator role="separator" />
+              <Option
+                ref={optionElement(switchIndex)}
+                role="menuitem"
+                tabIndex={-1}
+                data-test-id="switch-character"
+                $isSelected={false}
+                onClick={() => choose(switchIndex)}
+                onFocus={() => focusOption(switchIndex)}
+              >
+                <ReactSVG
+                  src={swapIcon}
+                  beforeInjection={(svg) => {
+                    svg.setAttribute('style', `fill: ${theme.colors.text.color}`)
+                  }}
+                />
+                Charakter wechseln
+              </Option>
+            </>
+          )}
         </List>
       )}
     </Wrapper>
   )
 }
 
-export default ThemeMenu
+export default SettingsMenu

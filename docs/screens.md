@@ -5,11 +5,12 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 | Screen | Route | Gerät | Komponente |
 |---|---|---|---|
 | Admin | `/admin` | Rechner des Spielleiters | `src/screens/AdminScreen.tsx` |
-| Player | `/` | Smartphone je Spieler | `src/screens/PlayerScreen.tsx` |
+| Player (Charakterauswahl) | `/` | Smartphone je Spieler | `src/screens/PlayerSelectScreen.tsx` |
+| Player | `/player/:id` | Smartphone je Spieler | `src/screens/PlayerScreen.tsx` |
 | Wall | `/wall` | Monitor (vertikal/Wand) | `src/screens/WallScreen.tsx` |
 | Ground | `/ground` | Monitor liegend auf dem Tisch | `src/screens/GroundScreen.tsx` |
 
-(Pfade relativ zu `frontend/`.)
+(Pfade relativ zu `frontend/`; beide Player-Routen teilen sich `src/screens/PlayerLayout.tsx`.)
 
 ---
 
@@ -239,17 +240,44 @@ Nach dem Refresh (neue Runde) wird die Ressource durch erneutes Antippen wieder 
 Zähler 0, Icon deaktiviert → nächste Runde: erneut tippen → wieder aktiv.
 
 ### Ist
+**Charakterauswahl (`/`):** Ziel des QR-Codes im Admin. Kein Zugang zu Admin, Wall oder Ground; diese Screens sind nur
+über ihre direkten URLs erreichbar.
+- Kopf: Name des aktiven Abenteuers, darunter „Charakter wählen“, rechts der Settings-Button.
+- Karte „Party · N“ mit je einer Zeile pro Charakter des aktiven Abenteuers in der Reihenfolge der API (Avatar bzw.
+  Initialen, Charaktername, „Volk · Klasse · Spielername“, Pfeil). Ein Tipp öffnet `/player/<id>`. Mehrere Geräte
+  dürfen denselben Charakter wählen; die Wahl wird nicht gemerkt, `/` zeigt immer die Auswahl.
+- Zustände in der Karte (Label nur „Party“): drei Platzhalter-Zeilen beim Laden; „Noch kein Abenteuer aktiv“;
+  „Noch keine Charaktere“; „Keine Verbindung zum Spieltisch“ mit „Erneut versuchen“ (verbindet sofort neu bzw. lädt
+  die Spieler neu), wenn die Verbindung vor dem ersten Spieltisch-Zustand getrennt ist oder das Laden der Spieler
+  fehlschlägt. Eine geladene Liste bleibt bei einem Verbindungsabbruch stehen.
+- Die Spieler lädt sie per `adventures/{id}` beim Laden und bei jedem Wechsel des aktiven Abenteuers; ein Wechsel
+  zeigt ohne Reload die Charaktere des neuen Abenteuers.
+- Hochformat und Querformat (dort mehrspaltig); kein Hinweis „Bitte das Handy quer halten“; scrollt bei langer Liste.
+
+**Player Screen (`/player/:id`):**
 - **Aktion / Bonusaktion:** Antippen schaltet zwischen 1 und 0.
 - **Zauberplätze I–IV:** feste Maxima (I: 4, II: 3, III: 3, IV: 2); Antippen verringert um 1, bei 0 zurück auf das
   Maximum.
 - **Spezial:** 3 Plätze, Startwert 1; Verhalten wie Zauberplätze.
 - **Bewegung (WIP):** fester Wert 9.5, nicht interaktiv.
-- **Theme:** Der Player Screen ist per WebSocket mit dem Spieltisch verbunden und folgt dessen Theme ohne Reload
-  (Abenteuer, Szene und Musik zeigt er nicht an, einen Verbindungsstatus auch nicht). Der Settings-Button oben links
-  öffnet ein Menü „Wie Spieltisch“ (Standard), „Dunkel“, „Taverne“; die Wahl gilt nur auf diesem Gerät (auch nach einem
-  Reload) und bleibt bei Theme-Wechseln im Admin bestehen. Nach dem Entsperren des Smartphones verbindet er sich sofort
-  neu.
-- Layout: oben links der Settings-Button mit dem Theme-Menü, darunter eine Karte mit Aktion · Bonusaktion · Bewegung · Spezial und darunter
+- **Charakter:** Der Screen zeigt weder Namen noch Avatar des Charakters; die Ressourcen sind für alle Charaktere
+  gleich. Gehört der Charakter nicht mehr zum aktiven Abenteuer (Abenteuerwechsel, kein Abenteuer mehr aktiv), kehrt
+  das Gerät ohne Reload zur Auswahl zurück, die über der Karte den Hinweis „Der Spielleiter hat das Abenteuer
+  gewechselt. Wähle deinen Charakter neu.“ zeigt (weg nach der Wahl eines Charakters oder einem Reload). Eine
+  unbekannte ID, eine ID eines anderen Abenteuers oder eine ungültige ID führt ohne Hinweis zur Auswahl. Solange die
+  Spieler laden oder ihr Laden fehlschlägt, bleibt der Screen.
+- **Settings-Menü:** Der Settings-Button („Einstellungen“) oben links öffnet „Wie Spieltisch“ (Standard), „Dunkel“,
+  „Taverne“ und nach einer Trennlinie „Charakter wechseln“ (zurück zur Auswahl). Auf der Auswahl fehlt dieser Eintrag.
+  Die offene Liste liegt über allen anderen Elementen, nur der Hinweis „Bitte das Handy quer halten“ verdeckt sie.
+- **Theme:** Auswahl und Player Screen sind per WebSocket mit dem Spieltisch verbunden (beide als `player`) und folgen
+  dessen Theme ohne Reload (Szene und Musik zeigen sie nicht an). Die Theme-Wahl im Settings-Menü gilt nur auf diesem
+  Gerät (auch nach einem Reload) und bleibt bei Theme-Wechseln im Admin bestehen. Nach dem Entsperren des Smartphones
+  verbinden sie sich sofort neu.
+- **Hintergrund:** Hinter Auswahl und Player Screen liegt wie im Admin das Hintergrundbild des aktiven Abenteuers zum
+  wirksamen Theme des Geräts, abgedunkelt; Überblendung bei Wechsel von Abenteuer oder Theme. Solange das Bild zu
+  sehen ist, sind die Karten und der Settings-Button durchscheinend mit Unschärfe; ohne Bild (kein Abenteuer, keine
+  Verbindung, kein Bild zum Theme, Ladefehler) ist der Hintergrund einfarbig und die Flächen sind deckend.
+- Layout: oben links der Settings-Button, darunter eine Karte mit Aktion · Bonusaktion · Bewegung · Spezial und darunter
   „Zauberplätze“ mit I–IV. Die Ressourcen sind per Tastatur bedienbar (Bewegung nicht).
 - Im Hochformat verdeckt ein Hinweis „Bitte das Handy quer halten“ den Screen.
 - Ressourcen nur lokal: nicht gespeichert, nicht mit dem Admin synchronisiert, Reload setzt zurück; nicht pro Charakter

@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Player Mockup Charakterauswahl</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Charakterauswahl auf `/` (Ziel des QR-Codes) und Player Screen eines Charakters auf `/player/:id`.
+   - `/` zeigt nur die Charaktere des aktiven Abenteuers, keinen Zugang zu Admin, Wall oder Ground.
+   - Immer die Auswahl, keine Weiterleitung zum zuletzt gewählten Charakter; mehrere Handys dürfen denselben
+     Charakter wählen (kein „belegt“).
+   - Tippen auf einen Charakter öffnet `/player/:id`; im Settings-Menü des Player Screens steht als letzter Eintrag
+     (nach einer Trennlinie) „Charakter wechseln“, er führt zurück zur Auswahl. Das Menü liegt immer über allen
+     anderen Elementen.
+   - Wechselt der Spielleiter das Abenteuer, kehren Player Screens, deren Charakter nicht zum neuen gehört, zur Auswahl
+     zurück und zeigen dort einen Hinweis; die Liste aktualisiert sich live per WebSocket.
+   - Die Auswahl funktioniert im Hoch- und Querformat; „Bitte das Handy quer halten“ nur im Player Screen.
+   - Optik: Karte „Party“ mit Spielerzeilen wie im Admin (Fläche background auf secondary). Auswahl und Player
+     Screen liegen wie der Admin über dem Hintergrundbild des Abenteuers zum wirksamen Theme (Spieltisch-Theme bzw.
+     Abweichung des Geräts); Karten und Settings-Button sind dann durchscheinend (Glas-Kacheln wie in Admin, Wall und
+     Ground), ohne Bild deckend. Flächen in den Karten (Zeilen, Ressourcen-Buttons) und das Menü bleiben deckend.
+   Zustände über die Leiste links (nur im Mockup); Gerätrahmen, Notch und Leiste gehören nicht zur App. */
+
+/* ---------- Farbrollen je Theme (Werte aus darkTheme.ts / tavernTheme.ts) ---------- */
+.phone {
+  --bg: #0e1117; --sec: #161b23; --sec-t: #161b23bf; --pri: #4493F8; --border: #3d444db3;
+  --text: #f0f6fc; --muted: #f0f6fcb0; --initials: #4493F8; --onpri: #0e1117; --backdrop: rgba(0, 0, 0, .5);
+}
+.phone[data-theme="tavern"] {
+  --bg: #140701; --sec: #3D271C; --sec-t: #3D271Ceb; --pri: #C05E5E; --border: #956F01;
+  --text: #CBAB96; --muted: #CBAB96b0; --initials: #CBAB96; --onpri: #140701;
+}
+
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; }
+body {
+  display: grid; grid-template-columns: 300px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr);
+  background: #24272d; color: #e6e6e6; overflow: hidden;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px; line-height: 24px;
+}
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; text-align: inherit; }
+ul { list-style: none; padding: 0; }
+svg { display: block; flex: none; }
+
+/* ======================= App (im Handy) ======================= */
+.phone {
+  position: relative; width: 390px; height: 844px; border-radius: 40px; overflow: hidden;
+  background: var(--bg); color: var(--text);
+  /* simulierte Safe Areas (env(safe-area-inset-*)) */
+  --sat: 48px; --sab: 24px; --sal: 0px;
+}
+.device.land .phone { width: 844px; height: 390px; --sat: 0px; --sab: 16px; --sal: 48px; }
+.phone button:focus-visible { outline: 2px solid var(--pri); outline-offset: 2px; }
+
+.bgimg { position: absolute; inset: 0; background: center / cover no-repeat; }
+.bgimg::after { content: ""; position: absolute; inset: 0; background: var(--backdrop); }
+.scroll { position: absolute; inset: 0; overflow: auto; scrollbar-width: none; }
+
+.lbl { font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+
+/* Fläche: Karte (secondary), über dem Hintergrundbild durchscheinend wie die Kacheln im Admin */
+.surf { background: var(--sec); border: 1px solid var(--border); box-shadow: inset 0 1px 0 var(--border); border-radius: 12px; }
+.has-bg .surf, .has-bg .ib { background: var(--sec-t); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.has-bg .ib { box-shadow: inset 0 1px 0 var(--border); }
+
+/* Seitenrand Player: space.4 oben/unten, seitlich max(space.5, Safe Area) */
+.page {
+  min-height: 100%;
+  padding: max(16px, var(--sat)) max(24px, var(--sal)) max(16px, var(--sab));
+}
+
+/* ---------- Auswahl ---------- */
+.sel { display: flex; flex-direction: column; gap: 16px; }
+.hd { display: flex; align-items: center; gap: 12px; }
+.hd .tt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.hd .tt .lbl { color: var(--text); opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hd h1 { font-size: 24px; line-height: 32px; font-weight: 600; }
+
+.ib {
+  flex: none; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 8px;
+  background: var(--sec); border: 1px solid var(--border);
+}
+.ib svg { width: 20px; height: 20px; fill: var(--text); }
+
+/* Theme-Menü wie im Player Screen */
+/* Das Menü liegt immer über allen anderen Elementen (layer.popover); nötig auch, weil die durchscheinenden
+   Karten (backdrop-filter) eigene Stapelkontexte bilden. Nur das Overlay „Handy drehen“ liegt darüber. */
+.menuwrap { position: relative; z-index: 3; flex: none; }
+.menu {
+  position: absolute; top: calc(100% + 4px); right: 0; min-width: 200px; padding: 4px;
+  background: var(--sec); border: 1px solid var(--border); border-radius: 12px; display: grid; gap: 4px;
+}
+.ply .menu { left: 0; right: auto; }
+.menu button {
+  display: flex; align-items: center; height: 48px; padding: 0 16px; border-radius: 8px; white-space: nowrap;
+  font-size: 14px; line-height: 20px; font-weight: 600;
+}
+.menu button:hover { background: var(--bg); }
+.menu button[aria-checked="true"] { background: var(--pri); color: var(--onpri); }
+.menu hr { border: 0; height: 1px; margin: 0 8px; background: var(--border); }
+.menu .sw { gap: 12px; }
+.menu .sw svg { width: 20px; height: 20px; fill: var(--text); }
+
+.note {
+  display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px;
+  border-color: var(--pri); font-size: 14px; line-height: 20px; font-weight: 500;
+}
+.note svg { width: 20px; height: 20px; fill: var(--pri); }
+
+.card { padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+
+/* Liste: Spielerzeilen, im Querformat automatisch mehrspaltig */
+.rows { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+.row {
+  width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px;
+  padding: 8px; border-radius: 12px; background: var(--bg); transition: background .12s, color .12s;
+}
+.row .chev { width: 20px; height: 20px; fill: var(--muted); }
+.t { display: flex; flex-direction: column; min-width: 0; }
+.t span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nm { font-size: 16px; line-height: 24px; font-weight: 600; }
+.mt { font-size: 14px; line-height: 20px; color: var(--muted); }
+
+.av {
+  flex: none; display: grid; place-items: center; width: 48px; height: 64px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--sec) center / cover no-repeat; color: var(--initials);
+  font-size: 18px; line-height: 24px; font-weight: 600;
+}
+
+.row.pressed { background: var(--pri); color: var(--onpri); }
+.row.pressed .mt, .row.pressed .chev { color: var(--onpri); fill: var(--onpri); }
+
+/* Laden */
+.sk { pointer-events: none; }
+.sk .av, .sk .bar { background: var(--sec); border-color: transparent; animation: pulse 1.2s ease-in-out infinite; }
+.sk .bar { display: block; height: 12px; border-radius: 4px; }
+@keyframes pulse { 50% { opacity: .45; } }
+
+/* Leer- und Fehlerzustände in der Karte */
+.empty { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 24px 8px; }
+.empty svg { width: 40px; height: 40px; fill: var(--text); opacity: .8; }
+.empty h2 { font-size: 20px; line-height: 28px; font-weight: 600; }
+.empty p { font-size: 14px; line-height: 20px; max-width: 320px; }
+.tb {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; min-width: 112px;
+  padding: 0 16px; border-radius: 8px; background: var(--bg); font-size: 14px; line-height: 20px; font-weight: 600;
+}
+.tb svg { width: 20px; height: 20px; fill: currentColor; opacity: 1; }
+
+/* ---------- Player Screen ---------- */
+.ply { min-height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 16px; }
+.top { display: flex; align-items: center; gap: 4px; }
+
+.res { padding: 24px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.rb {
+  height: 64px; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 16px;
+  border-radius: 8px; border: 1px solid var(--strong); background: var(--muted-res);
+  font-size: 24px; line-height: 32px; font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.rb svg { width: 20px; height: 20px; fill: var(--strong); }
+.rb .rn { font-size: 20px; line-height: 28px; }
+.slots { display: flex; gap: 4px; }
+.slots i { width: 8px; height: 24px; border-radius: 4px; background: var(--strong); }
+.slots i.off { background: #707070; }
+
+.rotate {
+  position: absolute; inset: 0; z-index: 4; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; background: var(--bg); font-size: 16px; line-height: 24px; font-weight: 500;
+}
+.rotate svg { width: 96px; height: 96px; fill: var(--text); }
+
+/* ======================= nur im Mockup ======================= */
+.mock { overflow: auto; padding: 20px; background: #16181c; border-right: 1px solid #33363d; display: flex; flex-direction: column; gap: 16px; }
+.mock h2 { font-size: 15px; line-height: 20px; font-weight: 700; color: #fff; }
+.grp { display: flex; flex-direction: column; gap: 6px; }
+.grp > span { font-size: 11px; line-height: 14px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #9aa0a8; }
+.btns { display: flex; flex-wrap: wrap; gap: 4px; }
+.mock button { height: 30px; min-width: 30px; padding: 0 10px; border-radius: 6px; background: #2a2e35; font-size: 13px; line-height: 18px; font-weight: 600; }
+.mock button:hover { background: #363b44; }
+.mock button[aria-pressed="true"] { background: #e6e6e6; color: #111; }
+.mock button.act { background: #3b4a63; }
+.mock ul { display: grid; gap: 6px; font-size: 12.5px; line-height: 18px; color: #b0b4ba; padding-left: 14px; list-style: disc; }
+.mock code { font-size: 12px; color: #d6d9de; }
+
+.stage { position: relative; display: grid; place-items: center; overflow: hidden; }
+.device { position: absolute; top: calc(50% + 12px); left: 50%; padding: 12px; border-radius: 52px; background: #050505; box-shadow: 0 0 0 2px #3a3d44; transform-origin: center; }
+.notch { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 120px; height: 34px; border-radius: 20px; background: #050505; z-index: 3; pointer-events: none; }
+.device.land .notch { top: 50%; left: 10px; transform: translateY(-50%); width: 34px; height: 120px; }
+.url { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); font-size: 13px; color: #9aa0a8; font-family: ui-monospace, Menlo, monospace; }
+</style>
+</head>
+<body>
+
+<aside class="mock" aria-label="Mockup-Steuerung (nur im Mockup)">
+  <h2>Charakterauswahl</h2>
+  <div class="grp"><span>Ansicht</span><div class="btns">
+    <button type="button" data-act="view" data-val="select">Auswahl</button>
+    <button type="button" data-act="view" data-val="player">Player Screen</button>
+  </div></div>
+  <div class="grp"><span>Handy</span><div class="btns">
+    <button type="button" data-act="orient" data-val="portrait">Hochformat</button>
+    <button type="button" data-act="orient" data-val="land">Querformat</button>
+  </div></div>
+  <div class="grp"><span>Zustand der Auswahl</span><div class="btns">
+    <button type="button" data-act="status" data-val="ok">Normal</button>
+    <button type="button" data-act="status" data-val="loading">Lädt</button>
+    <button type="button" data-act="status" data-val="none">Kein Abenteuer</button>
+    <button type="button" data-act="status" data-val="empty">Keine Charaktere</button>
+    <button type="button" data-act="status" data-val="offline">Keine Verbindung</button>
+  </div></div>
+  <div class="grp"><span>Charaktere im Abenteuer</span><div class="btns" id="counts"></div></div>
+  <div class="grp"><span>Avatare</span><div class="btns">
+    <button type="button" data-act="imgs" data-val="false">Initialen</button>
+    <button type="button" data-act="imgs" data-val="true">Bilder (Platzhalter)</button>
+  </div></div>
+  <div class="grp"><span>Hintergrund</span><div class="btns">
+    <button type="button" data-act="bg" data-val="true">Bild des Abenteuers</button>
+    <button type="button" data-act="bg" data-val="false">Kein Bild (Rückfall)</button>
+  </div></div>
+  <div class="grp"><span>Theme des Spieltischs</span><div class="btns">
+    <button type="button" data-act="table" data-val="dark">Dark</button>
+    <button type="button" data-act="table" data-val="tavern">Tavern</button>
+  </div></div>
+  <div class="grp"><span>Ereignis im Admin</span><div class="btns">
+    <button type="button" class="act" data-act="switch">Abenteuer wechseln</button>
+  </div></div>
+  <div class="grp"><span>Annahmen</span>
+    <ul>
+      <li>QR-Code → <code>/</code>: nur die Charaktere des aktiven Abenteuers, kein Admin-Zugang.</li>
+      <li>Immer die Auswahl, keine Weiterleitung zum letzten Charakter.</li>
+      <li>Mehrere Handys pro Charakter erlaubt.</li>
+      <li>Tippen → <code>/player/:id</code>; Settings-Menü → „Charakter wechseln“ (letzter Eintrag) → zurück zur Auswahl.</li>
+      <li>Settings-Menü liegt immer über allen Elementen.</li>
+      <li>Hintergrundbild des Abenteuers je wirksamem Theme auf Auswahl und Player Screen, Glas-Kacheln wie im Admin.</li>
+      <li>Abenteuerwechsel → zurück zur Auswahl mit Hinweis.</li>
+      <li>Auswahl hoch und quer, „Bitte quer halten“ nur im Player Screen.</li>
+      <li>Theme-Menü (pro Gerät) auf beiden Seiten.</li>
+    </ul>
+  </div>
+</aside>
+
+<main class="stage">
+  <div class="url" id="url"></div>
+  <div class="device" id="device">
+    <div class="notch"></div>
+    <div class="phone" id="phone"></div>
+  </div>
+</main>
+
+<script>
+const MEDIA = '../../../../media/images/wall_screen/';
+const BG = { dark: MEDIA + 'fight.jpg', tavern: MEDIA + 'tavern.jpg' };
+const AV_IMGS = ['forest', 'tavern', 'shop', 'levelUp', 'fight'].map((n) => MEDIA + n + '.jpg');
+const PLAYERS = [
+  { c: 'Thalia Sturmwind', race: 'Elfe', cls: 'Magierin', p: 'Anna' },
+  { c: 'Brom Eisenfaust', race: 'Zwerg', cls: 'Kämpfer', p: 'Ben' },
+  { c: 'Kael Schattenschritt', race: 'Halbling', cls: 'Schurke', p: 'Chris' },
+  { c: 'Seraphine Morgenlicht', race: 'Mensch', cls: 'Klerikerin', p: 'Dana' },
+  { c: 'Orin Funkenbart', race: 'Gnom', cls: 'Erfinder', p: 'Elias' },
+  { c: 'Mira Dornhag', race: 'Halbelfe', cls: 'Druidin', p: 'Fiona' },
+  { c: 'Garrick Steinwall', race: 'Mensch', cls: 'Paladin', p: 'Georg' },
+  { c: 'Ysolde Nachtweh', race: 'Tiefling', cls: 'Hexenmeisterin', p: 'Hanna' },
+];
+
+const I = {
+  gear: 'M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z',
+  chev: 'M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z',
+  swap: 'M6.99 11 3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z',
+  info: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z',
+  wait: 'M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6zm10 14.5V20H8v-3.5l4-4 4 4zm-4-5-4-4V4h8v3.5l-4 4z',
+  people: 'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z',
+  offline: 'M23.64 7c-.45-.34-4.93-4-11.64-4-1.5 0-2.89.19-4.15.48L18.18 13.8 23.64 7zm-6.6 8.22L3.27 1.44 2 2.72l2.05 2.06C1.91 5.76.59 6.82.36 7l11.63 14.49.01.01.01-.01 3.9-4.86 3.32 3.32 1.27-1.27-3.46-3.46z',
+  refresh: 'M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z',
+  rotate: 'M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.25-.77a1.5 1.5 0 0 0-2.12 0L1.75 8.11a1.5 1.5 0 0 0 0 2.12l12.02 12.02a1.5 1.5 0 0 0 2.12 0l6.36-6.36a1.5 1.5 0 0 0 0-2.12L10.23 1.75zm4.6 19.44L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zm-7.31.29C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z',
+};
+const icon = (k, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${I[k]}"/></svg>`;
+
+const s = {
+  view: 'select', orient: 'portrait', status: 'ok', count: 4, imgs: false, bg: true,
+  table: 'dark', override: null, note: false, current: 0, menu: false,
+};
+
+const $ = (id) => document.getElementById(id);
+const initials = (n) => n.split(' ').slice(0, 2).map((w) => w[0]).join('');
+const theme = () => s.override ?? s.table;
+const party = () => PLAYERS.slice(0, s.count);
+const avatar = (i) => (s.imgs
+  ? `<span class="av" style="background-image:url(${AV_IMGS[i % AV_IMGS.length]})" aria-hidden="true"></span>`
+  : `<span class="av" aria-hidden="true">${initials(PLAYERS[i].c)}</span>`);
+
+// Settings-Menü: Theme pro Gerät; im Player Screen zuletzt „Charakter wechseln“
+const themeMenu = (withSwitch = false) => `<div class="menuwrap">
+  <button type="button" class="ib" data-app="menu" aria-label="Einstellungen" aria-haspopup="menu" aria-expanded="${s.menu}">${icon('gear')}</button>
+  ${s.menu ? `<div class="menu" role="menu">${[[null, 'Wie Spieltisch'], ['dark', 'Dunkel'], ['tavern', 'Taverne']].map(([v, l]) => (
+    `<button type="button" role="menuitemradio" aria-checked="${s.override === v}" data-app="theme" data-val="${v ?? ''}">${l}</button>`)).join('')}
+    ${withSwitch ? `<hr role="separator"><button type="button" role="menuitem" class="sw" data-app="back">${icon('swap')}Charakter wechseln</button>` : ''}
+  </div>` : ''}
+</div>`;
+
+function selection() {
+  const ok = s.status === 'ok';
+  const knowsAdventure = ok || s.status === 'empty';
+  const head = `<header class="hd">
+    <div class="tt">${knowsAdventure ? '<span class="lbl">Erstes Abenteuer</span>' : ''}<h1>Charakter wählen</h1></div>
+    ${themeMenu()}
+  </header>`;
+  const note = s.note && ok ? `<div class="note surf" role="status">${icon('info')}<span>Der Spielleiter hat das Abenteuer gewechselt. Wähle deinen Charakter neu.</span></div>` : '';
+
+  let body;
+  if (ok) {
+    const list = `<ul class="rows">${party().map((p, i) => `<li><button type="button" class="row" data-pick="${i}">
+          ${avatar(i)}<span class="t"><span class="nm">${p.c}</span><span class="mt">${p.race} · ${p.cls} · ${p.p}</span></span>${icon('chev', 'chev')}
+        </button></li>`).join('')}</ul>`;
+    body = `<span class="lbl">Party · ${s.count}</span>${list}`;
+  } else if (s.status === 'loading') {
+    body = `<span class="lbl">Party</span><ul class="rows" aria-label="Lädt">${[0, 1, 2].map(() => `<li><div class="row sk">
+      <span class="av"></span><span class="t" style="gap:8px"><span class="bar" style="width:60%"></span><span class="bar" style="width:85%"></span></span><span></span>
+    </div></li>`).join('')}</ul>`;
+  } else {
+    const E = {
+      none: ['wait', 'Noch kein Abenteuer aktiv', 'Sobald der Spielleiter ein Abenteuer startet, erscheinen hier die Charaktere.', ''],
+      empty: ['people', 'Noch keine Charaktere', 'In diesem Abenteuer sind noch keine Charaktere angelegt. Sobald der Spielleiter welche anlegt, erscheinen sie hier.', ''],
+      offline: ['offline', 'Keine Verbindung zum Spieltisch', 'Ist dein Handy im selben WLAN wie der Rechner des Spielleiters?',
+        `<button type="button" class="tb" data-app="retry">${icon('refresh')}Erneut versuchen</button>`],
+    }[s.status];
+    body = `<span class="lbl">Party</span><div class="empty">${icon(E[0])}<h2>${E[1]}</h2><p>${E[2]}</p>${E[3]}</div>`;
+  }
+  return `<div class="page sel">${head}${note}<section class="card surf" aria-label="Party">${body}</section></div>`;
+}
+
+const RES = [
+  { k: 'action', shape: 'circle', n: '1', l: 'Aktion' },
+  { k: 'bonus', shape: 'tri', n: '1', l: 'Bonusaktion' },
+  { k: 'movement', shape: 'move', n: '9.5', l: 'Bewegung' },
+  { k: 'special', slots: [1, 0, 0], l: 'Spezial' },
+  { k: 'spell', rn: 'I', slots: [1, 1, 1, 1], l: 'Zauberplätze I' },
+  { k: 'spell', rn: 'II', slots: [1, 1, 1], l: 'Zauberplätze II' },
+  { k: 'spell', rn: 'III', slots: [1, 1, 0], l: 'Zauberplätze III' },
+  { k: 'spell', rn: 'IV', slots: [1, 1], l: 'Zauberplätze IV' },
+];
+const RC = {
+  action: ['#099000', '#072900'], bonus: ['#db4400', '#290e00'], movement: ['#fae100', '#292500'],
+  spell: ['#2487ff', '#001229'], special: ['#ff2424', '#290000'],
+};
+const SHAPE = {
+  circle: '<svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="8"/></svg>',
+  tri: '<svg viewBox="0 0 20 20"><polygon points="10,2 18,17 2,17"/></svg>',
+  move: '<svg viewBox="0 0 20 20"><polygon points="2,8 12,8 12,3 19,10 12,17 12,12 2,12"/></svg>',
+};
+
+function playerScreen() {
+  const res = RES.map((r) => `<button type="button" class="rb" aria-label="${r.l}" style="--strong:${RC[r.k][0]};--muted-res:${RC[r.k][1]}">
+    ${r.shape ? SHAPE[r.shape] + `<span>${r.n}</span>` : ''}${r.rn ? `<span class="rn">${r.rn}</span>` : ''}
+    ${r.slots ? `<span class="slots">${r.slots.map((on) => `<i class="${on ? '' : 'off'}"></i>`).join('')}</span>` : ''}
+  </button>`).join('');
+  const rotate = s.orient === 'portrait'
+    ? `<div class="rotate" role="alert">${icon('rotate')}<span>Bitte das Handy quer halten</span></div>` : '';
+  return `<div class="page ply">
+    <div class="top">${themeMenu(true)}</div>
+    <section class="card surf res" aria-label="Ressourcen">${res}</section>
+  </div>${rotate}`;
+}
+
+function fit() {
+  const st = document.querySelector('.stage').getBoundingClientRect();
+  const d = $('device');
+  const sc = Math.min(1, (st.width - 48) / d.offsetWidth, (st.height - 96) / d.offsetHeight);
+  d.style.transform = `translate(-50%, -50%) scale(${sc})`;
+}
+
+function render() {
+  const ph = $('phone');
+  const t = theme();
+  ph.dataset.theme = t;
+  ph.classList.toggle('has-bg', s.bg && s.status !== 'none' && s.status !== 'offline');
+  const bg = ph.classList.contains('has-bg') ? `<div class="bgimg" style="background-image:url(${BG[t]})"></div>` : '';
+  ph.innerHTML = `${bg}<div class="scroll">${s.view === 'select' ? selection() : playerScreen()}</div>`;
+  $('device').classList.toggle('land', s.orient === 'land');
+  $('url').textContent = s.view === 'select' ? 'http://192.168.0.10:8080/' : `http://192.168.0.10:8080/player/${s.current + 1}`;
+
+  $('counts').innerHTML = [1, 2, 3, 4, 5, 6, 7, 8].map((n) => `<button type="button" data-act="count" data-val="${n}">${n}</button>`).join('');
+  document.querySelectorAll('.mock [data-val]').forEach((b) => {
+    b.setAttribute('aria-pressed', String(String(s[b.dataset.act]) === b.dataset.val));
+  });
+  fit();
+}
+
+document.querySelector('.mock').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const a = b.dataset.act;
+  const v = b.dataset.val;
+  s.menu = false;
+  if (a === 'switch') {
+    // Admin wechselt das Abenteuer: Player Screens kehren zur Auswahl zurück
+    s.view = 'select'; s.note = true; s.status = 'ok';
+  } else if (a === 'count') {
+    s.count = Number(v);
+    if (s.current >= s.count) s.current = 0;
+  } else if (a === 'imgs' || a === 'bg') {
+    s[a] = v === 'true';
+  } else {
+    s[a] = v;
+  }
+  if (a === 'view' && v === 'select') s.note = false;
+  render();
+});
+
+$('phone').addEventListener('click', (e) => {
+  const pick = e.target.closest('[data-pick]');
+  const app = e.target.closest('[data-app]');
+  if (pick) {
+    pick.classList.add('pressed');
+    setTimeout(() => {
+      s.current = Number(pick.dataset.pick); s.view = 'player'; s.note = false; s.menu = false; render();
+    }, 160);
+    return;
+  }
+  if (!app) {
+    if (s.menu) { s.menu = false; render(); }
+    return;
+  }
+  const a = app.dataset.app;
+  if (a === 'menu') s.menu = !s.menu;
+  if (a === 'theme') { s.override = app.dataset.val || null; s.menu = false; }
+  if (a === 'back') { s.view = 'select'; s.note = false; s.menu = false; }
+  if (a === 'retry') {
+    s.status = 'loading'; render();
+    setTimeout(() => { s.status = 'ok'; render(); }, 900);
+    return;
+  }
+  render();
+});
+
+window.addEventListener('resize', fit);
+render();
+</script>
+</body>
+</html>

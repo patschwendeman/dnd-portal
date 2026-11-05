@@ -2,15 +2,15 @@ import { ReactElement, useState } from 'react'
 import styled from 'styled-components'
 
 import Label from './Label'
+import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 
-const ResourceBar = styled.div`
+const ResourceBar = styled.section<TileSurfaceProps>`
   display: flex;
   flex-direction: column;
   gap: ${(props) => props.theme.space[4]};
   padding: ${(props) => props.theme.space[5]};
-  border-radius: ${(props) => props.theme.radius.lg};
-  background-color: ${(props) => props.theme.colors.secondary};
+  ${tileSurface}
 `
 
 const ResourceRow = styled.div`
@@ -122,7 +122,11 @@ const slotNumbers = (count: number): number[] => (
   Array.from({ length: count }, (_, index) => index + 1)
 )
 
-function ResourceBarPlayer(): ReactElement {
+interface ResourceBarPlayerProps {
+  isTranslucent?: boolean
+}
+
+function ResourceBarPlayer({ isTranslucent = false }: ResourceBarPlayerProps): ReactElement {
   const SpellMax: Record<number, number> = {
     1: 4,
     2: 3,
@@ -173,7 +177,7 @@ function ResourceBarPlayer(): ReactElement {
   ]
 
   return (
-    <ResourceBar>
+    <ResourceBar aria-label="Ressourcen" data-test-id="resources" $isTranslucent={isTranslucent}>
       <ResourceRow>
         <ResourceBarSection>
           <Label>Aktion</Label>

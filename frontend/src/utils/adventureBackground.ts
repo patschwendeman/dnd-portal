@@ -1,8 +1,8 @@
 import { AdventureDetail, Theme } from '../models/models'
 
-// Image layers behind the tiles of the Admin. An image is only shown once it is loaded, so the
-// old one stays until the new one can replace it; the one that is replaced stays as `leaving`
-// until its fade-out is over.
+// Image layers behind the tiles of the Admin and the cards of the Player. An image is only shown
+// once it is loaded, so the old one stays until the new one can replace it; the one that is
+// replaced stays as `leaving` until its fade-out is over.
 export interface AdventureBackgroundState {
   // Loaded and visible
   shown: string | null

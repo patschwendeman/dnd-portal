@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 import { BACKGROUND_FADE_MS } from '../utils/useAdventureBackground'
 
-// Lies before the grid of the Admin in the DOM, so the grid covers it without a z-index
+// Lies before the content of the screen in the DOM, so the content covers it without a z-index
 const Root = styled.div`
   position: fixed;
   inset: 0;
@@ -44,8 +44,8 @@ interface AdventureBackgroundProps {
   onError: (src: string) => void
 }
 
-// The image of the active adventure for the theme behind the tiles of the Admin, darkened; pure
-// decoration
+// The image of the active adventure for the theme behind the tiles of the Admin and the cards of
+// the Player, darkened; pure decoration
 function AdventureBackground({
   layers, shown, onLoad, onError,
 }: AdventureBackgroundProps): ReactElement {

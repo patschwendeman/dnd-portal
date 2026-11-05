@@ -152,6 +152,12 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
   außen um den Button liegt so auf der Panel-Kachel, nicht auf dem Hintergrundbild (dort erreichte `primary` über einem
   weißen Bild in Tavern nur 1,1:1, Dark 1,3:1; auf der durchscheinenden Kachel 3,0:1, Dark 4,0:1).
 - **Ressourcen (Player):** Die Spannen reichen über alle fünf Ressourcen.
+- **Durchscheinende Karten (Player):** Karten und Settings-Button im Player haben dieselbe Fläche wie die Kacheln im
+  Admin, es gelten die Werte für `secondaryTranslucent`. Offen (DND-46): Der Kopf der
+  Charakterauswahl (Abenteuername als Label, „Charakter wählen“) steht wie im Mockup direkt auf dem abgedunkelten
+  Hintergrundbild, nicht auf einer Karte; über sehr hellen Bildern kann `text.color` dort unter 4,5:1 fallen
+  (über einem weißen Bild unter `backdrop`, etwa `#808080`: Dark 3,6:1, Tavern 1,8:1;
+  über einem schwarzen deutlich darüber).
 - **`negative.text` auf durchscheinender Kachel (Dark):** Über einem rein weißen Bild liegt der Wert genau an der
   Grenze; je nach Rundung der Zwischenfarbe 4,48–4,51:1. Über realen, nicht rein weißen Bildern liegt er darüber.
 - **Avatar von Spielern (Admin):** Die Fläche richtet sich nach dem Untergrund, damit sich der Avatar abhebt: direkt auf

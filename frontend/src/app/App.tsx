@@ -5,13 +5,17 @@ import { Theme } from '../models/models'
 import GameTableProvider from '../realtime/GameTableProvider'
 import AdminScreen from '../screens/AdminScreen'
 import GroundScreen from '../screens/GroundScreen'
+import { PlayerLayout } from '../screens/PlayerLayout'
 import PlayerScreen from '../screens/PlayerScreen'
+import PlayerSelectScreen from '../screens/PlayerSelectScreen'
 import WallScreen from '../screens/WallScreen'
 import {
   discardLegacyPlayerTheme, readThemeOverride, writeThemeOverride,
 } from '../utils/playerTheme'
 
-// The Player follows the theme of the game table unless the player chose another one on this device
+// The selection and the Player Screen follow the theme of the game table unless the player chose
+// another one on this device. They share one connection, so switching between them does not
+// reconnect.
 function PlayerRoute(): ReactElement {
   const [themeOverride, setThemeOverride] = useState<Theme | null>(
     () => readThemeOverride(localStorage),
@@ -24,7 +28,7 @@ function PlayerRoute(): ReactElement {
 
   return (
     <GameTableProvider screen="player" themeOverride={themeOverride}>
-      <PlayerScreen themeOverride={themeOverride} onChangeThemeOverride={changeThemeOverride} />
+      <PlayerLayout themeOverride={themeOverride} onChangeThemeOverride={changeThemeOverride} />
     </GameTableProvider>
   )
 }
@@ -38,7 +42,10 @@ function App() {
     <Router>
       <div className="app">
         <Routes>
-          <Route path="/" element={<PlayerRoute />} />
+          <Route element={<PlayerRoute />}>
+            <Route path="/" element={<PlayerSelectScreen />} />
+            <Route path="/player/:id" element={<PlayerScreen />} />
+          </Route>
           <Route
             path="/wall"
             element={<GameTableProvider screen="wall"><WallScreen /></GameTableProvider>}
