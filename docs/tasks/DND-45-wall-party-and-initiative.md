@@ -72,26 +72,35 @@ ist, wer folgt und in welcher Runde der Kampf steht.
 ### E5: Glas-Look auf Wall und Ground
 - **Entscheidung:** Alle Panels und Overlays auf Wall und Ground nutzen die Kachel-Fläche des Admins (`tileSurface`
   mit `$isTranslucent`: `secondaryTranslucent`, Unschärfe, Rand und Lichtkante):
-  - Weltkarten-Panel der Wall: durchscheinend (Initiative und Party scheinen verschwommen durch), liegt über
-    Initiative-Leiste und Party-Kacheln.
-  - Vollbild-Overlay auf Wall und Ground: Die Abdunklung (`backdrop`) bleibt, Icon und Text sitzen in einer
-    Glas-Kachel in der Mitte (bisher Fläche `background`).
+  - Weltkarten-Panel der Wall: durchscheinend, liegt über Initiative-Leiste und Party-Kacheln. Solange es zu sehen
+    ist, liegt darunter über dem ganzen Screen dieselbe Abdunklung wie bei den Dialogen im Admin.
+  - Vollbild-Overlay auf Wall und Ground: Icon und Text sitzen in einer Glas-Kachel in der Mitte (bisher Fläche
+    `background`) über der Abdunklung.
   - Initiative- und Party-Kacheln ebenfalls mit dieser Fläche.
 - **Begründung:** Einheitlicher Look über alle Screens; die Weltkarte ist meist nur kurz eingeblendet.
+
+### E5a: Eine Abdunklung für alle Overlays
+- **Entscheidung:** Dialoge im Admin, Vollbild-Overlay auf Wall und Ground und die Weltkarte nutzen dieselbe
+  Abdunklung: die Farbrolle `overlay` (heute 85 % Schwarz, bei den Dialogen). Das Vollbild-Overlay wechselt dafür von
+  `backdrop` (50 %) auf `overlay`. `backdrop` bleibt nur für das Abdunkeln des Hintergrundbilds im Admin. Rolle und
+  Verwendung in `DESIGN.md` nachziehen (Entscheidung im Dialog: vereinheitlichen; Wert der Dialoge übernommen).
+- **Verworfene Alternativen:** Weltkarte nur mit `overlay` oder nur mit `backdrop`, Vollbild-Overlay unverändert.
 
 ### E6: Größen und Ebenen
 - **Entscheidung:** Ausgelegt für 1920×1080, Werte als benannte Layout-Konstanten (in `screen-layouts.md`):
   - Party-Kachel 176px breit, Avatar 84×112px; Seitenabstand 32px.
   - Initiative: Leiste 32px vom oberen Rand, 48px links und rechts; kleine Kachel 168×176px mit Avatar 72×96px,
     große Kachel 240px breit mit Avatar 120×160px; Rundentrenner 72px, „+N weitere“ 96px breit; Abstand 16px.
-  - Reihenfolge der Ebenen: Szenenbild < Party/Initiative < Weltkarte < Vollbild-Overlay.
+  - Reihenfolge der Ebenen: Szenenbild < Party/Initiative < Abdunklung der Weltkarte < Weltkarte <
+    Vollbild-Overlay.
 
 ## Subtasks
 
 ### Schritt 1: Glas-Look und Party
 
 #### Frontend
-- [ ] Weltkarten-Panel und `FullscreenHoverOverlay` mit `tileSurface` (E5); Ebenen (E6).
+- [ ] Weltkarten-Panel und `FullscreenHoverOverlay` mit `tileSurface` (E5); Abdunklung `overlay` unter der
+      Weltkarte und im Vollbild-Overlay (E5a); Ebenen (E6).
 - [ ] Wall lädt die Spieler des aktiven Abenteuers (E1).
 - [ ] Party-Kacheln links und rechts (E2); Aufteilung als Funktion in `src/utils/` mit Unit-Tests.
 - [ ] BDD: Wall zeigt die Spieler links und rechts; Weltkarte erscheint darüber.
@@ -129,9 +138,13 @@ ist, wer folgt und in welcher Runde der Kampf steht.
 ### AK2: Glas-Look (Schritt 1)
 - **Given** Wall und Ground sind geöffnet
 - **When** die Maus über einem der Fenster steht
-- **Then** liegt „Vollbild“ in einer durchscheinenden Kachel mit Rand über dem abgedunkelten Screen
+- **Then** liegt „Vollbild“ in einer durchscheinenden Kachel mit Rand über dem Screen, abgedunkelt so stark wie
+  unter einem Dialog im Admin
 - **When** der Spielleiter die Weltkarte einblendet
-- **Then** liegt ihr Panel durchscheinend über den Party-Kacheln bzw. der Initiative
+- **Then** ist der ganze Screen genauso abgedunkelt, und das Panel liegt durchscheinend darüber, über den
+  Party-Kacheln bzw. der Initiative
+- **When** er sie ausblendet
+- **Then** verschwinden Panel und Abdunklung
 
 ### AK3: Initiative im Kampf (Schritt 2)
 - **Given** eine Wall ist geöffnet, der Spielleiter startet einen Kampf mit Spielern, Gegnern und einem Verbündeten
