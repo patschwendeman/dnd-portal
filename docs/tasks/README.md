@@ -48,4 +48,4 @@
 | DND-42 | feat | Hintergrundbild pro Abenteuer und Theme im Admin | Fertig | [DND-42-adventure-background.md](DND-42-adventure-background.md) |
 | DND-43 | feat | Kampfmodus im Admin Screen | Fertig | [DND-43-fight-mode.md](DND-43-fight-mode.md) |
 | DND-44 | feat | Menüpunkt „Einstellungen“ im Admin Screen | Fertig | [DND-44-admin-settings-panel.md](DND-44-admin-settings-panel.md) |
-| DND-45 | feat | Party und Initiative auf dem Wall Screen, Glas-Look für Wall und Ground | Im Review | [DND-45-wall-party-and-initiative.md](DND-45-wall-party-and-initiative.md) |
+| DND-45 | feat | Party und Initiative auf dem Wall Screen, Glas-Look für Wall und Ground | Fertig | [DND-45-wall-party-and-initiative.md](DND-45-wall-party-and-initiative.md) |

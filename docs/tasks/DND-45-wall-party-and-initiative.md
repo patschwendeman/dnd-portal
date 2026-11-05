@@ -1,7 +1,7 @@
 # DND-45: Party und Initiative auf dem Wall Screen, Glas-Look für Wall und Ground
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
