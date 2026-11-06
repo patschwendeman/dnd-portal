@@ -20,14 +20,18 @@ const NOTES_ITEM = '[data-test-id="nav-item-docs"]'
 const PANEL = '[data-test-id="nav-panel"]'
 const NOTES_VIEW = '[data-test-id="notes-view"]'
 const NOTES_SCROLL = '[data-test-id="notes-scroll"]'
-const STORY_NAMES = ['Main', 'Fight', 'Side', 'Leveling', 'Mechaniken']
-const LEVELING_INDEX = 3
+const NOTES_ENTRIES = [
+  { id: 'main', name: 'Main' },
+  { id: 'fight', name: 'Fight' },
+  { id: 'leveling', name: 'Leveling' },
+  { id: 'mechanics', name: 'Mechaniken' },
+]
 const SCROLL_TOP = 400
 
-const entry = (index: number): string => `[data-test-id="notes-entry-${index}"]`
-// Headings carry their slug as id (HeadingRenderer); one heading of each folder
-const MAIN_NOTES = `${NOTES_VIEW} h1#smaragdkranz`
-const LEVELING_NOTES = `${NOTES_VIEW} h1#level_1`
+const entry = (id: string): string => `[data-test-id="notes-entry-${id}"]`
+// Headings carry folder, file and anchor as id (HeadingRenderer); one heading of each folder
+const MAIN_NOTES = `${NOTES_VIEW} h1#note-main-shop--smaragdkranz`
+const LEVELING_NOTES = `${NOTES_VIEW} h1#note-leveling-level_1--level_1`
 
 const openAdmin = async (driver: WebDriver): Promise<void> => {
   await driver.manage().window().setRect(WINDOW_RECT)
@@ -68,18 +72,20 @@ defineFeature(feature, (test) => {
       expect(await item.getAttribute('aria-pressed')).toBe('true')
     })
 
-    and('the panel shows the notes entries Main, Fight, Side, Leveling, Mechaniken', async () => {
-      await waitForElement(driver, PANEL)
+    and('the panel shows the notes entries Main, Fight, Leveling, Mechaniken', async () => {
+      const panel = await waitForElement(driver, PANEL)
       const names = await Promise.all(
-        STORY_NAMES.map(async (_name, index) => (
-          (await waitForElement(driver, `${PANEL} ${entry(index)}`)).getText()
+        NOTES_ENTRIES.map(async ({ id }) => (
+          (await waitForElement(driver, `${PANEL} ${entry(id)}`)).getText()
         )),
       )
-      expect(names).toEqual(STORY_NAMES)
+      expect(names).toEqual(NOTES_ENTRIES.map(({ name }) => name))
+      expect(await panel.findElements({ css: '[data-test-id^="notes-entry-"]' }))
+        .toHaveLength(NOTES_ENTRIES.length)
     })
 
     and('Main is selected and the main notes are shown', async () => {
-      expect(await waitForAttribute(driver, entry(0), 'data-active', 'true')).toBe('true')
+      expect(await waitForAttribute(driver, entry('main'), 'data-active', 'true')).toBe('true')
       await waitForElement(driver, MAIN_NOTES)
     })
   })
@@ -90,13 +96,13 @@ defineFeature(feature, (test) => {
     })
 
     when('I click on the notes entry Leveling', async () => {
-      await clickElement(driver, entry(LEVELING_INDEX))
+      await clickElement(driver, entry('leveling'))
     })
 
     then('Leveling is selected and the leveling notes are shown', async () => {
-      expect(await waitForAttribute(driver, entry(LEVELING_INDEX), 'data-active', 'true'))
+      expect(await waitForAttribute(driver, entry('leveling'), 'data-active', 'true'))
         .toBe('true')
-      expect(await waitForAttribute(driver, entry(0), 'data-active', 'false')).toBe('false')
+      expect(await waitForAttribute(driver, entry('main'), 'data-active', 'false')).toBe('false')
       await waitForElement(driver, LEVELING_NOTES)
     })
   })
@@ -112,7 +118,7 @@ defineFeature(feature, (test) => {
     })
 
     and('I selected the notes entry Leveling and scrolled down the notes', async () => {
-      await clickElement(driver, entry(LEVELING_INDEX))
+      await clickElement(driver, entry('leveling'))
       await waitForElement(driver, LEVELING_NOTES)
       scrollTop = await driver.executeScript(
         `const notes = document.querySelector('${NOTES_SCROLL}')
@@ -143,7 +149,7 @@ defineFeature(feature, (test) => {
       async () => {
         await waitForElement(driver, PANEL)
         expect(await waitForAttribute(driver, NOTES_ITEM, 'aria-pressed', 'true')).toBe('true')
-        expect(await waitForAttribute(driver, entry(LEVELING_INDEX), 'data-active', 'true'))
+        expect(await waitForAttribute(driver, entry('leveling'), 'data-active', 'true'))
           .toBe('true')
         await waitForElement(driver, LEVELING_NOTES)
         expect(await getScrollTop(driver)).toBe(scrollTop)

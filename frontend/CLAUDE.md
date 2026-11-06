@@ -98,12 +98,14 @@ src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Pan
                      useAutoAudioOutput.ts (erste Interaktion ohne Ausgabe meldet audio_ready), audioOutput.ts
                      (shouldRequestAudioOutput)
 src/screens/         Screens; PlayerLayout (gemeinsame Layout-Route von PlayerSelectScreen und PlayerScreen)
-src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin: Abenteuername, mit ErrorBar), JoinDialog, SettingsMenu
+src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin: Zurück/Vor, Abenteuername, mit ErrorBar,
+                     Vollbild, Dashboard), JoinDialog, SettingsMenu
                      (Settings-Menü der Player-Routen: Theme, optional „Charakter wechseln“),
                      SelectList (Auswahlliste) mit AdventureSelect, SettingsPanel (Panel „Einstellungen“: Abenteuer,
                      Theme, Zellgröße), NavRail (Navigationsleiste im Admin, Menüpunkte oben bzw. unten),
                      SideBarLeftElement (Eintrag im Panel, Button), DocumentNavigation (Notizen-Einträge im Panel),
-                     SceneNavigation (Szenenliste im Panel), DocumentReader (Notizen des gewählten Eintrags),
+                     SceneNavigation (Szenenliste im Panel), DocumentReader (Notizen des gewählten Eintrags: lädt
+                     alle Notizdateien, Renderer für Überschriften und Links, springt zur Stelle aus dem Verlauf),
                      AdventureBackground (Hintergrundbild des Abenteuers hinter den Kacheln im Admin und den
                      Karten der Player-Routen),
                      Dashboard (Spalte rechts im Admin) mit DashboardPanel (Rahmen), ActiveScenePanel (Bühne),
@@ -120,6 +122,12 @@ src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin: Abenteuernam
                      (Segment-Control in Panels), PanelSlider (Slider in Panels), FullscreenHoverOverlay (Vollbild-Overlay auf Wall und
                      Ground), Dialogue, GridOverlay,
                      ResourceBarPlayer …)
+src/notes/           Notizen im Admin: noteFolders.ts (NOTE_FOLDERS: Einträge des Panels „Notizen“ = Ordner von
+                     public/story/, NOTE_FILES aus einem import.meta.glob), noteAnchors.ts (headingAnchor,
+                     noteHeadings, noteElementId), noteLinks.ts (buildNoteIndex, resolveNoteLink: Auflösung eines
+                     Links, auch für die Link-Prüfung), noteHistory.ts (Verlauf als reine Funktionen, höchstens 50
+                     Einträge), historyShortcuts.ts (Alt+←/→, Daumentasten der Maus), useNoteHistory.ts
+                     (useNoteHistory: Verlauf im AdminScreen, useHistoryShortcuts)
 src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
                      getJoinInfo, saveActiveScene, saveGlobalLevel, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
                      getWallPlayers, getGroundScreenData, getPlayerAdventure …); gameTable.ts: saveWallOverlay, saveGroundGrid,
@@ -165,7 +173,8 @@ src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/
                      auf Wall und Ground und die Karten der Player-Routen, Schalter $isTranslucent)
 public/assets/       sounds (Soundeffekte, im Admin abgespielt), icons; dazu das fest eingebundene Medium
                      images/ground_screen/mapOverview.jpg (Weltkarte) – Szenenmedien und Standardmusik liegen in ../media
-public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mechanics), deutsch
+public/story/        Markdown-Notizen für den Admin (main, fight, leveling, mechanics), deutsch; Querverweise siehe
+                     „Notizen und Querverweise“
 ```
 
 Datenfluss: Screen → `src/service/*` → `getData()` → Backend. Der Admin lädt die Szenenliste nur über
@@ -241,10 +250,29 @@ nichts. Details: `../docs/architecture.md#audio`.
 - Alle Szenen sind gleich (kein `main` mehr). Das Panel „Szenen“ (`SceneNavigation`) zeigt sie in der Reihenfolge der
   API; aktiv ist der Eintrag mit `scene.id === activeSceneId`. Klick auf die aktive Szene tut nichts, sonst öffnet
   `handleSceneSelection` im `AdminScreen` den Dialog „Szene wechseln“ (nicht während eines Kampfes).
-- `DocumentReader` sammelt Markdown per `import.meta.glob` aus `public/story/**` – neue Notizen dort ablegen.
+- Notizen: siehe „Notizen und Querverweise“.
 - Player-Ressourcen (`ResourceBarPlayer`) sind reiner lokaler State; Zauberplatz-Maxima sind hart codiert (`SpellMax`).
 - Die Ressource „Bewegung“ ist Work in Progress; `/spells` ist auf dem Branch `feature/spells-screen` geparkt; `v1-roguelike` (Tags `archive/*`) ist verworfen.
 - Weitere bekannte Bugs/Altlasten: `../docs/known-issues.md`.
+
+## Notizen und Querverweise
+
+- Jeder Eintrag im Panel „Notizen“ ist ein Ordner unter `public/story/` und eine Zeile in `NOTE_FOLDERS`
+  (`src/notes/noteFolders.ts`, `id` = Ordnername, Label). Neue Notizen als `.md` in den Ordner legen (keine
+  Unterordner); ein neuer Ordner braucht die Zeile in `NOTE_FOLDERS`, sonst wird er nicht angezeigt und ist kein
+  Linkziel. Die Dateien eines Ordners stehen in der Reihenfolge ihrer Namen untereinander (deshalb
+  `1_tableOfContent.md`).
+- Anker einer Überschrift: Text in Kleinbuchstaben, `ä`→`ae`, `ö`→`oe`, `ü`→`ue`, `ß`→`ss`, danach jedes Zeichen außer
+  `a–z`, `0–9` und `_` durch `-` ersetzt („Rüstungsklasse“ → `ruestungsklasse`, „Taverne – Zum Verzauberte Krug“ →
+  `taverne---zum-verzauberte-krug`). Kommt eine Überschrift in einer Datei mehrfach vor, heißt die zweite `…-2`, die
+  dritte `…-3`. Im DOM ist die `id` `note-<ordner>-<datei>--<anker>` (`noteElementId`).
+- Querverweise sind normale Markdown-Links, der Pfad relativ zur Datei, in der der Link steht:
+  `[Text](datei.md)` bzw. `[Text](../ordner/datei.md)` (Anfang der Datei), `[Text](datei.md#anker)` bzw.
+  `[Text](../ordner/datei.md#anker)` (Überschrift). `[Text](#anker)` sucht zuerst in der eigenen Datei, dann in den
+  anderen Dateien des Ordners; dort muss es genau eine Datei mit dem Anker geben. Links mit `http(s)://` öffnen in
+  neuem Tab; Bilder und andere Links bleiben normale Links.
+- Ein Link ohne Ziel (fehlende Datei, fehlender oder mehrdeutiger Anker) erscheint im Admin als defekt, und
+  `npm run test:unit` schlägt fehl (`__tests__/unit/noteLinksCheck.spec.ts`, Meldung mit Datei und Link).
 
 ## CI
 

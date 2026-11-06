@@ -51,4 +51,4 @@
 | DND-45 | feat | Party und Initiative auf dem Wall Screen, Glas-Look für Wall und Ground | Fertig | [DND-45-wall-party-and-initiative.md](DND-45-wall-party-and-initiative.md) |
 | DND-46 | feat | Charakterauswahl auf dem Player Screen, Hintergrundbild und Glas-Look | Fertig | [DND-46-player-character-select.md](DND-46-player-character-select.md) |
 | DND-47 | feat | Hero-Karte und „Zug beenden“ auf dem Player Screen | Fertig | [DND-47-player-hero-end-turn.md](DND-47-player-hero-end-turn.md) |
-| DND-48 | feat | Querverweise zwischen Notizen und Vor/Zurück im Admin | Entwurf | [DND-48-notes-cross-references.md](DND-48-notes-cross-references.md) |
+| DND-48 | feat | Querverweise zwischen Notizen und Vor/Zurück im Admin | Im Review | [DND-48-notes-cross-references.md](DND-48-notes-cross-references.md) |

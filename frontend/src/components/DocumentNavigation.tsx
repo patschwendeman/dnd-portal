@@ -3,9 +3,7 @@ import styled from 'styled-components'
 
 import Label from './Label'
 import SideBarLeftElement from './SideBarLeftElement'
-
-// Order matches the note folders loaded by DocumentReader (index = selectedStoryIndex)
-const STORY_NAMES = ['Main', 'Fight', 'Side', 'Leveling', 'Mechaniken']
+import { NOTE_FOLDERS, NoteFolderId } from '../notes/noteFolders'
 
 const Navigation = styled.div`
   display: flex;
@@ -19,24 +17,24 @@ const NotesLabel = styled(Label)`
 `
 
 interface DocumentNavigationProps {
-  selectedStoryIndex: number
-  onSelectStory: (index: number) => void
+  selectedFolderId: NoteFolderId
+  onSelectFolder: (folderId: NoteFolderId) => void
 }
 
 function DocumentNavigation({
-  selectedStoryIndex,
-  onSelectStory,
+  selectedFolderId,
+  onSelectFolder,
 }: DocumentNavigationProps): ReactElement {
   return (
     <Navigation>
       <NotesLabel>Notizen</NotesLabel>
-      {STORY_NAMES.map((name, index) => (
+      {NOTE_FOLDERS.map(({ id, label }) => (
         <SideBarLeftElement
-          key={name}
-          name={name}
-          isActive={index === selectedStoryIndex}
-          onSelect={() => onSelectStory(index)}
-          testId={`notes-entry-${index}`}
+          key={id}
+          name={label}
+          isActive={id === selectedFolderId}
+          onSelect={() => onSelectFolder(id)}
+          testId={`notes-entry-${id}`}
         />
       ))}
     </Navigation>

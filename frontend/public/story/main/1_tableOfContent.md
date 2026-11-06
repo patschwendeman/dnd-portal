@@ -1,6 +1,6 @@
 
 # Inhaltsverzeichnis
-1. [Intro](#dialog)
+1. [Intro](dialog.md)
 2. [Taverne](#taverne---zum-verzauberte-krug)
 
     2.1. [Aric Dunkelwind](#tavernenbesitzer---aric-dunkelwind)

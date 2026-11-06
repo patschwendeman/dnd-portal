@@ -43,16 +43,17 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 
 ## Frontend
 
-- `DocumentReader` sucht in `public/story/noneFight/` (existiert nicht) → Tab „Side“ leer.
 - E2E-Tests (`npm run test:e2e`) aktivieren Szenen im Admin und speichern sie damit per `PATCH` dauerhaft in der
   Dev-DB (`adventure.active_scene_id`); Admin, Wall und Ground der Dev-Umgebung zeigen danach diese Szene. Danach schlagen die Backend-Tests fehl, die den Seed-Stand (keine aktive Szene)
   erwarten, bis die aktive Szene wieder geleert wird (z. B. `PATCH /adventures/1` mit `{"active_scene_id": null}`) oder
   die DB zurückgesetzt ist.
 - `ResourceBarPlayer`: `spellData[].max` weicht von `SpellMax` ab (Stufe II: 4 vs. 3); Spezial startet bei 1 statt 3.
-- Kontrast (seit DND-40): Die Notizseiten sind Kacheln in `secondary`; die Text-Links der Inhaltsverzeichnisse in den
-  Notizen (`primary`) verfehlen darauf in Tavern 4,5:1 (3,3:1, `frontend/docs/design/contrast.md`); auf den
+- Kontrast (seit DND-40): Die Notizseiten sind Kacheln in `secondary`; die Text-Links in den Notizen
+  (Inhaltsverzeichnisse und Querverweise, `primary`) verfehlen darauf in Tavern 4,5:1 (3,3:1, `frontend/docs/design/contrast.md`); auf den
   durchscheinenden Kacheln über einem hellen Hintergrundbild (seit DND-41, Werte seit DND-42) in Tavern 3,0:1 und
-  auch in Dark 4,0:1. Lösung offen.
+  auch in Dark 4,0:1. Lösung offen. Defekte Querverweise (seit DND-48) stehen als Text in `error` und verfehlen 4,5:1
+  in beiden Themes deutlich; sie sind ein Hinweis für den Spielleiter beim Pflegen der Notizen (Tooltip, gepunktete
+  Unterstreichung) und kommen im geprüften Bestand nicht vor (`npm run test:unit`).
 
 ## Baseline der Qualitätsprüfungen
 

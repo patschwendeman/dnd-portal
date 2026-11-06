@@ -284,7 +284,7 @@ Wechselt mit dem Theme.
 | `text.muted` | gedämpfter Vordergrund (`text.color` mit Transparenz) | Volk · Klasse · Spieler der Spielerzeile und der Charakterzeile, Pfeil der Charakterzeile, Details in Initiative und Panel „Kampf“ (auf `background`), Icons der Mini-Buttons, Schloss der Abenteuer-Auswahl, Lautsprecher-Icon im Panel „Audio“, Zeichen deaktivierter Buttons ([2.4](#24-zustände)); nicht für Text direkt auf `secondary` (Tavern verfehlt dort 4,5:1) und nicht auf den Wall-Kacheln |
 | `initials` | Initialen | Initialen im Avatar von Spielerzeile, Charakterzeile und Hero-Karte ohne Bild (Dark: wie `primary`, Tavern: wie `text.color`) |
 | `onPrimary` | Vordergrund auf Akzent | aktiver Zustand ([2.4](#24-zustände)), Zahl im Level-Badge, Text des Badges „Am Zug“ (Wall, Player), Text und Icon von „Zug beenden“ (Player) |
-| `error` | Fläche für Fehler | Hinweisleiste in der Kopfzeile des Admins |
+| `error` | Fläche für Fehler | Hinweisleiste in der Kopfzeile des Admins; als Textfarbe nur für defekte Querverweise in den Notizen (gepunktet unterstrichen) |
 | `onError` | Vordergrund auf `error` | Text, Icon und Fokus-Outline der Hinweisleiste |
 | `qr.foreground` · `qr.background` | Module und Grund des QR-Codes | QR-Code im Dialog „Spieler verbinden“ (Admin); dunkel auf hell, damit Kameras ihn sicher erkennen |
 | `resource.<art>.strong` | kräftiger Ton einer Ressource (`action`, `bonus`, `movement`, `spell`, `special`) | Rahmen des Ressourcen-Buttons, verfügbare Icons und Plätze (Player) |
@@ -310,7 +310,7 @@ Kachel auch über einem hellen Bild 3:1). Die `resource.*`-Töne sind so gewähl
 | aktiv / ausgewählt | Fläche `primary`, Text und Icons `onPrimary` | aktive Buttons und Navigation, gewählter Button im Segment-Control, aktiver Menüpunkt der Navigationsleiste, aktive Szene im Panel „Szenen“, Icon-Button „Dashboard“ bei offenem Dashboard, Icon-Button „Vollbild“ bei Admin im Vollbild, Confirm, Play-Button während die Musik läuft |
 | inaktiv / normal | `secondary` | inaktive Buttons und Navigation; in Dashboard-Panels (Fläche `secondary`) stattdessen `background`, z. B. Play-Button ohne Musik; Ausnahmen ohne eigene Fläche: Buttons im Segment-Control und in den Sound-Gruppen, `secondary` nur bei Hover (nicht bei den Sound-Buttons); inaktive Menüpunkte der Navigationsleiste, Panel-Einträge und Buttons der Kopfzeile im Admin (auf Kacheln in `secondary`), `background` nur bei Hover ([Navigationsleiste](docs/design/components.md#navigationsleiste), [Navigationseintrag](docs/design/components.md#navigationseintrag), [Kopfzeile](docs/design/components.md#kopfzeile), [Segment-Control](docs/design/components.md#segment-control)) |
 | Abbrechen, Nebenaktion | `background` | Decline-Button |
-| deaktiviert | Fläche unverändert, Zeichen `text.muted`, `cursor: default` | „−“ bei Level 1, „+“ bei Level 20 im Level-Stepper |
+| deaktiviert | Fläche unverändert, Zeichen `text.muted`, `cursor: default` | „−“ bei Level 1, „+“ bei Level 20 im Level-Stepper, „Zurück“ und „Vor“ in der Kopfzeile ohne Ziel im Verlauf (ohne Hover-Fläche) |
 | Fläche auf Fläche | `background` → `secondary` | welche Fläche welche Rolle hat: [2.2](#22-rollen) |
 | Linie | `border`, nie `text.color` | auch Rand und Lichtkante der Kacheln |
 
@@ -332,7 +332,7 @@ Geprüft nach WCAG 2.1. Ziel AA:
   Gestaltung, kein Bedienelement, und WCAG verlangt 3:1 nur für die Grenzen von Bedienelementen.
 - **Offen:** `primary` verfehlt für Text 4,5:1: in Tavern auf `secondary` 3,3:1 und auf `secondaryTranslucent` über
   einem hellen Hintergrundbild 3,0:1, in Dark auf `secondaryTranslucent` über einem hellen Hintergrundbild 4,0:1.
-  Betroffen sind die Text-Links der Inhaltsverzeichnisse in den Notizen, die auf Kacheln in
+  Betroffen sind die Text-Links in den Notizen (Inhaltsverzeichnisse und Querverweise), die auf Kacheln in
   `secondary` bzw. `secondaryTranslucent` liegen; eine Lösung ist offen ([known-issues.md](../docs/known-issues.md)).
 - **Ausnahme (vom User entschieden, DND-45):** Tote Spieler auf den Wall-Kacheln sind bewusst ausgegraut
   (`DEAD_OPACITY` 0,45 auf Avatar, Text und Totenkopf). Name und „Tot“ verfehlen damit 4,5:1, das Icon des Totenkopfs

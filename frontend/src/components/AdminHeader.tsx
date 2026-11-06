@@ -7,6 +7,8 @@ import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 import useDocumentFullscreen from '../utils/useDocumentFullscreen'
 
+import arrowLeftIcon from '/assets/icons/arrowLeft.svg'
+import arrowRightIcon from '/assets/icons/arrowRight.svg'
 import dashboardIcon from '/assets/icons/dashboard.svg'
 import fullscreenIcon from '/assets/icons/fullscreen.svg'
 import fullscreenExitIcon from '/assets/icons/fullscreenExit.svg'
@@ -60,8 +62,18 @@ const IconButton = styled.button`
     border-radius: ${(props) => props.theme.radius.md};
     cursor: pointer;
 
-    &:hover {
+    &:hover:not(:disabled) {
         background-color: ${(props) => props.theme.colors.background};
+    }
+
+    &:disabled {
+        cursor: default;
+    }
+
+    &:focus-visible {
+        outline: ${(props) => props.theme.borderWidth.thick} solid
+          ${(props) => props.theme.colors.primary};
+        outline-offset: ${(props) => props.theme.borderWidth.thick};
     }
 
     svg {
@@ -81,12 +93,6 @@ const ToggleButton = styled(IconButton)<{ $isActive: boolean }>`
           props.$isActive ? props.theme.colors.primary : props.theme.colors.background
         )};
     }
-
-    &:focus-visible {
-        outline: ${(props) => props.theme.borderWidth.thick} solid
-          ${(props) => props.theme.colors.primary};
-        outline-offset: ${(props) => props.theme.borderWidth.thick};
-    }
 `
 
 interface ErrorNotice {
@@ -95,6 +101,11 @@ interface ErrorNotice {
 }
 
 interface AdminHeaderProps {
+  // Steps in the history of the notes
+  canGoBack: boolean
+  canGoForward: boolean
+  onBack: () => void
+  onForward: () => void
   // Name of the active adventure; null without one, '' while it is loading
   adventureName: string | null
   // Replaces the adventure name while it is set
@@ -107,6 +118,10 @@ interface AdminHeaderProps {
 }
 
 function AdminHeader({
+  canGoBack,
+  canGoForward,
+  onBack,
+  onForward,
   adventureName,
   errorNotice,
   isDashboardOpen,
@@ -117,8 +132,48 @@ function AdminHeader({
   const theme = useTheme()
   const { isFullscreen, toggle: toggleFullscreen } = useDocumentFullscreen()
 
+  const historyButtons = [
+    {
+      name: 'Zurück',
+      icon: arrowLeftIcon,
+      isEnabled: canGoBack,
+      onClick: onBack,
+      testId: 'history-back',
+    },
+    {
+      name: 'Vor',
+      icon: arrowRightIcon,
+      isEnabled: canGoForward,
+      onClick: onForward,
+      testId: 'history-forward',
+    },
+  ]
+
   return (
     <Header data-test-id="admin-header">
+      <ButtonGroup $isTranslucent={isTranslucent} data-test-id="history-buttons">
+        {historyButtons.map(({
+          name, icon, isEnabled, onClick, testId,
+        }) => (
+          <IconButton
+            key={testId}
+            type="button"
+            title={name}
+            aria-label={name}
+            disabled={!isEnabled}
+            data-test-id={testId}
+            onClick={onClick}
+          >
+            <ReactSVG
+              src={icon}
+              beforeInjection={(svg) => {
+                const fill = isEnabled ? theme.colors.text.color : theme.colors.text.muted
+                svg.setAttribute('style', `fill: ${fill}`)
+              }}
+            />
+          </IconButton>
+        ))}
+      </ButtonGroup>
       {errorNotice ? (
         <ErrorBar message={errorNotice.message} onRetry={errorNotice.onRetry} />
       ) : (

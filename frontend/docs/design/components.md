@@ -21,7 +21,7 @@ Größe nach [1.2](../../DESIGN.md#12-tokens) Größen, Icon nach [1.4](../../DE
 | Padding | `0` (Reset bei `<button>`) |
 | Farbe | Hintergrund in der [Kopfzeile](#kopfzeile) und der Hinweisleiste transparent, sonst nach [2.2](../../DESIGN.md#22-rollen) und [2.4](../../DESIGN.md#24-zustände) |
 | Dashboard-Panels | gemeinsame Styled Component `PanelButton` ([src/components/PanelButton.tsx](../../src/components/PanelButton.tsx)): Fläche `background`, Fokus als Outline `borderWidth.thick` in `primary` (`:focus-visible`); „In neuem Fenster öffnen“, „QR-Code“ und „−“/„+“ im [Level-Stepper](#level-stepper) (dort Zeichen statt Icon, `text.lg` `semibold`; deaktiviert Zeichen in `text.muted`, `cursor: default`); die Sound-Buttons haben keine eigene Fläche, die Fläche ist ihre Gruppe |
-| Beispiele | Sound-Buttons, Dashboard (Kopfzeile, aktiv bei offenem Dashboard wie der Menüpunkt der [Navigationsleiste](#navigationsleiste); `aria-expanded`, `aria-controls`), Vollbild (Kopfzeile, aktiv im Vollbild; `aria-pressed`), In neuem Fenster öffnen, QR-Code, Play/Pause, Nach oben, Menüpunkte der [Navigationsleiste](#navigationsleiste) (dort abweichend inaktiv ohne eigene Fläche und Icon `size.iconLg`; der allgemeine Icon-Button bleibt gefüllt) |
+| Beispiele | Sound-Buttons, Dashboard (Kopfzeile, aktiv bei offenem Dashboard wie der Menüpunkt der [Navigationsleiste](#navigationsleiste); `aria-expanded`, `aria-controls`), Vollbild (Kopfzeile, aktiv im Vollbild; `aria-pressed`), Zurück und Vor (Kopfzeile, ohne Ziel `disabled`), In neuem Fenster öffnen, QR-Code, Play/Pause, Nach oben, Menüpunkte der [Navigationsleiste](#navigationsleiste) (dort abweichend inaktiv ohne eigene Fläche und Icon `size.iconLg`; der allgemeine Icon-Button bleibt gefüllt) |
 | Player | Settings-Button des [Settings-Menüs](#settings-menü): Fläche, Rand und Lichtkante wie die [Kachel](#kachel) (mit Hintergrundbild durchscheinend), `radius.md` |
 
 ## Text-Button
@@ -113,7 +113,7 @@ der Settings-Button dieselbe Fläche; durchscheinend, solange das Hintergrundbil
 | Abweichende Fläche | Hinweisleiste `error`, [Bühne](#bühne) `background`, beide immer deckend; Form, Rand und Lichtkante wie oben |
 | Durchscheinend | im Admin nur mit Hintergrundbild: Navigationsleiste und ihr Panel, Abenteuername und Button-Gruppe der Kopfzeile, Notizseiten, Dashboard-Panels; auf Wall und Ground immer. Flächen in den Kacheln (`background`) bleiben deckend |
 | Verwendung | [Navigationsleiste](#navigationsleiste) und ihr Panel, Kacheln der [Kopfzeile](#kopfzeile) (Abenteuername, Button-Gruppe, [Hinweisleiste](#hinweisleiste)), Notizseiten, [Dashboard-Panels](#dashboard-panel), [Bühne](#bühne); Wall und Ground siehe oben |
-| Notizseite | volle Breite der mittleren Spalte, Innenabstand `space.7` oben/unten, `space.8` seitlich; der Text darin höchstens `LINE_MAX_WIDTH` breit und zentriert; Abstand zwischen den Seiten `space.5`. Der Nach-oben-Button schwebt über den Kacheln und hat deshalb die Fläche `background` |
+| Notizseite | volle Breite der mittleren Spalte, Innenabstand `space.7` oben/unten, `space.8` seitlich; der Text darin höchstens `LINE_MAX_WIDTH` breit und zentriert; Abstand zwischen den Seiten `space.5`. Der Nach-oben-Button schwebt über den Kacheln und hat deshalb die Fläche `background`. Links in `primary` ohne Unterstreichung; ein Querverweis ohne Ziel als Text in `error`, gepunktet unterstrichen, `cursor: default`, Tooltip „Verweis-Ziel nicht gefunden“ |
 
 ## Abenteuer-Hintergrund
 
@@ -411,11 +411,11 @@ Dashboard), scrollt nie ([screen-layouts.md](screen-layouts.md#screen-layouts)).
 
 | Eigenschaft | Wert |
 |---|---|
-| Aufbau | Flex-Zeile aus [Kacheln](#kachel), `gap` `space.4`: Abenteuername (bzw. Hinweisleiste) über die ganze restliche Breite (`flex: 1`), rechtsbündig eine Button-Gruppe mit „Vollbild“ (`fullscreen.svg` bzw. `fullscreenExit.svg`) und „Dashboard“ (`dashboard.svg`) |
+| Aufbau | Flex-Zeile aus [Kacheln](#kachel), `gap` `space.4`: ganz links eine Button-Gruppe mit „Zurück“ (`arrowLeft.svg`) und „Vor“ (`arrowRight.svg`, `data-test-id="history-buttons"`), daneben Abenteuername (bzw. Hinweisleiste) über die ganze restliche Breite (`flex: 1`), rechtsbündig eine Button-Gruppe mit „Vollbild“ (`fullscreen.svg` bzw. `fullscreenExit.svg`) und „Dashboard“ (`dashboard.svg`). Die linke Gruppe steht auch bei Hinweisleiste und ausgeblendetem Dashboard |
 | Höhe | alle Kacheln gleich hoch: `size.control.md` plus Innenabstand und Rand der Button-Gruppen; Abenteuername und Hinweisleiste strecken sich auf diese Höhe; immer einzeilig |
 | Abenteuername | Kachel mit dem Namen des aktiven Abenteuers, nur Anzeige (kein Button, `data-test-id="adventure-name"`): `text.md` `bold`, einzeilig mit Ellipse (voller Name als `title`), mittig, Innenabstand `0 space.5`; ohne Abenteuer „Kein Abenteuer“, solange die Abenteuer laden leer. Gewechselt wird im [Panel „Einstellungen“](#panel-einstellungen) |
 | Button-Gruppe | Kachel mit Innenabstand `space.1` und `gap` `space.1`; Buttons darin `radius.md`, so ergibt sich außen `radius.lg` |
-| Buttons | [Icon-Buttons](#icon-button), inaktiv transparent, Hover `background`. „Dashboard“: aktiv bei offenem Dashboard Fläche `primary`, Icon `onPrimary` (auch bei Hover); Fokus als Outline `borderWidth.thick` in `primary`. „Vollbild“ wie „Dashboard“, aktiv solange das Admin-Fenster im Vollbild ist (`aria-pressed`) |
+| Buttons | [Icon-Buttons](#icon-button), inaktiv transparent, Hover `background`; Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`). „Zurück“ und „Vor“ (`title` und `aria-label`, keine Toggle-Buttons): ohne Ziel im Verlauf `disabled`, Icon `text.muted`, ohne Hover-Fläche, `cursor: default`; nach dem Laden beide deaktiviert. „Dashboard“: aktiv bei offenem Dashboard Fläche `primary`, Icon `onPrimary` (auch bei Hover); Fokus als Outline `borderWidth.thick` in `primary`. „Vollbild“ wie „Dashboard“, aktiv solange das Admin-Fenster im Vollbild ist (`aria-pressed`) |
 | Fehler | bei einem Fehler ersetzt die [Hinweisleiste](#hinweisleiste) den Abenteuernamen an derselben Stelle und in derselben Größe; die Button-Gruppe bleibt, ein Abenteuerwechsel ist währenddessen nicht möglich (Abenteuer-Auswahl deaktiviert) |
 
 ## Auswahlliste

@@ -64,6 +64,8 @@ import {
   saveFightOrder,
   startFight,
 } from '../service/fight'
+import { HistoryStep } from '../notes/historyShortcuts'
+import { useHistoryShortcuts, useNoteHistory } from '../notes/useNoteHistory'
 import { saveGroundGrid, saveGroundGridCellSize, saveWallOverlay } from '../service/gameTable'
 import { textStyle } from '../style/tokens'
 import GlobalStyle, { hoverScrollbar, tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
@@ -222,7 +224,17 @@ function AdminScreen(): ReactElement {
 
   // Neither kept on the server nor in localStorage: after a reload the notes panel is open again
   const [openPanel, setOpenPanel] = useState<string | null>('docs')
-  const [selectedStoryIndex, setSelectedStoryIndex] = useState<number>(0)
+  const notesScrollRef = useRef<HTMLDivElement>(null)
+  const noteHistory = useNoteHistory(notesScrollRef)
+  const { back: noteBack, forward: noteForward } = noteHistory
+  const handleHistoryStep = useCallback((step: HistoryStep) => {
+    if (step === 'back') {
+      noteBack()
+    } else {
+      noteForward()
+    }
+  }, [noteBack, noteForward])
+  useHistoryShortcuts(handleHistoryStep)
   // Not kept either: after a reload the dashboard is shown again
   const [isDashboardOpen, setIsDashboardOpen] = useState<boolean>(true)
 
@@ -571,8 +583,8 @@ function AdminScreen(): ReactElement {
       icon: notesIcon,
       panel: (
         <DocumentNavigation
-          selectedStoryIndex={selectedStoryIndex}
-          onSelectStory={setSelectedStoryIndex}
+          selectedFolderId={noteHistory.entry.folderId}
+          onSelectFolder={noteHistory.selectFolder}
         />
       ),
     },
@@ -693,6 +705,10 @@ function AdminScreen(): ReactElement {
         )}
         <HeaderArea $area="header">
           <AdminHeader
+            canGoBack={noteHistory.canGoBack}
+            canGoForward={noteHistory.canGoForward}
+            onBack={noteBack}
+            onForward={noteForward}
             adventureName={adventureName}
             errorNotice={shownError === null ? null : errorNotices[shownError]}
             isDashboardOpen={isDashboardOpen}
@@ -702,7 +718,13 @@ function AdminScreen(): ReactElement {
           />
         </HeaderArea>
         <Area $area="notes">
-          <DocumentReader selectedStoryIndex={selectedStoryIndex} isTranslucent={isTranslucent} />
+          <DocumentReader
+            entry={noteHistory.entry}
+            moves={noteHistory.moves}
+            scrollRef={notesScrollRef}
+            onFollow={noteHistory.follow}
+            isTranslucent={isTranslucent}
+          />
         </Area>
         {isDashboardOpen && (
           <Area $area="dashboard">

@@ -156,11 +156,13 @@ defineFeature(feature, (test) => {
         .toHaveLength(0)
     })
 
-    and('the header has only the buttons Vollbild and Dashboard', async () => {
+    and('the header has only the buttons Zurück, Vor, Vollbild and Dashboard', async () => {
       const header = await waitForElement(driver, HEADER)
       const buttons = await header.findElements(By.css('button'))
       const ids = await Promise.all(buttons.map((button) => button.getAttribute('data-test-id')))
-      expect(ids).toEqual(['fullscreen-toggle', 'dashboard-toggle'])
+      expect(ids).toEqual([
+        'history-back', 'history-forward', 'fullscreen-toggle', 'dashboard-toggle',
+      ])
     })
   })
 

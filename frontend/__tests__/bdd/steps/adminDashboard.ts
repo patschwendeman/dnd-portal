@@ -48,12 +48,11 @@ const SCREEN_SPACE = 24
 const MIDDLE_VOLUME = 50
 // Any other volume, so moving the slider to the middle changes it
 const START_VOLUME = 20
-const LEVELING_INDEX = 3
 const SCROLL_TOP = 400
 // Three status waits plus the start of two more browsers, see the scenario
 const SCREENS_SCENARIO_TIMEOUT = 6 * WAIT_TIMEOUT
 
-const entry = (index: number): string => `[data-test-id="notes-entry-${index}"]`
+const entry = (id: string): string => `[data-test-id="notes-entry-${id}"]`
 const panel = (id: string): string => `[data-test-id="dashboard-panel-${id}"]`
 
 const screenStatus = (screen: string): string => (
@@ -311,8 +310,8 @@ defineFeature(feature, (test) => {
     })
 
     and('I selected the notes entry Leveling and scrolled down the notes', async () => {
-      await clickElement(driver, entry(LEVELING_INDEX))
-      await waitForElement(driver, `${NOTES_VIEW} h1#level_1`)
+      await clickElement(driver, entry('leveling'))
+      await waitForElement(driver, `${NOTES_VIEW} h1#note-leveling-level_1--level_1`)
       scrollTop = await driver.executeScript(
         `const notes = document.querySelector('${NOTES_SCROLL}')
         notes.scrollTo({ top: ${SCROLL_TOP}, behavior: 'instant' })
@@ -336,7 +335,7 @@ defineFeature(feature, (test) => {
     })
 
     and('Leveling is still selected and the notes are at the same scroll position', async () => {
-      expect(await waitForAttribute(driver, entry(LEVELING_INDEX), 'data-active', 'true'))
+      expect(await waitForAttribute(driver, entry('leveling'), 'data-active', 'true'))
         .toBe('true')
       expect(await getScrollTop(driver)).toBe(scrollTop)
     })

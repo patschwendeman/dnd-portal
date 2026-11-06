@@ -3,7 +3,7 @@ Feature: Settings in the admin screen
 Scenario: The header shows the active adventure and no settings button
     Given I am on the admin screen
     Then the header shows the name of the active adventure, not clickable
-    And the header has only the buttons Vollbild and Dashboard
+    And the header has only the buttons Zurück, Vor, Vollbild and Dashboard
 
 Scenario: I open the settings from the lower end of the navigation rail
     Given I am on the admin screen

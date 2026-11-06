@@ -1,7 +1,7 @@
 # DND-48: Querverweise zwischen Notizen und Vor/Zurück im Admin
 
 **Typ:** feat
-**Status:** Entwurf
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -138,26 +138,26 @@ mit einem Klick (oder der Daumentaste der Maus) genau an die Stelle zurückkehrt
 ## Subtasks
 
 ### Frontend
-- [ ] Verzeichnis der Notiz-Ordner (E2). `DocumentNavigation` listet daraus Main, Fight, Leveling, Mechaniken.
+- [x] Verzeichnis der Notiz-Ordner (E2). `DocumentNavigation` listet daraus Main, Fight, Leveling, Mechaniken.
   Test-ID der Einträge nach `id` statt Index.
-- [ ] Reine Funktionen mit Unit-Tests: Anker aus Überschrift (E4), Auflösung eines Links (E3).
-- [ ] Link-Prüfung als vitest-Test über `public/story/` (E5).
-- [ ] `DocumentReader`: eigene Renderer für `a` (intern, extern, defekt) und Überschriften (IDs pro Datei, E4).
+- [x] Reine Funktionen mit Unit-Tests: Anker aus Überschrift (E4), Auflösung eines Links (E3).
+- [x] Link-Prüfung als vitest-Test über `public/story/` (E5).
+- [x] `DocumentReader`: eigene Renderer für `a` (intern, extern, defekt) und Überschriften (IDs pro Datei, E4).
   Anzeige nach `id`. Sprung zu Datei bzw. Anker und Wiederherstellen einer Scrollposition nach dem Laden (E6).
-- [ ] Verlauf (E6) als reine Logik mit Unit-Tests, Hook im `AdminScreen` statt `selectedStoryIndex`. Panel-Auswahl,
+- [x] Verlauf (E6) als reine Logik mit Unit-Tests, Hook im `AdminScreen` statt `selectedStoryIndex`. Panel-Auswahl,
   Reader und Kopfzeile hängen daran.
-- [ ] `AdminHeader`: Kachel „Zurück | Vor“ (E7), neue Icons.
-- [ ] Tastatur und Maus (E8) im `AdminScreen`.
-- [ ] Inhalte (E9) in `public/story/`.
-- [ ] BDD: neues Feature (z. B. `adminNotesNavigation.feature`) für AK1–AK7. `adminNavigation.feature` an die
+- [x] `AdminHeader`: Kachel „Zurück | Vor“ (E7), neue Icons.
+- [x] Tastatur und Maus (E8) im `AdminScreen`.
+- [x] Inhalte (E9) in `public/story/`.
+- [x] BDD: neues Feature (z. B. `adminNotesNavigation.feature`) für AK1–AK7. `adminNavigation.feature` an die
   Einträge ohne „Side“ anpassen.
 
 ### Doku
-- [ ] `docs/screens.md` (Admin Ist: Kopfzeile, Notizen, Verlauf, Tastatur/Maus; ggf. Soll ergänzen)
-- [ ] `docs/known-issues.md` (Eintrag „Side leer“ entfernen; Kontrast-Hinweis auf Links in den Notizen allgemein)
-- [ ] `docs/domain.md` (Zeile „Notizen“: Querverweise, Ordner-Verzeichnis)
-- [ ] `frontend/CLAUDE.md` (Struktur; Abschnitt, wie Notizen und Querverweise geschrieben werden)
-- [ ] `frontend/DESIGN.md`, `frontend/docs/design/components.md`, `frontend/docs/design/screen-layouts.md`
+- [x] `docs/screens.md` (Admin Ist: Kopfzeile, Notizen, Verlauf, Tastatur/Maus; ggf. Soll ergänzen)
+- [x] `docs/known-issues.md` (Eintrag „Side leer“ entfernen; Kontrast-Hinweis auf Links in den Notizen allgemein)
+- [x] `docs/domain.md` (Zeile „Notizen“: Querverweise, Ordner-Verzeichnis)
+- [x] `frontend/CLAUDE.md` (Struktur; Abschnitt, wie Notizen und Querverweise geschrieben werden)
+- [x] `frontend/DESIGN.md`, `frontend/docs/design/components.md`, `frontend/docs/design/screen-layouts.md`
   (Kopfzeile mit Kachel links, deaktivierte Icon-Buttons, Darstellung defekter Links)
 
 ## Akzeptanzkriterien

@@ -3,7 +3,7 @@ Feature: Navigation rail in the admin screen
 Scenario: The notes panel is open when the admin screen is loaded
     Given I am on the admin screen
     Then I see the navigation rail with the active menu item Notizen
-    And the panel shows the notes entries Main, Fight, Side, Leveling, Mechaniken
+    And the panel shows the notes entries Main, Fight, Leveling, Mechaniken
     And Main is selected and the main notes are shown
 
 Scenario: I select notes in the panel

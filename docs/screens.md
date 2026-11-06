@@ -20,7 +20,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - Szenen auswählen und aktivieren. Alle Szenen sind gleich; einen Kampf startet der Spielleiter in jeder Szene über
   den Menüpunkt „Kampf“ (umgesetzt im Admin, die Initiative zeigt auch die Wall, „Am Zug“ und „Zug beenden“ der
   Player; Ground ist geplant).
-- Notizen (Markdown) einsehen: Story, NPCs, Kämpfe.
+- Notizen (Markdown) einsehen: Story, NPCs, Kämpfe. Regeln per Querverweis nachschlagen und mit „Zurück“ an die
+  Lesestelle zurückkehren (umgesetzt); geplant: Vorschau eines Verweises ohne Sprung.
 - Navigationsleiste links mit Menüpunkten, die das Panel daneben füllen: „Notizen“, „Szenen“ und „Kampf“, abgesetzt
   ganz unten „Einstellungen“ für das, was man einmal einstellt (umgesetzt). Die Mitte zeigt dabei weiter die Notizen.
 - Kampf: Initiative-Reihenfolge, Zug und Runde im Blick, NPCs mit der Nummer ihrer Figur (umgesetzt); geplant:
@@ -40,8 +41,9 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Hintergrund, ohne Trennlinien und ohne Bottom-Bar. Ganz links die Navigationsleiste, daneben das Panel des aktiven
   Menüpunkts (beide über die volle Höhe, mit Abstand zum oberen und unteren Rand), in der Mitte die Notizen (je Seite
   eine Kachel), rechts das Dashboard (ein Drittel der Breite von Notizen und Dashboard, mindestens 400px und höchstens
-  560px; die Notizen bekommen den Rest). Über Notizen und Dashboard steht eine feste Kopfzeile: links der Name des
-  aktiven Abenteuers bis zur Button-Gruppe, rechts eine Kachel mit „Vollbild“ und „Dashboard“.
+  560px; die Notizen bekommen den Rest). Über Notizen und Dashboard steht eine feste Kopfzeile: ganz links eine Kachel
+  mit „Zurück“ und „Vor“, daneben der Name des aktiven Abenteuers bis zur Button-Gruppe rechts, einer Kachel mit
+  „Vollbild“ und „Dashboard“.
   Notizen und Dashboard scrollen jeweils für sich unter der Kopfzeile, die stehen bleibt; der Abstand darunter bleibt
   frei, ganz nach unten gescrollt endet die letzte Kachel auf Höhe der Navigationsleiste.
 - **Abenteuer-Hintergrund:** Hinter den Kacheln liegt das Hintergrundbild des aktiven Abenteuers zum Theme des
@@ -72,8 +74,10 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   die Notizen werden breiter und kein Menüpunkt ist hervorgehoben; ein weiterer Klick klappt es wieder aus. Auswahl und
   Scrollposition der Notizen bleiben dabei erhalten. Menüpunkt und Einklapp-Zustand werden nicht gespeichert, nach
   einem Reload ist „Notizen“ wieder offen.
-- **Kopfzeile:** Links steht in einer Kachel der Name des aktiven Abenteuers, nur zur Anzeige (kein Button); ohne
-  Abenteuer „Kein Abenteuer“. Rechts die Kachel mit „Vollbild“ und „Dashboard“.
+- **Kopfzeile:** Ganz links die Kachel mit den Icon-Buttons „Zurück“ und „Vor“ für den Verlauf der Notizen (siehe
+  **Notizen**); ohne Ziel sind sie deaktiviert, nach dem Laden beide. Die Kachel steht auch bei der Hinweisleiste und bei
+  ausgeblendetem Dashboard. Daneben steht in einer Kachel der Name des aktiven Abenteuers, nur zur Anzeige (kein
+  Button); ohne Abenteuer „Kein Abenteuer“. Rechts die Kachel mit „Vollbild“ und „Dashboard“.
 - **Einstellungen:** Das Panel „Einstellungen“ zeigt unter Labels die Abschnitte „Abenteuer“, „Darstellung“ und
   „Ground-Raster“ (siehe die folgenden Punkte). Es öffnet, wechselt und klappt ein wie die anderen Panels.
 - **Abenteuer-Auswahl:** Im Abschnitt „Abenteuer“ des Panels „Einstellungen“ eine Auswahlliste über die Breite des
@@ -158,9 +162,24 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Unten auf dem Bild liegen auf einem dunklen Verlauf das Label „Aktive Szene“, Name und Beschreibung (umbrechend, nie
   gekürzt; bei langem Text wird die Bühne höher als 16:9). Fehlt ein Bild, bleibt seine Fläche leer. Ohne aktive Szene
   ein Panel mit dem Hinweis „Keine Szene aktiv“.
-- **Notizen:** Das Panel „Notizen“ listet die Einträge Main, Fight, Side, Leveling, Mechaniken (Start: Main; per
-  Tastatur bedienbar wie die Szenenliste); die Mitte zeigt die Notizen des gewählten Eintrags (Markdown aus `public/story/`), auch bei eingeklapptem Panel.
-  Inhaltsverzeichnis-Links, Bilder öffnen in neuem Tab. Eintrag „Side“ ist leer (Ordner fehlt).
+- **Notizen:** Das Panel „Notizen“ listet die Einträge Main, Fight, Leveling, Mechaniken (je ein Ordner aus
+  `public/story/`; Start: Main; per Tastatur bedienbar wie die Szenenliste); die Mitte zeigt alle Dateien des gewählten
+  Eintrags als Kacheln untereinander (Markdown), auch bei eingeklapptem Panel. Bilder und Links ins Web öffnen in neuem
+  Tab.
+- **Querverweise:** Links in den Notizen können auf eine Überschrift im selben Ordner (Inhaltsverzeichnisse), auf eine
+  andere Datei oder auf eine Überschrift in einer anderen Datei zeigen, auch in einem anderen Ordner (z. B. „Rast“ in
+  Leveling auf „Rasten“ in Mechaniken). Ein Klick wechselt bei Bedarf den Eintrag (das Panel markiert ihn) und scrollt
+  die Überschrift bzw. den Anfang der Datei nach oben; URL und Browser-Verlauf bleiben unverändert. Ein Link ohne Ziel
+  steht in `error`, gepunktet unterstrichen, mit Tooltip „Verweis-Ziel nicht gefunden“, und ein Klick tut nichts.
+- **Verlauf der Notizen:** Querverweise, Links im Inhaltsverzeichnis und der Wechsel des Eintrags im Panel (nicht der
+  Klick auf den aktiven) legen einen Eintrag an; vorher merkt sich der Verlauf die Scrollposition. „Zurück“ und „Vor“
+  in der Kopfzeile stellen Eintrag und Scrollposition wieder her; ein neuer Sprung nach „Zurück“ verwirft „Vor“, wie im
+  Browser. Höchstens 50 Einträge, nur im Speicher: nach einem Reload ist der Verlauf leer und Main offen. Nach einem
+  Ordnerwechsel springt die Ansicht ohne Animation an die Zielstelle, im selben Ordner scrollt sie weich (ohne
+  Animation bei „Bewegung reduzieren“). Scrollen und „Nach oben“ legen keinen Eintrag an.
+- **Tastatur und Maus:** Im ganzen Admin-Fenster wirken Alt+← und Alt+→ sowie die Daumentasten der Maus wie „Zurück“
+  und „Vor“; der Browser verlässt dabei den Admin nicht, auch ohne Ziel im Verlauf. Hat ein Textfeld den Fokus, bleiben
+  Alt+←/→ beim Feld.
 - **Musik:** Musik und Soundeffekte spielt das Admin-Fenster, das Audioausgabe ist; den Lautsprecher wählt der
   Spielleiter außerhalb der App (Betriebssystem bzw. Browser). Panel „Audio“ mit Play/Pause, rechts daneben dem Titel
   des aktuellen Tracks und darunter dem Zustand („Läuft“ bzw. „Pausiert“), darunter der waagerechte Lautstärke-Slider

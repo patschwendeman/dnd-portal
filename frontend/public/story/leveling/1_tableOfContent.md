@@ -1,7 +1,7 @@
 
 # Inhaltsverzeichnis
 
-* Zum Levelaufstieg ist eine Rast notwendig
+* Zum Levelaufstieg ist eine [Rast](../mechanics/rest.md#rasten) notwendig
 
 1. [Level 1](#level_1)
 2. [Level 2:      300xp](#level_2)
