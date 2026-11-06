@@ -1,7 +1,7 @@
 # DND-49: QR-Code für die Spieler auf dem Wall Screen
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -86,7 +86,7 @@ dass der Spielleiter auf „QR-Code“ klickt und alle Spieler den Code von der 
       `src/realtime/messages.ts` um `join` ergänzen.
 - [x] `GameTablePanel`: Option `{ value: 'join', label: 'QR-Code' }` zwischen „Weltkarte“ und „Aus“. `JoinDialog`,
       Icon-Button, Text „Spieler QR-Code“, Ref/Callbacks und den Import des Icons entfernen. `JoinDialog.tsx` und
-      (falls ungenutzt) `public/assets/icons/qrCode.svg` löschen.
+      (falls ungenutzt) `public/assets/icons/qrCode.svg` löschen. *(Überholt durch E2 nach Review-Runde 1, siehe „Nacharbeit“.)*
 - [x] Wall: Panel „Spieler verbinden“ als eigene Komponente (z. B. `src/components/WallJoinPanel.tsx`), die
       `OverlayPanel`/`PanelHeader`/`PanelTitle` mit der Weltkarte teilt (Styles bei Bedarf in ein gemeinsames Modul
       ziehen). Laden der URL nach E3 (mit `loadLatest`), Darstellung nach E4. `data-test-id`s: `wall-join-layer`,
@@ -224,3 +224,48 @@ manuell prüfbar). Vor dem Abschluss empfohlen: veraltete Ist-Doku nachziehen (H
 - E2E: `wallOverlay` 6/6, `adminDashboard` 6/7 (siehe Hinweis 3). Implementer: alle 13 Suites grün (52 Tests).
 - Manuell offen: Test 1 (Scan, AK7), Test 3 (Hinweis unter localhost ohne `PLAYER_URL`), Test 4 (beide Themes).
 - Konventionen: ein Commit `feat(DND-49): …` nach Schema, keine KI-Signatur.
+
+### Runde 2 – Review vom 2026-11-06 (Commit 36a5015, Gesamtstand gegen e12f339)
+
+**Empfehlung: Abnahme.** Kein blockierender Befund; AK1–AK6 erfüllt, AK7 in der Darstellung erfüllt (Scan nur
+manuell prüfbar). Die Nacharbeit setzt das geänderte E2 vollständig um; die Zeile „Spieler“ entspricht im Aufbau
+`e12f339` (Unterschiede nur Toggle-Zustand, aria-Attribute, Klick-Handler). Keine Ist-Doku verweist mehr auf den
+QR-Code im Admin oder eine Segment-Option „QR-Code“.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 QR-Code auf der Wall einblenden | erfüllt | `GameTablePanel.tsx:178,218-230` (`aria-pressed={isJoinShown}`), `:22-25` (nur `world`/`off`); BDD `wallOverlay.feature:15` |
+| AK2 Wechsel Weltkarte / QR-Code / Aus | erfüllt | `GameTablePanel.tsx:224` (`isJoinShown ? 'off' : 'join'`); BDD `wallOverlay.feature:15`, `:23` |
+| AK3 Player-URL unbekannt | erfüllt | `WallJoinPanel.tsx` unverändert; BDD `wallOverlay.feature:32` per Button |
+| AK4 Später geöffnete Wall | erfüllt | BDD `wallOverlay.feature:38`; Backend `test_ws.py` |
+| AK5 Szenen-/Abenteuerwechsel schließt | erfüllt | BDD `wallOverlay.feature:43` (Button nicht gedrückt, „Aus“ markiert); Backend `test_table.py` |
+| AK6 Button an der alten Stelle, kein Dialog | erfüllt | Diff `e12f339..HEAD` von `GameTablePanel.tsx`; `qrCode.svg` identisch zu `e12f339`; BDD `adminDashboard.feature:54` |
+| AK7 Scannbar aus Abstand | Darstellung erfüllt, Scan offen | `WallJoinPanel.tsx` unverändert; BDD: quadratisch, ≤ 480 px, im Viewport |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+1. **Optik bei `join`:** `ToggleButton` (`GameTablePanel.tsx:85-89`) mit `primary`/`onPrimary` wie `OptionButtons` und
+   „Vollbild“ im `AdminHeader`; dokumentiert in `DESIGN.md` 2.4, `components.md`, `contrast.md:57,59`. Nur per
+   Code-Vergleich geprüft, nicht am Bildschirm.
+2. **Veralteter Testname:** `frontend/__tests__/unit/playerUrl.spec.ts:20` „falls back to the origin of the Admin“
+   (Kommentar in `playerUrl.ts` sagt jetzt „Wall“).
+3. **Plan-Text:** erledigter Subtask „Frontend/GameTablePanel“ beschrieb die verworfene Variante – als überholt markiert.
+4. **Umgebungsbedingt (bekannt):** 4 Backend-Tests (Dev-DB ≠ Seed); E2E „The first interaction makes an admin window
+   the audio output“ (`output_ready: true`); „The dashboard shows its panels next to the notes“ flaky.
+5. **Nebenwirkung der E2E-Läufe:** Dev-Stack hat `active_scene_id` = 2 (vorher `null`), `wall_overlay` = `off`.
+6. **Doku-Suche** (`git grep` außerhalb `docs/tasks/`): keine veralteten Treffer mehr; Mockups unter
+   `frontend/docs/design/mockup/` passen zum Stand.
+
+**Scope und Subtasks**
+- Alle vier Punkte der Nacharbeit erledigt und im Diff von `36a5015` belegt; kein Backend-Code, `WallJoinPanel` oder
+  `WallScreen` geändert; nichts außerhalb des Scopes.
+
+**Checks**
+- Backend: `ruff`, `mypy` grün; pytest 324/328 (4 umgebungsbedingt).
+- Frontend: lint, typecheck, `knip`, build grün; Unit 346/346; `jscpd` nur bekannter Klon.
+- E2E: `wallOverlay` 7/7; `adminDashboard` 6/7 (neues AK6-Szenario grün, rot nur Audio-Output).
+- Manuell offen: Test 1 (Scan, AK7), Test 2 (Wechsel am echten Setup), Test 3 (Hinweis unter localhost ohne
+  `PLAYER_URL`), Test 4 (beide Themes, auch gedrückter Button).
+- Konventionen: `2bd94ab` und `36a5015` je ein Commit `feat(DND-49): …` nach Schema, keine KI-Signatur.
