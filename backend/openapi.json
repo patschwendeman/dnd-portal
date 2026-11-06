@@ -391,7 +391,7 @@
         "type": "object"
       },
       "GameTableState": {
-        "description": "State of the game table shared by Admin, Wall and Ground; `active_scene_id` belongs to the active adventure.\n\n`wall_overlay` is what the Walls show above the scene image (`world`: the world map); it is kept in memory only and\nset to `off` whenever the active scene or adventure changes. `ground_grid` (line colour or `off`) and\n`ground_grid_cell_size` (in px) are the grid of the Grounds, unchanged by scene or adventure changes; the colour is\nkept in memory only (`off` after a restart), the cell size is stored.",
+        "description": "State of the game table shared by Admin, Wall and Ground; `active_scene_id` belongs to the active adventure.\n\n`wall_overlay` is what the Walls show above the scene image (`world`: the world map, `join`: the QR code of the\nPlayer URL); it is kept in memory only and set to `off` whenever the active scene or adventure changes.\n`ground_grid` (line colour or `off`) and `ground_grid_cell_size` (in px) are the grid of the Grounds, unchanged by\nscene or adventure changes; the colour is kept in memory only (`off` after a restart), the cell size is stored.",
         "properties": {
           "active_adventure_id": {
             "anyOf": [
@@ -442,6 +442,7 @@
           "wall_overlay": {
             "enum": [
               "world",
+              "join",
               "off"
             ],
             "title": "Wall Overlay",
@@ -500,6 +501,7 @@
           "wall_overlay": {
             "enum": [
               "world",
+              "join",
               "off"
             ],
             "title": "Wall Overlay",

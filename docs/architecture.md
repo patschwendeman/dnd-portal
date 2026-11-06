@@ -35,7 +35,7 @@
   Verbindungen (auch an andere Admins; der letzte Schreibzugriff gewinnt, keine Sperren). Der Provider speist daraus
   `ActiveAdventureContext`, `ActiveSceneContext` (nur lesend), das Theme, das Wall-Overlay und das Ground-Raster (`GameTableContext`). Die Screens laden daraufhin neu vom
   Backend: Wall und Ground die Szene, die Wall bei einem Abenteuerwechsel dessen Spieler (`GET /adventures/{id}`, für
-  Party und Initiative), der Admin bei einem Abenteuerwechsel dessen Szenen und nach jedem Snapshot
+  Party und Initiative) und bei jedem Wechsel des Wall-Overlays auf `join` die Player-URL (`GET /table/join`), der Admin bei einem Abenteuerwechsel dessen Szenen und nach jedem Snapshot
   Spieler und Level des aktiven Abenteuers (`GET /adventures/{id}`; `global_level` steht nicht im Snapshot), ebenso
   Charakterauswahl und Player Screen (`PlayerLayout`). Ohne aktive Szene zeigen Wall und Ground
   nur die Hintergrundfarbe und stellen keinen Request. Bis zum ersten Snapshot gilt „kein Abenteuer, keine Szene,
@@ -43,7 +43,7 @@
 - Schreiben nur per REST, **ohne lokale Vorwegnahme**: Der Admin wechselt das Abenteuer per `PATCH /table
   {"active_adventure_id": <id>}`, die Szene per `PATCH /adventures/{id} {"active_scene_id": <id>}`, das Level per
   `PATCH /adventures/{id} {"global_level": <n>}` und das Theme per `PATCH /table {"theme": …}`; das Wall-Overlay
-  per `PATCH /table {"wall_overlay": "world" | "off"}` (Panel „Spieltisch“, Zeile „Wall“) und das Ground-Raster per `PATCH /table
+  per `PATCH /table {"wall_overlay": "world" | "join" | "off"}` (Panel „Spieltisch“, Zeile „Wall“; `join`: QR-Code für die Spieler) und das Ground-Raster per `PATCH /table
   {"ground_grid": "black" | "white" | "off"}` (Panel „Spieltisch“, Zeile „Ground“) bzw.
   `{"ground_grid_cell_size": 100–200, Schritt 10}` (Panel „Einstellungen“, Slider beim Loslassen); das Theme wählt
   er im Panel „Einstellungen“. Wall und Ground schreiben nichts. Ändert sich die aktive Szene des aktiven Abenteuers
@@ -214,7 +214,7 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
 | `/table/audio` | `AudioState`: Musikzustand (200), siehe [Audio](#audio) |
 | `PATCH /table/audio` | Body `AudioUpdate`, Antwort `AudioState` (200); 422 im FastAPI-Standardformat bei `volume` außerhalb 0–100 bzw. `null`; `playing: true` bei leerer Playlist ändert `playing` nicht |
 | `POST /table/sounds` | Body `SoundRequest`, 204 (auch ohne Audioausgabe); 422 bei unbekanntem Namen |
-| `/table/join` | `JoinInfo { player_url: str \| null }`: URL des Player Screens im LAN aus `Settings.player_url` (Umgebungsvariable `PLAYER_URL`, leer = `null`), Basis des QR-Codes im Admin (200) |
+| `/table/join` | `JoinInfo { player_url: str \| null }`: URL des Player Screens im LAN aus `Settings.player_url` (Umgebungsvariable `PLAYER_URL`, leer = `null`), Basis des QR-Codes auf der Wall (200) |
 | `/ws` | WebSocket des Spieltischs (nicht in OpenAPI), siehe [WebSocket `/ws`](#websocket-ws) |
 | `/media/{storage_key}` | Mediendatei aus dem Medienordner (`StaticFiles`, nicht in OpenAPI): 200 bzw. 206 bei `Range`-Header (Audio-Seek), 404 bei fehlender Datei oder Pfad außerhalb des Ordners |
 
@@ -251,11 +251,11 @@ Player           { id: int, player_name: str, character_name: str, race: str,
 AdventureUpdate  { active_scene_id?: int | null, global_level?: int (1–20) }  Request-Body von PATCH
 
 GameTableState   { active_adventure_id: int | null, active_scene_id: int | null, theme: "dark" | "tavern",
-                   wall_overlay: "world" | "off", ground_grid: "black" | "white" | "off",
+                   wall_overlay: "world" | "join" | "off", ground_grid: "black" | "white" | "off",
                    ground_grid_cell_size: int (100–200, Schritt 10) }
                    active_scene_id = active_scene_id des aktiven Abenteuers (null ohne Abenteuer)
-GameTableUpdate  { active_adventure_id?: int | null, theme?: "dark" | "tavern", wall_overlay?: "world" | "off",
-                   ground_grid?: "black" | "white" | "off", ground_grid_cell_size?: int (100–200, Schritt 10) }
+GameTableUpdate  { active_adventure_id?: int | null, theme?: "dark" | "tavern",
+                   wall_overlay?: "world" | "join" | "off", ground_grid?: "black" | "white" | "off", ground_grid_cell_size?: int (100–200, Schritt 10) }
                                                                                 Request-Body von PATCH /table
 
 AudioState       { playing: bool, track: Track | null, volume: int, output_ready: bool }   volume in Prozent
@@ -458,7 +458,7 @@ bis zu 120 s.
 Screens, `prod` → `http://<IP>:8080/`, `dev` → `http://<IP>:5173/`; ohne IP bleibt sie leer. Eine bereits gesetzte
 `PLAYER_URL` aus der Umgebung hat Vorrang. `compose.dev.yaml` und `compose.prod.yaml` reichen sie per `environment` an
 den Service `api` weiter (leer als Default, überschreibt einen Wert aus `backend/.env`); die API liefert sie unter
-`GET /table/join` an den QR-Code-Dialog des Admins. Der Container selbst kennt die LAN-IP nicht.
+`GET /table/join` an die Wall für deren QR-Code (Wall-Overlay `join`). Der Container selbst kennt die LAN-IP nicht.
 
 Einmalig `./script.sh install`, danach funktionieren alle Befehle aus jedem Ordner als `dnd prod|dev|stop|reset|logs` (das
 Skript ermittelt sein Verzeichnis über die Symlink-Kette; Hilfe und Ausgaben zeigen den aufgerufenen Namen).
@@ -530,11 +530,11 @@ oben: `backend/.env`.
 UI unter http://localhost:8080/admin, `/wall` und `/ground`; Wall und Ground können auch in anderen Browsern oder auf
 anderen Geräten laufen (`http://<IP des Rechners>:8080/wall`). Smartphones öffnen die Charakterauswahl über
 `http://<IP des Rechners>:8080/` (gleicher Build, kein Sonder-Build) und von dort den Player Screen ihres Charakters
-(`/player/<id>`): am einfachsten per QR-Code im Admin (Dashboard,
-Panel „Spieltisch“, Icon-Button „QR-Code“) oder über die URL, die `dnd prod` ausgibt. Der Dialog nimmt `player_url` aus `GET /table/join`;
-ist sie `null` (Stack ohne Skript gestartet), nimmt er den Origin des Admins, sofern dieser nicht über `localhost`,
-`127.0.0.1` oder `[::1]` geöffnet ist (`selectPlayerUrl`, `src/utils/playerUrl.ts`), sonst zeigt er den Hinweis
-„Player-URL unbekannt …“. nginx (`frontend/nginx.conf`) leitet `/api/` an die API weiter (Präfix entfernt,
+(`/player/<id>`): am einfachsten per QR-Code auf der Wall (im Admin Dashboard, Panel „Spieltisch“, Zeile „Wall“,
+„QR-Code“) oder über die URL, die `dnd prod` ausgibt. Die Wall (`WallJoinPanel`) nimmt `player_url` aus
+`GET /table/join`; ist sie `null` (Stack ohne Skript gestartet), nimmt sie den Origin der Wall, sofern diese nicht über
+`localhost`, `127.0.0.1` oder `[::1]` geöffnet ist (`selectPlayerUrl`, `src/utils/playerUrl.ts`), sonst zeigt sie den
+Hinweis „Player-URL unbekannt …“; ebenso, wenn das Laden fehlschlägt. nginx (`frontend/nginx.conf`) leitet `/api/` an die API weiter (Präfix entfernt,
 `Range` für Medien funktioniert) und `/ws` als WebSocket (`Upgrade`/`Connection`, `proxy_read_timeout` 120 s), beide
 mit dem ursprünglichen `Host`-Header; Port 8000 bleibt für direkte Zugriffe veröffentlicht. nginx liefert `index.html`
 auch für direkt aufgerufene Unterrouten aus (SPA-Fallback); die Dateien aus `public/` (Sounds, Icons, Notizen) stecken im

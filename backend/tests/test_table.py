@@ -249,6 +249,37 @@ def test_wall_overlay_set_with_the_adventure_change_wins(
     assert response.json()["wall_overlay"] == "world"
 
 
+def test_patch_sets_wall_overlay_join(client: TestClient, db: Session) -> None:
+    client.patch("/table", json={"wall_overlay": "world"})
+
+    response = client.patch("/table", json={"wall_overlay": "join"})
+
+    assert response.status_code == 200
+    assert response.json()["wall_overlay"] == "join"
+    assert client.get("/table").json()["wall_overlay"] == "join"
+    assert client.patch("/table", json={"wall_overlay": "world"}).json()["wall_overlay"] == "world"
+
+
+def test_scene_change_closes_the_join_overlay(client: TestClient, db: Session) -> None:
+    client.patch("/table", json={"active_adventure_id": 1})
+    client.patch("/adventures/1", json={"active_scene_id": 5})
+    client.patch("/table", json={"wall_overlay": "join"})
+
+    client.patch("/adventures/1", json={"active_scene_id": 6})
+
+    assert client.get("/table").json()["wall_overlay"] == "off"
+
+
+def test_adventure_change_closes_the_join_overlay(
+    client: TestClient, db: Session, other_adventure: dict[str, int]
+) -> None:
+    client.patch("/table", json={"active_adventure_id": 1, "wall_overlay": "join"})
+
+    response = client.patch("/table", json={"active_adventure_id": other_adventure["id"]})
+
+    assert response.json()["wall_overlay"] == "off"
+
+
 def test_patch_sets_ground_grid_and_keeps_unset_fields(client: TestClient, db: Session) -> None:
     client.patch("/table", json={"active_adventure_id": 1, "theme": "tavern", "wall_overlay": "world"})
     client.patch("/adventures/1", json={"active_scene_id": 5})

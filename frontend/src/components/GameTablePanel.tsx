@@ -1,10 +1,7 @@
-import {
-  ReactElement, ReactNode, useCallback, useContext, useRef, useState,
-} from 'react'
+import { ReactElement, ReactNode, useContext } from 'react'
 import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
 
-import JoinDialog from './JoinDialog'
 import OptionButtons from './OptionButtons'
 import PanelButton from './PanelButton'
 import { GameTableContext } from '../context/context'
@@ -13,7 +10,6 @@ import { textStyle } from '../style/tokens'
 import { playerStatusText, screenStatusText } from '../utils/screenStatus'
 
 import openWindowIcon from '/assets/icons/openWindow.svg'
-import qrCodeIcon from '/assets/icons/qrCode.svg'
 
 const STATUS_DOT_SIZE = '8px'
 // Fits the screen names; a long status text wraps, so the controls keep their width in the
@@ -24,6 +20,7 @@ type TableScreen = 'wall' | 'ground'
 
 const WALL_OVERLAY_OPTIONS: readonly { value: WallOverlay, label: string }[] = [
   { value: 'world', label: 'Weltkarte' },
+  { value: 'join', label: 'QR-Code' },
   { value: 'off', label: 'Aus' },
 ]
 
@@ -170,70 +167,47 @@ function GameTablePanel({
   onWallOverlayChange,
   onGroundGridChange,
 }: GameTablePanelProps): ReactElement {
-  const theme = useTheme()
   const { screens } = useContext(GameTableContext)
-  const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false)
-  const joinButtonRef = useRef<HTMLButtonElement>(null)
-
-  const closeJoinDialog = useCallback(() => {
-    setIsJoinDialogOpen(false)
-    joinButtonRef.current?.focus()
-  }, [])
 
   return (
-    <>
-      <Rows>
-        <ScreenRow
-          screen="wall"
-          name="Wall"
-          path="/wall"
-          control={(
-            <OptionButtons
-              options={WALL_OVERLAY_OPTIONS}
-              value={wallOverlay}
-              label="Wall-Anzeige"
-              testIdPrefix="wall-overlay"
-              onChange={onWallOverlayChange}
-            />
-          )}
-        />
-        <ScreenRow
-          screen="ground"
-          name="Ground"
-          path="/ground"
-          control={(
-            <OptionButtons
-              options={GROUND_GRID_OPTIONS}
-              value={groundGrid}
-              label="Ground-Anzeige"
-              testIdPrefix="ground-grid"
-              onChange={onGroundGridChange}
-            />
-          )}
-        />
-        <Row>
-          <ScreenInfo>
-            <ScreenName>Spieler</ScreenName>
-            <PanelText data-test-id="screen-players">
-              {playerStatusText(screens?.player ?? null)}
-            </PanelText>
-          </ScreenInfo>
-          <PanelText>Spieler QR-Code</PanelText>
-          <PanelButton
-            ref={joinButtonRef}
-            type="button"
-            title="QR-Code"
-            aria-label="QR-Code für Spieler"
-            aria-haspopup="dialog"
-            data-test-id="join-button"
-            onClick={() => setIsJoinDialogOpen(true)}
-          >
-            <PanelIcon src={qrCodeIcon} fill={theme.colors.text.color} />
-          </PanelButton>
-        </Row>
-      </Rows>
-      {isJoinDialogOpen && <JoinDialog onClose={closeJoinDialog} />}
-    </>
+    <Rows>
+      <ScreenRow
+        screen="wall"
+        name="Wall"
+        path="/wall"
+        control={(
+          <OptionButtons
+            options={WALL_OVERLAY_OPTIONS}
+            value={wallOverlay}
+            label="Wall-Anzeige"
+            testIdPrefix="wall-overlay"
+            onChange={onWallOverlayChange}
+          />
+        )}
+      />
+      <ScreenRow
+        screen="ground"
+        name="Ground"
+        path="/ground"
+        control={(
+          <OptionButtons
+            options={GROUND_GRID_OPTIONS}
+            value={groundGrid}
+            label="Ground-Anzeige"
+            testIdPrefix="ground-grid"
+            onChange={onGroundGridChange}
+          />
+        )}
+      />
+      <Row>
+        <ScreenInfo>
+          <ScreenName>Spieler</ScreenName>
+          <PanelText data-test-id="screen-players">
+            {playerStatusText(screens?.player ?? null)}
+          </PanelText>
+        </ScreenInfo>
+      </Row>
+    </Rows>
   )
 }
 

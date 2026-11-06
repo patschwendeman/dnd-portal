@@ -381,10 +381,10 @@ export interface components {
          * GameTableState
          * @description State of the game table shared by Admin, Wall and Ground; `active_scene_id` belongs to the active adventure.
          *
-         *     `wall_overlay` is what the Walls show above the scene image (`world`: the world map); it is kept in memory only and
-         *     set to `off` whenever the active scene or adventure changes. `ground_grid` (line colour or `off`) and
-         *     `ground_grid_cell_size` (in px) are the grid of the Grounds, unchanged by scene or adventure changes; the colour is
-         *     kept in memory only (`off` after a restart), the cell size is stored.
+         *     `wall_overlay` is what the Walls show above the scene image (`world`: the world map, `join`: the QR code of the
+         *     Player URL); it is kept in memory only and set to `off` whenever the active scene or adventure changes.
+         *     `ground_grid` (line colour or `off`) and `ground_grid_cell_size` (in px) are the grid of the Grounds, unchanged by
+         *     scene or adventure changes; the colour is kept in memory only (`off` after a restart), the cell size is stored.
          */
         GameTableState: {
             /** Active Adventure Id */
@@ -407,7 +407,7 @@ export interface components {
              * Wall Overlay
              * @enum {string}
              */
-            wall_overlay: "world" | "off";
+            wall_overlay: "world" | "join" | "off";
         };
         /**
          * GameTableUpdate
@@ -432,7 +432,7 @@ export interface components {
              * Wall Overlay
              * @enum {string}
              */
-            wall_overlay?: "world" | "off";
+            wall_overlay?: "world" | "join" | "off";
         };
         /** HTTPValidationError */
         HTTPValidationError: {

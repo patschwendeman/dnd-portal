@@ -61,7 +61,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   nicht für sich und schneiden keinen Text ab; sind sie zusammen höher als der Hauptbereich, scrollt das Dashboard als
   Ganzes. Der Icon-Button „Dashboard“ rechts
   in der Kopfzeile (ganz rechts, hervorgehoben solange das Dashboard offen ist) blendet es aus – Notizen
-  und Kopfzeile nehmen dann die volle Breite, Musik, Sounds, Wall-Overlay, Ground-Raster, Level und QR-Code sind nicht erreichbar
+  und Kopfzeile nehmen dann die volle Breite, Musik, Sounds, Wall-Overlay (auch der QR-Code), Ground-Raster und Level sind nicht erreichbar
   (die Musik spielt im Ausgabe-Fenster weiter) – und wieder ein. Auswahl und
   Scrollposition der Notizen bleiben erhalten; der Zustand wird nicht gespeichert, nach einem Reload ist das Dashboard
   offen.
@@ -129,10 +129,11 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   (Initiative-Leiste, siehe [Wall Screen](#wall-screen); „Am Zug“ und „Zug beenden“ auf dem Handy, siehe
   [Player Screen](#player-screen)); Ground zeigt ihn (noch) nicht. Musik, Sounds,
   Raster und Wall-Overlay ändern sich bei Start und Ende nicht.
-- **Wall-Overlay:** Die Zeile „Wall“ im Panel „Spieltisch“ hat ein Segment-Control „Weltkarte“/„Aus“;
+- **Wall-Overlay:** Die Zeile „Wall“ im Panel „Spieltisch“ hat ein Segment-Control „Weltkarte“/„QR-Code“/„Aus“;
   hervorgehoben (`aria-pressed`) ist der Zustand, den der Server zuletzt geschickt hat. Ein Klick
-  auf den anderen Button speichert ihn, alle Walls blenden die Weltkarte ein bzw. aus, sobald der Server den neuen
-  Stand schickt; ein Klick auf den hervorgehobenen tut nichts. Ein Szenen- oder Abenteuerwechsel schaltet auf „Aus“.
+  auf einen anderen Button speichert ihn, alle Walls zeigen die Weltkarte bzw. den QR-Code für die Spieler (siehe
+  [Wall Screen](#wall-screen)) oder kein Overlay, sobald der Server den neuen Stand schickt; ein Klick auf den
+  hervorgehobenen tut nichts. Ein Szenen- oder Abenteuerwechsel schaltet auf „Aus“.
 - **Ground-Raster:** Die Zeile „Ground“ im Panel „Spieltisch“ hat ein Segment-Control „Schwarz“/„Weiß“/„Aus“
   (hervorgehoben ist der Zustand des Servers, ein Klick auf den hervorgehobenen tut nichts). Die Zellgröße steht im
   Abschnitt „Ground-Raster“ des Panels „Einstellungen“: „Zellgröße“ mit dem Wert rechts daneben und darunter ein Slider
@@ -217,8 +218,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Name, Status-Punkt und „verbunden“ bzw. „nicht verbunden“ (bei mehreren Verbindungen „2 verbunden“ usw.), in der
   Mitte das Segment-Control (Wall-Overlay bzw. Ground-Raster), rechts der Icon-Button
   „In neuem Fenster öffnen“ (`/wall` bzw. `/ground` in einem eigenen Fenster je Screen; ein weiterer Klick holt das
-  offene Fenster nach vorn, ohne es neu zu laden). Spieler: links „Spieler“ und „N Spieler verbunden“, in der Mitte
-  „Spieler QR-Code“, rechts der Icon-Button „QR-Code“. Die Zahlen schickt der Server bei jeder Änderung (Öffnen oder
+  offene Fenster nach vorn, ohne es neu zu laden). Spieler: nur „Spieler“ und „N Spieler verbunden“. Die Zahlen schickt der Server bei jeder Änderung (Öffnen oder
   Schließen eines Screens); bis zur ersten Meldung steht „–“.
 - **Level:** Im Kopf des Panels „Party“ rechts das Label „Level“, die Buttons „−“ und „+“ und dazwischen das Level
   aller Spieler des aktiven Abenteuers (Grenzen 1–20, an der Grenze deaktiviert; ohne Abenteuer „–“ und beide
@@ -232,12 +232,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Spielername“. Ohne Abenteuer oder ohne Spieler „Keine Spieler“. Spieler und Level lädt der Admin beim Laden, bei einem Abenteuerwechsel und nach
   jedem Spieltisch-Zustand, den der Server schickt, neu. Effekte (Segen, Vergiftet …) gibt es noch nicht; Spieler
   anlegen oder bearbeiten ist nicht möglich.
-- **Spieler verbinden:** Der Icon-Button „QR-Code“ in der Zeile „Spieler“ des Panels „Spieltisch“ öffnet einen Dialog mit dem QR-Code der
-  Player-URL (dunkel auf hellem Grund, unabhängig vom Theme) und der URL als Text; die Spieler scannen ihn mit der
-  Smartphone-Kamera. Die URL kommt vom Start-Skript (`dnd prod`: `http://<IP>:8080/`) bzw. ist der Origin des Admins,
-  wenn dieser über die IP geöffnet ist; sonst zeigt der Dialog „Player-URL unbekannt – Spieltisch mit „dnd prod“
-  starten oder den Admin über die IP des Rechners öffnen“. Schließen per Button, Escape oder Klick außerhalb; der Fokus
-  kehrt danach zum Button zurück.
+- **Spieler verbinden:** Den QR-Code der Player-URL zeigt nicht mehr der Admin, sondern die Wall: In der Zeile „Wall“
+  des Panels „Spieltisch“ „QR-Code“ wählen (siehe **Wall-Overlay** und [Wall Screen](#wall-screen)).
 - **Ladefehler:** Lassen sich Abenteuer, Spieler oder Szenen nicht laden (Backend nicht erreichbar, Timeout, HTTP-Fehler), erscheint in der
   Kopfzeile die Hinweisleiste „Backend nicht erreichbar“ mit Button „Erneut versuchen“; bei Erfolg verschwindet sie.
   Keine automatischen Wiederholungen. Kann eine Notizdatei nicht geladen werden, zeigt der Notizbereich „Notizen
@@ -265,7 +261,7 @@ gibt den Zug selbst weiter (umgesetzt). Geplant: Effekte (Segen, Vergiftet …) 
 Tipp auf den Avatar, Hinweis „Als Nächstes dran“.
 
 ### Ist
-**Charakterauswahl (`/`):** Ziel des QR-Codes im Admin. Kein Zugang zu Admin, Wall oder Ground; diese Screens sind nur
+**Charakterauswahl (`/`):** Ziel des QR-Codes auf der Wall. Kein Zugang zu Admin, Wall oder Ground; diese Screens sind nur
 über ihre direkten URLs erreichbar.
 - Kopf: Name des aktiven Abenteuers, darunter „Charakter wählen“, rechts der Settings-Button.
 - Karte „Party · N“ mit je einer Zeile pro Charakter des aktiven Abenteuers in der Reihenfolge der API (Avatar bzw.
@@ -366,7 +362,7 @@ Bezeichnungen der NPCs (umgesetzt).
 - Reine Anzeige ohne Bedienelemente: keine Steuerleiste, kein Ton. Einzige Ausnahme ist das **Vollbild-Overlay**:
   Solange die Maus über dem Fenster ist (auch stillstehend), ist der ganze Screen so stark abgedunkelt wie unter
   einem Dialog im Admin, mittig stehen in einer durchscheinenden Kachel das Vollbild-Icon und „Vollbild“ (im
-  Vollbild: Icon zum Beenden und „Vollbild beenden“). Es liegt über allem, auch über der Weltkarte. Ein Klick irgendwo darauf
+  Vollbild: Icon zum Beenden und „Vollbild beenden“). Es liegt über allem, auch über Weltkarte und QR-Code. Ein Klick irgendwo darauf
   schaltet das Vollbild nur dieses Fensters um; der Zustand ist lokal pro Fenster (nicht auf dem Server) und folgt dem
   Browser, auch beim Verlassen mit Escape. Verlässt die Maus das Fenster, verschwindet das Overlay. Nur Maus, kein
   Touch; ohne Maus über dem Fenster bleibt alles unverdeckt.
@@ -378,9 +374,19 @@ Bezeichnungen der NPCs (umgesetzt).
   - **Weltkarte:** Panel „Weltkarte“ mit einer fest eingebundenen Weltkarte (nicht aus dem Backend), vollständig
     sichtbar (unten derselbe Abstand wie oben). Das Panel ist eine durchscheinende Kachel und liegt über Party bzw.
     Initiative; darunter ist der ganze Screen so stark abgedunkelt wie unter einem Dialog im Admin.
+  - **QR-Code:** Panel „Spieler verbinden“ an derselben Stelle, mit derselben Kachel und Abdunklung, aber nur so breit
+    wie der QR-Code: zentriert der Titel, der QR-Code der Player-URL (dunkel auf hellem Grund, unabhängig vom Theme;
+    höchstens 480px, kleiner, wenn er mit Titel und URL sonst nicht vollständig in die Höhe des Fensters passt) und
+    darunter die URL als Text. Die Spieler scannen ihn mit der Smartphone-Kamera und landen in der
+    [Charakterauswahl](#player-screen). Die URL lädt die Wall (`GET /table/join`) bei jedem Wechsel auf „QR-Code“
+    und beim Öffnen mit aktivem QR-Code; sie kommt vom Start-Skript (`dnd prod`: `http://<IP>:8080/`) bzw. ist der
+    Origin der Wall, wenn diese über die IP geöffnet ist. Während des Ladens steht nur der Titel da. Ist die URL
+    unbekannt oder schlägt das Laden fehl, zeigt das Panel statt Code und URL „Player-URL unbekannt – Spieltisch mit
+    „dnd prod“ starten oder die Wall über die IP des Rechners öffnen“.
   - **Aus:** Overlay ausgeblendet (Start, auch nach einem Neustart der API).
-  Alle Walls wechseln mit dem Push des Servers. Eine neu geöffnete Wall zeigt sofort das aktuelle Overlay. Ein
-  Szenen- oder Abenteuerwechsel schließt die Weltkarte auf allen Walls.
+  Weltkarte und QR-Code erscheinen nie gleichzeitig. Alle Walls wechseln mit dem Push des Servers. Eine neu geöffnete
+  Wall zeigt sofort das aktuelle Overlay. Ein Szenen- oder Abenteuerwechsel schließt Weltkarte bzw. QR-Code auf allen
+  Walls.
 - Eine szenen-/gebietsspezifische Übersichtskarte gibt es noch nicht.
 - **Ladefehler:** kein Hinweis für die Spieler; die Wall behält den zuletzt geladenen Stand (Szene bzw. Spieler),
   der nächste Szenen- bzw. Abenteuerwechsel lädt erneut.

@@ -6,14 +6,17 @@ import styled from 'styled-components'
 import { mediaUrl } from '../api/mediaUrl'
 import FullscreenHoverOverlay from '../components/FullscreenHoverOverlay'
 import WallInitiative from '../components/WallInitiative'
+import WallJoinPanel from '../components/WallJoinPanel'
+import {
+  OverlayLayer, OverlayPanel, PanelHeader, PanelTitle,
+} from '../components/WallOverlay'
 import WallParty from '../components/WallParty'
 import {
   ActiveAdventureContext, ActiveSceneContext, FightContext, GameTableContext,
 } from '../context/context'
 import { Player, SceneDetail } from '../models/models'
 import { getWallPlayers, getWallScene } from '../service/WallScreen'
-import GlobalStyle, { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
-import { textStyle } from '../style/tokens'
+import GlobalStyle from '../style/GlobalStyle'
 import { loadLatest } from '../utils/loadSafely'
 import MapEnvironmentSrc from '../../public/assets/images/ground_screen/mapOverview.jpg'
 
@@ -43,25 +46,10 @@ const Screen = styled.div`
     }
 `
 
-// Dims the whole screen below the world map, as below a dialog in the Admin
-const WorldMapLayer = styled.div<{ $isVisible: boolean }>`
-    display: ${({ $isVisible }) => ($isVisible ? 'flex' : 'none')};
-    position: fixed;
-    inset: 0;
-    align-items: flex-start;
-    justify-content: center;
-    padding-top: ${(props) => props.theme.space[7]};
-    z-index: ${(props) => props.theme.layer.panel};
-    background-color: ${(props) => props.theme.colors.overlay};
-`
-
 // Width: smallest of the upper limit, the viewport minus the side margins and the available height
 // (below the same margin as above) converted into a width, so the world map (a single 16:9 image)
 // fits completely
-const OverlayPanel = styled.div<TileSurfaceProps>`
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+const WorldMapPanel = styled(OverlayPanel)`
     width: min(
         ${OVERLAY_PANEL_MAX_WIDTH},
         calc(100vw - 2 * ${(props) => props.theme.space[8]}),
@@ -73,21 +61,6 @@ const OverlayPanel = styled.div<TileSurfaceProps>`
             + 2 * ${(props) => props.theme.space[6]}
         )
     );
-    height: auto;
-    padding: ${(props) => props.theme.space[6]};
-    ${tileSurface}
-`
-
-const PanelHeader = styled.div`
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    margin-bottom: ${(props) => props.theme.space[5]};
-`
-
-const PanelTitle = styled.h2`
-    ${textStyle('xl')}
-    font-weight: ${(props) => props.theme.fontWeight.semibold};
 `
 
 const BackgroundImage = styled.img`
@@ -169,14 +142,17 @@ function WallScreen(): ReactElement {
       )}
       {fight !== null && <WallInitiative fight={fight} players={players} />}
       {fight === null && activeSceneId !== null && <WallParty players={players} />}
-      <WorldMapLayer $isVisible={wallOverlay === 'world'} data-test-id="wall-world-map-layer">
-        <OverlayPanel $isTranslucent data-test-id="wall-world-map">
+      <OverlayLayer $isVisible={wallOverlay === 'world'} data-test-id="wall-world-map-layer">
+        <WorldMapPanel $isTranslucent data-test-id="wall-world-map">
           <PanelHeader>
             <PanelTitle>Weltkarte</PanelTitle>
           </PanelHeader>
           <MapEnvironment src={MapEnvironmentSrc} alt="" />
-        </OverlayPanel>
-      </WorldMapLayer>
+        </WorldMapPanel>
+      </OverlayLayer>
+      <OverlayLayer $isVisible={wallOverlay === 'join'} data-test-id="wall-join-layer">
+        {wallOverlay === 'join' && <WallJoinPanel />}
+      </OverlayLayer>
       <FullscreenHoverOverlay />
     </Screen>
   )

@@ -6,7 +6,6 @@ import {
   AudioState,
   AudioUpdate,
   GameTableState,
-  JoinInfo,
   SceneDetail,
   SoundName,
   Theme,
@@ -23,8 +22,6 @@ export const getAdventure = async (id: number): Promise<AdventureDetail> => (
 export const getAdminData = async (adventureId: number): Promise<SceneDetail[]> => (
   loadData('scenes details', `adventures/${adventureId}/scenes`)
 )
-
-export const getJoinInfo = async (): Promise<JoinInfo> => loadData('join info', 'table/join')
 
 export const getSceneById = async (id: number) => (
   loadData(`scene detail by id ${id}`, `scenes/${id}`)

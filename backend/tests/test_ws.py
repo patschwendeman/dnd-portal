@@ -250,6 +250,21 @@ def test_wall_overlay_is_pushed_to_all_walls(client: TestClient, db: Session) ->
             assert receive_state(websocket)["wall_overlay"] == "off"
 
 
+def test_join_overlay_is_pushed_to_all_walls(client: TestClient, db: Session) -> None:
+    with (
+        client.websocket_connect("/ws?screen=wall") as wall,
+        client.websocket_connect("/ws?screen=wall") as other_wall,
+    ):
+        receive_snapshot(wall)
+        receive_snapshot(other_wall)
+
+        response = client.patch("/table", json={"wall_overlay": "join"})
+
+        assert response.json()["wall_overlay"] == "join"
+        for websocket in (wall, other_wall):
+            assert receive_state(websocket) == response.json()
+
+
 def test_new_wall_receives_the_current_wall_overlay(client: TestClient, db: Session) -> None:
     client.patch("/table", json={"wall_overlay": "world"})
 

@@ -1,7 +1,7 @@
 # DND-49: QR-Code für die Spieler auf dem Wall Screen
 
 **Typ:** feat
-**Status:** Freigegeben
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -68,37 +68,37 @@ Spieler den Code von der Wall scannen.
 ## Subtasks
 
 ### Vertrag
-- [ ] `WallOverlay = Literal["world", "join", "off"]` in `backend/app/schemas/game_table.py`, Docstring von
+- [x] `WallOverlay = Literal["world", "join", "off"]` in `backend/app/schemas/game_table.py`, Docstring von
       `GameTableState` ergänzen (`join`: QR-Code der Player-URL).
 
 ### Backend
-- [ ] Tests in `backend/tests/test_table.py`: `PATCH /table` mit `wall_overlay: "join"` setzt und liefert den Wert,
+- [x] Tests in `backend/tests/test_table.py`: `PATCH /table` mit `wall_overlay: "join"` setzt und liefert den Wert,
       ein Szenen- bzw. Abenteuerwechsel setzt `join` auf `off`.
-- [ ] Test in `backend/tests/test_ws.py`: `join` wird an alle Walls gepusht.
+- [x] Test in `backend/tests/test_ws.py`: `join` wird an alle Walls gepusht.
 
 ### Frontend
-- [ ] API-Typen (`src/api/schema.d.ts`) neu generieren wie in `frontend/CLAUDE.md` beschrieben, `WALL_OVERLAYS` in
+- [x] API-Typen (`src/api/schema.d.ts`) neu generieren wie in `frontend/CLAUDE.md` beschrieben, `WALL_OVERLAYS` in
       `src/realtime/messages.ts` um `join` ergänzen.
-- [ ] `GameTablePanel`: Option `{ value: 'join', label: 'QR-Code' }` zwischen „Weltkarte“ und „Aus“. `JoinDialog`,
+- [x] `GameTablePanel`: Option `{ value: 'join', label: 'QR-Code' }` zwischen „Weltkarte“ und „Aus“. `JoinDialog`,
       Icon-Button, Text „Spieler QR-Code“, Ref/Callbacks und den Import des Icons entfernen. `JoinDialog.tsx` und
       (falls ungenutzt) `public/assets/icons/qrCode.svg` löschen.
-- [ ] Wall: Panel „Spieler verbinden“ als eigene Komponente (z. B. `src/components/WallJoinPanel.tsx`), die
+- [x] Wall: Panel „Spieler verbinden“ als eigene Komponente (z. B. `src/components/WallJoinPanel.tsx`), die
       `OverlayPanel`/`PanelHeader`/`PanelTitle` mit der Weltkarte teilt (Styles bei Bedarf in ein gemeinsames Modul
       ziehen). Laden der URL nach E3 (mit `loadLatest`), Darstellung nach E4. `data-test-id`s: `wall-join-layer`,
       `wall-join-qr-code`, `wall-join-url`, `wall-join-hint`.
-- [ ] `WallScreen`: zweite Ebene für `wallOverlay === 'join'` analog zu `WorldMapLayer`. Das Vollbild-Overlay liegt
+- [x] `WallScreen`: zweite Ebene für `wallOverlay === 'join'` analog zu `WorldMapLayer`. Das Vollbild-Overlay liegt
       weiter über allem.
-- [ ] BDD: `wallOverlay.feature` um die Szenarien unten erweitern; Szenarien zum Dialog „Spieler verbinden“ in
+- [x] BDD: `wallOverlay.feature` um die Szenarien unten erweitern; Szenarien zum Dialog „Spieler verbinden“ in
       `adminDashboard.feature` entfernen bzw. an die Wall verlegen.
 
 ### Doku
-- [ ] `docs/screens.md`: Admin (Spieltisch-Zeilen „Wall“ und „Spieler“, Abschnitt „Spieler verbinden“ entfällt bzw.
+- [x] `docs/screens.md`: Admin (Spieltisch-Zeilen „Wall“ und „Spieler“, Abschnitt „Spieler verbinden“ entfällt bzw.
       verweist auf die Wall), Wall (Overlay „QR-Code“), Player (`/` ist Ziel des QR-Codes auf der Wall).
-- [ ] `docs/architecture.md`: `/table/join` (Nutzer jetzt die Wall), Abschnitte zum QR-Code-Dialog und zum Verbinden
+- [x] `docs/architecture.md`: `/table/join` (Nutzer jetzt die Wall), Abschnitte zum QR-Code-Dialog und zum Verbinden
       der Smartphones.
-- [ ] `frontend/DESIGN.md`, `frontend/docs/design/components.md` (Spieltisch-Zeile, Abschnitt „Dialog „Spieler
+- [x] `frontend/DESIGN.md`, `frontend/docs/design/components.md` (Spieltisch-Zeile, Abschnitt „Dialog „Spieler
       verbinden““ wird Wall-Panel), `screen-layouts.md` (Maße aus E4), `contrast.md` (QR-Code jetzt auf der Wall).
-- [ ] `docs/known-issues.md` prüfen und ggf. anpassen.
+- [x] `docs/known-issues.md` prüfen und ggf. anpassen.
 
 ## Akzeptanzkriterien
 

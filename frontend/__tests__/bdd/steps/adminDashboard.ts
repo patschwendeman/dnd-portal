@@ -1,7 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import {
-  By, Key, WebDriver, error,
-} from 'selenium-webdriver'
+import { By, WebDriver, error } from 'selenium-webdriver'
 
 import {
   BASE_URL,
@@ -558,14 +556,13 @@ defineFeature(feature, (test) => {
     })
   }, SCREENS_SCENARIO_TIMEOUT)
 
-  test('I open the QR code from the panel Spieltisch', ({ given, when, then }) => {
+  test('The row Spieler shows only the connected players', ({ given, then, and }) => {
     given('I am on the admin screen', async () => {
       await openAdmin(driver)
     })
 
     then(
-      'the row Spieler in the panel Spieltisch shows the connected players and the text Spieler '
-        + 'QR-Code',
+      'the row Spieler in the panel Spieltisch shows only Spieler and the connected players',
       async () => {
         const status = await waitForElement(driver, `${panel('table')} ${PLAYERS_STATUS}`)
         await driver.wait(
@@ -573,29 +570,21 @@ defineFeature(feature, (test) => {
           WAIT_TIMEOUT,
         )
         const row = await status.findElement(By.xpath('../..'))
-        expect(await row.getText()).toContain('Spieler QR-Code')
+        expect(await row.getText()).toMatch(/^Spieler\n\d+ Spieler verbunden$/)
+        expect(await row.findElements(By.css('button'))).toHaveLength(0)
       },
     )
 
-    when('I click on the QR code icon in the row Spieler', async () => {
-      await clickElement(driver, `${panel('table')} ${JOIN_BUTTON}`)
-    })
-
-    then('the dialog with the QR code and the player URL is shown', async () => {
-      await waitForElement(driver, JOIN_DIALOG)
-      // Depending on the setup the URL is known (QR code) or a hint is shown instead
-      await waitForElement(driver, '[data-test-id="join-qr-code"], [data-test-id="join-hint"]')
-    })
-
-    when('I press Escape', async () => {
-      await driver.actions().sendKeys(Key.ESCAPE).perform()
-    })
-
-    then('the dialog is closed and the focus is back on the QR code icon', async () => {
-      await waitForElementGone(driver, JOIN_DIALOG)
-      const focused = await driver.switchTo().activeElement()
-      expect(await focused.getAttribute('data-test-id')).toBe('join-button')
-    })
+    and(
+      'there is no QR code button and no dialog Spieler verbinden in the admin screen',
+      async () => {
+        expect(await driver.findElements(By.css(JOIN_BUTTON))).toHaveLength(0)
+        expect(await driver.findElements(By.css(JOIN_DIALOG))).toHaveLength(0)
+        const body = await driver.findElement(By.css('body')).getText()
+        expect(body).not.toContain('Spieler QR-Code')
+        expect(body).not.toContain('Spieler verbinden')
+      },
+    )
   })
 
   test('I switch the admin window to full screen', ({ given, when, then }) => {

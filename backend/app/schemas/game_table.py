@@ -6,7 +6,7 @@ from app.schemas.adventure import _without_default
 
 Theme = Literal["dark", "tavern"]
 DEFAULT_THEME: Theme = "dark"
-WallOverlay = Literal["world", "off"]
+WallOverlay = Literal["world", "join", "off"]
 DEFAULT_WALL_OVERLAY: WallOverlay = "off"
 GroundGrid = Literal["black", "white", "off"]
 DEFAULT_GROUND_GRID: GroundGrid = "off"
@@ -17,10 +17,10 @@ DEFAULT_GROUND_GRID_CELL_SIZE = 100
 class GameTableState(BaseModel):
     """State of the game table shared by Admin, Wall and Ground; `active_scene_id` belongs to the active adventure.
 
-    `wall_overlay` is what the Walls show above the scene image (`world`: the world map); it is kept in memory only and
-    set to `off` whenever the active scene or adventure changes. `ground_grid` (line colour or `off`) and
-    `ground_grid_cell_size` (in px) are the grid of the Grounds, unchanged by scene or adventure changes; the colour is
-    kept in memory only (`off` after a restart), the cell size is stored.
+    `wall_overlay` is what the Walls show above the scene image (`world`: the world map, `join`: the QR code of the
+    Player URL); it is kept in memory only and set to `off` whenever the active scene or adventure changes.
+    `ground_grid` (line colour or `off`) and `ground_grid_cell_size` (in px) are the grid of the Grounds, unchanged by
+    scene or adventure changes; the colour is kept in memory only (`off` after a restart), the cell size is stored.
     """
 
     active_adventure_id: int | None

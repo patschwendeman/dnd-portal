@@ -31,6 +31,12 @@ describe('parseServerMessage', () => {
       .toEqual({ type: 'state', payload: empty })
   })
 
+  it('accepts the QR code overlay', () => {
+    const join = { ...state, wall_overlay: 'join' }
+    expect(parseServerMessage(JSON.stringify({ type: 'state', payload: join })))
+      .toEqual({ type: 'state', payload: join })
+  })
+
   it('keeps only the known fields of the payload', () => {
     const message = parseServerMessage(
       JSON.stringify({ type: 'state', payload: { ...state, extra: true } }),

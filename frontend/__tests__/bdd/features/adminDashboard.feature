@@ -51,13 +51,10 @@ Scenario: I see which screens are connected
     When the ground screen is closed
     Then the panel Spieltisch shows one Ground less as connected
 
-Scenario: I open the QR code from the panel Spieltisch
+Scenario: The row Spieler shows only the connected players
     Given I am on the admin screen
-    Then the row Spieler in the panel Spieltisch shows the connected players and the text Spieler QR-Code
-    When I click on the QR code icon in the row Spieler
-    Then the dialog with the QR code and the player URL is shown
-    When I press Escape
-    Then the dialog is closed and the focus is back on the QR code icon
+    Then the row Spieler in the panel Spieltisch shows only Spieler and the connected players
+    And there is no QR code button and no dialog Spieler verbinden in the admin screen
 
 Scenario: I switch the admin window to full screen
     Given I am on the admin screen

@@ -23,7 +23,7 @@ Regel: [1.3](../../DESIGN.md#13-layout-konstanten).
 | 84 × 112px · 72 × 96px · 120 × 160px | Avatare auf der Wall: Party, Initiative, am Zug (`WALL_AVATAR_SIZE`) | `CombatantAvatar` |
 | 72 · 96 · 16 (px) | Breiten in der Initiative-Leiste für die Berechnung des Überlaufs: Rundentrenner, „+N weitere“, Abstand (`WIDTHS`; Kachel am Zug und kleine Kachel aus `WALL_TILE_SIZE`); Höhe von Trenner und „+N weitere“ wie die kleine Kachel (`STRIP_TILE_HEIGHT`) | `WallInitiative` |
 | 600px | Breite des Dialogs (`DIALOG_WIDTH`) | `Dialogue` |
-| 360px · 240px · 4 Module | Breite des Dialogs „Spieler verbinden“, Kantenlänge und Ruhezone des QR-Codes (`JOIN_DIALOG_WIDTH`, `QR_CODE_SIZE`, `QR_CODE_MARGIN`) | `JoinDialog` |
+| 480px · 4 Module | höchste Kantenlänge und Ruhezone des QR-Codes im Wall-Panel „Spieler verbinden“ (`QR_CODE_MAX_SIZE`, `QR_CODE_MARGIN`), siehe [Größe des QR-Codes](#größe-des-qr-codes) | `WallJoinPanel` |
 | 16px | Griffgröße der Slider in Dashboard-Panels (`PANEL_SLIDER_THUMB_SIZE`) | `PanelSlider` |
 | 3ch | Mindestbreite der Wertanzeige neben einem Slider, Platz für drei Ziffern (`SLIDER_VALUE_MIN_WIDTH`) | `PanelSlider` |
 | 8px | Status-Punkt im Panel „Spieltisch“ (`STATUS_DOT_SIZE`) | `GameTablePanel` |
@@ -42,7 +42,7 @@ Regel: [1.3](../../DESIGN.md#13-layout-konstanten).
 
 ## Breite des Overlay-Panels
 
-Das Panel auf der Wall nimmt den kleinsten von drei Werten (`OverlayPanel` in `WallScreen`):
+Das Panel der Weltkarte auf der Wall nimmt den kleinsten von drei Werten (`WorldMapPanel` in `WallScreen`):
 
 - `OVERLAY_PANEL_MAX_WIDTH` als Obergrenze,
 - `100vw − 2 × space.8` (Rand links und rechts),
@@ -51,12 +51,24 @@ Das Panel auf der Wall nimmt den kleinsten von drei Werten (`OverlayPanel` in `W
   `H` ist die Höhe, die nach Abstand oben und unten (je `space.7`), Innenabstand und Kopfzeile für das Bild bleibt; so
   ist die Weltkarte vollständig sichtbar.
 
+## Größe des QR-Codes
+
+Das Panel „Spieler verbinden“ auf der Wall (`WallJoinPanel`) ist so breit wie der QR-Code plus Innenabstand
+(`Q + 2 × space.6`). Die Kantenlänge `Q` des QR-Codes ist der kleinste von drei Werten (`qrCodeSize`):
+
+- `QR_CODE_MAX_SIZE` (480px) als Obergrenze,
+- `100vw − 2 × space.8 − 2 × space.6` (Rand links und rechts, Innenabstand),
+- `100vh − 2 × space.7 − 2 × space.6 − text.xl-Zeilenhöhe − space.5 − space.5 − text.lg-Zeilenhöhe`: die Höhe, die
+  nach Abstand oben und unten (je `space.7`), Innenabstand, Kopfzeile und der einzeiligen URL (Abstand `space.5`,
+  `text.lg`) bleibt; so passt der QR-Code samt Titel und URL vollständig in die Höhe des Fensters. Auf einem
+  1080p-Monitor im Vollbild ist er 480px groß.
+
 ## Screen-Layouts
 
 | Screen | Aufbau |
 |---|---|
 | Admin | Grid aus [Kacheln](components.md#kachel) über dem [Abenteuer-Hintergrund](components.md#abenteuer-hintergrund) (Hintergrundbild des aktiven Abenteuers zum Theme unter `backdrop`, ohne Bild `background`; das Grid selbst hat keine Fläche), keine Bottom-Bar und keine Trennlinien. Spalten `NAV_RAIL_WIDTH`, `LEFT_COLUMN_WIDTH` bzw. beim Panel „Kampf“ `FIGHT_PANEL_WIDTH` (nur bei offenem Panel), `minmax(0, 1fr)` (Notizen) und `clamp(DASHBOARD_MIN_WIDTH, (B − space.5) / 3, DASHBOARD_MAX_WIDTH)` mit B = Breite von Notizen, Dashboard und dem `gap` dazwischen (nur bei offenem Dashboard; ein Drittel von Notizen und Dashboard, mindestens 400px, höchstens 560px; bei 1920px Fensterbreite mit offenem Panel etwa 499px); Zeilen `auto` (Kopfzeile) und `minmax(0, 1fr)`; `gap` `space.5`, Innenabstand seitlich `space.5` (`grid-template-areas`). Die [Navigationsleiste](components.md#navigationsleiste) und ihr Panel reichen über beide Zeilen und halten oben und unten `space.5` Abstand zum Bildschirmrand; bei eingeklapptem Panel entfällt seine Spalte, die Notizen rücken an die Leiste. Die [Kopfzeile](components.md#kopfzeile) (von links: Kachel „Zurück | Vor“, Abenteuername, Kachel „Vollbild | Dashboard“) liegt in Zeile 1 über Notizen und Dashboard (bei ausgeblendetem Dashboard über den Notizen allein, bis an den rechten Rand), `space.5` unter dem oberen Rand, und scrollt nie. Notizen und Dashboard liegen in Zeile 2 und scrollen jeweils für sich; der Abstand `space.5` zur Kopfzeile ist das `gap` des Grids und bleibt auch beim Scrollen frei, der Inhalt wird an der Oberkante hart abgeschnitten (nicht ausgeblendet). Unten laufen beide bis an den Bildschirmrand; der Abstand `space.5` unter der letzten Kachel liegt im Scrollbereich, sodass sie ganz nach unten gescrollt auf Höhe von Navigationsleiste und Panel endet. Notizen: je Notizseite eine Kachel über die volle Breite der Spalte, `gap` `space.5`. Dashboard (Layout „Bühne“): eine Spalte (Grid `minmax(0, 1fr)`), `gap` `space.4`, jedes Panel so hoch wie sein Inhalt, die Panels scrollen nie für sich; das Dashboard scrollt bei Überlänge als Ganzes. Von oben: [Bühne](components.md#bühne), „Audio“, „Spieltisch“, „Party“ ([Dashboard-Panel](components.md#dashboard-panel)); während eines Kampfes „Am Zug“ ([Hero-Karte](components.md#hero-karte)), „Initiative“ ([Initiative-Zeile](components.md#initiative-zeile)), „Audio“, „Spieltisch“ – Bühne und Party sind dann nicht zu sehen. |
-| Wall | Ausgelegt für 1920 × 1080. Ebenen von unten: Vollbild-Hintergrund (`layer.media`), Party bzw. Initiative (`layer.tiles`), Abdunklung `overlay` mit dem Overlay-Panel (`layer.panel`, nur bei Wall-Overlay `world`: Weltkarte), [Vollbild-Overlay](components.md#vollbild-overlay) (`layer.control`, bei Maus über dem Fenster). Ohne Kampf und mit aktiver Szene die Party: [Wall-Kacheln](components.md#wall-kachel) `party` in zwei Spalten, links `space.6` vom linken, rechts `space.6` vom rechten Rand, jede für sich vertikal zentriert (`padding-block` `space.7`), `gap` `space.4`; die erste Hälfte der Spieler links, bei ungerader Zahl einer mehr. Im Kampf statt der Party die [Initiative-Leiste](components.md#initiative-leiste) oben. Keine Bedienelemente außer dem Vollbild-Overlay |
+| Wall | Ausgelegt für 1920 × 1080. Ebenen von unten: Vollbild-Hintergrund (`layer.media`), Party bzw. Initiative (`layer.tiles`), Abdunklung `overlay` mit dem Overlay-Panel (`layer.panel`, nur bei Wall-Overlay `world`: Weltkarte, bzw. `join`: QR-Code für die Spieler), [Vollbild-Overlay](components.md#vollbild-overlay) (`layer.control`, bei Maus über dem Fenster). Ohne Kampf und mit aktiver Szene die Party: [Wall-Kacheln](components.md#wall-kachel) `party` in zwei Spalten, links `space.6` vom linken, rechts `space.6` vom rechten Rand, jede für sich vertikal zentriert (`padding-block` `space.7`), `gap` `space.4`; die erste Hälfte der Spieler links, bei ungerader Zahl einer mehr. Im Kampf statt der Party die [Initiative-Leiste](components.md#initiative-leiste) oben. Keine Bedienelemente außer dem Vollbild-Overlay |
 | Ground | Vollbild-Medium (Bild oder Video), darüber die Raster-Ebene (nur wenn das Ground-Raster nicht `off` ist); keine Bedienelemente außer dem [Vollbild-Overlay](components.md#vollbild-overlay), das bei Maus über dem Fenster über allem liegt |
 | Player: Charakterauswahl | Smartphone im Hoch- und Querformat, über dem [Abenteuer-Hintergrund](components.md#abenteuer-hintergrund) zum wirksamen Theme des Geräts; scrollt als Ganzes, kein Overlay „Handy drehen“. Spalte mit `gap` `space.4`, Bildschirmrand wie im Player Screen (oben/unten auch `env(safe-area-inset-top/bottom)`): Kopf (links Label mit dem Abenteuernamen, einzeilig mit Ellipse, darunter „Charakter wählen“ `text.xl` `semibold`; rechts das [Settings-Menü](components.md#settings-menü), `gap` `space.3`), optional der Hinweis nach Abenteuerwechsel, darunter die [Karte](components.md#karte) „Party · N“ (Innenabstand `space.5`, `gap` `space.3`) mit den [Charakterzeilen](components.md#charakterzeile) bzw. einem [Zustand](components.md#zustand-der-karte-party). |
 | Player Screen | Smartphone im Querformat, über dem [Abenteuer-Hintergrund](components.md#abenteuer-hintergrund) zum wirksamen Theme des Geräts. Grid mit zwei gleich hohen Zeilen (`minmax(0, 1fr)` je Zeile), `gap` `space.4`, Bildschirmrand wie bisher: oben die [Hero-Karte im Player](components.md#hero-karte-im-player) mit dem [Settings-Menü](components.md#settings-menü) oben rechts (klappt über der Ressourcen-Karte auf), unten die Karte mit 4 × 2 [Ressourcen-Buttons](components.md#ressourcen-button) (Aktion, Bonusaktion, Bewegung, Spezial / Zauberplätze I–IV), die ihre Hälfte füllen. Im Hochformat deckt ein Overlay mit Hinweis alles ab (`layer.dialog`, auch über der offenen Liste des Menüs). Ab 344px Höhe und etwa 568px Breite (bei 344px reicht die halbe Höhe gerade für zwei Zeilen Buttons mit `size.control.lg`). |

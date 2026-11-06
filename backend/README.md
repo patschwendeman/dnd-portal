@@ -21,7 +21,7 @@ Theme des Spieltischs (`PATCH`) sowie die Audio-Befehle (`PATCH`/`POST`).
 | `GET /table/audio` | Musikzustand: läuft/pausiert, aktueller Track, Lautstärke (0–100), ob eine Audioausgabe bereit ist |
 | `PATCH /table/audio` | `playing` und/oder `volume` (0–100) setzen; 422 bei ungültigen Werten |
 | `POST /table/sounds` | Soundeffekt (`name`) an die Audioausgabe schicken; 204, auch ohne Ausgabe; 422 bei unbekanntem Namen |
-| `GET /table/join` | URL des Player Screens im LAN (`player_url`, aus `PLAYER_URL`; `null`, wenn unbekannt) für den QR-Code im Admin |
+| `GET /table/join` | URL des Player Screens im LAN (`player_url`, aus `PLAYER_URL`; `null`, wenn unbekannt) für den QR-Code auf der Wall |
 | `WS /ws?screen=admin\|wall\|ground\|player` | WebSocket: Snapshot des Spieltischs und Musikzustand beim Verbinden und nach jeder Änderung, alle 15 s ein Ping, Audio-Meldungen des Admins; Origin-Prüfung (nicht in OpenAPI) |
 | `GET /media/...` | Mediendateien (Bilder, Musik) aus `../media`, inkl. `Range` |
 
