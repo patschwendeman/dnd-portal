@@ -19,7 +19,7 @@ Scenario: The player on turn ends his turn
     And the admin shows the enemy on turn
     And the hero card is not on turn
 
-Scenario: A player who is not on turn has no button
+Scenario: A player gets the button only when the turn passes to him
     Given a fight of the first player, an enemy and the second player is running
     When the second player opens his player screen
     Then the hero card is not on turn

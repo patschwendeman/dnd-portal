@@ -138,15 +138,18 @@ defineFeature(feature, (test) => {
     changedLevel = null
   })
 
+  // Level first: a failing quit or endAnyFight must not leave the level changed for other suites
   afterEach(async () => {
-    await phone.quit()
-    await admin?.quit()
-    await endAnyFight()
-    if (changedLevel !== null) {
-      const response = await api('PATCH', `adventures/${changedLevel.adventureId}`, {
-        global_level: changedLevel.level,
-      })
-      expect(response.ok).toBe(true)
+    try {
+      if (changedLevel !== null) {
+        const response = await api('PATCH', `adventures/${changedLevel.adventureId}`, {
+          global_level: changedLevel.level,
+        })
+        expect(response.ok).toBe(true)
+      }
+    } finally {
+      await Promise.allSettled([phone.quit(), admin?.quit()])
+      await endAnyFight()
     }
   })
 
@@ -303,7 +306,7 @@ defineFeature(feature, (test) => {
     and('the hero card is not on turn', expectNotOnTurn)
   }, SCENARIO_TIMEOUT)
 
-  test('A player who is not on turn has no button', ({
+  test('A player gets the button only when the turn passes to him', ({
     given, when, then, and,
   }) => {
     given(STEP_FIGHT, givenFight)

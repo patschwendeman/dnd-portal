@@ -221,9 +221,10 @@ Vorlage: Mockup [player-hero-split-mockup.html](../../frontend/docs/design/mocku
   dem nächsten Push); kein BDD-Szenario.
 - Runde 2, Level per Push: Das Backend pusht schon nach jedem `PATCH /adventures/{id}` einen Snapshot an alle
   Verbindungen (auch `player`). `PlayerLayout` lädt `adventures/{id}` jetzt wie der Admin nach jedem Snapshot neu
-  (Abhängigkeit `snapshot`; ein erfolgreiches Laden setzt `loadFailed` zurück). Abgesichert durch
-  `test_player_receives_the_push_after_patch_of_the_level` (`test_ws.py`) und das BDD-Szenario „The level on the hero
-  card follows the game master“ (stellt das Level danach wieder her); beide ohne die Änderung rot.
+  (Abhängigkeit `snapshot`; ein erfolgreiches Laden setzt `loadFailed` zurück). Abgesichert durch das BDD-Szenario
+  „The level on the hero card follows the game master“ (stellt das Level danach wieder her), das ohne die Änderung rot
+  ist. `test_player_receives_the_push_after_patch_of_the_level` (`test_ws.py`) sichert das bereits vorhandene
+  Push-Verhalten des Backends ab und ist kein Regressionstest dieser Änderung.
 
 ## Review
 
@@ -276,3 +277,45 @@ nicht durch diese Änderung rot. Vom User zu bestätigen: Ressourcen-Karte ohne 
 - BDD gegen Dev-Stack: 39/40 (`playerTurn` 4/4; Fehler siehe Hinweis 8).
 - Backend: ruff, format, mypy, `make check-quality` grün; pytest frische `postgres:17` 323 grün; Dev-DB 320/323 (Hinweis 7).
 - Konventionen: ein Commit, Typ `feat`, Kopfzeile nach Schema, Body 5 Stichpunkte, keine KI-Signatur; Admin-`HeroCard` unverändert.
+
+### Runde 2 – Review vom 2026-11-06 (Commit 5aa0651)
+
+**Empfehlung: Abnahme.** Kein blockierender Befund; die drei Nachforderungen des Users aus Runde 1 sind umgesetzt,
+Runde 1 ist nicht regressiert. Checks grün bzw. nachweislich nicht durch diese Änderung rot.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1, AK3–AK9 | erfüllt | unverändert seit Runde 1; BDD `playerTurn` 5/5 grün |
+| AK2 Am Zug | erfüllt | jetzt auch „durch Zugwechsel“ per BDD: Szenario 3, `expectHeroOnTurn` (`playerTurn.ts`) |
+| Nachforderung 1: Level per WebSocket | erfüllt | `PlayerLayout.tsx:62-85` lädt `adventures/{id}` nach jedem Snapshot neu, Muster wie `AdminScreen.tsx:320-345`; veraltete Antworten werden verworfen; BDD „The level on the hero card follows the game master“ (ohne Reload, `window.levelMark`). Gegenprobe mit `PlayerLayout.tsx` aus 47edc82: Szenario rot |
+| Nachforderung 2: Diagramm `docs/architecture.md` | erfüllt | Zeilen 8–9: `GET /adventures/{id}` (Laden + nach Snapshot), `POST /table/fight/turn`; Doku konsistent |
+| Nachforderung 3: BDD-Zugwechsel aufs eigene Handy | erfüllt | `playerTurn.feature` Szenario 3, drei neue Schritte |
+
+**Blockierende Befunde**
+- keine (Reviewer)
+- **Vom User nach Runde 2 nachgefordert (blockierend für Runde 3):**
+  - [x] 1. Plan-Notiz korrigieren: nur das BDD-Szenario ist ohne die Änderung rot; `test_ws.py:184` sichert das vorhandene
+        Push-Verhalten ab (Hinweis 1).
+  - [x] 2. `playerTurn.ts`: Level-Wiederherstellung zuerst bzw. abgesichert ausführen (z. B. `Promise.allSettled` wie in
+        `adminPlayers.ts`), damit ein Fehler beim Aufräumen das Level nicht verändert zurücklässt (Hinweis 2).
+  - [x] 3. Titel von Szenario 3 an den erweiterten Inhalt anpassen (Hinweis 4).
+
+**Hinweise (nicht blockierend)**
+1. Plan-Notiz „beide ohne die Änderung rot“ stimmt nur fürs BDD-Szenario; `test_ws.py:184` sichert vorhandenes
+   Backend-Verhalten ab (Runde 2 ändert kein Backend) – sinnvoll, aber kein Regressionstest. Notiz korrigieren.
+2. `playerTurn.ts:141-151`: Level-Wiederherstellung läuft nach `phone.quit()`/`admin?.quit()`/`endAnyFight()`; wirft
+   einer, bleibt das Level verändert. Besser zuerst oder per `Promise.allSettled` (wie `adminPlayers.ts`).
+3. Jeder Snapshot löst pro Handy ein `GET adventures/{id}` aus; bei 4–6 Handys unkritisch, wie im Admin.
+4. Titel Szenario 3 („A player who is not on turn has no button“) deckt jetzt mehr ab – Umbenennung optional.
+5. Dev-DB: Abenteuer 1 hat Level 4 (Seed 1) → 4 Backend-Tests gegen Dev-DB rot (`test_fight.py:464` plus 3 aus
+   Runde 1, Hinweis 7). Herkunft unklar (vermutlich frühe Läufe des Level-Szenarios ohne Wiederherstellung).
+   Unverändert gelassen; ggf. im Admin auf 1 zurücksetzen.
+6. „The dashboard shows its panels next to the notes“ zweimal grün, von DND-47 unberührt – vermutlich Timing.
+7. „The first interaction makes an admin window the audio output“ rot wie Runde 1, Hinweis 8 (Umgebung).
+8. Ein pytest-Lauf gegen die Dev-DB setzte die aktive Szene von Abenteuer 1 auf `null` (vorbestehend); auf 2 zurückgesetzt.
+
+**Checks**
+- Frontend: lint, typecheck, deadcode grün; `check:dupes` 0,27 %; Unit 306/306.
+- BDD gegen Dev-Stack: 40/41 (`playerTurn` 5/5; Fehler siehe Hinweis 7).
+- Backend: ruff, format, mypy, `make check-quality` grün; pytest frische `postgres:17` 324 grün; Dev-DB 320/324 (Hinweis 5).
+- Konventionen: ein Commit, Typ `feat`, Kopfzeile nach Schema, Body 4 Stichpunkte, keine KI-Signatur; Scope eingehalten.
