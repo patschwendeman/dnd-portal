@@ -1,7 +1,7 @@
 # DND-47: Hero-Karte und „Zug beenden“ auf dem Player Screen
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -319,3 +319,33 @@ Runde 1 ist nicht regressiert. Checks grün bzw. nachweislich nicht durch diese 
 - BDD gegen Dev-Stack: 40/41 (`playerTurn` 5/5; Fehler siehe Hinweis 7).
 - Backend: ruff, format, mypy, `make check-quality` grün; pytest frische `postgres:17` 324 grün; Dev-DB 320/324 (Hinweis 5).
 - Konventionen: ein Commit, Typ `feat`, Kopfzeile nach Schema, Body 4 Stichpunkte, keine KI-Signatur; Scope eingehalten.
+
+### Runde 3 – Review vom 2026-11-06 (Commit f0771a4)
+
+**Empfehlung: Abnahme.** Kein blockierender Befund; die drei Nachforderungen des Users aus Runde 2 sind umgesetzt,
+Runde 1 und 2 nicht regressiert, Checks grün.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1–AK9 | erfüllt | seit Runde 2 unverändert, kein Produktivcode geändert; BDD `playerTurn` 5/5 grün |
+| Nachforderung 1: Plan-Notiz | erfüllt | Notiz „Runde 2, Level per Push“: nur das BDD-Szenario ist Regressionstest; `test_ws.py:184` sichert vorhandenes Backend-Verhalten ab |
+| Nachforderung 2: Level-Wiederherstellung | erfüllt | `playerTurn.ts:141-154`: Level zuerst im `try`, dann `finally` mit `Promise.allSettled([phone.quit(), admin?.quit()])` und `endAnyFight()`; PATCH vor DELETE fight unbedenklich (409 nur bei Szenenwechsel im Kampf) |
+| Nachforderung 3: Szenario 3 umbenannt | erfüllt | `playerTurn.feature:22`, `playerTurn.ts:309`: „A player gets the button only when the turn passes to him“ |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+1. `playerTurn.ts:150-153`: Wirft `endAnyFight()` im `finally`, überdeckt das einen Fehler der Wiederherstellung;
+   praktisch nur bei nicht erreichbarem Backend (gleiche Ursache).
+2. Driver-Beenden per `allSettled` ignoriert Fehler – Muster der anderen Suites. `adminPlayers.ts:123-131` stellt das
+   Level ohne `finally` nach den `quit()`-Aufrufen wieder her; spätere Angleichung möglich (außerhalb Scope).
+3. „passes to him“ passt zum Rest von `playerTurn.feature` („his player screen“, „his turn“). Geschlechtsneutral
+   („them“/„their“) nur konsistent, wenn alle Stellen inkl. Step-Texte umgestellt werden – Entscheidung des Users.
+
+**Checks**
+- Frontend: lint, typecheck grün.
+- BDD `playerTurn` gegen Dev-Stack: 5/5 grün (Gesamt-Suite nicht gelaufen, nur `playerTurn` geändert).
+- Backend: unverändert, kein Lauf.
+- Dev-Stack unverändert (Level 4, Szene 2, kein Kampf); Arbeitsbaum sauber.
+- Konventionen: ein Commit, `feat(DND-47): address review round 2`, Body 3 Stichpunkte, keine KI-Signatur; Scope eingehalten.
