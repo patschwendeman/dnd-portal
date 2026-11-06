@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Player Mockup Hero 50/50</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Player Screen (/player/:id) mit Hero: oben die Charakteranzeige, unten die Ressourcen, je die halbe Höhe
+   (Grid mit zwei gleichen Zeilen). Die Charakteranzeige ist die Hero-Karte aus Variante B von
+   player-hero-mockup.html: großer Avatar (3:4) mit Level-Badge, Spielername, Charaktername, Chips, Effekte;
+   Settings-Menü oben rechts in der Karte; Tipp auf den Avatar öffnet das Detail-Sheet.
+   - Querformat: Avatar links, Text rechts daneben; der Avatar wächst mit der Höhe der oberen Hälfte.
+   - Hochformat (zum Vergleich): Avatar und Text untereinander, zentriert.
+   - Ressourcen: 4 × 2, die Buttons füllen die untere Hälfte.
+   - Am Zug: Rahmen und Badge in der Hauptfarbe, dazu unten rechts (Hochformat: volle Breite) der Button
+     „Zug beenden“; er gibt den Zug weiter, danach verschwinden Button, Rahmen und Badge.
+   - Effekte, „Am Zug“ und „Zug beenden“ sind Soll (für den Player noch nicht im Code).
+   Gerätrahmen, Notch und Leiste links gehören nicht zur App. */
+
+.phone {
+  --bg: #0e1117; --sec: #161b23; --sec-t: #161b23bf; --pri: #4493F8; --border: #3d444db3;
+  --text: #f0f6fc; --muted: #f0f6fcb0; --initials: #4493F8; --onpri: #0e1117; --backdrop: rgba(0, 0, 0, .5);
+}
+.phone[data-theme="tavern"] {
+  --bg: #140701; --sec: #3D271C; --sec-t: #3D271Ceb; --pri: #C05E5E; --border: #956F01;
+  --text: #CBAB96; --muted: #CBAB96b0; --initials: #CBAB96; --onpri: #140701;
+}
+
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; }
+body {
+  display: grid; grid-template-columns: 300px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr);
+  background: #24272d; color: #e6e6e6; overflow: hidden;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px; line-height: 24px;
+}
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; text-align: inherit; }
+ul { list-style: none; padding: 0; }
+svg { display: block; flex: none; }
+
+/* ======================= App (im Handy, Querformat) ======================= */
+.phone {
+  position: relative; width: 844px; height: 390px; border-radius: 40px; overflow: hidden;
+  background: var(--bg); color: var(--text);
+  --sat: 0px; --sab: 16px; --sal: 48px;
+}
+.portrait .phone { width: 390px; height: 844px; --sat: 48px; --sab: 24px; --sal: 0px; }
+.portrait .notch { top: 10px; left: 50%; transform: translateX(-50%); width: 120px; height: 34px; }
+.bgimg { position: absolute; inset: 0; background: center / cover no-repeat; }
+.bgimg::after { content: ""; position: absolute; inset: 0; background: var(--backdrop); }
+.scroll { position: absolute; inset: 0; overflow: auto; scrollbar-width: none; }
+
+.lbl { font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+.surf { background: var(--sec); border: 1px solid var(--border); box-shadow: inset 0 1px 0 var(--border); border-radius: 12px; }
+.has-bg .surf, .has-bg .ib { background: var(--sec-t); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+
+.page { height: 100%; padding: max(16px, var(--sat)) max(24px, var(--sal)) max(16px, var(--sab)); }
+
+.ib {
+  flex: none; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 8px;
+  background: var(--sec); border: 1px solid var(--border);
+}
+.ib svg { width: 20px; height: 20px; fill: var(--text); }
+
+/* Settings-Menü */
+.menuwrap { position: relative; z-index: 3; flex: none; }
+.menu {
+  position: absolute; top: calc(100% + 4px); right: 0; min-width: 200px; padding: 4px;
+  background: var(--sec); border: 1px solid var(--border); border-radius: 12px; display: grid; gap: 4px;
+}
+.menu button { display: flex; align-items: center; gap: 12px; height: 48px; padding: 0 16px; border-radius: 8px; white-space: nowrap; font-size: 14px; line-height: 20px; font-weight: 600; }
+.menu button:hover { background: var(--bg); }
+.menu button[aria-checked="true"] { background: var(--pri); color: var(--onpri); }
+.menu hr { border: 0; height: 1px; margin: 0 8px; background: var(--border); }
+.menu svg { width: 20px; height: 20px; fill: currentColor; }
+
+/* Avatar: Bild oder Initialen, Hochformat 3:4 */
+.av {
+  flex: none; display: grid; place-items: center; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--sec) center / cover no-repeat; color: var(--initials); font-weight: 600;
+}
+.av.sm { width: 48px; height: 64px; font-size: 18px; line-height: 24px; }
+.av.lg { width: 96px; height: 128px; border-radius: 12px; font-size: 24px; line-height: 32px; font-weight: 500; }
+.avwrap { position: relative; flex: none; }
+.badge {
+  position: absolute; top: -10px; left: -10px; width: 36px; height: 36px; border-radius: 999px;
+  border: 2px solid var(--bg); background: var(--pri); color: var(--onpri);
+  display: grid; place-items: center; font-size: 14px; line-height: 20px; font-weight: 500;
+}
+
+.nm { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mt { font-size: 14px; line-height: 20px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row { display: flex; gap: 4px; flex-wrap: wrap; }
+.chip { font-size: 14px; line-height: 20px; padding: 2px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); white-space: nowrap; }
+.chip.lv { border-color: var(--pri); color: var(--pri); font-weight: 500; }
+
+/* Effekte (Soll) wie in der Hero-Karte des Admins */
+.st { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; line-height: 18px; height: 28px; padding: 0 4px 0 8px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+.st.nr { padding-right: 10px; }
+.st svg { width: 14px; height: 14px; fill: currentColor; }
+.n { min-width: 20px; height: 20px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.pos { color: #3fd033; background: #072900; border-color: #099000; }
+.pos .n { background: #099000; color: #072900; }
+.neg { color: #ff6b6b; background: #290000; border-color: #ff2424; }
+.neg .n { background: #ff2424; color: #290000; }
+
+/* „Am Zug“ (Soll): Rahmen und Badge in der Hauptfarbe */
+.hero.turn { border-color: var(--pri); box-shadow: inset 0 0 0 1px var(--pri), 0 0 24px -4px var(--pri); }
+.turnb { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 999px; background: var(--pri); color: var(--onpri); font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+
+/* Ressourcen */
+.res { padding: 24px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.rb {
+  min-height: 64px; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 16px;
+  border-radius: 8px; border: 2px solid var(--strong); background: var(--muted-res);
+  font-size: 20px; line-height: 28px; font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.rb svg { width: 20px; height: 20px; fill: var(--strong); }
+.rb .rn { font-size: 18px; line-height: 28px; }
+.slots { display: flex; gap: 4px; }
+.slots i { width: 8px; height: 24px; border-radius: 4px; background: var(--strong); }
+.slots i.off { background: #707070; }
+
+/* ---------- Aufteilung: oben Hero, unten Ressourcen, je 50 % ---------- */
+.split { display: grid; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.split .hero {
+  position: relative; min-height: 0; display: grid; grid-template-columns: auto minmax(0, 1fr);
+  align-items: center; gap: 24px; padding: 16px 24px 16px 20px;
+}
+.split .hero .menuwrap { position: absolute; top: 8px; right: 8px; }
+.split .avwrap { height: 100%; aspect-ratio: 3 / 4; align-self: stretch; }
+.split .av.fill { width: 100%; height: 100%; border-radius: 12px; font-size: 32px; line-height: 40px; font-weight: 500; }
+.split .badge { top: -8px; left: -8px; }
+.split .info { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding-right: 48px; }
+.split .who { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.split .who .nm { font-size: 24px; line-height: 32px; white-space: normal; }
+.split .res { min-height: 0; grid-template-rows: repeat(2, minmax(0, 1fr)); padding: 16px; gap: 12px; }
+.split .rb { min-height: 0; }
+
+/* Querformat: Effekte in einer Zeile, damit die Karte ihre halbe Höhe hält; was nicht passt, steht im Detail-Sheet */
+.split .effects { flex-wrap: nowrap; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
+.portrait .split .effects { flex-wrap: wrap; -webkit-mask-image: none; mask-image: none; }
+
+/* „Zug beenden“: nur wenn der Charakter am Zug ist; Hauptfarbe, unten rechts in der Hero-Karte */
+.split .hero.turn { grid-template-columns: auto minmax(0, 1fr) auto; }
+.endturn {
+  align-self: end; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 48px; min-width: 112px; padding: 0 20px; border-radius: 8px; white-space: nowrap;
+  background: var(--pri); color: var(--onpri); font-size: 14px; line-height: 20px; font-weight: 600;
+}
+.endturn svg { width: 20px; height: 20px; fill: currentColor; }
+.endturn:active { filter: brightness(.85); }
+.endturn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+/* Hochformat: Avatar und Text untereinander */
+.portrait .split .hero, .portrait .split .hero.turn { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto auto; justify-items: center; text-align: center; gap: 16px; padding: 24px 16px 16px; }
+.portrait .split .info { align-items: center; padding-right: 0; }
+.portrait .split .row { justify-content: center; }
+.portrait .endturn { justify-self: stretch; }
+.portrait .split .rb { flex-direction: column; gap: 4px; padding: 0 4px; }
+
+/* Detail-Sheet (Variante B): Tipp auf den Avatar */
+.sheet { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, .6); }
+.sheet .box { width: 560px; display: flex; gap: 24px; padding: 24px; background: var(--sec); }
+.sheet .av.xl { width: 144px; height: 192px; border-radius: 12px; font-size: 32px; line-height: 40px; }
+.sheet .body { display: flex; flex-direction: column; gap: 8px; min-width: 0; flex: 1; }
+.sheet .nm { font-size: 24px; line-height: 32px; white-space: normal; }
+.sheet .close { margin-left: auto; }
+.portrait .sheet .box { width: 342px; flex-direction: column; align-items: center; }
+.sheet ul { display: grid; gap: 6px; margin-top: 4px; }
+.sheet li { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 20px; }
+
+/* ======================= nur im Mockup ======================= */
+.mock { overflow: auto; padding: 20px; background: #16181c; border-right: 1px solid #33363d; display: flex; flex-direction: column; gap: 16px; }
+.mock h2 { font-size: 15px; line-height: 20px; font-weight: 700; color: #fff; }
+.grp { display: flex; flex-direction: column; gap: 6px; }
+.grp > span { font-size: 11px; line-height: 14px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #9aa0a8; }
+.btns { display: flex; flex-wrap: wrap; gap: 4px; }
+.mock button { height: 30px; min-width: 30px; padding: 0 10px; border-radius: 6px; background: #2a2e35; font-size: 13px; line-height: 18px; font-weight: 600; }
+.mock button:hover { background: #363b44; }
+.mock button[aria-pressed="true"] { background: #e6e6e6; color: #111; }
+.mock ul { display: grid; gap: 6px; font-size: 12.5px; line-height: 18px; color: #b0b4ba; padding-left: 14px; list-style: disc; }
+.mock b { color: #e6e6e6; }
+
+.stage { position: relative; overflow: hidden; }
+.device { position: absolute; top: calc(50% + 12px); left: 50%; padding: 12px; border-radius: 52px; background: #050505; box-shadow: 0 0 0 2px #3a3d44; transform-origin: center; }
+.notch { position: absolute; top: 50%; left: 10px; transform: translateY(-50%); width: 34px; height: 120px; border-radius: 20px; background: #050505; z-index: 5; pointer-events: none; }
+.url { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); font-size: 13px; color: #9aa0a8; font-family: ui-monospace, Menlo, monospace; }
+</style>
+</head>
+<body>
+
+<aside class="mock" aria-label="Mockup-Steuerung (nur im Mockup)">
+  <h2>Player Screen · Hero 50/50</h2>
+  <div class="grp"><span>Handy</span><div class="btns">
+    <button type="button" data-act="o" data-val="land">Querformat</button>
+    <button type="button" data-act="o" data-val="portrait">Hochformat</button>
+  </div></div>
+  <div class="grp"><span>Charakter</span><div class="btns" id="chars"></div></div>
+  <div class="grp"><span>Avatar</span><div class="btns">
+    <button type="button" data-act="img" data-val="true">Bild</button>
+    <button type="button" data-act="img" data-val="false">Initialen</button>
+  </div></div>
+  <div class="grp"><span>Effekte (Soll)</span><div class="btns">
+    <button type="button" data-act="fx" data-val="0">Keine</button>
+    <button type="button" data-act="fx" data-val="2">2</button>
+    <button type="button" data-act="fx" data-val="4">4</button>
+  </div></div>
+  <div class="grp"><span>Kampf (Soll)</span><div class="btns">
+    <button type="button" data-act="turn" data-val="false">Nicht am Zug</button>
+    <button type="button" data-act="turn" data-val="true">Am Zug</button>
+  </div></div>
+  <div class="grp"><span>Theme</span><div class="btns">
+    <button type="button" data-act="theme" data-val="dark">Dark</button>
+    <button type="button" data-act="theme" data-val="tavern">Tavern</button>
+  </div></div>
+  <div class="grp"><span>Hintergrund</span><div class="btns">
+    <button type="button" data-act="bg" data-val="true">Bild</button>
+    <button type="button" data-act="bg" data-val="false">Kein Bild</button>
+  </div></div>
+  <div class="grp"><span>Aufbau</span>
+    <ul>
+      <li>Oben die Hero-Karte, unten die Ressourcen, je die halbe Höhe.</li>
+      <li>Hero wie Variante B: großer Avatar mit Level-Badge, Spieler, Name, Volk und Klasse, Effekte, Settings oben rechts.</li>
+      <li>Tipp auf den Avatar öffnet das Detail-Sheet.</li>
+      <li>Am Zug: Button „Zug beenden“ in der Hero-Karte; ein Tipp gibt den Zug weiter (im Mockup: zurück auf „Nicht am Zug“).</li>
+      <li>Hochformat nur zum Vergleich; heute verlangt der Player Screen das Querformat.</li>
+    </ul>
+  </div>
+</aside>
+<main class="stage">
+  <div class="url" id="url"></div>
+  <div class="device" id="device">
+    <div class="notch"></div>
+    <div class="phone" id="phone"></div>
+  </div>
+</main>
+<script>
+const MEDIA = '../../../../media/images/wall_screen/';
+const BG = { dark: MEDIA + 'fight.jpg', tavern: MEDIA + 'tavern.jpg' };
+const AV_IMGS = ['forest', 'tavern', 'shop', 'levelUp'].map((n) => MEDIA + n + '.jpg');
+const CHARS = [
+  { c: 'Thalia Sturmwind', race: 'Elfe', cls: 'Magierin', p: 'Anna' },
+  { c: 'Brom Eisenfaust', race: 'Zwerg', cls: 'Kämpfer', p: 'Ben' },
+  { c: 'Seraphine Morgenlicht', race: 'Mensch', cls: 'Klerikerin', p: 'Dana' },
+];
+const FX = [
+  { t: 'pos', l: 'Segen', n: 2 }, { t: 'pos', l: 'Hast', n: 8 },
+  { t: 'neg', l: 'Vergiftet', n: 1 }, { t: 'neg', l: 'Verflucht' },
+];
+const I = {
+  gear: 'M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z',
+  swap: 'M6.99 11 3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z',
+  up: 'M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z',
+  down: 'M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z',
+  next: 'M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z',
+  close: 'M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
+};
+const icon = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${I[k]}"/></svg>`;
+const s = { o: 'land', ch: 0, img: true, fx: 2, turn: false, theme: 'dark', bg: true, menu: false, sheet: false };
+const $ = (id) => document.getElementById(id);
+const initials = (n) => n.split(' ').slice(0, 2).map((w) => w[0]).join('');
+const ch = () => CHARS[s.ch];
+
+const avatar = (size) => (s.img
+  ? `<span class="av ${size}" style="background-image:url(${AV_IMGS[s.ch % AV_IMGS.length]})" aria-hidden="true"></span>`
+  : `<span class="av ${size}" aria-hidden="true">${initials(ch().c)}</span>`);
+const effects = () => FX.slice(0, s.fx).map((e) => `<span class="st ${e.t}${e.n ? '' : ' nr'}">${icon(e.t === 'pos' ? 'up' : 'down')}${e.l}${e.n ? `<span class="n">${e.n}</span>` : ''}</span>`).join('');
+
+const settings = () => `<div class="menuwrap">
+  <button type="button" class="ib" data-app="menu" aria-label="Einstellungen" aria-expanded="${s.menu}">${icon('gear')}</button>
+  ${s.menu ? `<div class="menu" role="menu">
+    ${[['dark', 'Dunkel'], ['tavern', 'Taverne']].map(([v, l]) => `<button type="button" role="menuitemradio" aria-checked="${s.theme === v}" data-app="theme" data-val="${v}">${l}</button>`).join('')}
+    <hr><button type="button" role="menuitem" data-app="next">${icon('swap')}Charakter wechseln</button>
+  </div>` : ''}
+</div>`;
+
+const RES = [
+  { k: 'action', shape: 'circle', n: '1', l: 'Aktion' },
+  { k: 'bonus', shape: 'tri', n: '1', l: 'Bonusaktion' },
+  { k: 'movement', shape: 'move', n: '9.5', l: 'Bewegung' },
+  { k: 'special', slots: [1, 0, 0], l: 'Spezial' },
+  { k: 'spell', rn: 'I', slots: [1, 1, 1, 1], l: 'Zauberplätze I' },
+  { k: 'spell', rn: 'II', slots: [1, 1, 1], l: 'Zauberplätze II' },
+  { k: 'spell', rn: 'III', slots: [1, 1, 0], l: 'Zauberplätze III' },
+  { k: 'spell', rn: 'IV', slots: [1, 1], l: 'Zauberplätze IV' },
+];
+const RC = {
+  action: ['#099000', '#072900'], bonus: ['#db4400', '#290e00'], movement: ['#fae100', '#292500'],
+  spell: ['#2487ff', '#001229'], special: ['#ff2424', '#290000'],
+};
+const SHAPE = {
+  circle: '<svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="8"/></svg>',
+  tri: '<svg viewBox="0 0 20 20"><polygon points="10,2 18,17 2,17"/></svg>',
+  move: '<svg viewBox="0 0 20 20"><polygon points="2,8 12,8 12,3 19,10 12,17 12,12 2,12"/></svg>',
+};
+const resources = () => `<section class="card surf res" aria-label="Ressourcen">${RES.map((r) => `<button type="button" class="rb" aria-label="${r.l}" style="--strong:${RC[r.k][0]};--muted-res:${RC[r.k][1]}">
+    ${r.shape ? SHAPE[r.shape] + `<span>${r.n}</span>` : ''}${r.rn ? `<span class="rn">${r.rn}</span>` : ''}
+    ${r.slots ? `<span class="slots">${r.slots.map((on) => `<i class="${on ? '' : 'off'}"></i>`).join('')}</span>` : ''}
+  </button>`).join('')}</section>`;
+
+function splitScreen() {
+  const c = ch();
+  const av = s.img
+    ? `<span class="av fill" style="background-image:url(${AV_IMGS[s.ch % AV_IMGS.length]})" aria-hidden="true"></span>`
+    : `<span class="av fill" aria-hidden="true">${initials(c.c)}</span>`;
+  return `<div class="page split">
+    <section class="surf hero${s.turn ? ' turn' : ''}" aria-label="Charakter">
+      ${settings()}
+      <button type="button" class="avwrap" data-app="sheet" aria-label="Charakter-Details">${av}<span class="badge">5</span></button>
+      <div class="info">
+        <div class="who"><span style="display:flex;align-items:center;gap:8px;justify-content:inherit"><span class="lbl">${c.p}</span>${s.turn ? '<span class="turnb">Am Zug</span>' : ''}</span><span class="nm">${c.c}</span></div>
+        <div class="row"><span class="chip">${c.race}</span><span class="chip">${c.cls}</span></div>
+        ${s.fx ? `<div class="row effects">${effects()}</div>` : ''}
+      </div>
+      ${s.turn ? `<button type="button" class="endturn" data-app="endturn">${icon('next')}Zug beenden</button>` : ''}
+    </section>
+    ${resources()}
+  </div>`;
+}
+
+function sheet() {
+  const c = ch();
+  const list = FX.slice(0, s.fx).map((e) => `<li><span class="st ${e.t}${e.n ? '' : ' nr'}">${icon(e.t === 'pos' ? 'up' : 'down')}${e.l}${e.n ? `<span class="n">${e.n}</span>` : ''}</span><span class="mt">${e.n ? `noch ${e.n} Runde${e.n > 1 ? 'n' : ''}` : 'bis auf Weiteres'}</span></li>`).join('');
+  return `<div class="sheet" data-app="closesheet"><div class="box surf" role="dialog" aria-label="${c.c}">
+    <div class="avwrap">${s.img ? `<span class="av xl" style="background-image:url(${AV_IMGS[s.ch % AV_IMGS.length]})"></span>` : `<span class="av xl">${initials(c.c)}</span>`}<span class="badge">5</span></div>
+    <div class="body">
+      <div style="display:flex;align-items:flex-start;gap:8px"><div class="who" style="display:flex;flex-direction:column;gap:4px"><span class="lbl">${c.p}</span><span class="nm">${c.c}</span></div>
+      <button type="button" class="ib close" data-app="closesheet" aria-label="Schließen">${icon('close')}</button></div>
+      <div class="row"><span class="chip">${c.race}</span><span class="chip">${c.cls}</span><span class="chip lv">Level 5</span></div>
+      <span class="lbl" style="margin-top:8px">Effekte</span>
+      ${s.fx ? `<ul>${list}</ul>` : '<span class="mt">Keine Effekte</span>'}
+    </div>
+  </div></div>`;
+}
+
+function fit() {
+  const st = document.querySelector('.stage').getBoundingClientRect();
+  const d = $('device');
+  const sc = Math.min(1, (st.width - 48) / d.offsetWidth, (st.height - 96) / d.offsetHeight);
+  d.style.transform = `translate(-50%, -50%) scale(${sc})`;
+}
+function render() {
+  const ph = $('phone');
+  ph.dataset.theme = s.theme;
+  ph.classList.toggle('has-bg', s.bg);
+  const bg = s.bg ? `<div class="bgimg" style="background-image:url(${BG[s.theme]})"></div>` : '';
+  ph.innerHTML = `${bg}<div class="scroll">${splitScreen()}</div>${s.sheet ? sheet() : ''}`;
+  $('device').parentElement.classList.toggle('portrait', s.o === 'portrait');
+  $('url').textContent = `http://192.168.0.10:8080/player/${s.ch + 1}`;
+  $('chars').innerHTML = CHARS.map((c, i) => `<button type="button" data-act="ch" data-val="${i}">${c.c.split(' ')[0]}</button>`).join('');
+  document.querySelectorAll('.mock [data-val]').forEach((b) => {
+    b.setAttribute('aria-pressed', String(String(s[b.dataset.act]) === b.dataset.val));
+  });
+  fit();
+}
+document.querySelector('.mock').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const a = b.dataset.act; const v = b.dataset.val;
+  s.menu = false; s.sheet = false;
+  if (a === 'ch' || a === 'fx') s[a] = Number(v);
+  else if (a === 'img' || a === 'turn' || a === 'bg') s[a] = v === 'true';
+  else s[a] = v;
+  render();
+});
+$('phone').addEventListener('click', (e) => {
+  const app = e.target.closest('[data-app]');
+  if (!app) { if (s.menu) { s.menu = false; render(); } return; }
+  const a = app.dataset.app;
+  if (a === 'menu') s.menu = !s.menu;
+  if (a === 'theme') { s.theme = app.dataset.val; s.menu = false; }
+  if (a === 'next') { s.ch = (s.ch + 1) % CHARS.length; s.menu = false; }
+  if (a === 'endturn') { s.turn = false; s.menu = false; }
+  if (a === 'sheet') s.sheet = true;
+  if (a === 'closesheet' && (e.target === app || app.classList.contains('close'))) s.sheet = false;
+  render();
+});
+window.addEventListener('resize', fit);
+render();
+</script>
+</body>
+</html>

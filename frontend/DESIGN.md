@@ -68,8 +68,8 @@ Die Werte stehen nur in [tokens.ts](src/style/tokens.ts).
 | `size.iconLg` | Icons in den Menüpunkten der Navigationsleiste (Admin), 24px |
 | `size.scrollbar` | Breite der Scrollleiste (Notizen im Admin) |
 | `size.button.minWidth` | Mindestbreite von Text-Buttons |
-| `size.avatar.width` · `size.avatar.height` | Avatar der Hero-Karte (Admin, Panel „Am Zug“), 96 × 128px (Hochformat 3:4) |
-| `size.badge` | Level-Badge der Hero-Karte (Admin, Panel „Am Zug“), 36px |
+| `size.avatar.width` · `size.avatar.height` | Avatar der Hero-Karte (Admin, Panel „Am Zug“), 96 × 128px (Hochformat 3:4); im Player wächst der Avatar mit der Kartenhöhe (3:4, kein Token) |
+| `size.badge` | Level-Badge der Hero-Karte (Admin, Panel „Am Zug“; Player), 36px |
 
 **Ebenen (`z-index`):** `z-index` nur über `layer.*`, nie als freie Zahl. Was im Grid-Layout ohnehin richtig
 liegt, bekommt keinen `z-index`. `layer.raised` gilt nur innerhalb einer Komponente mit eigenem Stapelkontext.
@@ -134,12 +134,12 @@ Liste mit Werten und Orten: [screen-layouts.md](docs/design/screen-layouts.md#la
 
 | Stufe | Gewicht | Verwendung |
 |---|---|---|
-| `text.2xl` | `medium` / `semibold` / `bold` | Initialen bzw. Nummer im Avatar der Hero-Karte (`medium`, Admin) und der Kachel am Zug (`medium`, Wall), Zahl im Rundentrenner und in „+N weitere“ (`semibold`, Wall), h1 in den Notizen (`bold`) |
-| `text.xl` | `medium` / `semibold` | Initialen bzw. Nummer im Avatar der Party- und Initiative-Kacheln (`medium`, Wall); h2 in den Notizen, Überschrift des Wall-Panels, Name auf der Kachel am Zug (Wall), Zahl im Ressourcen-Button (Player), Szenenname auf der Bühne und Name in der Hero-Karte (Admin) |
+| `text.2xl` | `medium` / `semibold` / `bold` | Initialen bzw. Nummer im Avatar der Hero-Karte (`medium`, Admin und Player) und der Kachel am Zug (`medium`, Wall), Zahl im Rundentrenner und in „+N weitere“ (`semibold`, Wall), h1 in den Notizen (`bold`) |
+| `text.xl` | `medium` / `semibold` | Initialen bzw. Nummer im Avatar der Party- und Initiative-Kacheln (`medium`, Wall); h2 in den Notizen, Überschrift des Wall-Panels, Name auf der Kachel am Zug (Wall), Zahl im Ressourcen-Button (Player), Szenenname auf der Bühne und Name in der Hero-Karte (Admin, Player) |
 | `text.lg` | `semibold` | Titel von Karte und Dialog, Text im Vollbild-Overlay (Wall, Ground), Vorname auf der Party-Kachel (Wall), Ziffer der Zauberstufe I–IV (Player), Level und Zeichen „−“ und „+“ im Level-Stepper (Admin) |
 | `text.md` | `regular` / `medium` / `semibold` / `bold` | Standard und Listen in den Notizen (`ul`, `ol`, `li`, auch Absätze in Listeneinträgen des Inhaltsverzeichnisses) (`regular`), Hinweis im Overlay „Handy drehen“ (`medium`, Player), h3 und h4 in den Notizen und Name auf den Initiative-Kacheln der Wall (`semibold`), Volk · Klasse auf der Kachel am Zug (Wall, `regular`), Abenteuername in der Kopfzeile (`bold`) |
 | `text.sm` | `regular` / `medium` / `semibold` | Werte, Beschreibungen (auch auf der Bühne), Statustexte, Zustand der Musik, Volk · Klasse · Spieler der Spielerzeile, Chips der Hero-Karte, Volk · Klasse auf Party- und Initiative-Kacheln der Wall (`regular`), Navigation, Musiktitel, Charaktername und Initialen der Spielerzeile, Namen im Panel „Kampf“ und in der Initiative, Nummer im Avatar eines NPCs, Buttons „+ Vorname“, Text der Hinweisleiste und Zahl im Level-Badge (`medium`), Buttons (auch im Segment-Control), Slider-Wert, Namen der Screens im Panel „Spieltisch“, h5 und h6 in den Notizen (`semibold`) |
-| `text.xs` | `regular` / `semibold` | Details der Zeilen im Panel „Kampf“ (`regular`), Labels (auch auf den Bildern der Bühne) (`semibold`) |
+| `text.xs` | `regular` / `medium` / `semibold` | Details der Zeilen im Panel „Kampf“ (`regular`), Hinweis „Zug konnte nicht beendet werden“ (`medium`, Player), Labels (auch auf den Bildern der Bühne und das Badge „Am Zug“ der Hero-Karte im Player) (`semibold`) |
 | `text.reading` | `regular` | nur Fließtext (Absätze) in den Notizen |
 
 Überschriften h3–h6 in den Notizen: Abstand `space.5` oben, `space.2` unten (h2: `space.6` / `space.3`).
@@ -171,9 +171,9 @@ Titel und normale Texte wie „Confirm“.
 | Zeile, Felder, Mini-Buttons und Buttons „+ Vorname“ im Panel „Kampf“, Hinweis „Kampf läuft“ (Admin) | `radius.md` |
 | Punkt am Menüpunkt „Kampf“ (Admin) | `radius.pill` |
 | Status-Punkt im Panel „Spieltisch“ | `radius.pill` |
-| Avatar der Hero-Karte, Bestätigungsdialog (Admin) | `radius.lg` |
-| Chips der Hero-Karte (Admin) | `radius.md` |
-| Level-Badge der Hero-Karte (Admin) | `radius.pill` |
+| Avatar der Hero-Karte (Admin, Player), Bestätigungsdialog (Admin) | `radius.lg` |
+| Chips der Hero-Karte (Admin, Player) | `radius.md` |
+| Level-Badge der Hero-Karte (Admin, Player), Badge „Am Zug“ der Hero-Karte (Player) | `radius.pill` |
 | Slider-Schiene | `radius.pill` |
 
 Verschachtelte Flächen: **äußerer Radius = innerer Radius + Innenabstand.** Bei großem Innenabstand (ab
@@ -227,7 +227,7 @@ Dashboard-Panels), `MiniButton` ([MiniButton.tsx](src/components/MiniButton.tsx)
 [ListRow.tsx](src/components/ListRow.tsx) und `PanelSlider` ([PanelSlider.tsx](src/components/PanelSlider.tsx), Slider in Dashboard-Panels, mit
 `PanelSliderArea` und `SliderValue`), `WallCharacterTile` ([WallCharacterTile.tsx](src/components/WallCharacterTile.tsx),
 Charakter auf der Wall). Als gemeinsame CSS-Helper gibt es `tileSurface` (Kachel im Admin, Panels und Overlays auf
-Wall und Ground, Karten und Settings-Button im Player) und
+Wall und Ground, Karten (Hero, Ressourcen, Party, Hinweis) und Settings-Button im Player) und
 `hoverScrollbar` (Scrollleiste), beide in [GlobalStyle.ts](src/style/GlobalStyle.ts); `tileSurface` mit Schalter für
 durchscheinende Kacheln ([1.4](#14-regeln)).
 
@@ -237,7 +237,7 @@ Aufbau je Baustein in [components.md](docs/design/components.md): [Icon-Button](
 [Karte](docs/design/components.md#karte), [Kachel](docs/design/components.md#kachel) (Admin, Player), [Abenteuer-Hintergrund](docs/design/components.md#abenteuer-hintergrund) (Admin, Player), [Dashboard-Panel](docs/design/components.md#dashboard-panel) (Admin), [Bühne](docs/design/components.md#bühne) (Admin),
 [Segment-Control](docs/design/components.md#segment-control) (Admin), [Spieltisch-Zeile](docs/design/components.md#spieltisch-zeile) (Admin),
 [Spielerzeile](docs/design/components.md#spielerzeile) (Admin), [Level-Stepper](docs/design/components.md#level-stepper) (Admin),
-[Hero-Karte](docs/design/components.md#hero-karte) (Admin), [Kampf-Avatar](docs/design/components.md#kampf-avatar) (Admin), [Panel „Kampf“](docs/design/components.md#panel-kampf) (Admin), [Initiative-Zeile](docs/design/components.md#initiative-zeile) (Admin), [Status-Punkt](docs/design/components.md#status-punkt) (Admin), [Ressourcen-Button](docs/design/components.md#ressourcen-button) (Player),
+[Hero-Karte](docs/design/components.md#hero-karte) (Admin, Player), [Kampf-Avatar](docs/design/components.md#kampf-avatar) (Admin), [Panel „Kampf“](docs/design/components.md#panel-kampf) (Admin), [Initiative-Zeile](docs/design/components.md#initiative-zeile) (Admin), [Status-Punkt](docs/design/components.md#status-punkt) (Admin), [Ressourcen-Button](docs/design/components.md#ressourcen-button) (Player),
 [Overlay-Panel](docs/design/components.md#overlay-panel) (Wall), [Wall-Kachel](docs/design/components.md#wall-kachel) (Wall), [Initiative-Leiste](docs/design/components.md#initiative-leiste) (Wall), [Vollbild-Overlay](docs/design/components.md#vollbild-overlay) (Wall, Ground),
 [Dialog](docs/design/components.md#dialog), [Dialog „Spieler verbinden“](docs/design/components.md#dialog-spieler-verbinden) (Admin), [Kopfzeile](docs/design/components.md#kopfzeile) (Admin),
 [Settings-Menü](docs/design/components.md#settings-menü) (Player), [Charakterzeile](docs/design/components.md#charakterzeile) (Player), [Zustand der Karte „Party“](docs/design/components.md#zustand-der-karte-party) (Player), [Hinweisleiste](docs/design/components.md#hinweisleiste) (Admin),
@@ -248,8 +248,8 @@ Aufbau je Baustein in [components.md](docs/design/components.md): [Icon-Button](
 Aufbau von Admin (Grid aus Kacheln: Navigationsleiste mit Panel, feste Kopfzeile, Notizen und Dashboard), Wall (Vollbild mit Party bzw.
 Initiative-Leiste und Overlay-Panel),
 Ground (Vollbild-Medium mit Raster); Wall und Ground ohne Bedienelemente außer dem Vollbild-Overlay beim Hovern mit
-der Maus und Player (Charakterauswahl im Hoch- und Querformat; Player Screen im Querformat, Karte mit
-Ressourcen-Buttons): [screen-layouts.md](docs/design/screen-layouts.md#screen-layouts).
+der Maus und Player (Charakterauswahl im Hoch- und Querformat; Player Screen im Querformat, oben Hero-Karte, unten
+Karte mit Ressourcen-Buttons, je die halbe Höhe): [screen-layouts.md](docs/design/screen-layouts.md#screen-layouts).
 
 ---
 
@@ -272,9 +272,9 @@ Wechselt mit dem Theme.
 | Rolle | Bedeutung | Verwendung |
 |---|---|---|
 | `background` | Grundfläche | Hintergrund von Admin und Player (unter dem Hintergrundbild, ohne Bild sichtbar) und Ground, Charakterzeilen und Button „Erneut versuchen“ der Charakterauswahl (Player), Nebenaktion ([2.4](#24-zustände)); Hover in Navigationsleiste, Panel und Kopfzeile im Admin, Nach-oben-Button der Notizen; leere Bildflächen der Bühne; Flächen in Dashboard-Panels (Play-Button ohne Musik, Slider-Schienen, Buttons „In neuem Fenster öffnen“, „QR-Code“, „−“ und „+“, Segment-Control, Sound-Gruppen, Spielerzeilen, Chips der Hero-Karte, Zeilen, Felder und Buttons „+ Vorname“ im Panel „Kampf“, Initiative-Zeilen), Hinweis „Kampf läuft“ im Panel „Szenen“, Avatar von Spielern direkt auf der Kachel (Hero-Karte in „Am Zug“, „Als Nächstes“, Wall-Kacheln) |
-| `secondary` | erhöhte Fläche | Karten (Player: ohne Hintergrundbild, auch Settings-Button und Liste des Settings-Menüs, Platzhalter-Zeilen beim Laden), Kacheln im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Notizseiten, Dashboard-Panels; ohne Hintergrundbild), Dialog, Avatar von Spielern auf Zeilen mit Fläche `background` (Spielerzeile, Initiative, Panel „Kampf“), Ring um das Level-Badge und den Punkt am Menüpunkt „Kampf“, Hover der Mini-Buttons und des Totenkopfs, Hover der Buttons im Segment-Control, Hintergrund der Wall, inaktiver Zustand ([2.4](#24-zustände)) |
-| `secondaryTranslucent` | erhöhte Fläche über einem Bild (`secondary` mit 75 % Deckkraft in Dark, 92 % in Tavern) | Kacheln im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Notizseiten, Dashboard-Panels), solange das Hintergrundbild dahinter liegt ([1.4](#14-regeln)); auf Wall und Ground Weltkarten-Panel, Fläche im Vollbild-Overlay, Party- und Initiative-Kacheln; im Player die Karten (Party, Hinweis, Ressourcen) und der Settings-Button, solange das Hintergrundbild dahinter liegt |
-| `primary` | Akzent, aktiv | Links, Slider-Füllung, Status-Punkt „verbunden“, Level-Badge der Hero-Karte, Rahmen und Label „Am Zug“ des Teilnehmers am Zug (auf der Wall Fläche des Badges „Am Zug“), Rand und Icon des Hinweises nach Abenteuerwechsel (Player), aktiver Zustand ([2.4](#24-zustände)) |
+| `secondary` | erhöhte Fläche | Karten (Player: ohne Hintergrundbild, auch Hero-Karte, Settings-Button und Liste des Settings-Menüs, Platzhalter-Zeilen beim Laden), Kacheln im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Notizseiten, Dashboard-Panels; ohne Hintergrundbild), Dialog, Avatar von Spielern auf Zeilen mit Fläche `background` (Spielerzeile, Initiative, Panel „Kampf“), Ring um das Level-Badge und den Punkt am Menüpunkt „Kampf“, Hover der Mini-Buttons und des Totenkopfs, Hover der Buttons im Segment-Control, Hintergrund der Wall, inaktiver Zustand ([2.4](#24-zustände)) |
+| `secondaryTranslucent` | erhöhte Fläche über einem Bild (`secondary` mit 75 % Deckkraft in Dark, 92 % in Tavern) | Kacheln im Admin (Navigationsleiste, Panel, Kacheln der Kopfzeile, Notizseiten, Dashboard-Panels), solange das Hintergrundbild dahinter liegt ([1.4](#14-regeln)); auf Wall und Ground Weltkarten-Panel, Fläche im Vollbild-Overlay, Party- und Initiative-Kacheln; im Player die Karten (Party, Hinweis, Hero, Ressourcen) und der Settings-Button, solange das Hintergrundbild dahinter liegt |
+| `primary` | Akzent, aktiv | Links, Slider-Füllung, Status-Punkt „verbunden“, Level-Badge der Hero-Karte, Rahmen und Label „Am Zug“ des Teilnehmers am Zug (auf der Wall und im Player Fläche des Badges „Am Zug“; im Player auch Rahmen der Hero-Karte am Zug und Button „Zug beenden“), Rand und Icon des Hinweises nach Abenteuerwechsel (Player), aktiver Zustand ([2.4](#24-zustände)) |
 | `border` | Linien | Trennlinien in Karten und den Panels „Audio“ und „Spieltisch“, Rand und Lichtkante der Kacheln im Admin (auch Bühne und Hinweisleiste), Rand des Avatars von Spielern, Rand der Chips der Hero-Karte, Rand der Felder im Panel „Kampf“, Trennlinien im Panel „Kampf“ und im Fuß von „Am Zug“, Unterstrich von h1, Griff der Scrollleiste in den Notizen (bei Hover) |
 | `overlay` | Abdunklung (eine für alle Overlays) | Hintergrund hinter dem Dialog im Admin, Vollbild-Overlay auf Wall und Ground (Text und Icon stehen auf einer durchscheinenden Kachel, nicht auf `overlay`), Abdunklung unter der Weltkarte auf der Wall |
 | `backdrop` | leichte Abdunklung des ganzen Screens | nur die Abdunklung des Hintergrundbilds hinter den Kacheln im Admin und den Karten im Player |
@@ -283,14 +283,14 @@ Wechselt mit dem Theme.
 | `text.color` | Vordergrund | Text, Icon-Füllung, Slider-Griff, Ring des Status-Punkts „nicht verbunden“ |
 | `text.muted` | gedämpfter Vordergrund (`text.color` mit Transparenz) | Volk · Klasse · Spieler der Spielerzeile und der Charakterzeile, Pfeil der Charakterzeile, Details in Initiative und Panel „Kampf“ (auf `background`), Icons der Mini-Buttons, Schloss der Abenteuer-Auswahl, Lautsprecher-Icon im Panel „Audio“, Zeichen deaktivierter Buttons ([2.4](#24-zustände)); nicht für Text direkt auf `secondary` (Tavern verfehlt dort 4,5:1) und nicht auf den Wall-Kacheln |
 | `initials` | Initialen | Initialen im Avatar von Spielerzeile, Charakterzeile und Hero-Karte ohne Bild (Dark: wie `primary`, Tavern: wie `text.color`) |
-| `onPrimary` | Vordergrund auf Akzent | aktiver Zustand ([2.4](#24-zustände)), Zahl im Level-Badge, Text des Badges „Am Zug“ (Wall) |
+| `onPrimary` | Vordergrund auf Akzent | aktiver Zustand ([2.4](#24-zustände)), Zahl im Level-Badge, Text des Badges „Am Zug“ (Wall, Player), Text und Icon von „Zug beenden“ (Player) |
 | `error` | Fläche für Fehler | Hinweisleiste in der Kopfzeile des Admins |
 | `onError` | Vordergrund auf `error` | Text, Icon und Fokus-Outline der Hinweisleiste |
 | `qr.foreground` · `qr.background` | Module und Grund des QR-Codes | QR-Code im Dialog „Spieler verbinden“ (Admin); dunkel auf hell, damit Kameras ihn sicher erkennen |
 | `resource.<art>.strong` | kräftiger Ton einer Ressource (`action`, `bonus`, `movement`, `spell`, `special`) | Rahmen des Ressourcen-Buttons, verfügbare Icons und Plätze (Player) |
 | `resource.<art>.muted` | dunkler Ton einer Ressource | Fläche des Ressourcen-Buttons (Player) |
 | `resource.empty` | verbraucht | verbrauchte Icons und Plätze (Player) |
-| `negative.text` · `positive.text` | Vordergrund mit negativer bzw. positiver Bedeutung | `negative`: Nummer im Avatar eines Gegners, markierter Totenkopf, Fehlermeldung im Panel „Kampf“, Schloss im Hinweis „Kampf läuft“; `positive`: Nummer im Avatar eines Verbündeten (Admin); auch für spätere Effekt-Chips gedacht |
+| `negative.text` · `positive.text` | Vordergrund mit negativer bzw. positiver Bedeutung | `negative`: Nummer im Avatar eines Gegners, markierter Totenkopf, Fehlermeldung im Panel „Kampf“ und Hinweis „Zug konnte nicht beendet werden“ (Player), Schloss im Hinweis „Kampf läuft“; `positive`: Nummer im Avatar eines Verbündeten (Admin); auch für spätere Effekt-Chips gedacht |
 | `negative.surface` · `positive.surface` | Fläche mit negativer bzw. positiver Bedeutung (= `resource.special.muted` bzw. `resource.action.muted`) | Fläche des Avatars eines Gegners bzw. Verbündeten; `negative` auch: markierter Totenkopf (Admin) |
 | `negative.border` · `positive.border` | Rand mit negativer bzw. positiver Bedeutung (= `resource.special.strong` bzw. `resource.action.strong`) | Rand des Avatars eines Gegners bzw. Verbündeten; `negative` auch: Punkt am Menüpunkt „Kampf“ (Admin) |
 

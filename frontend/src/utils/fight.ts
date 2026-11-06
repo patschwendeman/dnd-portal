@@ -1,5 +1,5 @@
 import {
-  Combatant, CombatantCreate, CombatantKind, Player,
+  Combatant, CombatantCreate, CombatantKind, FightState, Player,
 } from '../models/models'
 import { characterInitials } from './player'
 
@@ -148,6 +148,16 @@ const nextOnTurn = (
   return null
 }
 
+// The combatant of the player on turn on his Player Screen; null without a fight, if the player
+// does not take part or another combatant is on turn
+const ownTurnCombatantId = (fight: FightState | null, playerId: number | null): number | null => {
+  if (fight === null || playerId === null) {
+    return null
+  }
+  const active = fight.combatants.find((combatant) => combatant.id === fight.active_combatant_id)
+  return active?.kind === 'player' && active.player_id === playerId ? active.id : null
+}
+
 // Number of combatants per kind, for the head of the panel "Initiative"
 const countByKind = (combatants: CombatantFields[]): Record<CombatantKind, number> => ({
   player: combatants.filter((combatant) => combatant.kind === 'player').length,
@@ -170,6 +180,7 @@ export {
   moveItem,
   nextOnTurn,
   numberError,
+  ownTurnCombatantId,
   preparedNpc,
   preparedPlayer,
   smallestFreeNumber,

@@ -1,20 +1,34 @@
 import { ReactElement, ReactNode } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import Label from './Label'
 import { textStyle } from '../style/tokens'
 
-const Card = styled.article`
+interface FillProps {
+  $fill: boolean
+}
+
+const Card = styled.article<FillProps>`
   display: flex;
   align-items: center;
   gap: ${(props) => props.theme.space[5]};
   min-width: 0;
+  ${(props) => props.$fill && css`
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    min-height: 0;
+  `}
 `
 
 // The badge sticks out at the top left of the avatar
-const AvatarWrap = styled.div`
+const AvatarWrap = styled.div<FillProps>`
   position: relative;
   flex: none;
+  ${(props) => props.$fill && css`
+    height: 100%;
+    aspect-ratio: 3 / 4;
+  `}
 `
 
 // The ring in the color of the tile separates the badge from the avatar below it
@@ -41,6 +55,13 @@ const Info = styled.div`
   flex-direction: column;
   gap: ${(props) => props.theme.space[1]};
   min-width: 0;
+`
+
+const CaptionRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: ${(props) => props.theme.space[2]};
 `
 
 const Caption = styled(Label)`
@@ -80,22 +101,31 @@ interface HeroCardProps {
   chips: string[]
   // Level badge on the avatar, only for players
   level?: number | null
+  // Next to the caption, e.g. "Am Zug" on the Player Screen
+  badge?: ReactNode
+  // Takes the height it is given, the avatar (CombatantAvatar in size fill) grows with it
+  fill?: boolean
   testId?: string
 }
 
 // A large card for one character: avatar (with the level of a player), caption, name and chips;
-// the dashboard shows it for the combatant on turn
+// the dashboard shows it for the combatant on turn, the Player Screen for its own character
 function HeroCard({
-  avatar, caption, name, chips, level = null, testId = undefined,
+  avatar, caption, name, chips, level = null, badge = null, fill = false, testId = undefined,
 }: HeroCardProps): ReactElement {
   return (
-    <Card aria-label={name} data-test-id={testId} lang="de">
-      <AvatarWrap>
+    <Card aria-label={name} data-test-id={testId} lang="de" $fill={fill}>
+      <AvatarWrap $fill={fill}>
         {avatar}
         {level !== null && <LevelBadge data-test-id="hero-level">{level}</LevelBadge>}
       </AvatarWrap>
       <Info>
-        <Caption data-test-id="hero-caption">{caption}</Caption>
+        {badge === null ? <Caption data-test-id="hero-caption">{caption}</Caption> : (
+          <CaptionRow>
+            <Caption data-test-id="hero-caption">{caption}</Caption>
+            {badge}
+          </CaptionRow>
+        )}
         <Name data-test-id="hero-name">{name}</Name>
         {chips.length > 0 && (
           <Chips>

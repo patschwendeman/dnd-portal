@@ -90,7 +90,8 @@ src/context/         ActiveAdventureContext, ActiveSceneContext (IDs number | nu
                      groundGrid, groundGridCellSize, connected,
                      reconnectNow, screens: Verbindungszahlen nur für den Admin), GameAudioContext (audio, isAudioOutput,
                      requestAudioOutput, reportTrackEnded, subscribeSound), FightContext (fight: Kampf des aktiven
-                     Abenteuers, nur in Admin und Wall gefüllt (Wall ohne Bezeichnungen), sonst null)
+                     Abenteuers, in Admin, Wall und Player gefüllt (Wall und Player ohne Bezeichnungen),
+                     im Ground null)
 src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Panel „Audio“), audioPlayer.ts
                      (AudioPlayer: Wiedergabe im Admin nach dem AudioState, Audio-Fabrik injizierbar für vitest),
                      useAudioPlayback.ts (bindet den AudioPlayer im Admin an den GameAudioContext),
@@ -111,7 +112,8 @@ src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin: Abenteuernam
                      LevelStepper (Level im Kopf der Party), ListRow (Zeilen-Bausteine von Party, Initiative und
                      Charakterauswahl), CombatantAvatar (Avatar von Spielern und NPCs), FightPanel (Panel
                      „Kampf“), TurnPanel (Dashboard „Am Zug“) mit HeroCard (Hero-Karte), InitiativePanel (Dashboard
-                     „Initiative“), MiniButton (↑/↓/Entfernen im Panel „Kampf“), ConfirmDialog („Kampf beenden?“),
+                     „Initiative“), PlayerHeroCard (Hero-Karte des eigenen Charakters im Player Screen, mit
+                     „Am Zug“ und „Zug beenden“), MiniButton (↑/↓/Entfernen im Panel „Kampf“), ConfirmDialog („Kampf beenden?“),
                      PanelButton (Icon-Button in Panels), WallParty (Party-Kacheln links und rechts auf der Wall),
                      WallInitiative (Initiative-Leiste auf der Wall) mit WallCharacterTile (Kachel eines
                      Charakters auf der Wall), OptionButtons
@@ -122,7 +124,8 @@ src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, ge
                      getJoinInfo, saveActiveScene, saveGlobalLevel, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
                      getWallPlayers, getGroundScreenData, getPlayerAdventure …); gameTable.ts: saveWallOverlay, saveGroundGrid,
                      saveGroundGridCellSize (nur vom Admin genutzt); fight.ts: startFight, endFight, endTurn,
-                     addCombatant, saveDefeated, removeCombatant, saveFightOrder (nur vom Admin genutzt)
+                     addCombatant, saveDefeated, removeCombatant, saveFightOrder (nur vom Admin genutzt, endTurn
+                     auch vom Player Screen)
 src/api/             axios-Client (apiClient.ts, API_BASE_URL), getData/patchData/postData/putData/deleteData
                      (apiMethods.ts), loadData, saveData/postCommand/replaceData/deleteCommand, mediaUrl (mediaUrl.ts), wsUrl (wsUrl.ts); schema.d.ts generiert
 src/models/models.ts API-Typen AdventureSummary, AdventureDetail, Player, SceneDetail, Image, Track, GameTableState, Theme,
@@ -138,8 +141,10 @@ src/utils/adventureBackground.ts adventureBackgroundSource (Bild des Abenteuers 
                      im Admin und in PlayerLayout, BACKGROUND_FADE_MS)
 src/utils/fight.ts   Logik des Kampfes: Vorbereitung (initialPreparation, preparedPlayer/preparedNpc,
                      toCombatantCreate), smallestFreeNumber, numberError, moveItem, missingPlayers, Namen und Details
-                     der Teilnehmer, nextOnTurn („Als Nächstes“), countByKind; useFightPreparation.ts (Vorbereitung
-                     als lokaler Zustand des Admin-Fensters, zurückgesetzt bei Abenteuerwechsel, Start und Ende)
+                     der Teilnehmer, nextOnTurn („Als Nächstes“), countByKind, ownTurnCombatantId (eigener
+                     Charakter am Zug im Player Screen); useFightPreparation.ts (Vorbereitung als lokaler Zustand
+                     des Admin-Fensters, zurückgesetzt bei Abenteuerwechsel, Start und Ende); usePlayerEndTurn.ts
+                     („Zug beenden“ im Player Screen: läuft, fehlgeschlagen)
 src/utils/wallParty.ts splitParty (Party-Kacheln links und rechts auf der Wall)
 src/utils/wallInitiative.ts Initiative-Leiste der Wall: initiativeQueue (Warteschlange ab dem Teilnehmer am Zug,
                      Filter, Rundentrenner), fitToWidth („+N weitere“), planTransitions (Nachrücken), wallName,
@@ -170,13 +175,14 @@ Contexts aus jedem Snapshot. Szenen-, Abenteuer-, Theme-, Overlay- und Raster-We
 haben keine Bedienelemente außer dem lokalen Vollbild-Overlay) per REST (`PATCH adventures/{id}`
 bzw. `PATCH table`) **ohne lokale Vorwegnahme**; der Server pusht danach den neuen Stand an alle Screens, die die Szene
 per `scenes/{id}` neu laden (ohne aktive Szene kein Request, nur Hintergrund). Nur der Admin zeigt Speicher- und
-Verbindungsfehler. Auswahl und Player Screen nutzen vom Snapshot das aktive Abenteuer und das Theme (`Abweichung ??
-Spieltisch-Theme`) und senden nichts; `PlayerLayout` lädt `adventures/{id}` beim Laden und bei jedem
-Abenteuerwechsel (Spieler, Hintergrundbilder). Nur die Auswahl zeigt „Keine Verbindung zum Spieltisch“; der Player
+Verbindungsfehler (einzige Ausnahme: „Zug konnte nicht beendet werden“ im Player Screen). Auswahl und Player Screen nutzen vom Snapshot das aktive Abenteuer und das Theme (`Abweichung ??
+Spieltisch-Theme`) und senden nichts über den WebSocket; `PlayerLayout` lädt `adventures/{id}` beim Laden und bei jedem
+Abenteuerwechsel (Spieler, Level, Hintergrundbilder). Nur die Auswahl zeigt „Keine Verbindung zum Spieltisch“; der Player
 Screen kehrt zur Auswahl zurück, sobald sein Charakter nicht zum aktiven Abenteuer gehört (`playerRedirect`). Der QR-Code-Dialog im Admin (`JoinDialog`, geöffnet aus dem Panel „Spieltisch“) lädt beim Öffnen `table/join`. Nur an
 Admins schickt der Server die Zahl der verbundenen Wall-, Ground- und Player-Verbindungen (`screens`); den Kampf
-des aktiven Abenteuers (`fight`, `FightContext`) an Admins und Walls (an Walls ohne die Bezeichnungen der NPCs). Den Kampf schreibt der Admin per REST unter `table/fight` ohne
-lokale Vorwegnahme; nur die Vorbereitung vor „Kampf starten“ ist lokal. Während eines Kampfes sind Szenenliste und
+des aktiven Abenteuers (`fight`, `FightContext`) an Admins, Walls und Player (an Walls und Player ohne die Bezeichnungen der NPCs). Den Kampf schreibt der Admin per REST unter `table/fight` ohne
+lokale Vorwegnahme; einzige Ausnahme ist „Zug beenden“ im Player Screen (`POST table/fight/turn` für den eigenen
+Charakter am Zug, `ownTurnCombatantId`, `usePlayerEndTurn`, ebenfalls ohne Vorwegnahme); nur die Vorbereitung vor „Kampf starten“ ist lokal. Während eines Kampfes sind Szenenliste und
 Abenteuer-Auswahl gesperrt (der Server lehnt Wechsel mit 409 ab).
 Spieler und Level (`global_level`) stehen nicht im Snapshot: Die Wall lädt `adventures/{id}` beim Laden und bei einem
 Abenteuerwechsel (Party und Initiative); der Admin lädt es beim Laden, bei einem

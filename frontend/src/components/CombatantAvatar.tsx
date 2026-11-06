@@ -16,7 +16,8 @@ const WALL_AVATAR_SIZE = {
 
 type WallAvatarSize = keyof typeof WALL_AVATAR_SIZE
 
-type AvatarSize = 'sm' | 'md' | 'hero' | WallAvatarSize
+// fill: as large as the box around it (hero card of the Player Screen, grows with its height)
+type AvatarSize = 'sm' | 'md' | 'hero' | 'fill' | WallAvatarSize
 
 interface FrameProps {
   $kind: CombatantKind
@@ -41,10 +42,10 @@ const frameSize = ({ $size }: FrameProps) => {
       ${textStyle('2xl')}
     `
   }
-  if ($size === 'hero') {
+  if ($size === 'hero' || $size === 'fill') {
     return css`
-      width: ${(props) => props.theme.size.avatar.width};
-      height: ${(props) => props.theme.size.avatar.height};
+      width: ${(props) => ($size === 'fill' ? '100%' : props.theme.size.avatar.width)};
+      height: ${(props) => ($size === 'fill' ? '100%' : props.theme.size.avatar.height)};
       border-radius: ${(props) => props.theme.radius.lg};
       ${textStyle('2xl')}
     `

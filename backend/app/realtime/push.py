@@ -50,7 +50,7 @@ def fight_message(fight: FightState | None) -> dict[str, Any]:
 
 
 def wall_fight(fight: FightState | None) -> FightState | None:
-    """The fight as the Walls see it: without the labels of the NPCs, which only the game master sees."""
+    """The fight as Walls and Players see it: without the labels of the NPCs, which only the game master sees."""
     if fight is None:
         return None
     combatants = [combatant.model_copy(update={"label": None}) for combatant in fight.combatants]
@@ -81,11 +81,13 @@ async def push_audio() -> None:
 
 async def push_fight() -> None:
     """Sends the fight of the active adventure (or null) to all Admins and, without the labels of the NPCs, to all
-    Walls; Ground and Player do not receive it."""
+    Walls and Players; Ground does not receive it."""
     async with manager.state_lock:
         fight = await run_in_threadpool(_read_fight)
         await manager.send_admins(fight_message(fight))
-        await manager.send_screen("wall", fight_message(wall_fight(fight)))
+        message = fight_message(wall_fight(fight))
+        await manager.send_screen("wall", message)
+        await manager.send_screen("player", message)
 
 
 async def update_audio(update: AudioUpdate) -> AudioState:
@@ -96,8 +98,8 @@ async def update_audio(update: AudioUpdate) -> AudioState:
 
 async def send_initial_state(connection: Connection) -> bool:
     """Registers the connection and sends it the current state and audio state, to an Admin also the connection
-    counts and the fight, to a Wall the fight without labels; False if a send failed. A new Wall, Ground or Player
-    changes the counts the Admins see.
+    counts and the fight, to a Wall or Player the fight without labels; False if a send failed. A new Wall, Ground or
+    Player changes the counts the Admins see.
     """
     async with manager.state_lock:
         manager.add(connection)
@@ -109,7 +111,7 @@ async def send_initial_state(connection: Connection) -> bool:
             fight = await run_in_threadpool(_read_fight)
             return await manager.send(connection, fight_message(fight))
         await manager.push_screens()
-        if connection.screen == "wall" and sent:
+        if connection.screen in ("wall", "player") and sent:
             fight = await run_in_threadpool(_read_fight)
             return await manager.send(connection, fight_message(wall_fight(fight)))
         return sent

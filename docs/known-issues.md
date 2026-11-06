@@ -65,9 +65,7 @@ in Folge-Tasks, danach den Eintrag in der jeweiligen Ignore-Liste entfernen bzw.
   (`__tests__/bdd/support/helpers.ts`), `LoadError` (`src/api/loadData.ts`), `RECONNECT_BASE_DELAY_MS`,
   `RECONNECT_MAX_DELAY_MS` (`src/realtime/backoff.ts`); Typen `TextButtonVariant` (`TextButton.tsx`), `Image`
   (`models.ts`), `OtherServerMessage` (`connection.ts`), `SoundListener` (`useGameTable.ts`). Falsch-Positive: die
-  Exporte des generierten `src/api/schema.d.ts`. Keine Baseline, sondern bewusst reserviert (DND-38): die Datei
-  `src/components/PlayerHeroCard.tsx` (Hero-Karte), die das Layout „Bühne“ nicht nutzt; sie bleibt für wählbare
-  Dashboard-Layouts, der Eintrag entfällt, sobald ein Layout sie wieder verwendet.
+  Exporte des generierten `src/api/schema.d.ts`.
 - jscpd (`frontend/.jscpd.json`, `threshold` 0,28 %, seit DND-44): 1 Duplikat, 22 von 8073 Zeilen (0,27 %, Stand
   DND-44): `darkTheme.ts` ↔ `tavernTheme.ts` (22 Zeilen).
 

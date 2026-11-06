@@ -23,7 +23,7 @@ interface GameTableProviderProps {
 
 // Connects the screen to the game table of the server and passes the state on: active adventure,
 // active scene, theme, overlay of the Walls and grid of the Grounds, the audio state, (Admin only)
-// the number of connected screens and (Admin and Wall) the fight. Until the first snapshot nothing
+// the number of connected screens and (not Ground) the fight. Until the first snapshot nothing
 // is active, the theme is dark and there is neither overlay nor grid; after a disconnect the last
 // state stays. A theme override only changes the look of this screen; the contexts keep the theme
 // of the game table.

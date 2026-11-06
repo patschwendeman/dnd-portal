@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { Combatant, Player } from '../../src/models/models'
+import { Combatant, FightState, Player } from '../../src/models/models'
 import {
   combatantAvatarText,
   combatantDetails,
@@ -12,6 +12,7 @@ import {
   moveItem,
   nextOnTurn,
   numberError,
+  ownTurnCombatantId,
   preparedNpc,
   preparedPlayer,
   smallestFreeNumber,
@@ -191,5 +192,49 @@ describe('countByKind', () => {
       combatant(4, { kind: 'ally' }),
     ]
     expect(countByKind(list)).toEqual({ player: 1, enemy: 2, ally: 1 })
+  })
+})
+
+describe('ownTurnCombatantId', () => {
+  const combatants = [
+    combatant(10, { kind: 'player', player_id: 1, number: null }),
+    combatant(11, { kind: 'enemy', number: 1 }),
+    combatant(12, { kind: 'player', player_id: 2, number: null }),
+  ]
+  const fight = (activeId: number | null): FightState => ({
+    round: 1, active_combatant_id: activeId, scene_id: 1, combatants,
+  })
+
+  it('returns the combatant of the player while he is on turn', () => {
+    expect(ownTurnCombatantId(fight(12), 2)).toBe(12)
+    expect(ownTurnCombatantId(fight(10), 1)).toBe(10)
+  })
+
+  it('returns null without a fight or without a player', () => {
+    expect(ownTurnCombatantId(null, 1)).toBeNull()
+    expect(ownTurnCombatantId(fight(10), null)).toBeNull()
+  })
+
+  it('returns null if the player does not take part', () => {
+    expect(ownTurnCombatantId(fight(10), 3)).toBeNull()
+  })
+
+  it('returns null while another combatant is on turn', () => {
+    expect(ownTurnCombatantId(fight(12), 1)).toBeNull()
+    expect(ownTurnCombatantId(fight(11), 1)).toBeNull()
+  })
+
+  it('returns null while nobody is on turn', () => {
+    expect(ownTurnCombatantId(fight(null), 1)).toBeNull()
+  })
+
+  it('ignores an NPC on turn even with the player ID', () => {
+    const npcFight: FightState = {
+      round: 1,
+      active_combatant_id: 20,
+      scene_id: 1,
+      combatants: [combatant(20, { kind: 'ally', number: 1, player_id: 1 })],
+    }
+    expect(ownTurnCombatantId(npcFight, 1)).toBeNull()
   })
 })

@@ -1,6 +1,6 @@
 """Tests for /table/fight: start, turns and rounds, end, editing during the fight (combatants, defeated, order), the
 lock of scene and adventure changes during a fight, the push `fight` to the Admins and (without labels) to the Walls
-and the cascades of the tables.
+and Players and the cascades of the tables.
 
 Changing tests use the fixture `db` (tests/conftest.py): everything is rolled back afterwards. The fixture
 `fight_table` makes adventure 1 active with scene 5 (seed players 1-4 belong to adventure 1).
@@ -590,9 +590,61 @@ def test_admins_keep_the_labels_while_walls_are_connected(client: TestClient, fi
         assert receive_fight(wall) == without_labels(fight)
 
 
-@pytest.mark.parametrize("screen", ["ground", "player"])
-def test_other_screens_do_not_receive_the_fight(client: TestClient, fight_table: Session, screen: str) -> None:
-    with client.websocket_connect(f"/ws?screen={screen}") as websocket:
+def test_players_receive_the_fight_without_labels_after_connecting_and_after_changes(
+    client: TestClient, fight_table: Session
+) -> None:
+    with (
+        client.websocket_connect("/ws?screen=player") as phone,
+        client.websocket_connect("/ws?screen=player") as other_phone,
+    ):
+        assert receive_fight(phone) is None
+        assert receive_fight(other_phone) is None
+
+        fight = start(client, player(1), enemy(1, "Ork"), ally(2, "Wache"))
+        assert receive_fight(phone) == without_labels(fight)
+        assert receive_fight(other_phone) == without_labels(fight)
+
+        fight = end_turn(client, fight)
+        assert receive_fight(phone) == without_labels(fight)
+        assert receive_fight(other_phone) == without_labels(fight)
+
+        client.delete("/table/fight")
+        assert receive_fight(phone) is None
+        assert receive_fight(other_phone) is None
+
+
+def test_new_player_receives_the_running_fight_without_labels(client: TestClient, fight_table: Session) -> None:
+    fight = start(client, player(1), enemy(1, "Ork"))
+
+    with client.websocket_connect("/ws?screen=player") as phone:
+        receive_snapshot(phone)
+        assert receive_fight(phone) == without_labels(fight)
+
+
+def test_end_turn_of_a_player_reaches_admins_walls_and_players(client: TestClient, fight_table: Session) -> None:
+    fight = start(client, player(1), enemy(1, "Ork"), player(2))
+    with (
+        client.websocket_connect("/ws?screen=admin") as admin,
+        client.websocket_connect("/ws?screen=wall") as wall,
+        client.websocket_connect("/ws?screen=player") as phone,
+    ):
+        assert receive_fight(admin) == fight
+        assert receive_fight(wall) == without_labels(fight)
+        assert receive_fight(phone) == without_labels(fight)
+
+        # The phone ends its own turn: a plain REST request, no Admin connection involved.
+        response = client.post("/table/fight/turn", json={"from_combatant_id": ids(fight)[0]})
+        assert response.status_code == 200
+        fight = response.json()
+        assert fight["active_combatant_id"] == ids(fight)[1]
+
+        assert receive_fight(admin) == fight
+        assert receive_fight(wall) == without_labels(fight)
+        assert receive_fight(phone) == without_labels(fight)
+
+
+def test_ground_does_not_receive_the_fight(client: TestClient, fight_table: Session) -> None:
+    with client.websocket_connect("/ws?screen=ground") as websocket:
         receive_snapshot(websocket)
 
         start(client, enemy(1))

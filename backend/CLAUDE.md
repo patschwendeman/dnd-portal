@@ -2,7 +2,7 @@
 
 REST-API, WebSocket und PostgreSQL für das DnD Portal. Liefert Abenteuer (mit Spielern, aktiver Szene und globalem Level) und
 Szenen mit ihren Wall-/Ground-Bildern und Musik-Playlists an das Frontend (`../frontend`), hält den Spieltisch-Zustand
-(aktives Abenteuer, aktive Szene, Theme, Zellgröße des Ground-Rasters; Wall-Overlay und Rasterfarbe nur im Speicher) und den Musikzustand (im Speicher) und pusht beides per WebSocket (`/ws`) an Admin, Wall, Ground und Player, hält den laufenden Kampf je Abenteuer (`/table/fight`, Push an Admins und ohne Bezeichnungen an Walls), liefert die Player-URL für den QR-Code im
+(aktives Abenteuer, aktive Szene, Theme, Zellgröße des Ground-Rasters; Wall-Overlay und Rasterfarbe nur im Speicher) und den Musikzustand (im Speicher) und pusht beides per WebSocket (`/ws`) an Admin, Wall, Ground und Player, hält den laufenden Kampf je Abenteuer (`/table/fight`, Push an Admins und ohne Bezeichnungen an Walls und Player), liefert die Player-URL für den QR-Code im
 Admin (`GET /table/join`, `Settings.player_url`) und die Mediendateien selbst (Ordner `../media`, unter `/media`). Projektübergreifender Kontext (Vision, Screens, Begriffe, bekannte Probleme) liegt
 eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 
@@ -62,8 +62,8 @@ verkürztem `PING_INTERVAL_SECONDS`, Entfernen getrennter Verbindungen, Audioaus
 bei Verbinden, Trennen und fehlgeschlagenem Senden); Nachrichten werden mit Timeout gelesen, damit ein fehlender Push den Test scheitern lässt
 statt ihn zu blockieren; `receive_any` überspringt dort die Nachricht `fight`. `test_fight.py` prüft `/table/fight`
 (Start inkl. 409/422, Züge und Runden, Ausscheiden, Hinzufügen, Entfernen, Umsortieren mit `SET CONSTRAINTS ALL
-IMMEDIATE`, Sperre von Szenen- und Abenteuerwechsel, Push `fight` an Admins und an Walls mit `label: null` (beim
-Verbinden und nach Änderungen), nicht an Ground und Player, Kampf nach Neustart per zweitem
+IMMEDIATE`, Sperre von Szenen- und Abenteuerwechsel, Push `fight` an Admins und an Walls und Player mit `label: null`
+(beim Verbinden und nach Änderungen, auch nach einem Zugende ohne Admin), nicht an Ground, Kampf nach Neustart per zweitem
 `TestClient` mit echtem Commit, Kaskaden beim Löschen von Spieler und Szene). `test_audio.py` prüft `GET`/`PATCH /table/audio`, die Track-Wahl beim Trackende und
 `POST /table/sounds` (Zufall per `monkeypatch` auf `audio.random` gesteuert). Der Musikzustand liegt im Speicher: Die
 Fixture `reset_audio` setzt ihn nach dem Test zurück (`test_audio.py`, `test_ws.py` und alle Tests mit `db`); das
@@ -132,9 +132,9 @@ app/realtime/             WebSocket: manager.py (ConnectionManager `manager` im 
                           Sende-Lock, Broadcast entfernt Verbindungen bei Sendefehler/Timeout, PING_INTERVAL_SECONDS),
                           audio.py (AudioService `audio`: Musikzustand im Speicher, zufällige Track-Wahl, Ausgabe),
                           push.py (push_state als BackgroundTask nach dem Commit, eigene Session, lädt bei Szenenwechsel
-                          die Playlist; push_fight an Admins und, per wall_fight ohne Bezeichnungen, an Walls;
-                          send_initial_state (an Admins auch `screens` und `fight`, an Walls `fight` ohne
-                          Bezeichnungen), push_audio, send_sound, Ausgabe-Wechsel, reset_audio),
+                          die Playlist; push_fight an Admins und, per wall_fight ohne Bezeichnungen, an Walls
+                          und Player; send_initial_state (an Admins auch `screens` und `fight`, an Walls und
+                          Player `fight` ohne Bezeichnungen), push_audio, send_sound, Ausgabe-Wechsel, reset_audio),
                           origin.py (is_origin_allowed: ohne Origin, CORS_ORIGINS oder gleicher Host/Port wie `Host`),
                           wall_overlay.py (WallOverlayState `wall_overlay`: Wall-Overlay im Speicher, Default `off`),
                           ground_grid.py (GroundGridState `ground_grid`: Rasterfarbe im Speicher, Default `off`;

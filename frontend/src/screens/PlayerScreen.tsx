@@ -8,11 +8,14 @@ import styled, { useTheme, keyframes } from 'styled-components'
 import turnImg from '/assets/icons/phone.svg'
 
 import { usePlayerOutlet } from './PlayerLayout'
+import PlayerHeroCard from '../components/PlayerHeroCard'
 import ResourceBarPlayer from '../components/ResourceBarPlayer'
 import SettingsMenu from '../components/SettingsMenu'
-import { ActiveAdventureContext, GameTableContext } from '../context/context'
+import { ActiveAdventureContext, FightContext, GameTableContext } from '../context/context'
 import GlobalStyle from '../style/GlobalStyle'
+import { ownTurnCombatantId } from '../utils/fight'
 import { isPlayerOf, parsePlayerId, playerRedirect } from '../utils/playerSelect'
+import usePlayerEndTurn from '../utils/usePlayerEndTurn'
 
 const ROTATE_ICON_SIZE = '96px'
 const PORTRAIT_QUERY = '(orientation: portrait)'
@@ -25,13 +28,13 @@ const rotateAnimation = keyframes`
   100% { transform: rotate(0deg); }
 `
 
-// Transparent: the background image of the adventure lies behind it
+// Transparent: the background image of the adventure lies behind it. Hero card above, resources
+// below, each half of the height
 const Screen = styled.div`
   position: fixed;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   gap: ${(props) => props.theme.space[4]};
   padding: ${(props) => props.theme.space[4]}
     max(${(props) => props.theme.space[5]}, env(safe-area-inset-left), env(safe-area-inset-right));
@@ -66,18 +69,22 @@ const OverlayText = styled.p`
   font-weight: ${(props) => props.theme.fontWeight.medium};
 `
 
-// The resources of the character with the ID from the URL; returns to the selection once the
-// character does not belong to the active adventure
+// Hero card and resources of the character with the ID from the URL; returns to the selection once
+// the character does not belong to the active adventure
 function PlayerScreen(): ReactElement {
   const theme = useTheme()
   const navigate = useNavigate()
   const { id } = useParams()
   const { activeAdventureId } = useContext(ActiveAdventureContext)
   const { hasState } = useContext(GameTableContext)
+  const { fight } = useContext(FightContext)
   const {
-    themeOverride, onChangeThemeOverride, players, isTranslucent, setAdventureNotice,
+    themeOverride, onChangeThemeOverride, players, globalLevel, isTranslucent, setAdventureNotice,
   } = usePlayerOutlet()
   const playerId = parsePlayerId(id)
+  const player = players?.find((candidate) => candidate.id === playerId) ?? null
+  const turnCombatantId = ownTurnCombatantId(fight, playerId)
+  const endTurn = usePlayerEndTurn(fight)
 
   // Remembered during render, so a later change of the adventure can be told from an old link
   const isPlayer = activeAdventureId !== null && isPlayerOf(playerId, players)
@@ -101,10 +108,26 @@ function PlayerScreen(): ReactElement {
     <>
       <GlobalStyle />
       <Screen data-test-id="player-screen">
-        <SettingsMenu
-          themeOverride={themeOverride}
-          onChangeThemeOverride={onChangeThemeOverride}
-          onSwitchCharacter={() => navigate('/')}
+        <PlayerHeroCard
+          player={player}
+          level={globalLevel}
+          isOnTurn={turnCombatantId !== null}
+          isEnding={endTurn.isEnding}
+          endFailed={endTurn.failed}
+          onEndTurn={() => {
+            if (turnCombatantId !== null) {
+              endTurn.end(turnCombatantId)
+            }
+          }}
+          menu={(
+            <SettingsMenu
+              themeOverride={themeOverride}
+              onChangeThemeOverride={onChangeThemeOverride}
+              onSwitchCharacter={() => navigate('/')}
+              placement="end"
+              isTranslucent={isTranslucent}
+            />
+          )}
           isTranslucent={isTranslucent}
         />
         <ResourceBarPlayer isTranslucent={isTranslucent} />

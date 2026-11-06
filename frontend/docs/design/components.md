@@ -84,14 +84,14 @@ und Laufweite nach [1.4](../../DESIGN.md#14-regeln).
 |---|---|
 | Abstand | nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“. Zum zugehörigen Wert in einem zweizeiligen Block `0`. |
 | Ausrichtung neben Werten | `align-items: baseline` |
-| Beispiele | Notizen, Szenen, Aktive Szene, Wall, Ground (auf den Bildern der [Bühne](#bühne)), Audio, Spieltisch, Party · N, Level ([Level-Stepper](#level-stepper)), Spielername der [Hero-Karte](#hero-karte) (in `text.muted`), Szene wechseln, Aktion, Bonusaktion, Bewegung, Spezial, Zauberplätze |
+| Beispiele | Notizen, Szenen, Aktive Szene, Wall, Ground (auf den Bildern der [Bühne](#bühne)), Audio, Spieltisch, Party · N, Level ([Level-Stepper](#level-stepper)), Spielername der [Hero-Karte](#hero-karte) (in `text.muted`), Szene wechseln |
 
 ## Karte
 
 | Eigenschaft | Wert |
 |---|---|
 | Aufbau | optional Label, optional Titel, Inhalt. Zeilen getrennt durch Trennlinien ([1.4](../../DESIGN.md#14-regeln) Rahmen). |
-| Beispiele | Ressourcen, „Party“ der Charakterauswahl, Hinweis nach Abenteuerwechsel (Player); Fläche wie die [Kachel](#kachel) |
+| Beispiele | Hero-Karte und Ressourcen des Player Screens, „Party“ der Charakterauswahl, Hinweis nach Abenteuerwechsel (Player); Fläche wie die [Kachel](#kachel) |
 
 ## Kachel
 
@@ -101,7 +101,7 @@ mit dem Schalter `$isTranslucent`, den der `AdminScreen` setzt, solange das Hint
 `isTranslucent` an `NavRail`, `AdminHeader`, `DocumentReader` und `DashboardPanel`). Auf Wall und Ground haben alle
 Panels und Overlays dieselbe Fläche, immer durchscheinend: [Overlay-Panel](#overlay-panel), Fläche im
 [Vollbild-Overlay](#vollbild-overlay), [Wall-Kachel](#wall-kachel) (Party, Initiative) und die Kacheln „Runde N“ und
-„+N weitere“ der [Initiative-Leiste](#initiative-leiste). Im Player haben die Karten (Party, Hinweis, Ressourcen) und
+„+N weitere“ der [Initiative-Leiste](#initiative-leiste). Im Player haben die Karten (Party, Hinweis, Hero, Ressourcen) und
 der Settings-Button dieselbe Fläche; durchscheinend, solange das Hintergrundbild zu sehen ist (`PlayerLayout` gibt
 `isTranslucent` per Outlet-Context weiter).
 
@@ -223,9 +223,10 @@ Nur im Kopf des Panels „Party“, Komponente `LevelStepper` ([src/components/L
 ## Hero-Karte
 
 Im Panel „Am Zug“ des Admins während eines Kampfes, Komponente `HeroCard`
-([src/components/HeroCard.tsx](../../src/components/HeroCard.tsx), bis DND-43 `PlayerHeroCard`, nicht verwendet) nach
-dem Mockup [admin-fight-mockup.html](mockup/admin-fight-mockup.html). Props `avatar`, `caption`, `name`, `chips`,
-`level` (nur bei Spielern).
+([src/components/HeroCard.tsx](../../src/components/HeroCard.tsx)) nach dem Mockup
+[admin-fight-mockup.html](mockup/admin-fight-mockup.html). Props `avatar`, `caption`, `name`, `chips`, `level` (nur bei
+Spielern), optional `badge` (neben der Überschrift) und `fill`. Im Player Screen oben als eigene Karte mit dem
+eigenen Charakter (siehe [Hero-Karte im Player](#hero-karte-im-player)).
 
 | Eigenschaft | Wert |
 |---|---|
@@ -237,15 +238,31 @@ dem Mockup [admin-fight-mockup.html](mockup/admin-fight-mockup.html). Props `ava
 | Fuß im Panel „Am Zug“ | `TurnPanel`: unter der Karte eine Trennlinie (`borderWidth.thin` `border`, `padding-top` `space.3`), links „Als Nächstes:“ bzw. „Runde N+1:“ (`text.sm`) mit kleinem Kampf-Avatar und Name (`text.sm` `medium`, einzeilig mit Ellipse), rechts der [Text-Button](#text-button) „Zug beenden“ (`active`); ohne Zug nur „Niemand am Zug – alle Teilnehmer sind ausgeschieden.“ (`text.sm`) |
 | Nicht umgesetzt | Effektzeile, Variante „Kachel“ aus [player-card-hero.html](mockup/player-card-hero.html) |
 
+### Hero-Karte im Player
+
+Obere Hälfte des Player Screens, Komponente `PlayerHeroCard`
+([src/components/PlayerHeroCard.tsx](../../src/components/PlayerHeroCard.tsx)) um die `HeroCard` mit `fill`, nach dem
+Mockup [player-hero-split-mockup.html](mockup/player-hero-split-mockup.html) (Querformat; Effekte und Detail-Sheet
+dort sind Soll).
+
+| Eigenschaft | Wert |
+|---|---|
+| Element | `<section>` mit `aria-label` „Charakter“, Fläche wie die [Kachel](#kachel) (`tileSurface`, durchscheinend mit Hintergrundbild); Ebene `layer.raised`, damit die Liste des Settings-Menüs über der Ressourcen-Karte liegt |
+| Aufbau | Grid `minmax(0, 1fr) auto`, `gap` `space.5`, Innenabstand `space.3 space.3 space.3 space.4`: links die `HeroCard` (mit `fill` als Grid `auto minmax(0, 1fr)`, eine Zeile `minmax(0, 1fr)`), rechts eine Spalte mit dem [Settings-Menü](#settings-menü) oben und „Zug beenden“ unten (`space-between`), sodass der Text nie darunter läuft |
+| Avatar | [Kampf-Avatar](#kampf-avatar) in Größe `fill`: so hoch wie die Karte innen, Breite aus dem Seitenverhältnis 3:4; `radius.lg`, Initialen `text.2xl` `medium`; Level-Badge wie in der Hero-Karte |
+| Text | Spielername als Überschrift, Charaktername, Chips Volk und Klasse (wie in der Hero-Karte); solange die Spieler laden, nur das Settings-Menü |
+| Am Zug | Rand `primary` und innerer Ring `borderWidth.thin` in `primary` statt der Lichtkante (die Fläche bleibt); Badge „Am Zug“ neben dem Spielernamen ([Label](#label) mit Fläche `primary`, Text `onPrimary`, Innenabstand `0 space.2`, `radius.pill`, `gap` `space.2`) |
+| „Zug beenden“ | nur am Zug; [Text-Button](#text-button) `active` mit Icon `next.svg` (`size.icon`, `onPrimary`) und `gap` `space.2`, Höhe `size.control.lg`; Fokus-Outline `borderWidth.thick` in `text.color`. Während der Anfrage `disabled` und `aria-busy`; schlägt sie fehl, darunter (`gap` `space.1`) „Zug konnte nicht beendet werden“ (`text.xs` `medium` in `negative.text`, `role="alert"`) bis zum nächsten Tipp oder Push |
+
 ## Kampf-Avatar
 
 Komponente `CombatantAvatar` ([src/components/CombatantAvatar.tsx](../../src/components/CombatantAvatar.tsx)), für
-Spielerzeile, Panel „Kampf“, Initiative, „Als Nächstes“, Hero-Karte und die [Wall-Kachel](#wall-kachel). Props `kind`,
+Spielerzeile, Panel „Kampf“, Initiative, „Als Nächstes“, Hero-Karte (Admin und Player) und die [Wall-Kachel](#wall-kachel). Props `kind`,
 `text`, `image`, `size`, `onTile`.
 
 | Eigenschaft | Wert |
 |---|---|
-| Größe | `sm` 32px und `md` 40px (`AVATAR_SIZE`, `radius.md`, Schrift `text.sm`), `hero` `size.avatar.*` (`radius.lg`, `text.2xl`); auf der Wall (`WALL_AVATAR_SIZE`, Hochformat 3:4) `party` 84 × 112px und `initiative` 72 × 96px (`radius.md`, `text.xl`), `turn` 120 × 160px (`radius.lg`, `text.2xl`); Schrift `medium`, `tabular-nums` |
+| Größe | `sm` 32px und `md` 40px (`AVATAR_SIZE`, `radius.md`, Schrift `text.sm`), `hero` `size.avatar.*` (`radius.lg`, `text.2xl`), `fill` 100 % der Box darum (Hero-Karte im Player, `radius.lg`, `text.2xl`); auf der Wall (`WALL_AVATAR_SIZE`, Hochformat 3:4) `party` 84 × 112px und `initiative` 72 × 96px (`radius.md`, `text.xl`), `turn` 120 × 160px (`radius.lg`, `text.2xl`); Schrift `medium`, `tabular-nums` |
 | Spieler | Fläche nach Untergrund: direkt auf der Kachel (`onTile`: Hero-Karte in „Am Zug“, „Als Nächstes“, Wall-Kachel) `background`, auf Zeilen mit Fläche `background` (Spielerzeile, Initiative, Panel „Kampf“) `secondary`; Rand `borderWidth.thin` in `border`, Initialen in `initials`; mit Bild das Bild (`object-fit: cover`) |
 | Gegner / Verbündeter | Nummer statt Initialen; Gegner in `negative`, Verbündete in `positive` (Fläche `.surface`, Rand `.border`, Zahl `.text`; in beiden Themes gleich), unabhängig vom Untergrund |
 
@@ -291,8 +308,8 @@ Nur im Player.
 
 | Eigenschaft | Wert |
 |---|---|
-| Größe | Höhe `RESOURCE_HEIGHT`, Breite der Spalte |
-| Raster | 4 gleich breite Spalten (`repeat(4, minmax(0, 1fr))`), `gap` `space.3`, Label darüber nach [1.4](../../DESIGN.md#14-regeln) |
+| Größe | füllt seine Zelle, mindestens `size.control.lg` hoch (Touch-Ziel) |
+| Raster | Karte als Grid 4 × 2 (`repeat(4, minmax(0, 1fr))` × `repeat(2, minmax(0, 1fr))`), `gap` `space.3`, Innenabstand `space.4`; füllt die untere Hälfte des Player Screens. Kein sichtbares Label: Der Name der Ressource ist `aria-label` (Aktion, Bonusaktion, Bewegung, Spezial, „Zauberplätze I“–„IV“), damit die Karte in die halbe Höhe passt |
 | Inhalt | Icon und Zahl, zentriert, `gap` `space.3`. Zauberplätze: Ziffer links, Plätze rechts (`space-between`) |
 | Rahmen | `borderWidth.thick` |
 | Farbe | Zahl in `text.color`, keine eigene Rolle. Sonst nach [2.2](../../DESIGN.md#22-rollen) |
@@ -428,7 +445,7 @@ Nur im Player (Charakterauswahl und Player Screen), Komponente `SettingsMenu`
 | Eigenschaft | Wert |
 |---|---|
 | Button | Icon-Button mit Settings-Icon, `size.control.lg`, Fläche nach [Icon-Button](#icon-button) (Player); zugänglicher Name „Einstellungen“, `aria-haspopup="menu"` |
-| Liste | `role="menu"`, deckend `secondary`, ohne Höhenbegrenzung, Ebene `layer.popover` (siehe [1.2](../../DESIGN.md#12-tokens) Ebenen); Player Screen links am Button (`placement` `start`), Charakterauswahl rechts (`end`) |
+| Liste | `role="menu"`, deckend `secondary`, ohne Höhenbegrenzung, Ebene `layer.popover` (siehe [1.2](../../DESIGN.md#12-tokens) Ebenen); Player Screen und Charakterauswahl rechts am Button (`placement` `end`) |
 | Einträge | „Wie Spieltisch“, „Dunkel“, „Taverne“ (`menuitemradio`, `aria-checked`); Höhe `size.control.lg` (Touch-Ziel), Innenabstand `0 space.4`. Nur im Player Screen danach eine Trennlinie (`borderWidth.thin` in `border`, seitlich `space.2` eingerückt) und „Charakter wechseln“ (`menuitem`, Wechsel-Icon `swap.svg` in `size.icon`, `gap` `space.3`), per Tastatur erreichbar wie die anderen |
 | Bedienung | zusätzlich schließt Tippen außerhalb (`pointerdown`) |
 

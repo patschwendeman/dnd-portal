@@ -18,7 +18,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 
 ### Soll
 - Szenen auswählen und aktivieren. Alle Szenen sind gleich; einen Kampf startet der Spielleiter in jeder Szene über
-  den Menüpunkt „Kampf“ (umgesetzt im Admin, die Initiative zeigt auch die Wall; Ground und Player sind geplant).
+  den Menüpunkt „Kampf“ (umgesetzt im Admin, die Initiative zeigt auch die Wall, „Am Zug“ und „Zug beenden“ der
+  Player; Ground ist geplant).
 - Notizen (Markdown) einsehen: Story, NPCs, Kämpfe.
 - Navigationsleiste links mit Menüpunkten, die das Panel daneben füllen: „Notizen“, „Szenen“ und „Kampf“, abgesetzt
   ganz unten „Einstellungen“ für das, was man einmal einstellt (umgesetzt). Die Mitte zeigt dabei weiter die Notizen.
@@ -120,8 +121,9 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Kampf“). Wer am Zug ist, bleibt es bis „Zug beenden“; danach werden Ausgeschiedene übersprungen. Wird der
   Teilnehmer am Zug entfernt, ist der nächste am Zug (ohne Rundenwechsel); ist niemand am Zug und kommt ein
   Teilnehmer hinzu oder zurück, ist der erste davon am Zug. Der Kampf steht auf dem Server, übersteht Reloads und
-  Neustarts der API und wird an Admins und, ohne die Bezeichnungen der NPCs, an Walls geschickt (Initiative-Leiste,
-  siehe [Wall Screen](#wall-screen)); Ground und Player zeigen ihn (noch) nicht. Musik, Sounds,
+  Neustarts der API und wird an Admins und, ohne die Bezeichnungen der NPCs, an Walls und Player geschickt
+  (Initiative-Leiste, siehe [Wall Screen](#wall-screen); „Am Zug“ und „Zug beenden“ auf dem Handy, siehe
+  [Player Screen](#player-screen)); Ground zeigt ihn (noch) nicht. Musik, Sounds,
   Raster und Wall-Overlay ändern sich bei Start und Ende nicht.
 - **Wall-Overlay:** Die Zeile „Wall“ im Panel „Spieltisch“ hat ein Segment-Control „Weltkarte“/„Aus“;
   hervorgehoben (`aria-pressed`) ist der Zustand, den der Server zuletzt geschickt hat. Ein Klick
@@ -239,6 +241,10 @@ Nach dem Refresh (neue Runde) wird die Ressource durch erneutes Antippen wieder 
 *Beispiel:* 1 Aktion + 1 Bonusaktion aktiv → Spieler greift an (kostet 1 Aktion) → tippt auf „Aktion“ →
 Zähler 0, Icon deaktiviert → nächste Runde: erneut tippen → wieder aktiv.
 
+Über den Ressourcen zeigt eine Hero-Karte den eigenen Charakter. Im Kampf sieht der Spieler, dass er am Zug ist, und
+gibt den Zug selbst weiter (umgesetzt). Geplant: Effekte (Segen, Vergiftet …) auf der Hero-Karte, Detail-Ansicht beim
+Tipp auf den Avatar, Hinweis „Als Nächstes dran“.
+
 ### Ist
 **Charakterauswahl (`/`):** Ziel des QR-Codes im Admin. Kein Zugang zu Admin, Wall oder Ground; diese Screens sind nur
 über ihre direkten URLs erreichbar.
@@ -260,13 +266,24 @@ Zähler 0, Icon deaktiviert → nächste Runde: erneut tippen → wieder aktiv.
   Maximum.
 - **Spezial:** 3 Plätze, Startwert 1; Verhalten wie Zauberplätze.
 - **Bewegung (WIP):** fester Wert 9.5, nicht interaktiv.
-- **Charakter:** Der Screen zeigt weder Namen noch Avatar des Charakters; die Ressourcen sind für alle Charaktere
-  gleich. Gehört der Charakter nicht mehr zum aktiven Abenteuer (Abenteuerwechsel, kein Abenteuer mehr aktiv), kehrt
+- **Hero-Karte:** Avatar im Hochformat 3:4 (Bild, sonst Initialen), dessen Höhe der Karte folgt, oben links das
+  Level-Badge mit dem Level des Abenteuers; daneben Spielername, Charaktername, Volk und Klasse. Solange die Spieler
+  laden, ist die Karte leer (nur das Settings-Menü).
+- **Am Zug:** Der Player bekommt den Kampf per WebSocket (ohne die Bezeichnungen der NPCs). Ist der eigene Charakter
+  am Zug, zeigt die Hero-Karte einen Rahmen in der Hauptfarbe, neben dem Spielernamen das Badge „Am Zug“ und unten
+  rechts den Button „Zug beenden“. Ohne Kampf, ohne Teilnahme oder wenn ein anderer am Zug ist, fehlen alle drei.
+- **Zug beenden:** Ein Tipp gibt den Zug ohne Rückfrage weiter wie „Zug beenden“ im Admin (`POST table/fight/turn`);
+  Rahmen, Badge und Button verschwinden erst mit dem Push des Servers, Admin und Wall springen ohne Reload weiter.
+  Während der Anfrage ist der Button deaktiviert; ein Doppeltipp oder ein zweites Handy mit demselben Charakter
+  geben den Zug nur einmal weiter. Schlägt die Anfrage fehl, steht darunter „Zug konnte nicht beendet werden“ (bis
+  zum nächsten Tipp oder Push), der Button ist wieder aktiv. Jedes Handy kann jeden Charakter öffnen und damit
+  dessen Zug beenden (keine Anmeldung).
+- **Charakter:** Die Ressourcen sind für alle Charaktere gleich. Gehört der Charakter nicht mehr zum aktiven Abenteuer (Abenteuerwechsel, kein Abenteuer mehr aktiv), kehrt
   das Gerät ohne Reload zur Auswahl zurück, die über der Karte den Hinweis „Der Spielleiter hat das Abenteuer
   gewechselt. Wähle deinen Charakter neu.“ zeigt (weg nach der Wahl eines Charakters oder einem Reload). Eine
   unbekannte ID, eine ID eines anderen Abenteuers oder eine ungültige ID führt ohne Hinweis zur Auswahl. Solange die
   Spieler laden oder ihr Laden fehlschlägt, bleibt der Screen.
-- **Settings-Menü:** Der Settings-Button („Einstellungen“) oben links öffnet „Wie Spieltisch“ (Standard), „Dunkel“,
+- **Settings-Menü:** Der Settings-Button („Einstellungen“) oben rechts in der Hero-Karte öffnet „Wie Spieltisch“ (Standard), „Dunkel“,
   „Taverne“ und nach einer Trennlinie „Charakter wechseln“ (zurück zur Auswahl). Auf der Auswahl fehlt dieser Eintrag.
   Die offene Liste liegt über allen anderen Elementen, nur der Hinweis „Bitte das Handy quer halten“ verdeckt sie.
 - **Theme:** Auswahl und Player Screen sind per WebSocket mit dem Spieltisch verbunden (beide als `player`) und folgen
@@ -275,10 +292,12 @@ Zähler 0, Icon deaktiviert → nächste Runde: erneut tippen → wieder aktiv.
   verbinden sie sich sofort neu.
 - **Hintergrund:** Hinter Auswahl und Player Screen liegt wie im Admin das Hintergrundbild des aktiven Abenteuers zum
   wirksamen Theme des Geräts, abgedunkelt; Überblendung bei Wechsel von Abenteuer oder Theme. Solange das Bild zu
-  sehen ist, sind die Karten und der Settings-Button durchscheinend mit Unschärfe; ohne Bild (kein Abenteuer, keine
+  sehen ist, sind die Karten (Hero und Ressourcen) und der Settings-Button durchscheinend mit Unschärfe; ohne Bild (kein Abenteuer, keine
   Verbindung, kein Bild zum Theme, Ladefehler) ist der Hintergrund einfarbig und die Flächen sind deckend.
-- Layout: oben links der Settings-Button, darunter eine Karte mit Aktion · Bonusaktion · Bewegung · Spezial und darunter
-  „Zauberplätze“ mit I–IV. Die Ressourcen sind per Tastatur bedienbar (Bewegung nicht).
+- Layout: oben die Hero-Karte, unten die Ressourcen-Karte, je die halbe Höhe. Die Ressourcen-Buttons füllen ihre
+  Hälfte in zwei Zeilen: Aktion · Bonusaktion · Bewegung · Spezial und Zauberplätze I–IV; ihre Namen stehen nicht
+  sichtbar, sondern nur als Beschriftung für Screenreader (`aria-label`). Die Ressourcen sind per Tastatur bedienbar
+  (Bewegung nicht).
 - Im Hochformat verdeckt ein Hinweis „Bitte das Handy quer halten“ den Screen.
 - Ressourcen nur lokal: nicht gespeichert, nicht mit dem Admin synchronisiert, Reload setzt zurück; nicht pro Charakter
   konfigurierbar.

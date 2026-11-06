@@ -215,6 +215,15 @@ describe('parseServerMessage for fight', () => {
       .toEqual({ type: 'fight', payload: fight })
   })
 
+  it('parses the fight of Walls and Players, all labels null', () => {
+    const withoutLabels = {
+      ...fight,
+      combatants: fight.combatants.map((combatant) => ({ ...combatant, label: null })),
+    }
+    expect(parseServerMessage(JSON.stringify({ type: 'fight', payload: withoutLabels })))
+      .toEqual({ type: 'fight', payload: withoutLabels })
+  })
+
   it('parses null as no fight', () => {
     expect(parseServerMessage(JSON.stringify({ type: 'fight', payload: null })))
       .toEqual({ type: 'fight', payload: null })

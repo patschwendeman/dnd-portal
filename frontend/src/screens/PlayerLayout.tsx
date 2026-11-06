@@ -19,6 +19,8 @@ export interface PlayerOutlet {
   // without an active adventure
   adventureName: string | null
   players: Player[] | null
+  // Level of all players of the active adventure; null like the players
+  globalLevel: number | null
   loadFailed: boolean
   retryLoad: () => void
   // Whether the background image lies behind the surfaces
@@ -92,6 +94,7 @@ export function PlayerLayout({
     onChangeThemeOverride,
     adventureName: activeAdventure?.name ?? null,
     players: activeAdventure?.players ?? null,
+    globalLevel: activeAdventure?.global_level ?? null,
     loadFailed,
     retryLoad: () => {
       setLoadFailed(false)

@@ -1,43 +1,28 @@
 import { ReactElement, useState } from 'react'
 import styled from 'styled-components'
 
-import Label from './Label'
 import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 
+// 4 × 2 buttons that fill the height the Player Screen gives the card; the names of the resources
+// are only read out (aria-label), so the card fits into half the height of a phone held sideways
 const ResourceBar = styled.section<TileSurfaceProps>`
-  display: flex;
-  flex-direction: column;
-  gap: ${(props) => props.theme.space[4]};
-  padding: ${(props) => props.theme.space[5]};
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: ${(props) => props.theme.space[3]};
+  min-height: 0;
+  padding: ${(props) => props.theme.space[4]};
   ${tileSurface}
 `
 
-const ResourceRow = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: ${(props) => props.theme.space[3]};
-`
-
-const ResourceBarSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${(props) => props.theme.space[3]};
-  min-width: 0;
-`
-
-const RowLabel = styled(Label)`
-  grid-column: 1 / -1;
-`
-
-const RESOURCE_HEIGHT = '64px'
 const SLOT_WIDTH = '8px'
 const SLOT_HEIGHT = '24px'
 
 type ResourceVariant = 'action' | 'bonus' | 'movement' | 'spell' | 'special'
 
 const Resource = styled.button<{ $variant: ResourceVariant }>`
-  height: ${RESOURCE_HEIGHT};
+  min-height: ${(props) => props.theme.size.control.lg};
   display: flex;
   align-items: center;
   justify-content: ${(props) => (props.$variant === 'spell' ? 'space-between' : 'center')};
@@ -178,86 +163,73 @@ function ResourceBarPlayer({ isTranslucent = false }: ResourceBarPlayerProps): R
 
   return (
     <ResourceBar aria-label="Ressourcen" data-test-id="resources" $isTranslucent={isTranslucent}>
-      <ResourceRow>
-        <ResourceBarSection>
-          <Label>Aktion</Label>
-          <Resource
-            type="button"
-            $variant="action"
-            onClick={() => ActionHandler(action, setAction)}
-          >
-            <IconSection>
-              <ResourceIcon viewBox="0 0 20 20">
-                <ActionIcon cx="10" cy="10" r="10" $action={action} />
-              </ResourceIcon>
-            </IconSection>
-            <span>{action}</span>
-          </Resource>
-        </ResourceBarSection>
+      <Resource
+        type="button"
+        aria-label="Aktion"
+        $variant="action"
+        onClick={() => ActionHandler(action, setAction)}
+      >
+        <IconSection>
+          <ResourceIcon viewBox="0 0 20 20">
+            <ActionIcon cx="10" cy="10" r="10" $action={action} />
+          </ResourceIcon>
+        </IconSection>
+        <span>{action}</span>
+      </Resource>
 
-        <ResourceBarSection>
-          <Label>Bonusaktion</Label>
-          <Resource
-            type="button"
-            $variant="bonus"
-            onClick={() => ActionHandler(bonusAction, setBonusAction)}
-          >
-            <IconSection>
-              <ResourceIcon viewBox="0 0 20 20">
-                <BonusIcon points="10,1 20,19 0,19" $bonusAction={bonusAction} />
-              </ResourceIcon>
-            </IconSection>
-            <span>{bonusAction}</span>
-          </Resource>
-        </ResourceBarSection>
+      <Resource
+        type="button"
+        aria-label="Bonusaktion"
+        $variant="bonus"
+        onClick={() => ActionHandler(bonusAction, setBonusAction)}
+      >
+        <IconSection>
+          <ResourceIcon viewBox="0 0 20 20">
+            <BonusIcon points="10,1 20,19 0,19" $bonusAction={bonusAction} />
+          </ResourceIcon>
+        </IconSection>
+        <span>{bonusAction}</span>
+      </Resource>
 
-        <ResourceBarSection>
-          <Label>Bewegung</Label>
-          <Resource as="div" $variant="movement">
-            <IconSection>
-              <MovementIcon />
-              <MovementIcon />
-            </IconSection>
-            <span>9.5</span>
-          </Resource>
-        </ResourceBarSection>
+      <Resource as="div" aria-label="Bewegung" $variant="movement">
+        <IconSection>
+          <MovementIcon />
+          <MovementIcon />
+        </IconSection>
+        <span>9.5</span>
+      </Resource>
 
-        <ResourceBarSection>
-          <Label>Spezial</Label>
-          <Resource
-            type="button"
-            $variant="special"
-            onClick={() => SpellHandler(special, setSpecial, specialMax)}
-          >
-            <SlotGroup>
-              {slotNumbers(3).map((slot) => (
-                <Slot key={slot} $variant="special" $currentSlots={special} $id={slot} />
-              ))}
-            </SlotGroup>
-          </Resource>
-        </ResourceBarSection>
-      </ResourceRow>
+      <Resource
+        type="button"
+        aria-label="Spezial"
+        $variant="special"
+        onClick={() => SpellHandler(special, setSpecial, specialMax)}
+      >
+        <SlotGroup>
+          {slotNumbers(3).map((slot) => (
+            <Slot key={slot} $variant="special" $currentSlots={special} $id={slot} />
+          ))}
+        </SlotGroup>
+      </Resource>
 
-      <ResourceRow>
-        <RowLabel>Zauberplätze</RowLabel>
-        {spellData.map(({
-          spell, setSpell, tier, name,
-        }) => (
-          <Resource
-            type="button"
-            $variant="spell"
-            key={tier}
-            onClick={() => SpellHandler(spell, setSpell, SpellMax[tier])}
-          >
-            <Numeral>{name}</Numeral>
-            <SlotGroup>
-              {slotNumbers(SpellMax[tier]).map((slot) => (
-                <Slot key={slot} $variant="spell" $currentSlots={spell} $id={slot} />
-              ))}
-            </SlotGroup>
-          </Resource>
-        ))}
-      </ResourceRow>
+      {spellData.map(({
+        spell, setSpell, tier, name,
+      }) => (
+        <Resource
+          type="button"
+          aria-label={`Zauberplätze ${name}`}
+          $variant="spell"
+          key={tier}
+          onClick={() => SpellHandler(spell, setSpell, SpellMax[tier])}
+        >
+          <Numeral>{name}</Numeral>
+          <SlotGroup>
+            {slotNumbers(SpellMax[tier]).map((slot) => (
+              <Slot key={slot} $variant="spell" $currentSlots={spell} $id={slot} />
+            ))}
+          </SlotGroup>
+        </Resource>
+      ))}
     </ResourceBar>
   )
 }

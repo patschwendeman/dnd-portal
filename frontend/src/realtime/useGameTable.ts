@@ -23,8 +23,8 @@ export interface GameTable {
   isAudioOutput: boolean
   // Only for the Admin: connected screens per type; null until the first counts arrived
   screens: ScreenCounts | null
-  // Only for Admin and Wall: the fight of the active adventure; null without one or until it
-  // arrived
+  // Only for Admin, Wall and Player: the fight of the active adventure; null without one or until
+  // it arrived
   fight: FightState | null
   // false once the connection broke or could not be established; the first attempt counts as
   // connected, so the Admin does not show the hint on every load
