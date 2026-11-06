@@ -184,7 +184,8 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
 - Schichten (Paket `app`): `app/api/routes/*` (je Modul ein `router`, Prefix/Tags zentral in `app/main.py`) →
   `app/services/*` (Modul-Funktionen) → `app/crud/*` → `app/models/*`. Konfiguration in `app/core/config.py`
   (pydantic-settings), Engine/Session in `app/db/session.py`. Antwortformen als Pydantic-Schemas in `app/schemas/*`
-  (`response_model` bzw. Rückgabe-Annotation der Routen).
+  (`response_model` bzw. Rückgabe-Annotation der Routen). Echtzeit in `app/realtime/*`: Verbindungsmanager, Push,
+  Musikzustand, Origin-Prüfung sowie Wall-Overlay und Rasterfarbe im Speicher.
 - Beim App-Start (`lifespan`) bringt `app/db/migrate.py` das Schema per Alembic auf den neuesten Stand
   (`alembic upgrade head`, Migrationen in `backend/migrations/versions/`; kein `create_all`). Danach läuft der Seeder
   (`app/db/seed.py`, Daten in `app/db/data/seed_data.json`) – je Tabelle nur, wenn sie leer ist. Enthält die DB
@@ -405,14 +406,32 @@ Datensatz trotzdem an (`size` = NULL).
   „Szenen“ des Admins ergibt sich aus `activeSceneId` (Vergleich mit der Szenen-ID, Attribute `aria-current` und
   `data-active`); ist sie `null`, ist kein Eintrag hervorgehoben. Die Wahl des Default-Abenteuers trifft
   `selectDefaultAdventureId` (`src/utils/adventure.ts`).
-- Struktur: `src/app` (Routing, Theme-Abweichung von Charakterauswahl und Player Screen), `src/realtime` (WebSocket-Client:
-  `GameTableProvider`, `useGameTable`, Verbindung mit Reconnect `connection.ts`, `messages.ts`, `backoff.ts`,
-  `heartbeat.ts`, `visibility.ts`),
-  `src/screens` (Screens), `src/components`, `src/service` (Datenladen und Schreibzugriffe je Screen),
-  `src/audio` (Soundliste `sounds.ts`, Wiedergabe im Admin `audioPlayer.ts` und `useAudioPlayback.ts`),
-  `src/api` (axios-Client, Base-URL aus `VITE_API_URL`, Default `/api/`, Timeout 5000 ms; `wsUrl` leitet daraus die
-  WebSocket-URL ab), `src/models`, `src/utils` (Musiktitel, Filter, Panel und Gruppen der Navigationsleiste, Auswahlliste `useListbox`,
-  Fehlerbehandlung `loadSafely`, Logik des Kampfes `fight.ts` und Vorbereitung `useFightPreparation.ts`), `src/style` (Themes, `appTheme`), `src/context`.
+- Struktur (Ordner unter `frontend/`):
+
+  ```
+  src/app/         Routing (App.tsx), Theme-Abweichung von Charakterauswahl und Player Screen
+  src/realtime/    WebSocket-Client: GameTableProvider, useGameTable, connection.ts (Reconnect, Sichtbarkeit),
+                   messages.ts, backoff.ts, heartbeat.ts, visibility.ts
+  src/context/     die fünf Contexts (context.ts), gespeist vom GameTableProvider
+  src/screens/     Screens und PlayerLayout (gemeinsame Layout-Route der Player-Routen)
+  src/components/  UI-Bausteine: Kopfzeile, Navigationsleiste und Panels des Admins, Dashboard, Kacheln und
+                   Overlays der Wall, Dialoge, Steuerelemente
+  src/notes/       Notizen im Admin: Einträge des Panels „Notizen“ (NOTE_FOLDERS), Anker, Querverweise und
+                   Link-Prüfung, Verlauf mit Tastenkürzeln (Alt+←/→, Daumentasten der Maus)
+  src/service/     Datenladen und Schreibzugriffe je Screen; Spieltisch (gameTable.ts) und Kampf (fight.ts)
+  src/audio/       Soundliste sounds.ts, Wiedergabe im Admin (audioPlayer.ts, useAudioPlayback.ts),
+                   Meldung als Ausgabe (useAutoAudioOutput.ts, audioOutput.ts)
+  src/api/         axios-Client (Base-URL aus VITE_API_URL, Default /api/, Timeout 5000 ms), apiMethods.ts,
+                   loadData.ts, saveData.ts, mediaUrl.ts, wsUrl.ts (WebSocket-URL), generiertes schema.d.ts
+  src/models/      API-Typen, abgeleitet aus schema.d.ts (models.ts)
+  src/utils/       reine Logik und Hooks je Thema: Kampf (fight.ts, useFightPreparation.ts), Initiative und
+                   Party der Wall, Auswahllisten (useListbox), Hintergrundbild, Fehlerbehandlung (loadSafely),
+                   Musiktitel, Navigationsleiste, Player-Theme und -URL, Vollbild
+  src/style/       Tokens, Themes (darkTheme, tavernTheme, appTheme), styled.d.ts, GlobalStyle
+  public/assets/   Soundeffekte, Icons, Weltkarte images/ground_screen/mapOverview.jpg
+  public/story/    Markdown-Notizen, je Ordner ein Eintrag im Panel „Notizen“
+  __tests__/       unit/ (vitest), bdd/ (jest-cucumber + Selenium: features/, steps/, support/)
+  ```
 - Fehlerbehandlung beim Datenladen: `getData` reicht Fehler weiter. Die Services laden über `loadData`
   (`src/api/loadData.ts`) und werfen einen `LoadError`, dessen Meldung Netzwerkfehler/Timeout („backend not
   reachable“), HTTP-Status („HTTP 500“) und leere Antwort („… not found“) unterscheidet. Die Screens fangen genau
@@ -540,15 +559,25 @@ mit dem ursprünglichen `Host`-Header; Port 8000 bleibt für direkte Zugriffe ve
 auch für direkt aufgerufene Unterrouten aus (SPA-Fallback); die Dateien aus `public/` (Sounds, Icons, Notizen) stecken im
 Image, Änderungen daran brauchen einen neuen Build (`--build`). Szenenmedien in `media/` sind per Bind-Mount
 eingebunden und brauchen keinen Build. pgAdmin ist nicht enthalten.
+Caching in nginx: Dateien direkt unter `/assets/` (Vite-Build, Hash im Namen) mit `Cache-Control: public,
+max-age=31536000, immutable`; `index.html` mit `no-cache`, damit ein neuer Build sofort greift; alles andere – Medien
+aus `public/` in Unterordnern von `/assets/` (z. B. `/assets/sounds/…`), Notizen unter `/story/` – mit dem
+Standardverhalten von nginx. gzip (mit `Vary`) ab 1 KB für Text, CSS, JavaScript, JSON, SVG und Markdown; `.md`
+liefert nginx als `text/markdown` aus, weil die Standard-`mime.types` die Endung nicht kennen.
 Dev- und Prod-Stack nicht gleichzeitig betreiben: API (:8000) und DB (:5432) nutzen dieselben Ports.
 Healthchecks: `db` per `pg_isready`, `api` per Python-Einzeiler gegen `http://localhost:8000/adventures` (das Image hat
 kein curl); `api` startet erst bei gesunder DB, `ui` erst bei gesunder API. `docker ps` zeigt `dnd-prod-api (healthy)`.
 
 Frontend-Image: `frontend/Dockerfile` mit Stages `dev` (Vite-Dev-Server, von `compose.dev.yaml` per
-`target: dev` genutzt), `build` (`npm ci`, `npm run build`) und `prod` (nginx, Konfiguration `frontend/nginx.conf`).
-Backend-Image: `backend/Dockerfile` mit uv und Stages `base`, `dev` (inkl. Dev-Abhängigkeiten, von
-`compose.dev.yaml` per `target: dev` genutzt) und `prod` (letzte Stage, ohne Dev-Abhängigkeiten, Non-Root-User);
-startet `uvicorn app.main:app` ohne `--reload`; den Reload setzt nur der Dev-Stack per `command`.
+`target: dev` genutzt), `build` (`npm ci`, `npm run build`, `ARG VITE_API_URL`) und `prod` (nginx, Konfiguration
+`frontend/nginx.conf`, mit den Dateien aus `public/`).
+Backend-Image: `backend/Dockerfile`, Multi-Stage mit uv (Version gepinnt über das Image `ghcr.io/astral-sh/uv`, aus
+dem nur das Binary kopiert wird): `base` (`python:3.11-slim`, `pyproject.toml` und `uv.lock`) → `dev` (`uv sync
+--frozen` inkl. Dev-Gruppe, von `compose.dev.yaml` per `target: dev` gebaut) → `prod` (letzte Stage, `uv sync
+--frozen --no-dev`; von `compose.prod.yaml` ohne `target` gebaut). Ins Image kommen nur `pyproject.toml`, `uv.lock`,
+`alembic.ini`, `migrations/` und `app/` (keine Tests, keine `.env`); das venv liegt unter `/app/.venv` (im `PATH`),
+der Prozess läuft in beiden Stages als Non-Root-User `dnd`. `CMD` startet `uvicorn app.main:app` ohne `--reload`;
+den Reload samt Mount von `app/`, `migrations/` und `tests/` setzt nur der Dev-Stack über `command`/`volumes`.
 
 ## Qualitätssicherung
 

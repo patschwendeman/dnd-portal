@@ -58,6 +58,18 @@ Bewusst auslösen mit `/quick-task <Beschreibung>`: prüft die Kriterien (bei Ve
 trotzdem Kurzweg), setzt um, führt die Checks des betroffenen Teils aus und committet ohne Push. Der Skill wird
 nur auf ausdrücklichen Aufruf aktiv.
 
+## Dokumentation
+
+Die Teil-`CLAUDE.md` (`frontend/`, `backend/`) bleiben knapp, Richtwert höchstens 8 KB:
+
+- Inhalt: Befehle, Konventionen, „Wichtig beim Ändern“, Struktur mit einer Zeile je Ordner, dazu Abläufe, die beim
+  Ändern jedes Mal gebraucht werden (z. B. Migrationen, Test-Mechanik, Notizen).
+- Nicht hinein: Listen von Symbolen, Komponenten, Migrationen oder Testdateien; Beschreibungen von Datenfluss,
+  Audio, Docker, Konfiguration, Datenmodell oder CI – die stehen in `docs/` (v. a. `docs/architecture.md`), die
+  Teil-`CLAUDE.md` verweist nur darauf. Nichts aus der Root-`CLAUDE.md` wiederholen.
+- Neue Details zuerst in `docs/` ergänzen; wächst eine Teil-`CLAUDE.md` über den Richtwert, beim nächsten Eingriff
+  kürzen.
+
 ## Commit-Nachrichten
 
 Jede Commit-Nachricht muss diesem Schema entsprechen:

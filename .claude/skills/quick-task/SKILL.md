@@ -43,8 +43,10 @@ sind die Checks in Schritt 4 Pflicht.
 
    Rote Checks durch die eigene Änderung beheben; nach 3 erfolglosen Versuchen anhalten und melden.
    Bereits vorher bestehende Fehler nicht nebenbei reparieren, nur melden.
-5. **Doku nachziehen**, falls betroffen (Root-/Teil-`CLAUDE.md`, `CONTRIBUTING.md`, `docs/`). Aufzeichnungen
-   in `docs/tasks/` (Review-Berichte, Nachträge) nicht umschreiben – bei Bedarf Nachtrag ergänzen.
+5. **Doku nachziehen**, falls betroffen (Root-/Teil-`CLAUDE.md`, `CONTRIBUTING.md`, `docs/`). Details gehören
+   nach `docs/`, nicht in die Teil-`CLAUDE.md` (keine Inventarlisten, höchstens 8 KB – Regel in `CONTRIBUTING.md`,
+   Abschnitt „Dokumentation“). Aufzeichnungen in `docs/tasks/` (Review-Berichte, Nachträge) nicht umschreiben – bei
+   Bedarf Nachtrag ergänzen.
 6. **Committen.** Ein Commit, Nachricht nach Schema, **ohne Ticket-Scope**, eine Zeile, ohne KI-Signatur –
    z. B. `fix: remove unused variable in TopBar`. Nur die eigenen Dateien stagen (fremde, unversionierte Dateien
    nicht mitnehmen). **Nicht pushen.**

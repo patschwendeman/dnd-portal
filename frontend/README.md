@@ -51,7 +51,7 @@ Build-Zeit ins Bundle ein: lokal per `.env` (Vorlage [`.env.example`](.env.examp
 
 ## Weiterführend
 
-- [CLAUDE.md](CLAUDE.md) – Entwickler-Referenz: Stack, Struktur, Datenfluss, Konfiguration, Konventionen
+- [CLAUDE.md](CLAUDE.md) – Entwickler-Referenz: Stack, Befehle, Struktur, Konventionen, Notizen
 - [DESIGN.md](DESIGN.md) – Style Guide
 - [../docs/](../docs/) – Vision, Screens, Architektur (Start, Production, CI), bekannte Probleme
 - [../CONTRIBUTING.md](../CONTRIBUTING.md) – Branches, Commits, Tasks
