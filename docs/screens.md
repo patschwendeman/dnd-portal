@@ -129,11 +129,13 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   (Initiative-Leiste, siehe [Wall Screen](#wall-screen); „Am Zug“ und „Zug beenden“ auf dem Handy, siehe
   [Player Screen](#player-screen)); Ground zeigt ihn (noch) nicht. Musik, Sounds,
   Raster und Wall-Overlay ändern sich bei Start und Ende nicht.
-- **Wall-Overlay:** Die Zeile „Wall“ im Panel „Spieltisch“ hat ein Segment-Control „Weltkarte“/„QR-Code“/„Aus“;
+- **Wall-Overlay:** Die Zeile „Wall“ im Panel „Spieltisch“ hat ein Segment-Control „Weltkarte“/„Aus“;
   hervorgehoben (`aria-pressed`) ist der Zustand, den der Server zuletzt geschickt hat. Ein Klick
-  auf einen anderen Button speichert ihn, alle Walls zeigen die Weltkarte bzw. den QR-Code für die Spieler (siehe
-  [Wall Screen](#wall-screen)) oder kein Overlay, sobald der Server den neuen Stand schickt; ein Klick auf den
-  hervorgehobenen tut nichts. Ein Szenen- oder Abenteuerwechsel schaltet auf „Aus“.
+  auf einen anderen Button speichert ihn, alle Walls zeigen die Weltkarte (siehe [Wall Screen](#wall-screen)) oder
+  kein Overlay, sobald der Server den neuen Stand schickt; ein Klick auf den hervorgehobenen tut nichts. Den QR-Code
+  für die Spieler schaltet der Icon-Button „QR-Code“ in der Zeile „Spieler“ (siehe **Spieler verbinden**); solange er
+  gezeigt wird, ist im Segment-Control keine Option hervorgehoben, „Weltkarte“ bzw. „Aus“ ersetzen ihn. Ein Szenen-
+  oder Abenteuerwechsel schaltet auf „Aus“.
 - **Ground-Raster:** Die Zeile „Ground“ im Panel „Spieltisch“ hat ein Segment-Control „Schwarz“/„Weiß“/„Aus“
   (hervorgehoben ist der Zustand des Servers, ein Klick auf den hervorgehobenen tut nichts). Die Zellgröße steht im
   Abschnitt „Ground-Raster“ des Panels „Einstellungen“: „Zellgröße“ mit dem Wert rechts daneben und darunter ein Slider
@@ -232,8 +234,11 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Spielername“. Ohne Abenteuer oder ohne Spieler „Keine Spieler“. Spieler und Level lädt der Admin beim Laden, bei einem Abenteuerwechsel und nach
   jedem Spieltisch-Zustand, den der Server schickt, neu. Effekte (Segen, Vergiftet …) gibt es noch nicht; Spieler
   anlegen oder bearbeiten ist nicht möglich.
-- **Spieler verbinden:** Den QR-Code der Player-URL zeigt nicht mehr der Admin, sondern die Wall: In der Zeile „Wall“
-  des Panels „Spieltisch“ „QR-Code“ wählen (siehe **Wall-Overlay** und [Wall Screen](#wall-screen)).
+- **Spieler verbinden:** Die Zeile „Spieler“ im Panel „Spieltisch“ zeigt „N Spieler verbunden“, den Text „Spieler
+  QR-Code“ und den Icon-Button „QR-Code“. Ein Klick blendet den QR-Code der Player-URL auf allen Walls ein (ersetzt
+  eine gezeigte Weltkarte), ein weiterer blendet ihn aus (Wall-Overlay „Aus“); der Button ist hervorgehoben
+  (`aria-pressed`), solange der Server den QR-Code als Wall-Overlay meldet. Einen Dialog im Admin gibt es nicht
+  mehr, der Code steht nur auf der Wall (siehe [Wall Screen](#wall-screen)).
 - **Ladefehler:** Lassen sich Abenteuer, Spieler oder Szenen nicht laden (Backend nicht erreichbar, Timeout, HTTP-Fehler), erscheint in der
   Kopfzeile die Hinweisleiste „Backend nicht erreichbar“ mit Button „Erneut versuchen“; bei Erfolg verschwindet sie.
   Keine automatischen Wiederholungen. Kann eine Notizdatei nicht geladen werden, zeigt der Notizbereich „Notizen
@@ -370,7 +375,8 @@ Bezeichnungen der NPCs (umgesetzt).
   auf einem anderen Gerät laufen (`http://<IP>:8080/wall`). Nach einem Verbindungsabbruch behält sie das Bild ohne
   Hinweis und verbindet sich selbst neu.
 - Overlay-Panel oben mittig; welches Overlay sie zeigt, steht auf dem Server (Spieltisch) und gilt für alle Walls.
-  Umgeschaltet wird nur im Admin (Panel „Spieltisch“, Zeile „Wall“):
+  Umgeschaltet wird nur im Admin (Panel „Spieltisch“: Weltkarte und Aus in der Zeile „Wall“, QR-Code per Icon-Button
+  in der Zeile „Spieler“):
   - **Weltkarte:** Panel „Weltkarte“ mit einer fest eingebundenen Weltkarte (nicht aus dem Backend), vollständig
     sichtbar (unten derselbe Abstand wie oben). Das Panel ist eine durchscheinende Kachel und liegt über Party bzw.
     Initiative; darunter ist der ganze Screen so stark abgedunkelt wie unter einem Dialog im Admin.
@@ -378,7 +384,7 @@ Bezeichnungen der NPCs (umgesetzt).
     wie der QR-Code: zentriert der Titel, der QR-Code der Player-URL (dunkel auf hellem Grund, unabhängig vom Theme;
     höchstens 480px, kleiner, wenn er mit Titel und URL sonst nicht vollständig in die Höhe des Fensters passt) und
     darunter die URL als Text. Die Spieler scannen ihn mit der Smartphone-Kamera und landen in der
-    [Charakterauswahl](#player-screen). Die URL lädt die Wall (`GET /table/join`) bei jedem Wechsel auf „QR-Code“
+    [Charakterauswahl](#player-screen). Die URL lädt die Wall (`GET /table/join`) bei jedem Einblenden des QR-Codes
     und beim Öffnen mit aktivem QR-Code; sie kommt vom Start-Skript (`dnd prod`: `http://<IP>:8080/`) bzw. ist der
     Origin der Wall, wenn diese über die IP geöffnet ist. Während des Ladens steht nur der Titel da. Ist die URL
     unbekannt oder schlägt das Laden fehl, zeigt das Panel statt Code und URL „Player-URL unbekannt – Spieltisch mit

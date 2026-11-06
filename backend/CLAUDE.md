@@ -2,8 +2,8 @@
 
 REST-API, WebSocket und PostgreSQL für das DnD Portal. Liefert Abenteuer (mit Spielern, aktiver Szene und globalem Level) und
 Szenen mit ihren Wall-/Ground-Bildern und Musik-Playlists an das Frontend (`../frontend`), hält den Spieltisch-Zustand
-(aktives Abenteuer, aktive Szene, Theme, Zellgröße des Ground-Rasters; Wall-Overlay und Rasterfarbe nur im Speicher) und den Musikzustand (im Speicher) und pusht beides per WebSocket (`/ws`) an Admin, Wall, Ground und Player, hält den laufenden Kampf je Abenteuer (`/table/fight`, Push an Admins und ohne Bezeichnungen an Walls und Player), liefert die Player-URL für den QR-Code im
-Admin (`GET /table/join`, `Settings.player_url`) und die Mediendateien selbst (Ordner `../media`, unter `/media`). Projektübergreifender Kontext (Vision, Screens, Begriffe, bekannte Probleme) liegt
+(aktives Abenteuer, aktive Szene, Theme, Zellgröße des Ground-Rasters; Wall-Overlay und Rasterfarbe nur im Speicher) und den Musikzustand (im Speicher) und pusht beides per WebSocket (`/ws`) an Admin, Wall, Ground und Player, hält den laufenden Kampf je Abenteuer (`/table/fight`, Push an Admins und ohne Bezeichnungen an Walls und Player), liefert die Player-URL für den QR-Code auf
+der Wall (`GET /table/join`, `Settings.player_url`) und die Mediendateien selbst (Ordner `../media`, unter `/media`). Projektübergreifender Kontext (Vision, Screens, Begriffe, bekannte Probleme) liegt
 eine Ebene höher in `../CLAUDE.md` und `../docs/`.
 
 ## Stack

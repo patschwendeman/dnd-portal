@@ -51,7 +51,7 @@ Teil-spezifischer Kontext (Befehle, Struktur, Konventionen): `frontend/CLAUDE.md
   Ausnahme ist das Vollbild-Overlay beim Hovern mit der Maus, das nur das eigene Fenster ins Vollbild schaltet und
   nichts am Server ändert.
   Musik und Soundeffekte spielt das Admin-Fenster, das Audioausgabe ist (Zustand auf dem Server; ohne Ausgabe wird
-  es das Admin-Fenster, in dem als Nächstes geklickt oder eine Taste gedrückt wird); den Lautsprecher wählt der Spielleiter außerhalb der App (Betriebssystem bzw. Browser). Die Player-Screens laufen auf den Smartphones der Spieler (geöffnet per QR-Code im Admin),
+  es das Admin-Fenster, in dem als Nächstes geklickt oder eine Taste gedrückt wird); den Lautsprecher wählt der Spielleiter außerhalb der App (Betriebssystem bzw. Browser). Die Player-Screens laufen auf den Smartphones der Spieler (geöffnet per QR-Code, den der Admin auf der Wall einblendet),
   sind ebenfalls per WebSocket angebunden und übernehmen davon nur das Theme (pro Gerät abweichend wählbar).
 - **Begriffe:** Alle Szenen sind gleich (keine Kampf-/Nicht-Kampfszenen mehr, seit DND-29); ein Kampf soll künftig
   in jeder Szene stattfinden können. Ältere Bezeichnungen (`main`, `side`, `fight`, `battlemap`) tauchen noch in

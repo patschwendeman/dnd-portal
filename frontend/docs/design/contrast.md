@@ -54,9 +54,9 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 | `background` auf `secondary` | Hover-Fläche der Menüpunkte der Navigationsleiste, der Panel-Einträge und der Buttons der Kopfzeile (Admin) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide, siehe Anmerkung |
 | `text.color` auf `secondary` | Icon des inaktiven Menüpunkts der Navigationsleiste und der inaktiven Buttons der Kopfzeile (ohne eigene Fläche) | 3,0 | 15,9 | 6,5 | ✓ beide |
 | `text.color` auf `background` | Icon des inaktiven Menüpunkts der Navigationsleiste und der Buttons der Kopfzeile bei Hover | 3,0 | 17,4 | 9,2 | ✓ beide |
-| `onPrimary` auf `primary` | Icon des aktiven Menüpunkts der Navigationsleiste und der aktiven Icon-Buttons „Dashboard“ und „Vollbild“ | 3,0 | 6,1 | 4,7 | ✓ beide |
+| `onPrimary` auf `primary` | Icon des aktiven Menüpunkts der Navigationsleiste und der aktiven Icon-Buttons „Dashboard“, „Vollbild“ und „QR-Code“ | 3,0 | 6,1 | 4,7 | ✓ beide |
 | `primary` auf `secondary` | Fokus-Outline der Menüpunkte der Navigationsleiste, der Panel-Einträge (Notizen, Szenen), der Buttons „Vollbild“ und „Dashboard“ (auf ihrer Kachel) und der Auswahllisten im Panel „Einstellungen“ (auf der Panel-Kachel) | 3,0 | 5,6 | 3,3 | ✓ beide |
-| `text.color` auf `background` | Icons auf Flächen in Dashboard-Panels (Play-Button ohne Musik, „In neuem Fenster öffnen“) | 4,5 | 17,4 | 9,2 | ✓ beide |
+| `text.color` auf `background` | Icons auf Flächen in Dashboard-Panels (Play-Button ohne Musik, „In neuem Fenster öffnen“, „QR-Code“) | 4,5 | 17,4 | 9,2 | ✓ beide |
 | `primary` auf `secondary` | Status-Punkt „verbunden“ im Panel „Spieltisch“ | 3,0 | 5,6 | 3,3 | ✓ beide |
 | `text.color` auf `secondary` | Ring des Status-Punkts „nicht verbunden“ | 3,0 | 15,9 | 6,5 | ✓ beide |
 | `background` auf `secondary` | Flächen in Dashboard-Panels (Buttons, Segment-Control, Sound-Gruppen, Spielerzeilen, Slider-Schiene) | 3,0 | **1,1** | **1,4** | bewusst ✗ beide, siehe Anmerkung |

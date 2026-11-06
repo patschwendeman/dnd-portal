@@ -75,7 +75,7 @@ lan_ip() {
   ipconfig getifaddr en0 2>/dev/null || true
 }
 
-# Exports PLAYER_URL (URL of the Player Screen for the QR code in the Admin; compose passes it to the API) unless it is
+# Exports PLAYER_URL (URL of the Player Screen for the QR code on the Wall; compose passes it to the API) unless it is
 # already set in the environment. Without IP it stays empty. $1 = IP, $2 = port of the frontend.
 export_player_url() {
   if [ -z "${PLAYER_URL:-}" ] && [ -n "$1" ]; then

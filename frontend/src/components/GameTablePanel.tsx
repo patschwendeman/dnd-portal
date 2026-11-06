@@ -10,6 +10,7 @@ import { textStyle } from '../style/tokens'
 import { playerStatusText, screenStatusText } from '../utils/screenStatus'
 
 import openWindowIcon from '/assets/icons/openWindow.svg'
+import qrCodeIcon from '/assets/icons/qrCode.svg'
 
 const STATUS_DOT_SIZE = '8px'
 // Fits the screen names; a long status text wraps, so the controls keep their width in the
@@ -20,7 +21,6 @@ type TableScreen = 'wall' | 'ground'
 
 const WALL_OVERLAY_OPTIONS: readonly { value: WallOverlay, label: string }[] = [
   { value: 'world', label: 'Weltkarte' },
-  { value: 'join', label: 'QR-Code' },
   { value: 'off', label: 'Aus' },
 ]
 
@@ -80,6 +80,12 @@ const StatusDot = styled.span<{ $isConnected: boolean }>`
   border: ${(props) => props.theme.borderWidth.thick} solid
     ${(props) => (props.$isConnected ? props.theme.colors.primary : props.theme.colors.text.color)};
   border-radius: ${(props) => props.theme.radius.pill};
+`
+
+const ToggleButton = styled(PanelButton)`
+  &[aria-pressed="true"] {
+    background-color: ${(props) => props.theme.colors.primary};
+  }
 `
 
 const Rows = styled.div`
@@ -167,7 +173,9 @@ function GameTablePanel({
   onWallOverlayChange,
   onGroundGridChange,
 }: GameTablePanelProps): ReactElement {
+  const theme = useTheme()
   const { screens } = useContext(GameTableContext)
+  const isJoinShown = wallOverlay === 'join'
 
   return (
     <Rows>
@@ -206,6 +214,20 @@ function GameTablePanel({
             {playerStatusText(screens?.player ?? null)}
           </PanelText>
         </ScreenInfo>
+        <PanelText>Spieler QR-Code</PanelText>
+        <ToggleButton
+          type="button"
+          title="QR-Code"
+          aria-label="QR-Code für Spieler auf der Wall"
+          aria-pressed={isJoinShown}
+          data-test-id="join-button"
+          onClick={() => onWallOverlayChange(isJoinShown ? 'off' : 'join')}
+        >
+          <PanelIcon
+            src={qrCodeIcon}
+            fill={isJoinShown ? theme.colors.onPrimary : theme.colors.text.color}
+          />
+        </ToggleButton>
       </Row>
     </Rows>
   )

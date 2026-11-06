@@ -8,17 +8,18 @@
 Den QR-Code der Player-URL zeigt bisher nur ein Dialog im Admin (`JoinDialog`, Icon-Button „QR-Code“ im Panel
 „Spieltisch“, Zeile „Spieler“). Die Spieler müssen dafür auf den Monitor des Spielleiters schauen. Künftig zeigt die Wall
 den QR-Code als eigenes Overlay im selben Panel wie die Weltkarte, gut sichtbar für alle am Tisch. Der Spielleiter
-schaltet es im Admin wie die Weltkarte. Am Spieltisch merkt man es daran, dass der Spielleiter „QR-Code“ wählt und alle
-Spieler den Code von der Wall scannen.
+schaltet es im Admin mit dem bisherigen Icon-Button „QR-Code“ in der Zeile „Spieler“. Am Spieltisch merkt man es daran,
+dass der Spielleiter auf „QR-Code“ klickt und alle Spieler den Code von der Wall scannen.
 
 ## Scope / Non-Goals
 
 **Im Scope**
 - Neuer Wert `join` für das Wall-Overlay (Backend-Literal `WallOverlay`, API-Typen, Frontend-Validierung der Pushes).
-- Admin: Segment-Control der Zeile „Wall“ mit „Weltkarte“ / „QR-Code“ / „Aus“.
+- Admin: Icon-Button „QR-Code“ in der Zeile „Spieler“ bleibt an seiner Stelle und schaltet das QR-Overlay der Wall;
+  das Segment-Control der Zeile „Wall“ bleibt „Weltkarte“ / „Aus“.
 - Wall: Overlay-Panel „Spieler verbinden“ mit QR-Code und URL bzw. Hinweis, wenn die URL unbekannt ist.
-- Admin: QR-Code-Dialog, Icon-Button „QR-Code“ und Text „Spieler QR-Code“ entfallen.
-- Doku (Ist-Stand) und Design-Doku nachziehen.
+- Admin: QR-Code-Dialog entfällt.
+- Doku (Ist-Stand, inkl. `CLAUDE.md`, Config-Kommentare) und Design-Doku nachziehen.
 
 **Nicht im Scope**
 - Weltkarte und QR-Code gleichzeitig anzeigen.
@@ -29,21 +30,25 @@ Spieler den Code von der Wall scannen.
 ## Entscheidungen
 
 ### E1: QR-Code als eigenes Wall-Overlay
-- **Entscheidung:** `WallOverlay` wird `Literal["world", "join", "off"]`. Das Segment-Control der Admin-Zeile „Wall“ zeigt
-  „Weltkarte“ / „QR-Code“ / „Aus“ in dieser Reihenfolge. Bei `join` zeigt die Wall dasselbe Overlay-Panel (Ebene,
+- **Entscheidung:** `WallOverlay` wird `Literal["world", "join", "off"]`. Bedient wird `join` im Admin über den
+  Icon-Button „QR-Code“ (E2), nicht über das Segment-Control der Zeile „Wall“. Bei `join` zeigt die Wall dasselbe Overlay-Panel (Ebene,
   Abdunklung, durchscheinende Kachel, oben mittig) mit dem Titel „Spieler verbinden“ statt der Karte. Für den QR-Code
   gelten dieselben Regeln wie für die Weltkarte: Er steht im Speicher der API (nach Neustart `off`), alle Walls
   folgen dem Push, und ein Szenen- oder Abenteuerwechsel schließt ihn.
 - **Verworfene Alternativen:** Den QR-Code zusätzlich im Weltkarten-Panel zeigen, ohne eigenen Schalter.
 - **Begründung:** Im Dialog gewählt. Der Spielleiter blendet den QR-Code gezielt ein, die Weltkarte bleibt unverdeckt.
 
-### E2: QR-Code im Admin entfällt ganz
-- **Entscheidung:** `JoinDialog` und der Icon-Button „QR-Code“ samt Text „Spieler QR-Code“ werden entfernt. Die Zeile
-  „Spieler“ im Panel „Spieltisch“ zeigt nur noch „Spieler“ und „N Spieler verbunden“. Das Icon `qrCode.svg` wird
-  gelöscht, sofern es sonst nirgends genutzt wird.
-- **Verworfene Alternativen:** Button behalten und damit das QR-Overlay der Wall schalten (doppelte Bedienung neben
-  dem Segment-Control).
-- **Begründung:** Im Dialog gewählt.
+### E2: Icon-Button „QR-Code“ bleibt und schaltet die Wall (geändert nach Review-Runde 1)
+- **Entscheidung:** Der Icon-Button „QR-Code“ samt Text „Spieler QR-Code“ bleibt an seiner bisherigen Stelle in der
+  Zeile „Spieler“ des Panels „Spieltisch“ (gleiches Icon `qrCode.svg`, gleicher Aufbau wie vor DND-49). Ein Klick setzt
+  das Wall-Overlay auf `join`; ist `join` bereits aktiv, setzt er es auf `off`. Eine aktive Weltkarte wird dabei durch
+  den QR-Code ersetzt. Der Button zeigt den Zustand per `aria-pressed` und markiert sich bei `join` optisch wie ein
+  aktiver Toggle (bestehende Bausteine nutzen). Das Segment-Control der Zeile „Wall“ bleibt „Weltkarte“ / „Aus“;
+  bei `join` ist dort keine Option markiert, „Weltkarte“ bzw. „Aus“ ersetzen den QR-Code. Nur `JoinDialog` entfällt
+  (kein `aria-haspopup` mehr am Button); `aria-label` z. B. „QR-Code für Spieler auf der Wall“.
+- **Verworfene Alternativen:** Option „QR-Code“ im Segment-Control der Zeile „Wall“ und Button entfernen (so in Runde 1
+  umgesetzt, vom User verworfen: der Button soll an der alten Stelle bleiben); Button öffnet weiter den Dialog im Admin.
+- **Begründung:** Wunsch des Users nach Review-Runde 1. Die gewohnte Stelle zum Verbinden der Spieler bleibt.
 
 ### E3: Player-URL und Hinweis auf der Wall
 - **Entscheidung:** Die Wall lädt `GET /table/join`, sobald das Overlay auf `join` wechselt (auch beim Öffnen einer Wall
@@ -100,22 +105,38 @@ Spieler den Code von der Wall scannen.
       verbinden““ wird Wall-Panel), `screen-layouts.md` (Maße aus E4), `contrast.md` (QR-Code jetzt auf der Wall).
 - [x] `docs/known-issues.md` prüfen und ggf. anpassen.
 
+### Nacharbeit nach Review-Runde 1 (E2 geändert)
+- [x] `GameTablePanel`: Option „QR-Code“ aus dem Segment-Control der Zeile „Wall“ entfernen; Icon-Button „QR-Code“ und
+      Text „Spieler QR-Code“ in der Zeile „Spieler“ wiederherstellen (Stand `e12f339`), Klick schaltet `join`/`off`
+      nach E2, Zustand per `aria-pressed`; `data-test-id="join-button"`. `public/assets/icons/qrCode.svg` wiederherstellen.
+      `JoinDialog` bleibt gelöscht.
+- [x] BDD: Szenarien in `wallOverlay.feature` auf den Button umstellen, Wechsel Weltkarte ↔ QR-Code (AK2) und
+      „keine Option markiert“ prüfen; AK6-Szenario in `adminDashboard.feature` nach neuem AK6.
+- [x] Doku auf den Button umstellen: `docs/screens.md`, `docs/architecture.md`, `docs/domain.md`, `frontend/DESIGN.md`,
+      `components.md`, `screen-layouts.md`, `contrast.md`, beide `README.md`.
+- [x] Veraltete Ist-Doku aus Review-Runde 1, Hinweis 1: `CLAUDE.md:54`, `frontend/CLAUDE.md` (`JoinDialog`,
+      `getJoinInfo` jetzt `service/WallScreen.ts`, Datenfluss-Satz; `WallJoinPanel`, `WallOverlay` ergänzen),
+      `backend/CLAUDE.md:5-6`, „QR code in the Admin“ in `backend/.env.example`, `script.sh`, `compose.dev.yaml`,
+      `compose.prod.yaml`, Kommentar `frontend/src/utils/playerUrl.ts:6`.
+
 ## Akzeptanzkriterien
 
 ### AK1: QR-Code auf der Wall einblenden
 - **Given** Admin und Wall sind geöffnet, die Player-URL ist bekannt, das Wall-Overlay ist „Aus“
-- **When** der Spielleiter in der Zeile „Wall“ des Panels „Spieltisch“ „QR-Code“ wählt
+- **When** der Spielleiter in der Zeile „Spieler“ des Panels „Spieltisch“ auf den Icon-Button „QR-Code“ klickt
 - **Then** zeigt jede Wall das Panel „Spieler verbinden“ mit dem QR-Code der Player-URL und der URL als Text, der
-  Screen darunter ist abgedunkelt, und im Admin ist „QR-Code“ markiert
+  Screen darunter ist abgedunkelt, der Button ist gedrückt (`aria-pressed="true"`), und in der Zeile „Wall“ ist keine
+  Option markiert
 
 ### AK2: Wechsel zwischen Weltkarte, QR-Code und Aus
 - **Given** die Wall zeigt den QR-Code
-- **When** der Spielleiter „Weltkarte“ bzw. „Aus“ wählt
-- **Then** zeigt die Wall die Weltkarte ohne QR-Code bzw. kein Overlay
+- **When** der Spielleiter erneut auf den Button „QR-Code“ klickt bzw. „Weltkarte“ oder „Aus“ wählt
+- **Then** zeigt die Wall kein Overlay bzw. die Weltkarte ohne QR-Code bzw. kein Overlay, und der Button ist nicht
+  mehr gedrückt; zeigt die Wall die Weltkarte, ersetzt ein Klick auf den Button sie durch den QR-Code
 
 ### AK3: Player-URL unbekannt
 - **Given** die API liefert keine Player-URL und die Wall läuft unter `localhost` (oder das Laden schlägt fehl)
-- **When** der Spielleiter „QR-Code“ wählt
+- **When** der Spielleiter auf den Button „QR-Code“ klickt
 - **Then** zeigt das Panel „Spieler verbinden“ den Hinweis „Player-URL unbekannt – Spieltisch mit „dnd prod“ starten
   oder die Wall über die IP des Rechners öffnen“ und keinen QR-Code
 
@@ -127,13 +148,13 @@ Spieler den Code von der Wall scannen.
 ### AK5: Szenen- oder Abenteuerwechsel schließt den QR-Code
 - **Given** das Wall-Overlay ist „QR-Code“
 - **When** der Spielleiter die Szene oder das Abenteuer wechselt
-- **Then** blenden alle Walls den QR-Code aus, und im Admin ist „Aus“ markiert
+- **Then** blenden alle Walls den QR-Code aus, im Admin ist „Aus“ markiert und der Button „QR-Code“ nicht gedrückt
 
-### AK6: Kein QR-Code mehr im Admin
+### AK6: Button an der alten Stelle, kein Dialog im Admin
 - **Given** der Admin ist geöffnet
-- **When** der Spielleiter das Panel „Spieltisch“ ansieht
-- **Then** zeigt die Zeile „Spieler“ nur „Spieler“ und „N Spieler verbunden“, ohne Icon-Button „QR-Code“ und ohne
-  Text „Spieler QR-Code“; einen Dialog „Spieler verbinden“ gibt es nicht mehr
+- **When** der Spielleiter das Panel „Spieltisch“ ansieht und auf den Button „QR-Code“ klickt
+- **Then** zeigt die Zeile „Spieler“ wie vor DND-49 „Spieler“, „N Spieler verbunden“, „Spieler QR-Code“ und den
+  Icon-Button „QR-Code“; die Zeile „Wall“ bietet nur „Weltkarte“ / „Aus“; im Admin öffnet sich kein Dialog
 
 ### AK7: Scannbar aus Abstand
 - **Given** die Wall läuft im Vollbild auf einem 1080p-Monitor und zeigt den QR-Code
@@ -148,9 +169,9 @@ Spieler den Code von der Wall scannen.
 - Frontend (BDD): `wallOverlay.feature` deckt AK1–AK5 ab, `adminDashboard.feature` AK6. Lint, Unit-Tests, Build grün.
 
 **Manuell**
-1. `dnd prod` starten, Admin und Wall öffnen, „QR-Code“ wählen: QR-Code und URL erscheinen auf der Wall, mit dem
+1. `dnd prod` starten, Admin und Wall öffnen, auf den Button „QR-Code“ klicken: QR-Code und URL erscheinen auf der Wall, mit dem
    Smartphone scannen, die Charakterauswahl öffnet sich (AK1, AK7).
-2. Zwischen „Weltkarte“, „QR-Code“ und „Aus“ wechseln, dann Szene wechseln (AK2, AK5).
+2. Zwischen Button „QR-Code“, „Weltkarte“ und „Aus“ wechseln, dann Szene wechseln (AK2, AK5).
 3. Dev-Setup unter `localhost` ohne `PLAYER_URL`: Hinweis erscheint (AK3).
 4. Beide Themes prüfen: QR-Code bleibt dunkel auf hell.
 
@@ -158,3 +179,48 @@ Spieler den Code von der Wall scannen.
 - keine
 
 ## Review
+
+### Runde 1 – Review vom 2026-11-06 (Commit 2bd94ab)
+
+**Empfehlung: Abnahme.** Kein blockierender Befund; AK1–AK6 erfüllt, AK7 in der Darstellung erfüllt (Scan nur
+manuell prüfbar). Vor dem Abschluss empfohlen: veraltete Ist-Doku nachziehen (Hinweis 1), AK7 am Smartphone scannen.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 QR-Code auf allen Walls | erfüllt | `GameTablePanel.tsx:23` (Option „QR-Code“ zwischen „Weltkarte“ und „Aus“); `WallScreen.tsx:153-155`, `WallOverlay.ts:15`; `WallJoinPanel.tsx:87-106`; BDD `wallOverlay.feature:15` |
+| AK2 Overlays schließen sich aus | erfüllt | `WallScreen.tsx:145/153` (Panel nur bei `join` eingehängt); BDD `wallOverlay.feature:15` |
+| AK3 Hinweis ohne URL | erfüllt | `WallJoinPanel.tsx:15` (Text wörtlich nach E3, NBSP geprüft), `:73-77`, `:106`; BDD `wallOverlay.feature:27` (`Network.setBlockedURLs`); Zweig localhost per Unit `playerUrl.spec.ts` |
+| AK4 Neue Wall zeigt Overlay | erfüllt | BDD `wallOverlay.feature:33`; Backend `test_ws.py:253` |
+| AK5 Szenen-/Abenteuerwechsel schließt | erfüllt | Backend `test_table.py:263`, `:273`; BDD `wallOverlay.feature:38` (nur Szenenwechsel; Seed hat ein Abenteuer) |
+| AK6 Kein Dialog im Admin | erfüllt | `JoinDialog.tsx`, `qrCode.svg` gelöscht, keine Referenzen; BDD `adminDashboard.feature:54` |
+| AK7 Größe und Scanbarkeit | Darstellung erfüllt, Scan offen | `WallJoinPanel.tsx:11,21-31` (`min(...)`, 1920×1080 → 480 px, Gesamthöhe 748 px); BDD prüft quadratisch, ≤ 480, im Viewport |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+1. **Veraltete Ist-Doku (im Scope „Doku nachziehen“):** `CLAUDE.md:54`; `frontend/CLAUDE.md:102` (`JoinDialog`),
+   `:132` (`getJoinInfo` bei Admin-Services, liegt jetzt in `service/WallScreen.ts`), `:190` (QR-Code-Dialog);
+   `backend/CLAUDE.md:5-6`; außerdem „QR code in the Admin“ in `backend/.env.example:30`, `script.sh:78`,
+   `compose.dev.yaml:44`, `compose.prod.yaml:34` und Kommentar `frontend/src/utils/playerUrl.ts:6`.
+2. **4 rote Backend-Tests vorbestehend:** 3× `test_adventures.py`, `test_fight.py::test_scene_change_is_rejected_during_a_fight`;
+   auf `e12f339` gegen dieselbe Dev-DB identisch rot. Ursache: Dev-DB weicht vom Seed ab (`global_level` 4,
+   andere Hintergründe). Abhilfe: DB zurücksetzen.
+3. **E2E `adminDashboard` 6/7:** „The first interaction makes an admin window the audio output“ rot wegen
+   `output_ready: true` im laufenden Stack (umgebungsbedingt); „The dashboard shows its panels…“ einmal rot, danach
+   zweimal grün (flaky).
+4. **Zusätzliche Test-ID** `wall-join` am Panel – unproblematisch.
+5. **Gemeinsames Modul** `src/components/WallOverlay.ts` vom Subtask gedeckt; Weltkarte (`WorldMapPanel`) unverändert.
+6. **jscpd:** einziger Klon (`darkTheme` ↔ `tavernTheme`) vorbestehend.
+
+**Scope und Subtasks**
+- Alle Subtasks erledigt und im Diff belegt; Abweichungen (`getJoinInfo` nach `service/WallScreen.ts`, zusätzlicher
+  Unit-Test, `docs/domain.md` und beide `README.md` mitgezogen) vertretbar; `GET /table/join` und Start-Skript-Logik
+  unverändert.
+
+**Checks**
+- Backend: `ruff`, `mypy`, `make check-quality` grün; `openapi.json` ohne Diff; pytest 324/328 (4 vorbestehend rot).
+- Frontend: lint, typecheck, Unit 346/346, `knip`, `jscpd`, build grün; `schema.d.ts` ohne Diff.
+- E2E: `wallOverlay` 6/6, `adminDashboard` 6/7 (siehe Hinweis 3). Implementer: alle 13 Suites grün (52 Tests).
+- Manuell offen: Test 1 (Scan, AK7), Test 3 (Hinweis unter localhost ohne `PLAYER_URL`), Test 4 (beide Themes).
+- Konventionen: ein Commit `feat(DND-49): …` nach Schema, keine KI-Signatur.

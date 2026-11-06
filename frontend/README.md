@@ -14,7 +14,7 @@ Markdown-Notizen das Frontend selbst aus `public/`.
 Admin, Wall und Ground folgen dem Spieltisch-Zustand des Servers (aktives Abenteuer, aktive Szene, Theme, Wall-Overlay, Ground-Raster), den er per
 WebSocket pusht; sie können daher auch in verschiedenen Browsern bzw. auf verschiedenen Geräten laufen. Der Player
 Screen ist ebenfalls verbunden und übernimmt davon nur das Theme (pro Gerät abweichend wählbar); die Spieler öffnen ihn
-per QR-Code auf der Wall (im Admin im Panel „Spieltisch“, Zeile „Wall“, „QR-Code“ wählen).
+per QR-Code auf der Wall (im Admin im Panel „Spieltisch“, Zeile „Spieler“, Icon-Button „QR-Code“).
 
 ## Starten
 

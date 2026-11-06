@@ -1,9 +1,9 @@
-// Hostnames under which the Admin runs on the computer itself: its origin is not reachable from a
+// Hostnames under which the Wall runs on the computer itself: its origin is not reachable from a
 // smartphone
 const LOCAL_HOSTNAMES = ['localhost', '127.0.0.1', '[::1]']
 
 // URL of the Player Screen for the QR code: the one from the API (set by the start script),
-// otherwise the origin of the Admin, unless it was opened locally. null = unknown.
+// otherwise the origin of the Wall, unless it was opened locally. null = unknown.
 const selectPlayerUrl = (
   apiPlayerUrl: string | null,
   location: Pick<Location, 'origin' | 'hostname'>,

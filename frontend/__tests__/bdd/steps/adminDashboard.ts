@@ -36,7 +36,6 @@ const SOUND_BUTTON = `${AUDIO_PANEL} [data-test-id="sound-heal"]`
 const JOIN_BUTTON = '[data-test-id="join-button"]'
 const PLAYERS_STATUS = '[data-test-id="screen-players"]'
 const FULLSCREEN_TOGGLE = '[data-test-id="fullscreen-toggle"]'
-const JOIN_DIALOG = '[data-test-id="join-dialog"]'
 const PANEL_LABELS = ['Aktive Szene', 'Audio', 'Spieltisch', 'Party']
 const DASHBOARD_MIN_WIDTH = 400
 const DASHBOARD_MAX_WIDTH = 560
@@ -158,6 +157,15 @@ const saveAudio = async (update: Partial<Audio>): Promise<void> => {
   expect(response.ok).toBe(true)
 }
 
+const saveWallOverlayOff = async (): Promise<void> => {
+  const response = await fetch(`${BASE_URL}/api/table`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ wall_overlay: 'off' }),
+  })
+  expect(response.ok).toBe(true)
+}
+
 const setMusicPlaying = async (playing: boolean): Promise<void> => saveAudio({ playing })
 
 // The button changes only with the push of the server, so it shows the state the server keeps.
@@ -177,6 +185,8 @@ defineFeature(feature, (test) => {
   // Audio before a scenario that changes the volume, restored afterwards: all specs share the one
   // game table
   let restoreAudio: Audio | null = null
+  // Set by a scenario that switches the wall overlay, so the other specs start without overlay
+  let resetWallOverlay = false
 
   beforeEach(async () => {
     driver = buildDriver()
@@ -189,6 +199,10 @@ defineFeature(feature, (test) => {
     if (restoreAudio !== null) {
       await saveAudio(restoreAudio)
       restoreAudio = null
+    }
+    if (resetWallOverlay) {
+      await saveWallOverlayOff()
+      resetWallOverlay = false
     }
   })
 
@@ -556,36 +570,67 @@ defineFeature(feature, (test) => {
     })
   }, SCREENS_SCENARIO_TIMEOUT)
 
-  test('The row Spieler shows only the connected players', ({ given, then, and }) => {
-    given('I am on the admin screen', async () => {
-      await openAdmin(driver)
-    })
+  test(
+    'The QR code button in the row Spieler switches the wall and opens no dialog',
+    ({
+      given, then, and, when,
+    }) => {
+      given('I am on the admin screen', async () => {
+        resetWallOverlay = true
+        await saveWallOverlayOff()
+        await openAdmin(driver)
+      })
 
-    then(
-      'the row Spieler in the panel Spieltisch shows only Spieler and the connected players',
-      async () => {
-        const status = await waitForElement(driver, `${panel('table')} ${PLAYERS_STATUS}`)
-        await driver.wait(
-          async () => /^\d+ Spieler verbunden$/.test(await status.getText()),
-          WAIT_TIMEOUT,
+      then(
+        'the row Spieler in the panel Spieltisch shows the connected players, the text Spieler '
+          + 'QR-Code and the QR code icon',
+        async () => {
+          const status = await waitForElement(driver, `${panel('table')} ${PLAYERS_STATUS}`)
+          await driver.wait(
+            async () => /^\d+ Spieler verbunden$/.test(await status.getText()),
+            WAIT_TIMEOUT,
+          )
+          const row = await status.findElement(By.xpath('../..'))
+          expect(await row.getText()).toMatch(/^Spieler\n\d+ Spieler verbunden\nSpieler QR-Code$/)
+          const buttons = await row.findElements(By.css('button'))
+          expect(buttons).toHaveLength(1)
+          expect(await buttons[0].getAttribute('data-test-id')).toBe('join-button')
+          expect(await buttons[0].getAttribute('aria-pressed')).toBe('false')
+          expect(await buttons[0].getAttribute('aria-haspopup')).toBeNull()
+          await waitForElement(driver, `${panel('table')} ${JOIN_BUTTON} svg`)
+        },
+      )
+
+      and('the row Wall of the panel Spieltisch offers only Weltkarte and Aus', async () => {
+        const group = await waitForElement(
+          driver,
+          `${panel('table')} [data-test-id="screen-wall"] [role="group"]`,
         )
-        const row = await status.findElement(By.xpath('../..'))
-        expect(await row.getText()).toMatch(/^Spieler\n\d+ Spieler verbunden$/)
-        expect(await row.findElements(By.css('button'))).toHaveLength(0)
-      },
-    )
+        const options = await group.findElements(By.css('button'))
+        expect(await Promise.all(options.map((option) => option.getText())))
+          .toEqual(['Weltkarte', 'Aus'])
+      })
 
-    and(
-      'there is no QR code button and no dialog Spieler verbinden in the admin screen',
-      async () => {
-        expect(await driver.findElements(By.css(JOIN_BUTTON))).toHaveLength(0)
-        expect(await driver.findElements(By.css(JOIN_DIALOG))).toHaveLength(0)
+      when('I click on the QR code icon in the row Spieler', async () => {
+        await clickElement(driver, `${panel('table')} ${JOIN_BUTTON}`)
+      })
+
+      then('the QR code icon is pressed and no dialog is open in the admin screen', async () => {
+        expect(await waitForAttribute(driver, JOIN_BUTTON, 'aria-pressed', 'true')).toBe('true')
+        expect(await driver.findElements(By.css('[role="dialog"], dialog'))).toHaveLength(0)
         const body = await driver.findElement(By.css('body')).getText()
-        expect(body).not.toContain('Spieler QR-Code')
         expect(body).not.toContain('Spieler verbinden')
-      },
-    )
-  })
+      })
+
+      when('I click on the QR code icon again', async () => {
+        await clickElement(driver, `${panel('table')} ${JOIN_BUTTON}`)
+      })
+
+      then('the QR code icon is no longer pressed', async () => {
+        expect(await waitForAttribute(driver, JOIN_BUTTON, 'aria-pressed', 'false')).toBe('false')
+      })
+    },
+  )
 
   test('I switch the admin window to full screen', ({ given, when, then }) => {
     given('I am on the admin screen', async () => {

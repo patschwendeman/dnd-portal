@@ -20,8 +20,8 @@ Größe nach [1.2](../../DESIGN.md#12-tokens) Größen, Icon nach [1.4](../../DE
 | Zentrierung des Icons | `display: grid; place-items: center` |
 | Padding | `0` (Reset bei `<button>`) |
 | Farbe | Hintergrund in der [Kopfzeile](#kopfzeile) und der Hinweisleiste transparent, sonst nach [2.2](../../DESIGN.md#22-rollen) und [2.4](../../DESIGN.md#24-zustände) |
-| Dashboard-Panels | gemeinsame Styled Component `PanelButton` ([src/components/PanelButton.tsx](../../src/components/PanelButton.tsx)): Fläche `background`, Fokus als Outline `borderWidth.thick` in `primary` (`:focus-visible`); „In neuem Fenster öffnen“ und „−“/„+“ im [Level-Stepper](#level-stepper) (dort Zeichen statt Icon, `text.lg` `semibold`; deaktiviert Zeichen in `text.muted`, `cursor: default`); die Sound-Buttons haben keine eigene Fläche, die Fläche ist ihre Gruppe |
-| Beispiele | Sound-Buttons, Dashboard (Kopfzeile, aktiv bei offenem Dashboard wie der Menüpunkt der [Navigationsleiste](#navigationsleiste); `aria-expanded`, `aria-controls`), Vollbild (Kopfzeile, aktiv im Vollbild; `aria-pressed`), Zurück und Vor (Kopfzeile, ohne Ziel `disabled`), In neuem Fenster öffnen, Play/Pause, Nach oben, Menüpunkte der [Navigationsleiste](#navigationsleiste) (dort abweichend inaktiv ohne eigene Fläche und Icon `size.iconLg`; der allgemeine Icon-Button bleibt gefüllt) |
+| Dashboard-Panels | gemeinsame Styled Component `PanelButton` ([src/components/PanelButton.tsx](../../src/components/PanelButton.tsx)): Fläche `background`, Fokus als Outline `borderWidth.thick` in `primary` (`:focus-visible`); „In neuem Fenster öffnen“, „QR-Code“ (aktiv bei QR-Code auf der Wall: Fläche `primary`, Icon `onPrimary`; `aria-pressed`) und „−“/„+“ im [Level-Stepper](#level-stepper) (dort Zeichen statt Icon, `text.lg` `semibold`; deaktiviert Zeichen in `text.muted`, `cursor: default`); die Sound-Buttons haben keine eigene Fläche, die Fläche ist ihre Gruppe |
+| Beispiele | Sound-Buttons, Dashboard (Kopfzeile, aktiv bei offenem Dashboard wie der Menüpunkt der [Navigationsleiste](#navigationsleiste); `aria-expanded`, `aria-controls`), Vollbild (Kopfzeile, aktiv im Vollbild; `aria-pressed`), Zurück und Vor (Kopfzeile, ohne Ziel `disabled`), In neuem Fenster öffnen, QR-Code, Play/Pause, Nach oben, Menüpunkte der [Navigationsleiste](#navigationsleiste) (dort abweichend inaktiv ohne eigene Fläche und Icon `size.iconLg`; der allgemeine Icon-Button bleibt gefüllt) |
 | Player | Settings-Button des [Settings-Menüs](#settings-menü): Fläche, Rand und Lichtkante wie die [Kachel](#kachel) (mit Hintergrundbild durchscheinend), `radius.md` |
 
 ## Text-Button
@@ -170,7 +170,7 @@ Label über dem Bild.
 
 Nur in Dashboard-Panels, gemeinsame Komponente `OptionButtons`
 ([src/components/OptionButtons.tsx](../../src/components/OptionButtons.tsx)). Mehrere Buttons, von denen einer gewählt
-ist: Wall-Overlay „Weltkarte“/„QR-Code“/„Aus“, Ground-Raster „Schwarz“/„Weiß“/„Aus“.
+ist: Wall-Overlay „Weltkarte“/„Aus“ (bei QR-Code auf der Wall keiner), Ground-Raster „Schwarz“/„Weiß“/„Aus“.
 
 | Eigenschaft | Wert |
 |---|---|
@@ -186,11 +186,11 @@ Eine Zeile je Screen: Wall, Ground, Spieler.
 
 | Eigenschaft | Wert |
 |---|---|
-| Aufbau | Grid `TABLE_NAME_COLUMN_WIDTH minmax(0, 1fr) auto`, vertikal zentriert, `gap` `space.2` `space.3`: links Name (`text.sm` `semibold`) und darunter Status (`text.sm`, bei Wall und Ground mit [Status-Punkt](#status-punkt)), in der Mitte die Steuerung, rechts ein [Icon-Button](#icon-button) (Wall und Ground) |
+| Aufbau | Grid `TABLE_NAME_COLUMN_WIDTH minmax(0, 1fr) auto`, vertikal zentriert, `gap` `space.2` `space.3`: links Name (`text.sm` `semibold`) und darunter Status (`text.sm`, bei Wall und Ground mit [Status-Punkt](#status-punkt)), in der Mitte die Steuerung, rechts ein [Icon-Button](#icon-button) |
 | Trennung | Innenabstand `space.3` oben/unten, dazwischen eine Linie `borderWidth.thin` in `border`; erste Zeile oben, letzte unten ohne Abstand |
-| Wall | [Segment-Control](#segment-control) „Weltkarte“/„QR-Code“/„Aus“, Icon-Button „In neuem Fenster öffnen“ (`openWindow.svg`) |
+| Wall | [Segment-Control](#segment-control) „Weltkarte“/„Aus“ (bei QR-Code auf der Wall keine Option gewählt), Icon-Button „In neuem Fenster öffnen“ (`openWindow.svg`) |
 | Ground | [Segment-Control](#segment-control) „Schwarz“/„Weiß“/„Aus“, Icon-Button „In neuem Fenster öffnen“; die Zellgröße steht im [Panel „Einstellungen“](#panel-einstellungen) |
-| Spieler | nur Name und Status „N Spieler verbunden“ (`playerStatusText`), ohne Steuerung und Icon-Button |
+| Spieler | Status „N Spieler verbunden“ (`playerStatusText`), in der Mitte „Spieler QR-Code“ (`text.sm`), rechts Icon-Button „QR-Code“ (`qrCode.svg`, `aria-pressed`): schaltet das Wall-Overlay auf `join` bzw. von `join` auf `off`, aktiv solange der Server `join` meldet ([Panel „Spieler verbinden“](#panel-spieler-verbinden)) |
 | Farbe | Text in `text.color`, nicht `text.muted` (auf `secondary` verfehlt `text.muted` im Theme Tavern 4,5:1) |
 
 ## Spielerzeile
@@ -342,7 +342,7 @@ ist, und lädt dabei `GET /table/join`.
 | Breite | QR-Code plus Innenabstand: `Q + 2 × space.6`, `Q` siehe [screen-layouts.md](screen-layouts.md#größe-des-qr-codes) |
 | Aufbau | Spalte, zentriert: Titel „Spieler verbinden“, QR-Code (Kantenlänge `Q`, `qrcode.react`), darunter mit Abstand `space.5` die URL (`text.lg`, bricht überall um); während des Ladens nur der Titel; ohne URL oder bei Ladefehler statt Code und URL der Hinweis „Player-URL unbekannt …“ (`text.lg`) |
 | QR-Code | Module `qr.foreground` auf `qr.background`, unabhängig vom Theme; Ruhezone `QR_CODE_MARGIN` Module im Grund des Codes |
-| Bedienung | keine (Anzeige); umgeschaltet wird im Admin über die [Spieltisch-Zeile](#spieltisch-zeile) „Wall“ |
+| Bedienung | keine (Anzeige); umgeschaltet wird im Admin über den Icon-Button „QR-Code“ der [Spieltisch-Zeile](#spieltisch-zeile) „Spieler“ |
 | Kopfzeile | Überschrift, `space.5` zum Inhalt |
 
 ## Wall-Kachel

@@ -99,7 +99,7 @@ src/audio/           sounds.ts (Soundliste: Name → Icon, Datei; Gruppen im Pan
                      (shouldRequestAudioOutput)
 src/screens/         Screens; PlayerLayout (gemeinsame Layout-Route von PlayerSelectScreen und PlayerScreen)
 src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin: Zurück/Vor, Abenteuername, mit ErrorBar,
-                     Vollbild, Dashboard), JoinDialog, SettingsMenu
+                     Vollbild, Dashboard), SettingsMenu
                      (Settings-Menü der Player-Routen: Theme, optional „Charakter wechseln“),
                      SelectList (Auswahlliste) mit AdventureSelect, SettingsPanel (Panel „Einstellungen“: Abenteuer,
                      Theme, Zellgröße), NavRail (Navigationsleiste im Admin, Menüpunkte oben bzw. unten),
@@ -118,7 +118,9 @@ src/components/      UI-Bausteine (AdminHeader (Kopfzeile im Admin: Zurück/Vor,
                      „Am Zug“ und „Zug beenden“), MiniButton (↑/↓/Entfernen im Panel „Kampf“), ConfirmDialog („Kampf beenden?“),
                      PanelButton (Icon-Button in Panels), WallParty (Party-Kacheln links und rechts auf der Wall),
                      WallInitiative (Initiative-Leiste auf der Wall) mit WallCharacterTile (Kachel eines
-                     Charakters auf der Wall), OptionButtons
+                     Charakters auf der Wall), WallJoinPanel (Panel „Spieler verbinden“ mit dem QR-Code
+                     auf der Wall), WallOverlay.ts (gemeinsame Styles von Weltkarte und WallJoinPanel),
+                     OptionButtons
                      (Segment-Control in Panels), PanelSlider (Slider in Panels), FullscreenHoverOverlay (Vollbild-Overlay auf Wall und
                      Ground), Dialogue, GridOverlay,
                      ResourceBarPlayer …)
@@ -129,8 +131,8 @@ src/notes/           Notizen im Admin: noteFolders.ts (NOTE_FOLDERS: Einträge d
                      Einträge), historyShortcuts.ts (Alt+←/→, Daumentasten der Maus), useNoteHistory.ts
                      (useNoteHistory: Verlauf im AdminScreen, useHistoryShortcuts)
 src/service/         Datenladen und Schreibzugriffe je Screen (getAdventures, getAdventure, getAdminData,
-                     getJoinInfo, saveActiveScene, saveGlobalLevel, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
-                     getWallPlayers, getGroundScreenData, getPlayerAdventure …); gameTable.ts: saveWallOverlay, saveGroundGrid,
+                     saveActiveScene, saveGlobalLevel, saveActiveAdventure, saveTheme, saveAudio, playSound, getWallScene,
+                     getWallPlayers, getJoinInfo (Wall), getGroundScreenData, getPlayerAdventure …); gameTable.ts: saveWallOverlay, saveGroundGrid,
                      saveGroundGridCellSize (nur vom Admin genutzt); fight.ts: startFight, endFight, endTurn,
                      addCombatant, saveDefeated, removeCombatant, saveFightOrder (nur vom Admin genutzt, endTurn
                      auch vom Player Screen)
@@ -166,7 +168,7 @@ src/utils/player.ts  characterInitials (Initialen ohne Avatar), steppedLevel (Le
 src/utils/screenStatus.ts Statustexte des Panels „Spieltisch“ aus der Anzahl (screenStatusText, playerStatusText)
 src/utils/useDocumentFullscreen.ts Vollbild des eigenen Fensters (Admin: Kopfzeile; Wall und Ground:
                      FullscreenHoverOverlay), Zustand über fullscreenchange
-src/utils/playerUrl.ts selectPlayerUrl (URL der API, sonst Origin des Admins, nicht bei localhost/127.0.0.1/[::1])
+src/utils/playerUrl.ts selectPlayerUrl (URL der API, sonst Origin der Wall, nicht bei localhost/127.0.0.1/[::1])
 src/style/           tokens.ts (statische Tokens + textStyle-Helper), darkTheme/tavernTheme ({ colors }), appTheme(theme),
                      styled.d.ts (DefaultTheme = tokens + colors), GlobalStyle.ts (Grundregeln, je Screen eingebunden;
                      CSS-Helper hoverScrollbar und tileSurface für die Kacheln im Admin, die Panels und Overlays
@@ -187,7 +189,8 @@ per `scenes/{id}` neu laden (ohne aktive Szene kein Request, nur Hintergrund). N
 Verbindungsfehler (einzige Ausnahme: „Zug konnte nicht beendet werden“ im Player Screen). Auswahl und Player Screen nutzen vom Snapshot das aktive Abenteuer und das Theme (`Abweichung ??
 Spieltisch-Theme`) und senden nichts über den WebSocket; `PlayerLayout` lädt `adventures/{id}` beim Laden und nach
 jedem Snapshot (Spieler, Level, Hintergrundbilder; wie im Admin, damit das Level ohne Reload folgt). Nur die Auswahl zeigt „Keine Verbindung zum Spieltisch“; der Player
-Screen kehrt zur Auswahl zurück, sobald sein Charakter nicht zum aktiven Abenteuer gehört (`playerRedirect`). Der QR-Code-Dialog im Admin (`JoinDialog`, geöffnet aus dem Panel „Spieltisch“) lädt beim Öffnen `table/join`. Nur an
+Screen kehrt zur Auswahl zurück, sobald sein Charakter nicht zum aktiven Abenteuer gehört (`playerRedirect`). Den QR-Code für die Spieler zeigt die Wall bei Wall-Overlay `join` (`WallJoinPanel`, im Admin per Icon-Button
+„QR-Code“ in der Zeile „Spieler“ des Panels „Spieltisch“ geschaltet); sie lädt dann `table/join`. Nur an
 Admins schickt der Server die Zahl der verbundenen Wall-, Ground- und Player-Verbindungen (`screens`); den Kampf
 des aktiven Abenteuers (`fight`, `FightContext`) an Admins, Walls und Player (an Walls und Player ohne die Bezeichnungen der NPCs). Den Kampf schreibt der Admin per REST unter `table/fight` ohne
 lokale Vorwegnahme; einzige Ausnahme ist „Zug beenden“ im Player Screen (`POST table/fight/turn` für den eigenen

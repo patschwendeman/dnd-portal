@@ -43,7 +43,7 @@
 - Schreiben nur per REST, **ohne lokale Vorwegnahme**: Der Admin wechselt das Abenteuer per `PATCH /table
   {"active_adventure_id": <id>}`, die Szene per `PATCH /adventures/{id} {"active_scene_id": <id>}`, das Level per
   `PATCH /adventures/{id} {"global_level": <n>}` und das Theme per `PATCH /table {"theme": …}`; das Wall-Overlay
-  per `PATCH /table {"wall_overlay": "world" | "join" | "off"}` (Panel „Spieltisch“, Zeile „Wall“; `join`: QR-Code für die Spieler) und das Ground-Raster per `PATCH /table
+  per `PATCH /table {"wall_overlay": "world" | "join" | "off"}` (Panel „Spieltisch“: `world`/`off` in der Zeile „Wall“, `join` – QR-Code für die Spieler – per Icon-Button „QR-Code“ in der Zeile „Spieler“, ein zweiter Klick setzt `off`) und das Ground-Raster per `PATCH /table
   {"ground_grid": "black" | "white" | "off"}` (Panel „Spieltisch“, Zeile „Ground“) bzw.
   `{"ground_grid_cell_size": 100–200, Schritt 10}` (Panel „Einstellungen“, Slider beim Loslassen); das Theme wählt
   er im Panel „Einstellungen“. Wall und Ground schreiben nichts. Ändert sich die aktive Szene des aktiven Abenteuers
@@ -530,8 +530,8 @@ oben: `backend/.env`.
 UI unter http://localhost:8080/admin, `/wall` und `/ground`; Wall und Ground können auch in anderen Browsern oder auf
 anderen Geräten laufen (`http://<IP des Rechners>:8080/wall`). Smartphones öffnen die Charakterauswahl über
 `http://<IP des Rechners>:8080/` (gleicher Build, kein Sonder-Build) und von dort den Player Screen ihres Charakters
-(`/player/<id>`): am einfachsten per QR-Code auf der Wall (im Admin Dashboard, Panel „Spieltisch“, Zeile „Wall“,
-„QR-Code“) oder über die URL, die `dnd prod` ausgibt. Die Wall (`WallJoinPanel`) nimmt `player_url` aus
+(`/player/<id>`): am einfachsten per QR-Code auf der Wall (im Admin Dashboard, Panel „Spieltisch“, Zeile „Spieler“,
+Icon-Button „QR-Code“) oder über die URL, die `dnd prod` ausgibt. Die Wall (`WallJoinPanel`) nimmt `player_url` aus
 `GET /table/join`; ist sie `null` (Stack ohne Skript gestartet), nimmt sie den Origin der Wall, sofern diese nicht über
 `localhost`, `127.0.0.1` oder `[::1]` geöffnet ist (`selectPlayerUrl`, `src/utils/playerUrl.ts`), sonst zeigt sie den
 Hinweis „Player-URL unbekannt …“; ebenso, wenn das Laden fehlschlägt. nginx (`frontend/nginx.conf`) leitet `/api/` an die API weiter (Präfix entfernt,

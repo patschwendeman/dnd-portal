@@ -18,7 +18,7 @@ const WINDOW_RECT = { width: 1600, height: 1000 }
 
 const PANEL = '[data-test-id="dashboard-panel-table"]'
 const WORLD_BUTTON = `${PANEL} [data-test-id="wall-overlay-world"]`
-const JOIN_BUTTON = `${PANEL} [data-test-id="wall-overlay-join"]`
+const JOIN_BUTTON = `${PANEL} [data-test-id="join-button"]`
 const OFF_BUTTON = `${PANEL} [data-test-id="wall-overlay-off"]`
 const WORLD_MAP = '[data-test-id="wall-world-map"]'
 const JOIN_LAYER = '[data-test-id="wall-join-layer"]'
@@ -26,9 +26,9 @@ const JOIN_PANEL = '[data-test-id="wall-join"]'
 const JOIN_QR_CODE = '[data-test-id="wall-join-qr-code"]'
 const JOIN_URL = '[data-test-id="wall-join-url"]'
 const JOIN_HINT = '[data-test-id="wall-join-hint"]'
-const BUTTONS: Record<WallOverlay, string> = {
+// Options of the segment control in the row Wall; `join` is the QR code button in the row Spieler
+const SEGMENT_BUTTONS: Record<Exclude<WallOverlay, 'join'>, string> = {
   world: WORLD_BUTTON,
-  join: JOIN_BUTTON,
   off: OFF_BUTTON,
 }
 // getText() returns the non-breaking space of the hint as a normal space
@@ -172,10 +172,13 @@ defineFeature(feature, (test) => {
 
   const expectOverlay = async (wallOverlay: WallOverlay): Promise<void> => {
     await Promise.all(walls.map((wall) => expectWallOverlay(wall, wallOverlay)))
-    await Promise.all(Object.entries(BUTTONS).map(async ([value, button]) => {
+    const buttons = [...Object.entries(SEGMENT_BUTTONS), ['join', JOIN_BUTTON]]
+    await Promise.all(buttons.map(async ([value, button]) => {
       const pressed = String(value === wallOverlay)
       expect(await waitForAttribute(driver, button, 'aria-pressed', pressed)).toBe(pressed)
     }))
+    expect(await driver.findElements(By.css(`${PANEL} [data-test-id="wall-overlay-join"]`)))
+      .toHaveLength(0)
   }
 
   const expectJoinPanelOnWalls = async (): Promise<void> => {
@@ -237,12 +240,16 @@ defineFeature(feature, (test) => {
   }, SCENARIO_TIMEOUT)
 
   const JOIN_PANEL_SHOWN = 'both wall screens show the panel Spieler verbinden with the QR code '
-    + 'and the URL of the player screen and the panel highlights QR-Code'
+    + 'and the URL of the player screen, the icon is pressed and no option of the row Wall is '
+    + 'highlighted'
+  const NO_OVERLAY_SHOWN = 'both wall screens show no overlay, the icon is not pressed and the '
+    + 'panel highlights Aus'
+  const CLICK_JOIN_BUTTON = 'I click on the QR code icon in the row Spieler of the panel Spieltisch'
   const QR_CODE_WITH_TWO_WALLS = 'the QR code is shown and I am on the admin screen with two wall '
     + 'screens open'
 
   test(
-    'I show the QR code for the players on all walls and switch between the overlays',
+    'I show and hide the QR code for the players on all walls with the button in the row Spieler',
     ({
       given, when, then, and,
     }) => {
@@ -250,7 +257,7 @@ defineFeature(feature, (test) => {
         await openScreens('off')
       })
 
-      when('I click on QR-Code in the row Wall of the panel Spieltisch', async () => {
+      when(CLICK_JOIN_BUTTON, async () => {
         await clickElement(driver, JOIN_BUTTON)
       })
 
@@ -265,39 +272,54 @@ defineFeature(feature, (test) => {
         },
       )
 
-      when('I click on Weltkarte in the row Wall of the panel Spieltisch', async () => {
-        await clickElement(driver, WORLD_BUTTON)
-      })
-
-      then(
-        'both wall screens show the world map without the QR code and the panel highlights '
-          + 'Weltkarte',
-        async () => {
-          await expectOverlay('world')
-          await Promise.all(walls.map(async (wall) => {
-            expect(await wall.findElements(By.css(JOIN_PANEL))).toHaveLength(0)
-          }))
-        },
-      )
-
-      when('I click on QR-Code in the row Wall of the panel Spieltisch', async () => {
+      when(CLICK_JOIN_BUTTON, async () => {
         await clickElement(driver, JOIN_BUTTON)
       })
 
-      then(JOIN_PANEL_SHOWN, async () => {
-        await expectJoinPanelOnWalls()
-      })
-
-      when('I click on Aus in the row Wall of the panel Spieltisch', async () => {
-        await clickElement(driver, OFF_BUTTON)
-      })
-
-      then('both wall screens show no overlay and the panel highlights Aus', async () => {
+      then(NO_OVERLAY_SHOWN, async () => {
         await expectOverlay('off')
       })
     },
     SCENARIO_TIMEOUT,
   )
+
+  test('I switch between the world map, the QR code and Aus', ({ given, when, then }) => {
+    given(QR_CODE_WITH_TWO_WALLS, async () => {
+      await openScreens('join')
+      await expectJoinPanelOnWalls()
+    })
+
+    when('I click on Weltkarte in the row Wall of the panel Spieltisch', async () => {
+      await clickElement(driver, WORLD_BUTTON)
+    })
+
+    then(
+      'both wall screens show the world map without the QR code, the icon is not pressed and the '
+        + 'panel highlights Weltkarte',
+      async () => {
+        await expectOverlay('world')
+        await Promise.all(walls.map(async (wall) => {
+          expect(await wall.findElements(By.css(JOIN_PANEL))).toHaveLength(0)
+        }))
+      },
+    )
+
+    when(CLICK_JOIN_BUTTON, async () => {
+      await clickElement(driver, JOIN_BUTTON)
+    })
+
+    then(JOIN_PANEL_SHOWN, async () => {
+      await expectJoinPanelOnWalls()
+    })
+
+    when('I click on Aus in the row Wall of the panel Spieltisch', async () => {
+      await clickElement(driver, OFF_BUTTON)
+    })
+
+    then(NO_OVERLAY_SHOWN, async () => {
+      await expectOverlay('off')
+    })
+  }, SCENARIO_TIMEOUT)
 
   test('The walls show a hint if the player URL is unknown', ({
     given, and, when, then,
@@ -314,7 +336,7 @@ defineFeature(feature, (test) => {
       }))
     })
 
-    when('I click on QR-Code in the row Wall of the panel Spieltisch', async () => {
+    when(CLICK_JOIN_BUTTON, async () => {
       await clickElement(driver, JOIN_BUTTON)
     })
 
@@ -364,7 +386,7 @@ defineFeature(feature, (test) => {
       await changeActiveScene()
     })
 
-    then('both wall screens show no overlay and the panel highlights Aus', async () => {
+    then(NO_OVERLAY_SHOWN, async () => {
       await expectOverlay('off')
     })
   }, SCENARIO_TIMEOUT)
