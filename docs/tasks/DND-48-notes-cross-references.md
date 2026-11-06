@@ -1,7 +1,7 @@
 # DND-48: Querverweise zwischen Notizen und Vor/Zurück im Admin
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -262,3 +262,61 @@ mit einem Klick (oder der Daumentaste der Maus) genau an die Stelle zurückkehrt
 - keine
 
 ## Review
+
+### Runde 1 – Review vom 2026-11-06 (Commit c6020be)
+
+**Empfehlung: Abnahme.** Kein blockierender Befund; alle 12 Akzeptanzkriterien erfüllt, Checks grün. Die vier
+gemeldeten Abweichungen sind vertretbar (Hinweise 1–4). Vom User zu entscheiden: Kontrast defekter Links (Hinweis 5)
+und echte Daumentasten der Maus (Hinweis 6).
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Querverweis in anderen Ordner | erfüllt | `leveling/1_tableOfContent.md:4` → `../mechanics/rest.md#rasten`; `DocumentReader.tsx:249-254`; BDD `adminNotesNavigation` Szenario 2 |
+| AK2 Anker im selben Ordner | erfüllt | BDD Szenario 3; weiches Scrollen nur im selben Ordner, nicht bei „Bewegung reduzieren“ (`DocumentReader.tsx:384-395`) |
+| AK3 Zurück und Vor | erfüllt | BDD Szenario 4; Unit `noteHistory.spec.ts` (Scrollposition je Eintrag) |
+| AK4 Eintragswechsel im Panel | erfüllt | BDD Szenario 5; `selectNoteFolder` legt beim aktiven Eintrag keinen Eintrag an (Unit-Test) |
+| AK5 Neuer Sprung verwirft Vor | erfüllt | BDD Szenario 6; `pushNoteEntry` mit `slice(0, index + 1)` (`noteHistory.ts:48`) |
+| AK6 Zustand der Buttons | erfüllt | BDD Szenario 1 (erste Kachel `history-buttons`, beide `disabled`, gleiche Höhe); `AdminHeader.tsx:154` |
+| AK7 Tastatur und Maus | erfüllt (headless) | BDD Szenario 7 (Alt+←/→, Selenium `Button.BACK`/`FORWARD`, URL bleibt `/admin`); `useNoteHistory.ts:80-99`; Unit `historyShortcuts.spec.ts` |
+| AK8 Umlaute im Anker | erfüllt | Unit `noteAnchors.spec.ts`, `noteLinks.spec.ts`; live im temporären Worktree geprüft |
+| AK9 Defekter Link | erfüllt | `DocumentReader.tsx:239-245`, `:153-157`; live: `<span>`, `#8e1b1b`, gepunktet, Tooltip, Klick ohne Wirkung |
+| AK10 Link-Prüfung | erfüllt | `noteLinksCheck.spec.ts` über alle 4 Ordner; Gegenprobe mit defektem Link rot (`missing-anchor`) |
+| AK11 Einträge im Panel | erfüllt | `noteFolders.ts` (4 Einträge, ohne Side); BDD `adminNavigation` |
+| AK12 Bestehendes Verhalten | erfüllt | Externe Links/Bilder `target="_blank"`, `rel="noopener noreferrer"` (`DocumentReader.tsx:176`, `:237`); „Intro“ → `dialog.md` live geprüft |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+1. **Alle Notizen beim Start laden:** vertretbar, für ordnerübergreifende Ankerprüfung nötig; Plan schreibt kein
+   Laden pro Ordner vor. Folgen: rund 45 Anfragen beim Start; schlägt eine Datei fehl, zeigt der Admin für alle
+   Ordner „Notizen konnten nicht geladen werden“ (bisher nur für den betroffenen).
+2. **Steps zu adminSettings und adminDashboard angepasst:** nötig wegen E7 und neuer Test-IDs; Szenarien inhaltlich
+   gleich, grün.
+3. **`NOTE_FOLDERS` ohne eigenes Ordnerfeld:** kleine Abweichung vom Wortlaut von E2; funktional gleich, solange
+   `id` = Ordnername; in `frontend/CLAUDE.md` dokumentiert. User sollte bestätigen.
+4. **Anker per Regex aus dem Markdown, Zuordnung per Zeilennummer:** Index und DOM-ID konsistent. Grenzfälle (heute
+   nicht im Bestand): Setext-Überschriften und Überschriften in Listen/Zitaten fehlen im Index (Links darauf gelten als
+   defekt, die Link-Prüfung meldet sie); `_Betonung_` behält `_` im Anker (`noteAnchors.ts:30`).
+5. **Kontrast defekter Links:** `#8e1b1b` auf `secondary` = 1,91:1 (Dark) und 1,54:1 (Tavern). Entspricht E5, steht
+   in `docs/known-issues.md`, aber nicht in `frontend/DESIGN.md` („Offen“) bzw. `frontend/docs/design/contrast.md`.
+6. **Daumentasten nur headless geprüft:** echte Maus und Firefox/Safari nur manuell prüfbar (manueller Schritt 2).
+7. **Manuelle Schritte 1–5:** teilweise automatisiert abgedeckt (Schritt 4 vollständig). Offen für den User: Optik
+   in Schritt 1 (Dark/Tavern, mit/ohne Hintergrundbild), echte Maus in Schritt 2, Slider in Schritt 5.
+8. **Bilder im Ordner Fight:** Scrollposition nach Zurück live korrekt (Bilder im Cache). Ein Querverweis direkt nach
+   dem Start, bevor Bilder geladen sind, könnte das Ziel verrutschen lassen – ungeprüft, betrifft heute keinen Link.
+9. **Kleinigkeiten:** In `components.md` (Kopfzeile, „Aufbau“) liest sich `data-test-id="history-buttons"`, als
+   gehöre es zum Button „Vor“ (hängt an der Gruppe). Die `:focus-visible`-Outline ist von `ToggleButton` nach
+   `IconButton` gewandert; Verhalten unverändert.
+
+**Scope und Subtasks**
+- Alle Subtasks abgehakt und im Diff nachvollziehbar; Inhalte nur Linkziele geändert; kein Backend, Wall, Ground oder
+  Player geändert; keine veralteten Verweise (`noneFight`, `selectedStoryIndex`, `STORY_NAMES`, `notes-entry-<index>`).
+
+**Checks**
+- Frontend: `lint`, `typecheck`, `check:deadcode`, `build` grün; `check:dupes` 1 vorbestehender Klon
+  (`darkTheme` ↔ `tavernTheme`).
+- Unit-Tests 345/345 grün (34 Dateien, 5 neue).
+- BDD: `adminNotesNavigation` 7/7, `adminNavigation` 3/3, angepasste Szenarien in `adminSettings` und
+  `adminDashboard` grün; übrige Features nicht ausgeführt (ändern Dev-DB). Implementer: komplette E2E-Suite 48/48 grün.
+- Konventionen: ein Commit `feat(DND-48): …` nach Schema, keine KI-Signatur.
