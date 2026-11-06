@@ -219,5 +219,60 @@ Vorlage: Mockup [player-hero-split-mockup.html](../../frontend/docs/design/mocku
   zur alten, seit DND-43 umbenannten Datei `PlayerHeroCard.tsx` entfernt (der Name ist jetzt neu belegt).
 - AK6 nur manuell geprüft (Request im Browser umgeleitet: Hinweis erscheint, Button wieder aktiv, Hinweis weg mit
   dem nächsten Push); kein BDD-Szenario.
+- Runde 2, Level per Push: Das Backend pusht schon nach jedem `PATCH /adventures/{id}` einen Snapshot an alle
+  Verbindungen (auch `player`). `PlayerLayout` lädt `adventures/{id}` jetzt wie der Admin nach jedem Snapshot neu
+  (Abhängigkeit `snapshot`; ein erfolgreiches Laden setzt `loadFailed` zurück). Abgesichert durch
+  `test_player_receives_the_push_after_patch_of_the_level` (`test_ws.py`) und das BDD-Szenario „The level on the hero
+  card follows the game master“ (stellt das Level danach wieder her); beide ohne die Änderung rot.
 
 ## Review
+
+### Runde 1 – Review vom 2026-11-06 (Commit 47edc82)
+
+**Empfehlung: Abnahme.** Kein blockierender Befund; alle 9 Akzeptanzkriterien erfüllt, Checks grün bzw. nachweislich
+nicht durch diese Änderung rot. Vom User zu bestätigen: Ressourcen-Karte ohne sichtbare Labels (Hinweis 1).
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Hero-Karte | erfüllt | `PlayerScreen.tsx` Grid `minmax(0, 1fr)` ×2; `PlayerHeroCard.tsx` mit Avatar (`size="fill"`), Level, Namen, Chips, `SettingsMenu`; BDD `playerTurn.feature` Szenario 1 |
+| AK2 Am Zug | erfüllt | BDD Szenario 2; Zugwechsel live geprüft (Player 2 per `POST table/fight/turn`) |
+| AK3 Nicht am Zug | erfüllt | `ownTurnCombatantId` mit Unit-Tests; BDD Szenarien 1 und 3 |
+| AK4 Zug beenden | erfüllt | BDD Szenario 2; Sprung über Listenende live geprüft (Runde 2) |
+| AK5 Doppeltipp | erfüllt | BDD Szenario 4; Button während Anfrage `disabled` |
+| AK6 Fehler beim Beenden | erfüllt | laut Teststrategie manuell; live per blockiertem Request nachgeprüft |
+| AK7 Glas-Look | erfüllt | live `rgba(22, 27, 35, 0.75)` + `blur(12px)`; deckend per Code (`tileSurface`, gleiches `isTranslucent`) |
+| AK8 Kampfdaten auf dem Handy | erfüllt | `push.py` an `player` über `wall_fight`; 4 neue Tests, Gegenprobe ohne Änderung rot |
+| AK9 Querformat | erfüllt | 390 × 844 live: Overlay vorhanden |
+
+**Blockierende Befunde**
+- keine (Reviewer)
+- **Vom User nach Runde 1 nachgefordert (blockierend für Runde 2):**
+  - [x] 1. Das Spielerlevel (`globalLevel`) im Player Screen aktualisiert sich automatisch per WebSocket, wenn der Admin
+     es ändert – ohne Neuladen. Mit Test absichern (BDD bzw. Backend-Push-Test, je nach Umsetzung).
+  - [x] 2. `docs/architecture.md`, Diagramm Zeile 8: Smartphones nicht mehr „nur WebSocket (Theme)“ – REST-Laden seit
+     DND-46, jetzt auch `POST /table/fight/turn` (Hinweis 6).
+  - [x] 3. BDD: Schritt, der einen Zugwechsel auf das eigene Handy abdeckt (z. B. in Szenario 3 Player 2 per API an den
+     Zug bringen, dann „Am Zug“ und Button prüfen) (Hinweis 2).
+
+**Hinweise (nicht blockierend)**
+1. Ressourcen ohne sichtbare Labels, nur `aria-label` – passt zu E4 „Wie im Mockup“, aber sichtbare UI-Änderung
+   (User bestätigen). Rechnung: halbe Höhe bei 344px = 148px, Karte ohne Labels 140px. A11y: `aria-label` ersetzt
+   den vorgelesenen Wert; an `Resource as="div"` ohne Rolle meist ignoriert.
+2. AK6 und AK2 „durch Zugwechsel“ ohne BDD; live geprüft. Ein Schritt in Szenario 3 (Player 2 per API an den Zug)
+   würde AK2 dauerhaft absichern.
+3. `docs/known-issues.md` (veralteter Eintrag, seit DND-43) und `docs/domain.md` angepasst – nötig, kein Scope-Verstoß.
+4. Fehlerhinweis `negative.text` dokumentiert (~5:1 in Tavern). Deaktivierter Button ohne Abdunkeln, anders als
+   „Kampf starten“ im Admin (Deckkraft 0,5) – Geschmackssache.
+5. Kopfkommentar in `player-hero-split-mockup.html` veraltet („Am Zug“/„Zug beenden“ nicht im Code);
+   `player-hero-mockup.html` nirgends verlinkt.
+6. `docs/architecture.md` Diagramm Zeile 8: Smartphones „nur WebSocket (Theme)“ – stimmt seit DND-46 nicht mehr,
+   jetzt auch `POST /table/fight/turn`.
+7. Backend gegen Dev-DB: 3 rot in `test_adventures.py` (Hintergründe weichen vom Seed ab), unberührte Datei.
+8. BDD „first interaction makes an admin window the audio output“ rot, weil ein externes Admin-Fenster bereits
+   Audioausgabe ist – Umgebung, kein Audio-Code geändert.
+
+**Checks**
+- Frontend: lint, typecheck, deadcode, build grün; `check:dupes` 0,27 % (nur `darkTheme` ↔ `tavernTheme`); Unit 306/306.
+- BDD gegen Dev-Stack: 39/40 (`playerTurn` 4/4; Fehler siehe Hinweis 8).
+- Backend: ruff, format, mypy, `make check-quality` grün; pytest frische `postgres:17` 323 grün; Dev-DB 320/323 (Hinweis 7).
+- Konventionen: ein Commit, Typ `feat`, Kopfzeile nach Schema, Body 5 Stichpunkte, keine KI-Signatur; Admin-`HeroCard` unverändert.

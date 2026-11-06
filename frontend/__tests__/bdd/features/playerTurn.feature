@@ -26,9 +26,18 @@ Scenario: A player who is not on turn has no button
     When the game master ends the turn of the first player
     Then the enemy is on turn
     And the hero card is not on turn
+    When the game master ends the turn of the enemy
+    Then the second player is on turn
+    And the hero card shows frame, badge "Am Zug" and the button "Zug beenden"
 
 Scenario: The turn passes only once
     Given a fight of the first player, an enemy and the second player is running
     When the first player opens his player screen
     And the first player taps "Zug beenden" while a second phone ends the same turn
     Then the enemy is on turn
+
+Scenario: The level on the hero card follows the game master
+    Given a scene is active and no fight is running
+    When the first player opens his player screen
+    And the game master changes the level of the adventure
+    Then the hero card shows the new level without a reload

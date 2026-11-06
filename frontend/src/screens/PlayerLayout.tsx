@@ -43,7 +43,7 @@ export function PlayerLayout({
   themeOverride, onChangeThemeOverride,
 }: PlayerLayoutProps): ReactElement {
   const { activeAdventureId } = useContext(ActiveAdventureContext)
-  const { theme: tableTheme } = useContext(GameTableContext)
+  const { theme: tableTheme, snapshot } = useContext(GameTableContext)
   const [adventure, setAdventure] = useState<AdventureDetail>()
   const [loadFailed, setLoadFailed] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
@@ -57,6 +57,8 @@ export function PlayerLayout({
     setLoadFailed(false)
   }
 
+  // The snapshot does not contain the level: the server pushes one after every write to an
+  // adventure, so a new snapshot reloads players and level
   useEffect(() => {
     let stale = false
 
@@ -66,7 +68,10 @@ export function PlayerLayout({
 
     loadLatest(
       () => getPlayerAdventure(activeAdventureId),
-      setAdventure,
+      (loaded) => {
+        setAdventure(loaded)
+        setLoadFailed(false)
+      },
       (err) => {
         console.error('Error fetching adventure:', err)
         setLoadFailed(true)
@@ -77,7 +82,7 @@ export function PlayerLayout({
     return () => {
       stale = true
     }
-  }, [activeAdventureId, retryCount])
+  }, [activeAdventureId, snapshot, retryCount])
 
   // The detail of the previous adventure stays until the new one is loaded; it counts as not
   // loaded meanwhile

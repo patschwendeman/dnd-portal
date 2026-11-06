@@ -256,8 +256,8 @@ Tipp auf den Avatar, Hinweis „Als Nächstes dran“.
   „Noch keine Charaktere“; „Keine Verbindung zum Spieltisch“ mit „Erneut versuchen“ (verbindet sofort neu bzw. lädt
   die Spieler neu), wenn die Verbindung vor dem ersten Spieltisch-Zustand getrennt ist oder das Laden der Spieler
   fehlschlägt. Eine geladene Liste bleibt bei einem Verbindungsabbruch stehen.
-- Die Spieler lädt sie per `adventures/{id}` beim Laden und bei jedem Wechsel des aktiven Abenteuers; ein Wechsel
-  zeigt ohne Reload die Charaktere des neuen Abenteuers.
+- Die Spieler lädt sie per `adventures/{id}` beim Laden, bei jedem Wechsel des aktiven Abenteuers und nach jedem
+  Spieltisch-Zustand, den der Server schickt; ein Wechsel zeigt ohne Reload die Charaktere des neuen Abenteuers.
 - Hochformat und Querformat (dort mehrspaltig); kein Hinweis „Bitte das Handy quer halten“; scrollt bei langer Liste.
 
 **Player Screen (`/player/:id`):**
@@ -268,7 +268,8 @@ Tipp auf den Avatar, Hinweis „Als Nächstes dran“.
 - **Bewegung (WIP):** fester Wert 9.5, nicht interaktiv.
 - **Hero-Karte:** Avatar im Hochformat 3:4 (Bild, sonst Initialen), dessen Höhe der Karte folgt, oben links das
   Level-Badge mit dem Level des Abenteuers; daneben Spielername, Charaktername, Volk und Klasse. Solange die Spieler
-  laden, ist die Karte leer (nur das Settings-Menü).
+  laden, ist die Karte leer (nur das Settings-Menü). Ändert der Spielleiter das Level im Admin, zeigt das Badge es
+  ohne Reload: Spieler und Level lädt das Gerät nach jedem Spieltisch-Zustand, den der Server schickt, neu.
 - **Am Zug:** Der Player bekommt den Kampf per WebSocket (ohne die Bezeichnungen der NPCs). Ist der eigene Charakter
   am Zug, zeigt die Hero-Karte einen Rahmen in der Hauptfarbe, neben dem Spielernamen das Badge „Am Zug“ und unten
   rechts den Button „Zug beenden“. Ohne Kampf, ohne Teilnahme oder wenn ein anderer am Zug ist, fehlen alle drei.

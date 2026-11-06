@@ -47,6 +47,8 @@ const STEP_HERO_CONTENT = 'the hero card shows player name, character name, race
   + 'level and the settings menu'
 const STEP_SURFACE = 'hero card and resources have the same surface as the settings button'
 const STEP_DOUBLE = 'the first player taps "Zug beenden" while a second phone ends the same turn'
+const STEP_ON_TURN = 'the hero card shows frame, badge "Am Zug" and the button "Zug beenden"'
+const MAX_LEVEL = 20
 
 const api = async (method: string, path: string, body?: object): Promise<Response> => fetch(
   `${BASE_URL}/api/${path}`,
@@ -127,16 +129,25 @@ defineFeature(feature, (test) => {
   let admin: WebDriver | null
   let adventure: Adventure
   let fight: Fight
+  // Level before a scenario changed it, restored afterwards for the other suites
+  let changedLevel: { adventureId: number, level: number } | null
 
   beforeEach(async () => {
     phone = buildDriver()
     admin = null
+    changedLevel = null
   })
 
   afterEach(async () => {
     await phone.quit()
     await admin?.quit()
     await endAnyFight()
+    if (changedLevel !== null) {
+      const response = await api('PATCH', `adventures/${changedLevel.adventureId}`, {
+        global_level: changedLevel.level,
+      })
+      expect(response.ok).toBe(true)
+    }
   })
 
   const givenSceneWithoutFight = async () => {
@@ -175,9 +186,29 @@ defineFeature(feature, (test) => {
     expect(await phone.findElements(By.css(ON_TURN))).toHaveLength(0)
   }
 
-  const expectEnemyOnTurn = async () => {
-    const enemyId = fight.combatants[1].id
-    expect(await waitFor(phone, activeCombatantId, enemyId)).toBe(enemyId)
+  const expectOnTurn = (index: number) => async () => {
+    const combatantId = fight.combatants[index].id
+    expect(await waitFor(phone, activeCombatantId, combatantId)).toBe(combatantId)
+  }
+  const expectEnemyOnTurn = expectOnTurn(1)
+
+  const expectHeroOnTurn = async () => {
+    expect(await waitForAttribute(phone, HERO, 'data-on-turn', 'true')).toBe('true')
+    expect(await readTexts(phone, ON_TURN)).toEqual(['Am Zug'])
+    expect(await readTexts(phone, END_TURN)).toEqual(['Zug beenden'])
+    const border: string = await phone.executeScript(
+      `const hero = getComputedStyle(document.querySelector('${HERO}'))
+      const badge = getComputedStyle(document.querySelector('${ON_TURN}'))
+      return hero.borderTopColor === badge.backgroundColor ? 'primary' : hero.borderTopColor`,
+    )
+    expect(border).toBe('primary')
+  }
+
+  const endTurnOf = (index: number) => async () => {
+    const response = await api('POST', 'table/fight/turn', {
+      from_combatant_id: fight.combatants[index].id,
+    })
+    expect(response.ok).toBe(true)
   }
 
   test('The player screen shows the hero card above the resources', ({
@@ -248,17 +279,7 @@ defineFeature(feature, (test) => {
 
     when('the first player opens his player screen', openPlayerScreen(0))
 
-    then('the hero card shows frame, badge "Am Zug" and the button "Zug beenden"', async () => {
-      expect(await waitForAttribute(phone, HERO, 'data-on-turn', 'true')).toBe('true')
-      expect(await readTexts(phone, ON_TURN)).toEqual(['Am Zug'])
-      expect(await readTexts(phone, END_TURN)).toEqual(['Zug beenden'])
-      const border: string = await phone.executeScript(
-        `const hero = getComputedStyle(document.querySelector('${HERO}'))
-        const badge = getComputedStyle(document.querySelector('${ON_TURN}'))
-        return hero.borderTopColor === badge.backgroundColor ? 'primary' : hero.borderTopColor`,
-      )
-      expect(border).toBe('primary')
-    })
+    then(STEP_ON_TURN, expectHeroOnTurn)
 
     when('the first player taps "Zug beenden"', async () => {
       await clickElement(phone, END_TURN)
@@ -291,16 +312,17 @@ defineFeature(feature, (test) => {
 
     then('the hero card is not on turn', expectNotOnTurn)
 
-    when('the game master ends the turn of the first player', async () => {
-      const response = await api('POST', 'table/fight/turn', {
-        from_combatant_id: fight.combatants[0].id,
-      })
-      expect(response.ok).toBe(true)
-    })
+    when('the game master ends the turn of the first player', endTurnOf(0))
 
     then('the enemy is on turn', expectEnemyOnTurn)
 
     and('the hero card is not on turn', expectNotOnTurn)
+
+    when('the game master ends the turn of the enemy', endTurnOf(1))
+
+    then('the second player is on turn', expectOnTurn(2))
+
+    and(STEP_ON_TURN, expectHeroOnTurn)
   }, SCENARIO_TIMEOUT)
 
   test('The turn passes only once', ({
@@ -325,6 +347,34 @@ defineFeature(feature, (test) => {
       const after = await readJson<Fight>('table/fight')
       expect(after.round).toBe(1)
       expect(after.active_combatant_id).toBe(fight.combatants[1].id)
+    })
+  }, SCENARIO_TIMEOUT)
+
+  test('The level on the hero card follows the game master', ({
+    given, when, and, then,
+  }) => {
+    let newLevel: number
+
+    given('a scene is active and no fight is running', givenSceneWithoutFight)
+
+    when('the first player opens his player screen', openPlayerScreen(0))
+
+    and('the game master changes the level of the adventure', async () => {
+      expect(await readTexts(phone, HERO_LEVEL)).toEqual([String(adventure.global_level)])
+      // Marks the page; a reload would remove the mark
+      await phone.executeScript('window.levelMark = true')
+      newLevel = adventure.global_level === MAX_LEVEL ? MAX_LEVEL - 1 : adventure.global_level + 1
+      changedLevel = { adventureId: adventure.id, level: adventure.global_level }
+      const response = await api('PATCH', `adventures/${adventure.id}`, {
+        global_level: newLevel,
+      })
+      expect(response.ok).toBe(true)
+    })
+
+    then('the hero card shows the new level without a reload', async () => {
+      const shown = await waitFor(phone, () => readTexts(phone, HERO_LEVEL), [String(newLevel)])
+      expect(shown).toEqual([String(newLevel)])
+      expect(await phone.executeScript('return window.levelMark === true')).toBe(true)
     })
   }, SCENARIO_TIMEOUT)
 })

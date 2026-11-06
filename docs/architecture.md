@@ -5,7 +5,8 @@
  ┌──────────┐  ┌──────────┐  ┌──────────┐                            ┌──────────┐
  │ /admin   │  │ /wall    │  │ /ground  │                            │ /        │ × n
  └────┬─────┘  └────┬─────┘  └────┬─────┘                            └────┬─────┘
-      │ HTTP GET/PATCH/POST/PUT/DELETE (axios, /api/...)                  │ nur WebSocket (Theme)
+      │ HTTP GET/PATCH/POST/PUT/DELETE (axios, /api/...)                  │ HTTP GET /adventures/{id} (beim Laden und nach
+      │                                                                   │ jedem Snapshot: Spieler, Level), POST /table/fight/turn
       │ WebSocket /ws?screen=… (Snapshots, Audio, Ping, an Admins Screen-Zahlen, an Admins, Walls und Player Kampf; Admin → Server: Audio-Meldungen)
       └─────────────┴─────────────┴──────────────────────────────────────┘
                     │ gleicher Origin: Vite-Proxy (Dev :5173) bzw. nginx (Prod :8080)
@@ -35,7 +36,8 @@
   `ActiveAdventureContext`, `ActiveSceneContext` (nur lesend), das Theme, das Wall-Overlay und das Ground-Raster (`GameTableContext`). Die Screens laden daraufhin neu vom
   Backend: Wall und Ground die Szene, die Wall bei einem Abenteuerwechsel dessen Spieler (`GET /adventures/{id}`, für
   Party und Initiative), der Admin bei einem Abenteuerwechsel dessen Szenen und nach jedem Snapshot
-  Spieler und Level des aktiven Abenteuers (`GET /adventures/{id}`; `global_level` steht nicht im Snapshot). Ohne aktive Szene zeigen Wall und Ground
+  Spieler und Level des aktiven Abenteuers (`GET /adventures/{id}`; `global_level` steht nicht im Snapshot), ebenso
+  Charakterauswahl und Player Screen (`PlayerLayout`). Ohne aktive Szene zeigen Wall und Ground
   nur die Hintergrundfarbe und stellen keinen Request. Bis zum ersten Snapshot gilt „kein Abenteuer, keine Szene,
   Theme `dark`, kein Wall-Overlay, kein Ground-Raster (Zellgröße 100)“.
 - Schreiben nur per REST, **ohne lokale Vorwegnahme**: Der Admin wechselt das Abenteuer per `PATCH /table
@@ -88,8 +90,9 @@
   Vom Snapshot nutzen sie das aktive Abenteuer und das Theme; `audio` und `sound` empfangen sie, zeigen sie aber nicht
   an, und sie senden nichts über den WebSocket. Den Kampf (`fight`, ohne Bezeichnungen) nutzt nur der Player Screen:
   Ist sein Charakter am Zug (`ownTurnCombatantId`, `src/utils/fight.ts`), zeigt er „Am Zug“ und „Zug beenden“
-  (`POST /table/fight/turn`, `usePlayerEndTurn`). Spieler und Hintergrundbilder stehen nicht im Snapshot: `PlayerLayout` lädt
-  `adventures/{id}` des aktiven Abenteuers beim Laden und bei jedem Abenteuerwechsel (`loadLatest`). Die Auswahl zeigt
+  (`POST /table/fight/turn`, `usePlayerEndTurn`). Spieler, Level und Hintergrundbilder stehen nicht im Snapshot:
+  `PlayerLayout` lädt `adventures/{id}` des aktiven Abenteuers beim Laden und nach jedem Snapshot (`loadLatest`), so
+  folgen Charaktere und Level-Badge einem Abenteuerwechsel und einer Level-Änderung im Admin ohne Reload. Die Auswahl zeigt
   „Keine Verbindung zum Spieltisch“, wenn die Verbindung vor dem ersten Snapshot getrennt ist oder das Laden
   fehlschlägt; der Player Screen zeigt keinen Verbindungsstatus. Ob der Player Screen zur Auswahl zurückkehrt
   (Charakter gehört nicht zum aktiven Abenteuer) und mit welchem Hinweis, entscheidet `playerRedirect`

@@ -176,8 +176,8 @@ haben keine Bedienelemente außer dem lokalen Vollbild-Overlay) per REST (`PATCH
 bzw. `PATCH table`) **ohne lokale Vorwegnahme**; der Server pusht danach den neuen Stand an alle Screens, die die Szene
 per `scenes/{id}` neu laden (ohne aktive Szene kein Request, nur Hintergrund). Nur der Admin zeigt Speicher- und
 Verbindungsfehler (einzige Ausnahme: „Zug konnte nicht beendet werden“ im Player Screen). Auswahl und Player Screen nutzen vom Snapshot das aktive Abenteuer und das Theme (`Abweichung ??
-Spieltisch-Theme`) und senden nichts über den WebSocket; `PlayerLayout` lädt `adventures/{id}` beim Laden und bei jedem
-Abenteuerwechsel (Spieler, Level, Hintergrundbilder). Nur die Auswahl zeigt „Keine Verbindung zum Spieltisch“; der Player
+Spieltisch-Theme`) und senden nichts über den WebSocket; `PlayerLayout` lädt `adventures/{id}` beim Laden und nach
+jedem Snapshot (Spieler, Level, Hintergrundbilder; wie im Admin, damit das Level ohne Reload folgt). Nur die Auswahl zeigt „Keine Verbindung zum Spieltisch“; der Player
 Screen kehrt zur Auswahl zurück, sobald sein Charakter nicht zum aktiven Abenteuer gehört (`playerRedirect`). Der QR-Code-Dialog im Admin (`JoinDialog`, geöffnet aus dem Panel „Spieltisch“) lädt beim Öffnen `table/join`. Nur an
 Admins schickt der Server die Zahl der verbundenen Wall-, Ground- und Player-Verbindungen (`screens`); den Kampf
 des aktiven Abenteuers (`fight`, `FightContext`) an Admins, Walls und Player (an Walls und Player ohne die Bezeichnungen der NPCs). Den Kampf schreibt der Admin per REST unter `table/fight` ohne

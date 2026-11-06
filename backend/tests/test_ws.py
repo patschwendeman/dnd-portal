@@ -181,6 +181,18 @@ def test_two_clients_receive_the_push_after_patch_adventure(client: TestClient, 
         assert receive_state(ground) == expected
 
 
+def test_player_receives_the_push_after_patch_of_the_level(client: TestClient, db: Session) -> None:
+    # The snapshot does not contain the level; the push tells the Player Screen to reload it.
+    client.patch("/table", json={"active_adventure_id": 1})
+    with client.websocket_connect("/ws?screen=player") as player:
+        before = receive_snapshot(player)
+
+        response = client.patch("/adventures/1", json={"global_level": 7})
+
+        assert response.status_code == 200
+        assert receive_state(player) == before
+
+
 def test_patch_of_inactive_adventure_also_pushes(
     client: TestClient, db: Session, other_adventure: dict[str, int]
 ) -> None:
