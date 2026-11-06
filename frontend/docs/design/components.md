@@ -1,11 +1,12 @@
 # Bausteine
 
 Teil des [Style Guide](../../DESIGN.md), Abschnitt [1.5](../../DESIGN.md#15-bausteine). Hier steht, wie die wiederkehrenden
-Elemente aufgebaut sind. Allgemeine Regeln stehen nur im Style Guide und werden hier nicht wiederholt:
+Elemente aufgebaut sind. Maße, Innenabstände, Radien und Schriftstufen je Baustein stehen nur hier. Die Regeln dahinter
+stehen im Style Guide und werden hier nicht wiederholt:
 
 - Größen der Tokens `size.*`: [1.2](../../DESIGN.md#12-tokens)
-- Schrift (Stufe und Gewicht) nach der Schrift-Hierarchie, Abstände zwischen Elementen nach „Abstände nach Beziehung“,
-  Innenabstände von Flächen, Radien, Rahmen, Icons, Bilder, Laufweite und `tabular-nums`: [1.4](../../DESIGN.md#14-regeln)
+- Abstände nach Beziehung, Radien (verschachtelt), Rahmen, Icons, Bilder, Laufweite und `tabular-nums`:
+  [1.4](../../DESIGN.md#14-regeln)
 - Farben (Flächen, Text, Icons, Linien): [2.2](../../DESIGN.md#22-rollen), Aktiv- und Inaktiv-Farben:
   [2.4](../../DESIGN.md#24-zustände)
 
@@ -19,6 +20,7 @@ Größe nach [1.2](../../DESIGN.md#12-tokens) Größen, Icon nach [1.4](../../DE
 |---|---|
 | Zentrierung des Icons | `display: grid; place-items: center` |
 | Padding | `0` (Reset bei `<button>`) |
+| Radius | `radius.md` |
 | Farbe | Hintergrund in der [Kopfzeile](#kopfzeile) und der Hinweisleiste transparent, sonst nach [2.2](../../DESIGN.md#22-rollen) und [2.4](../../DESIGN.md#24-zustände) |
 | Dashboard-Panels | gemeinsame Styled Component `PanelButton` ([src/components/PanelButton.tsx](../../src/components/PanelButton.tsx)): Fläche `background`, Fokus als Outline `borderWidth.thick` in `primary` (`:focus-visible`); „In neuem Fenster öffnen“, „QR-Code“ (aktiv bei QR-Code auf der Wall: Fläche `primary`, Icon `onPrimary`; `aria-pressed`) und „−“/„+“ im [Level-Stepper](#level-stepper) (dort Zeichen statt Icon, `text.lg` `semibold`; deaktiviert Zeichen in `text.muted`, `cursor: default`); die Sound-Buttons haben keine eigene Fläche, die Fläche ist ihre Gruppe |
 | Beispiele | Sound-Buttons, Dashboard (Kopfzeile, aktiv bei offenem Dashboard wie der Menüpunkt der [Navigationsleiste](#navigationsleiste); `aria-expanded`, `aria-controls`), Vollbild (Kopfzeile, aktiv im Vollbild; `aria-pressed`), Zurück und Vor (Kopfzeile, ohne Ziel `disabled`), In neuem Fenster öffnen, QR-Code, Play/Pause, Nach oben, Menüpunkte der [Navigationsleiste](#navigationsleiste) (dort abweichend inaktiv ohne eigene Fläche und Icon `size.iconLg`; der allgemeine Icon-Button bleibt gefüllt) |
@@ -34,6 +36,7 @@ Großbuchstaben ergänzt sie die verwendende Komponente, siehe [1.4](../../DESIG
 |---|---|
 | Höhe, Breite | nach [1.2](../../DESIGN.md#12-tokens) Größen |
 | Innenabstand | `0 space.4` |
+| Radius | `radius.md` |
 | Beispiele | Confirm/Decline; Umschalt-Buttons in Dashboard-Panels sind kein Text-Button, sondern ein [Segment-Control](#segment-control) |
 
 ## Button-Gruppe
@@ -72,7 +75,7 @@ unteren Ende „Einstellungen“ (`settings.svg`, Panel `SettingsPanel`, siehe [
 | Menüpunkt | [Icon-Button](#icon-button) (`<button type="button">`, `size.control.md`, `radius.md`), Icon abweichend `size.iconLg` (24px); Name als `aria-label` und `title`, `aria-pressed` für den Zustand, `aria-controls` aufs Panel |
 | Zustände | wie beim [Navigationseintrag](#navigationseintrag): aktiv (Panel offen): Fläche `primary`, Icon `onPrimary`, auch bei Hover; inaktiv: ohne eigene Fläche (`transparent`, also `secondary` der Kachel), Icon `text.color`; Hover (inaktiv): Fläche `background`; eingeklappt: kein Menüpunkt aktiv. Anders als der allgemeine [Icon-Button](#icon-button), der inaktiv gefüllt bleibt. Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`) |
 | Panel | Innenabstand `space.5` oben/unten, `space.4` seitlich, scrollt bei Überlänge innerhalb seiner Kachel; Inhalt des aktiven Menüpunkts: bei „Notizen“ Label „Notizen“ und die [Navigationseinträge](#navigationseintrag) der Notizen, bei „Szenen“ Label „Szenen“ und je Szene ein Navigationseintrag (Reihenfolge der API), ohne Szenen der Hinweis „Keine Szenen“ (`text.sm`, Innenabstand `0 space.3`); während eines Kampfes darüber der Hinweis „Kampf läuft. …“ (Fläche `background`, `radius.md`, Innenabstand `space.3`, `text.sm`, links das Schloss `padlock.svg` in `size.icon` und `negative.text`, `gap` `space.2`) und gesperrte Einträge; bei „Kampf“ das [Panel „Kampf“](#panel-kampf), bei „Einstellungen“ das [Panel „Einstellungen“](#panel-einstellungen) |
-| Punkt | bei laufendem Kampf am Menüpunkt „Kampf“, solange sein Panel nicht offen ist (anderes Panel oder eingeklappt): Kreis `BADGE_SIZE` oben rechts im Button (`BADGE_INSET`), Fläche `negative.border`, Ring `borderWidth.thick` in `secondary`, `aria-hidden`; Name und Tooltip dann „Kampf (läuft)“ |
+| Punkt | bei laufendem Kampf am Menüpunkt „Kampf“, solange sein Panel nicht offen ist (anderes Panel oder eingeklappt): Kreis `BADGE_SIZE` oben rechts im Button (`BADGE_INSET`), `radius.pill`, Fläche `negative.border`, Ring `borderWidth.thick` in `secondary`, `aria-hidden`; Name und Tooltip dann „Kampf (läuft)“ |
 | Bedienung | Klick (Enter/Leertaste) auf den aktiven Menüpunkt klappt das Panel ein, auf einen anderen bzw. im eingeklappten Zustand öffnet er dessen Panel (`nextOpenPanel` in `src/utils/navRail.ts`). Start: „Notizen“ offen |
 
 ## Label
@@ -91,6 +94,7 @@ und Laufweite nach [1.4](../../DESIGN.md#14-regeln).
 | Eigenschaft | Wert |
 |---|---|
 | Aufbau | optional Label, optional Titel, Inhalt. Zeilen getrennt durch Trennlinien ([1.4](../../DESIGN.md#14-regeln) Rahmen). |
+| Maße | Innenabstand `space.5`, `radius.lg` |
 | Beispiele | Hero-Karte und Ressourcen des Player Screens, „Party“ der Charakterauswahl, Hinweis nach Abenteuerwechsel (Player); Fläche wie die [Kachel](#kachel) |
 
 ## Kachel
@@ -129,7 +133,7 @@ Inhalt der Player-Routen; beide sind `position: fixed`, die Reihenfolge legt die
 | Bild | Hintergrundbild des aktiven Abenteuers zum Theme des Spieltischs (`background_dark` bzw. `background_tavern` aus `adventures/{id}`, `mediaUrl`), `object-fit: cover` über den ganzen Bildschirm, darüber `backdrop` (50 %); Dekoration (`aria-hidden`, `alt=""`). Die aktive Szene spielt keine Rolle |
 | Ohne Bild | kein Bild für das aktive Theme festgelegt, Abenteuer lädt noch, Bild nicht ladbar: nur die Fläche `background`, die Kacheln sind deckend |
 | Wechsel | nur bei Abenteuer- oder Themewechsel, nicht bei Szenenwechsel; das neue Bild erscheint erst, wenn es geladen ist; Bild und Abdunklung blenden gemeinsam über (`BACKGROUND_FADE_MS`, 600 ms), ohne Bild zur Fläche aus. Bei `prefers-reduced-motion: reduce` ohne Übergang |
-| Scrollen | steht fest, Notizen und Dashboard scrollen darüber |
+| Scrollen | steht fest, Notizen und Dashboard scrollen darüber; deren Scrollbereich hat `space.5` Innenabstand unten, oben keinen (der Abstand zur Kopfzeile ist das `gap` des Grids) |
 
 ## Dashboard-Panel
 
@@ -311,7 +315,8 @@ Nur im Player.
 | Größe | füllt seine Zelle, mindestens `size.control.lg` hoch (Touch-Ziel) |
 | Raster | Karte als Grid 4 × 2 (`repeat(4, minmax(0, 1fr))` × `repeat(2, minmax(0, 1fr))`), `gap` `space.3`, Innenabstand `space.4`; füllt die untere Hälfte des Player Screens. Kein sichtbares Label: Der Name der Ressource ist `aria-label` (Aktion, Bonusaktion, Bewegung, Spezial, „Zauberplätze I“–„IV“), damit die Karte in die halbe Höhe passt |
 | Inhalt | Icon und Zahl, zentriert, `gap` `space.3`. Zauberplätze: Ziffer links, Plätze rechts (`space-between`) |
-| Rahmen | `borderWidth.thick` |
+| Rahmen | `borderWidth.thick`, `radius.md` |
+| Innenabstand Zauberplätze | `0 space.4`; die Plätze selbst `radius.sm` |
 | Farbe | Zahl in `text.color`, keine eigene Rolle. Sonst nach [2.2](../../DESIGN.md#22-rollen) |
 | Plätze | `SLOT_WIDTH` × `SLOT_HEIGHT`, `gap` `space.1` |
 | Element | `<button type="button">` mit Reset (`padding`, `font: inherit`, `color` wie unter Farbe), per Tastatur bedienbar. Bewegung ist nicht antippbar: `<div>` (`as="div"`), `cursor: default` |
@@ -326,6 +331,7 @@ Nur auf der Wall (Weltkarte und QR-Code für die Spieler), nach dem Mockup
 | Eigenschaft | Wert |
 |---|---|
 | Breite | Weltkarte: `min(OVERLAY_PANEL_MAX_WIDTH, 100vw − 2 × space.8, …)`, siehe [screen-layouts.md](screen-layouts.md#breite-des-overlay-panels); QR-Code: so breit wie der QR-Code plus Innenabstand, siehe [Panel „Spieler verbinden“](#panel-spieler-verbinden) |
+| Weltkarte | das Bild mit `radius.md` |
 | Titel | „Weltkarte“ bzw. „Spieler verbinden“, `text.xl` `semibold`, Abstand `space.5` nach unten |
 | Position | `space.7` unter der Oberkante, horizontal mittig |
 | Fläche | [Kachel](#kachel), durchscheinend (`tileSurface` mit `$isTranslucent`), Innenabstand `space.6` |
@@ -395,7 +401,7 @@ Element eingebunden.
 | Breite | `DIALOG_WIDTH` |
 | Zuschnitt | `overflow: hidden` |
 | Aufbau | Bild bündig oben (Format nach [1.4](../../DESIGN.md#14-regeln) Bilder), Textbereich mit Label, Titel und Beschreibung, Buttons rechts |
-| Abstände | nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“ und „Innenabstand von Flächen“ |
+| Abstände | Innenabstand `space.5` seitlich und unten (oben bündig mit dem Bild), `radius.lg`; Abstände im Dialog nach [1.4](../../DESIGN.md#14-regeln) „Abstände nach Beziehung“ (Bild → Text → Buttons `space.4`, Dialog-Buttons `space.3`) |
 | Button-Reihenfolge | Abbrechen links, Hauptaktion rechts außen |
 
 Ohne Bild: Bestätigungsdialog `ConfirmDialog` ([src/components/ConfirmDialog.tsx](../../src/components/ConfirmDialog.tsx),
@@ -496,7 +502,7 @@ Reihenfolge Verbindung getrennt → Laden fehlgeschlagen → Speichern fehlgesch
 | Form | [Kachel](#kachel) mit Fläche `error` (Rand und Lichtkante in `border`) |
 | Aufbau | `display: flex`, `justify-content: center`: Text und Icon-Button „Erneut versuchen“ zentriert nebeneinander, `gap` `space.4`; Text einzeilig mit Ellipse, damit die Kopfzeile ihre Höhe behält |
 | Button | Icon-Button als Ausnahme ohne `size.control.md`: nur so groß wie das Icon (`reload.svg`, `size.icon`, etwa Texthöhe); Icon in `onError`, ohne eigene Fläche und Rahmen; zugänglicher Name „Erneut versuchen“ (`aria-label`, `title`); Fokus als Outline `borderWidth.thick` in `onError` (`:focus-visible`) |
-| Innenabstand | `space.1` oben/unten, `space.5` seitlich ([1.4](../../DESIGN.md#14-regeln) „Innenabstand von Flächen“) |
+| Innenabstand | `space.1` oben/unten, `space.5` seitlich |
 | Farbe | Fläche `error`, Text und Icon `onError` ([2.2](../../DESIGN.md#22-rollen)) |
 | Rolle | `role="alert"` |
 
@@ -510,7 +516,7 @@ Abschnitt „Ground-Raster“).
 | Eigenschaft | Wert |
 |---|---|
 | Größe | „Audio“: volle Breite zwischen Icon und Wert; Zellgröße: volle Breite des Panels, der Wert steht darüber rechts in der Zeile „Zellgröße“ |
-| Schiene und Füllung | 4px (MUI-Standard), Schiene `background`, Füllung `primary` |
+| Schiene und Füllung | 4px (MUI-Standard), Schiene `background`, Füllung `primary`, `radius.pill` |
 | Griff | `PANEL_SLIDER_THUMB_SIZE`, `text.color`; ein halber Griff Abstand links und rechts (`PanelSliderArea`), die Touch-Fläche wird abgeschnitten |
 | Stufen | Zellgröße rastet in 10er-Schritten ein, ohne sichtbare Punkte |
 | Wert | rechts neben dem Slider bzw. (Zellgröße) rechts darüber (`SliderValue`), `text.sm` `semibold` `tabular-nums`, rechtsbündig, `min-width: SLIDER_VALUE_MIN_WIDTH`, ohne Einheit |

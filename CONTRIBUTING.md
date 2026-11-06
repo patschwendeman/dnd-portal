@@ -60,13 +60,17 @@ nur auf ausdrücklichen Aufruf aktiv.
 
 ## Dokumentation
 
-Die Teil-`CLAUDE.md` (`frontend/`, `backend/`) bleiben knapp, Richtwert höchstens 8 KB:
+Die Teil-`CLAUDE.md` (`frontend/`, `backend/`) bleiben knapp, Richtwert höchstens 8 KB; für `frontend/DESIGN.md` gilt eine eigene Regel (vorletzter Punkt):
 
 - Inhalt: Befehle, Konventionen, „Wichtig beim Ändern“, Struktur mit einer Zeile je Ordner, dazu Abläufe, die beim
   Ändern jedes Mal gebraucht werden (z. B. Migrationen, Test-Mechanik, Notizen).
 - Nicht hinein: Listen von Symbolen, Komponenten, Migrationen oder Testdateien; Beschreibungen von Datenfluss,
   Audio, Docker, Konfiguration, Datenmodell oder CI – die stehen in `docs/` (v. a. `docs/architecture.md`), die
   Teil-`CLAUDE.md` verweist nur darauf. Nichts aus der Root-`CLAUDE.md` wiederholen.
+- `frontend/DESIGN.md` (Ziel höchstens 12 KB) enthält Regeln, Tokens, Farbrollen und Kontrast-Entscheidungen. Maße,
+  Innenabstände, Radien und Schriftstufen neuer oder geänderter Bausteine stehen nur in
+  `frontend/docs/design/components.md`; `DESIGN.md` ändert sich nur, wenn sich eine Regel, ein Token oder eine
+  Rolle ändert.
 - Neue Details zuerst in `docs/` ergänzen; wächst eine Teil-`CLAUDE.md` über den Richtwert, beim nächsten Eingriff
   kürzen.
 
