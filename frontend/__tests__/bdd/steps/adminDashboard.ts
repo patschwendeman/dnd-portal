@@ -6,12 +6,15 @@ import {
   WAIT_TIMEOUT,
   buildDriver,
   clickElement,
+  ensureActiveScene,
   openScreen,
+  restoreActiveScene,
   waitForAttribute,
   waitForElement,
   waitForElementGone,
   waitForFullscreen,
 } from '../support/helpers'
+import type { ActiveScene } from '../support/helpers'
 
 const feature = loadFeature('__tests__/bdd/features/adminDashboard.feature')
 
@@ -187,6 +190,9 @@ defineFeature(feature, (test) => {
   let restoreAudio: Audio | null = null
   // Set by a scenario that switches the wall overlay, so the other specs start without overlay
   let resetWallOverlay = false
+  // Set by a scenario that needs an active scene, restored afterwards so the backend tests find
+  // the seed state (no active scene)
+  let restoreScene: ActiveScene | null = null
 
   beforeEach(async () => {
     driver = buildDriver()
@@ -204,10 +210,16 @@ defineFeature(feature, (test) => {
       await saveWallOverlayOff()
       resetWallOverlay = false
     }
+    if (restoreScene !== null) {
+      await restoreActiveScene(restoreScene)
+      restoreScene = null
+    }
   })
 
   test('The dashboard shows its panels next to the notes', ({ given, then, and }) => {
     given('I am on the admin screen', async () => {
+      // The stage shows the scene name only with an active scene
+      restoreScene = await ensureActiveScene()
       await openAdmin(driver)
     })
 

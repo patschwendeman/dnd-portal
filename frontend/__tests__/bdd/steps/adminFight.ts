@@ -2,11 +2,13 @@ import { loadFeature, defineFeature } from 'jest-cucumber'
 import { By, WebDriver } from 'selenium-webdriver'
 
 import {
-  BASE_URL,
   WAIT_TIMEOUT,
+  api,
   buildDriver,
   clickElement,
+  ensureActiveScene,
   openScreen,
+  readJson,
   waitForAttribute,
   waitForElement,
   waitForElementGone,
@@ -43,7 +45,6 @@ const LOCKED_TITLE = 'Während des Kampfes nicht wechselbar'
 const SCENE_ENTRIES = '[data-test-id="nav-panel"] [data-test-id="scene-navigation"] button'
 
 interface Player { id: number, character_name: string }
-interface TableState { active_adventure_id: number | null, active_scene_id: number | null }
 
 // Long step texts, kept apart so the step definitions stay readable
 const STEP_ADDED_ENEMY = 'Gegner 1 with Ghul is last and the number field suggests 2'
@@ -51,39 +52,6 @@ const STEP_NUMBER_TAKEN = 'the panel says the number 1 is taken and the list sta
 const STEP_STARTED = 'Am Zug shows the first combatant in round 1, '
   + 'then Initiative, Audio, Spieltisch'
 const STEP_ENDED = 'the stage, the party and the panel Kampf vorbereiten are back'
-
-const api = async (method: string, path: string, body?: object): Promise<Response> => fetch(
-  `${BASE_URL}/api/${path}`,
-  {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  },
-)
-
-const readJson = async <T>(path: string): Promise<T> => {
-  const response = await api('GET', path)
-  expect(response.ok).toBe(true)
-  return (await response.json()) as T
-}
-
-// After a fresh seed neither an adventure nor a scene is active; both are set over the API, so
-// the scenario does not depend on another suite
-const ensureActiveScene = async (): Promise<number> => {
-  let table = await readJson<TableState>('table')
-  if (table.active_adventure_id === null) {
-    const [first] = await readJson<{ id: number }[]>('adventures')
-    expect((await api('PATCH', 'table', { active_adventure_id: first.id })).ok).toBe(true)
-    table = await readJson('table')
-  }
-  const adventureId = Number(table.active_adventure_id)
-  if (table.active_scene_id === null) {
-    const [scene] = await readJson<{ id: number }[]>(`adventures/${adventureId}/scenes`)
-    expect((await api('PATCH', `adventures/${adventureId}`, { active_scene_id: scene.id })).ok)
-      .toBe(true)
-  }
-  return adventureId
-}
 
 // A fight left over by another run would lock scene and adventure for the other suites
 const endAnyFight = async (): Promise<void> => {
@@ -97,7 +65,7 @@ const readPlayers = async (adventureId: number): Promise<Player[]> => (
 
 const startFightOfTwoPlayersAndAnEnemy = async (): Promise<Player[]> => {
   await endAnyFight()
-  const players = await readPlayers(await ensureActiveScene())
+  const players = await readPlayers((await ensureActiveScene()).adventureId)
   const response = await api('POST', 'table/fight', {
     combatants: [
       { kind: 'player', player_id: players[0].id },
@@ -161,7 +129,7 @@ defineFeature(feature, (test) => {
 
   const givenSceneWithoutFight = async () => {
     await endAnyFight()
-    players = await readPlayers(await ensureActiveScene())
+    players = await readPlayers((await ensureActiveScene()).adventureId)
   }
 
   test('I prepare a fight', ({

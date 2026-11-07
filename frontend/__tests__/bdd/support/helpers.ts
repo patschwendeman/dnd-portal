@@ -107,16 +107,71 @@ const waitForFullscreen = async (driver: WebDriver, expected: boolean): Promise<
   return actual
 }
 
+const api = async (method: string, path: string, body?: object): Promise<Response> => fetch(
+  `${BASE_URL}/api/${path}`,
+  {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  },
+)
+
+const readJson = async <T>(path: string): Promise<T> => {
+  const response = await api('GET', path)
+  expect(response.ok).toBe(true)
+  return (await response.json()) as T
+}
+
+interface TableState { active_adventure_id: number | null, active_scene_id: number | null }
+
+interface ActiveScene {
+  adventureId: number
+  // Active scene of the adventure before the call, to restore the seed state afterwards
+  previousSceneId: number | null
+}
+
+// After a fresh seed neither an adventure nor a scene is active; both are set over the API, so
+// the scenario does not depend on another suite
+const ensureActiveScene = async (): Promise<ActiveScene> => {
+  let table = await readJson<TableState>('table')
+  if (table.active_adventure_id === null) {
+    const [first] = await readJson<{ id: number }[]>('adventures')
+    expect((await api('PATCH', 'table', { active_adventure_id: first.id })).ok).toBe(true)
+    table = await readJson('table')
+  }
+  const adventureId = Number(table.active_adventure_id)
+  const previousSceneId = table.active_scene_id
+  if (previousSceneId === null) {
+    const [scene] = await readJson<{ id: number }[]>(`adventures/${adventureId}/scenes`)
+    expect((await api('PATCH', `adventures/${adventureId}`, { active_scene_id: scene.id })).ok)
+      .toBe(true)
+  }
+  return { adventureId, previousSceneId }
+}
+
+const restoreActiveScene = async ({ adventureId, previousSceneId }: ActiveScene): Promise<void> => {
+  const response = await api('PATCH', `adventures/${adventureId}`, {
+    active_scene_id: previousSceneId,
+  })
+  expect(response.ok).toBe(true)
+}
+
+export type { ActiveScene }
+
 export {
   BASE_URL,
   MEDIA_BASE_URL,
   MEDIA_PATH,
   WAIT_TIMEOUT,
+  api,
   buildDriver,
   clickElement,
   confirmDialog,
+  ensureActiveScene,
   getRandomNumber,
   openScreen,
+  readJson,
+  restoreActiveScene,
   waitForAttribute,
   waitForElement,
   waitForElementGone,
