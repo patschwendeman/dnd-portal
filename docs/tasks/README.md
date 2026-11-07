@@ -56,3 +56,4 @@
 | DND-50 | chore | Fehlende Doc-Kommentare nach CONTRIBUTING.md ergänzen | Fertig | [DND-50-doc-comments.md](DND-50-doc-comments.md) |
 | DND-51 | feat | Themes „Cyber“ und „Taverne“, ein Abenteuerbild für beide Themes | Fertig | [DND-51-themes-and-adventure-image.md](DND-51-themes-and-adventure-image.md) |
 | DND-52 | feat | Abenteuerauswahl vor dem Admin Screen, „Abenteuer beenden“ in den Einstellungen | Fertig | [DND-52-admin-adventure-select.md](DND-52-admin-adventure-select.md) |
+| DND-53 | feat | Logo in der Navigationsleiste des Admins, Web-App-Manifest für den Homescreen | Freigegeben | [DND-53-admin-logo-and-web-manifest.md](DND-53-admin-logo-and-web-manifest.md) |
