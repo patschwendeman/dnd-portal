@@ -1,7 +1,7 @@
 # DND-53: Logo in der Navigationsleiste des Admins, Web-App-Manifest für den Homescreen
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -154,3 +154,35 @@ Leiste“, Logo-Farbe primary, 32px); es liegt außerhalb des Repos.
 - keine
 
 ## Review
+
+### Runde 1 – Review vom 2026-11-07 (Commit 6eaf107, Gesamtstand gegen b087a47)
+
+**Empfehlung: Abnahme.** Es gibt keinen blockierenden Befund. AK1, AK2, AK3 und AK5 sind erfüllt und live belegt. Bei AK4 sind alle technischen Voraussetzungen belegt. Den Test auf einem echten Smartphone konnte ich nicht durchführen; der Plan führt ihn nur als „Wenn möglich“ (manueller Schritt 5). Ob AK4 ohne Gerätetest abgenommen wird, entscheidet der User. Lint, Typecheck, Unit-Tests, Build, knip und jscpd sind grün. Im E2E-Lauf schlägt 1 von 62 Tests fehl. Das liegt an einem außerhalb der Tests offenen Admin-Fenster, nicht an der Änderung (siehe Hinweis 1).
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Logo oben in der Leiste | erfüllt | `NavRail.tsx:171-174`: `Logo` ist das erste Kind von `Rail`, `color: theme.colors.primary`, `fill: currentColor`; `dice.svg` hat `fill="currentColor"`. Live in headless Chrome gemessen (1600×1000, Cyber): Logo 32×32 px, Füllung des Pfads `rgb(68,147,248)` = `#4493F8`. Bei eingeklapptem Panel und mit Hintergrundbild (Leiste durchscheinend `rgba(22,27,35,0.75)`) bleibt es unverändert sichtbar, per Screenshot bestätigt. Taverne nur im Code geprüft: dasselbe Token, `tavernTheme.ts:7` `primary: '#C05E5E'`. Das Theme wurde nicht live umgeschaltet, weil ein fremdes Admin-Fenster am Server hing. |
+| AK2 Menüpunkte direkt unter dem Logo | erfüllt | Live gemessen: Logo-Unterkante 81, „Notizen“ ab 113, also 32 px Abstand. „Notizen“, „Szenen“ und „Kampf“ (113–153, 161–201, 209–249) haben je 8 px Abstand. „Einstellungen“ steht am unteren Ende (768–808 bei Leistenende 833). `Head` hat `gap space[6]`, `TopGroup` hat `gap space[2]`, `BottomGroup` hat weiterhin `margin-top: auto`. `renderItem`, Badge, `splitByPlacement` und `onSelect` sind unverändert (Diff). Die bestehenden BDD-Tests in `adminNavigation`, `adminFight` und `adminSettings` sind grün. |
+| AK3 Logo ohne Funktion | erfüllt | Das Logo ist ein `div` mit `role="img"` und `aria-label="DnD Portal"`, ohne Handler und ohne `:hover`. Live: `tabIndex -1`, `cursor: auto`, keine fokussierbaren Kinder. BDD `adminNavigation.feature:22-27` ist grün: Klick lässt Panel und `aria-pressed` unverändert, Shift+Tab von „Notizen“ setzt keinen Fokus aufs Logo. |
+| AK4 Player als App auf dem Homescreen | Voraussetzungen erfüllt, Gerätetest nicht prüfbar | Manifest nach E4 (`public/manifest.webmanifest`), Unit-Test `webManifest.spec.ts` grün (5/5). Chrome-DevTools-Protokoll (`Page.getAppManifest`, `Page.getInstallabilityErrors`) meldet `errors: []` und `installabilityErrors: []`. Die iOS-Meta-Tags und das Apple-Touch-Icon stehen in `index.html:6-11`. `start_url` `/` führt zu `PlayerSelectScreen` (`App.tsx:48`). Die Icons 192, 512 und 180 haben die richtigen Maße und keinen Alphakanal (sips). Visuell: blauer Würfel auf `#0e1117`, etwa 60 % der Kantenlänge, innerhalb der Safe Zone. Homescreen auf iPhone oder Android nicht geprüft (manueller Schritt 5). |
+| AK5 Manifest wird ausgeliefert | erfüllt | Geprüft mit `nginx:1.27.5-alpine` (dasselbe Image wie die Prod-Stage im `Dockerfile:40`) mit `nginx.conf` und frischem `dist/`. `/manifest.webmanifest` liefert 200 mit `Content-Type: application/manifest+json`. Die drei PNGs liefern 200 mit `image/png`, `dice.svg` 200. Den kompletten Prod-Stack (Compose) nicht gestartet. |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+1. E2E-Test „The first interaction makes an admin window the audio output“ (`adminDashboard.ts:462`) zweimal rot. Grund ist die Vorbedingung `output_ready === false`: `GET /table/audio` liefert auch ohne laufenden Test `output_ready: true`, also hängt ein außerhalb der Tests offenes Admin-Fenster am Server. Die Änderung berührt Audio nicht. Gleiches Muster wie in DND-52. Mit allen Admin-Fenstern geschlossen erneut laufen lassen.
+2. AK4: Der Homescreen-Test auf echten Geräten (iPhone ohne Browserleiste, Android-Verknüpfung) steht noch aus. Ob er vor der Abnahme nötig ist, entscheidet der User.
+3. AK1 Taverne und AK5 Prod-Stack: Taverne nur im Code belegt, AK5 gegen einen Einzelcontainer statt Compose geprüft. Optional manuell nachziehen (Plan, manuelle Schritte 1 und 3).
+4. Kommentar `NavRail.tsx:46` („Placeholder logo without function: no button, no hover, not focusable“) beschreibt eher, was der Code tut, trägt aber mit, dass es bewusst kein Button ist. Grenzfall nach CONTRIBUTING „Code comments“, kein Verstoß.
+5. Commit gegen die Konventionen geprüft: Schema `feat(DND-53): …` passt zum Plan-Typ, ein Commit für die Runde, 5 Stichpunkte im Body, keine KI-Signatur. Nichts außerhalb des Scopes geändert, alle Subtasks abgehakt und umgesetzt, Doku-Anker `known-issues.md#frontend` gültig.
+
+**Checks**
+- `npm run lint`: grün, ohne Fehler und Warnungen.
+- `npm run typecheck`: grün.
+- `npm run test:unit`: 35 Dateien, 356/356 grün, darunter `webManifest.spec.ts` mit 5/5.
+- `npm run build`: grün; `dist/` enthält `manifest.webmanifest` und die Icons. Die Warnung zur Chunk-Größe gab es schon vorher.
+- `npm run check:deadcode` (knip): grün.
+- `npm run check:dupes` (jscpd): grün mit 0,19 % bei Schwelle 0,28; der einzige Klon (`cyberTheme.ts`/`tavernTheme.ts`) bestand schon vorher.
+- E2E (`jest --runInBand` gegen laufendes Backend und Vite): 14 Suites, 61/62 grün; rot nur der Test aus Hinweis 1. `adminNavigation` mit dem neuen Logo-Szenario ist grün.
+- Prüfung mit `nginx:1.27.5-alpine` auf Port 18080: wie bei AK5 beschrieben.
