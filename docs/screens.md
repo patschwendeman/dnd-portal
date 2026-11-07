@@ -35,6 +35,17 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Abenteuer konnte nicht gestartet werden.“ und die Auswahl bleibt. Klick auf das aktive Abenteuer öffnet
   `/admin/play`, ohne etwas zu speichern. Ein Abenteuer wird nur so aktiv: Der Admin aktiviert keines von selbst, auch
   wenn es nur eines gibt.
+- **Übergang in den Admin:** Beim Starten (erst nach erfolgreichem Speichern) und beim Fortsetzen wächst das Bild der
+  angeklickten Karte in 0,5 s auf die volle Fensterfläche und dunkelt dabei ab, bis es der Abenteuer-Hintergrund des
+  Admins ist; gleichzeitig sinken Kopf und Karten 16px nach unten und blenden aus, der Rest der Auswahl (auch der
+  Hintergrund des bisher aktiven Abenteuers) blendet aus. Danach baut sich der Admin auf (siehe
+  [Admin Screen](#admin-screen), **Auftritt**). Ohne Kartenbild, oder wenn das Bild im Admin nach 300 ms noch nicht
+  geladen ist, blendet die Auswahl nur aus. Bei „Bewegung reduzieren“ im System und in Browsern ohne View Transitions
+  API wechselt die Seite ohne Übergang.
+- **Rückweg:** Nach „Abenteuer beenden“ im Admin schrumpft dessen Hintergrund in 0,5 s in das Bild der Karte dieses
+  Abenteuers (jetzt ohne „Aktiv“); Kopf und Karten steigen von 16px unten auf (Kopf ab 0,3 s, Karten ab 0,35 s, jede
+  0,06 s nach der vorigen). Die Auswahl hat danach keinen Hintergrund. Ist die Karte nach 300 ms noch nicht geladen,
+  läuft der Rückweg ohne schrumpfendes Bild.
 - **Hintergrund:** das Abenteuerbild des am Server aktiven Abenteuers wie im Admin, die Karten sind dann
   durchscheinend; ohne aktives Abenteuer oder ohne Bild die einfarbige Grundfläche.
 - **Kampf:** Läuft im aktiven Abenteuer ein Kampf, steht über den Karten „Im aktiven Abenteuer läuft ein Kampf.
@@ -74,6 +85,17 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Route:** `/admin/play`, geöffnet über die [Abenteuerauswahl](#abenteuerauswahl); ein Reload bleibt im Admin. Ist
   am Server kein Abenteuer aktiv (beim Öffnen oder weil ein anderes Admin-Fenster es beendet hat), leitet er auf
   `/admin` um. Wechselt ein anderes Admin-Fenster das Abenteuer, folgt er ohne Reload.
+- **Auftritt:** Nur beim Betreten aus der Abenteuerauswahl (Starten oder Fortsetzen, Übergang siehe
+  [Abenteuerauswahl](#abenteuerauswahl)) zeigt der Admin das Kartenbild sofort als Hintergrund und baut danach seine
+  Kacheln gestaffelt auf: Erst wenn der Übergang beendet ist, blendet jede Kachel in 380 ms ein und gleitet von ihrem
+  Versatz an ihren Platz, jede Stufe 65 ms nach der vorigen; nach 0,9 s steht alles. Reihenfolge: „Zurück | Vor“,
+  Abenteuername (beide 12px von oben), „Vollbild | Dashboard“ (von oben) zusammen mit der Navigationsleiste (16px von
+  links), Panel des Menüpunkts (von links), erste Notizseite, dann die weiteren Notizseiten (12px von unten) zusammen
+  mit dem ersten Dashboard-Panel, dann die weiteren Panels (16px von rechts). Alles ist von Anfang an bedienbar
+  (Klicks, Tastatur, Tastenkürzel). Notizseiten, Bühne und „Party“ (im Kampf „Am Zug“ und „Initiative“) blenden
+  Inhalte, die erst während des Aufbaus geladen werden, in 200 ms ein. Ohne Aufbau steht alles sofort da: nach einem
+  Reload, beim direkten Aufruf von `/admin/play`, beim Folgen eines anderen Admin-Fensters und bei „Bewegung
+  reduzieren“ im System (ohne View Transitions API läuft der Aufbau ohne den Übergang davor).
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): frei stehende Kacheln mit Rand und Lichtkante auf dem
   Hintergrund, ohne Trennlinien und ohne Bottom-Bar. Ganz links die Navigationsleiste, daneben das Panel des aktiven
   Menüpunkts (beide über die volle Höhe, mit Abstand zum oberen und unteren Rand), in der Mitte die Notizen (je Seite
@@ -125,7 +147,9 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   den Dialog „Abenteuer beenden“ mit dem Namen und dem Hinweis, dass Wall, Ground und Player danach kein Abenteuer
   mehr zeigen. „Confirm“ speichert „kein Abenteuer aktiv“: Wall und Ground zeigen kein Szenenbild, der Player „Noch
   kein Abenteuer aktiv“, und alle Admin-Fenster wechseln zur Abenteuerauswahl; die zuletzt aktive Szene bleibt im
-  Abenteuer gespeichert. „Decline“ bricht ab. Schlägt das Speichern fehl, bleibt der Admin und zeigt die Hinweisleiste
+  Abenteuer gespeichert. Im Fenster, in dem bestätigt wurde, blenden vorher alle Kacheln gleichzeitig in 200 ms aus
+  und schrumpfen leicht, dann folgt der Rückweg (siehe [Abenteuerauswahl](#abenteuerauswahl)); andere Admin-Fenster
+  wechseln ohne Animation, ebenso alle bei „Bewegung reduzieren“ und ohne View Transitions API. „Decline“ bricht ab. Schlägt das Speichern fehl, bleibt der Admin und zeigt die Hinweisleiste
   „Änderung konnte nicht gespeichert werden“. Während eines Kampfes ist der Button gesperrt (Schloss statt Icon,
   Tooltip „Während des Kampfes nicht wechselbar“, kein Dialog), solange die Hinweisleiste steht, deaktiviert.
 - **Abenteuer und Szenen:** Gezeigt werden nur die Szenen des aktiven Abenteuers. Admin, Wall und Ground zeigen nach

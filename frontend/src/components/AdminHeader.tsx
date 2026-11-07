@@ -3,8 +3,9 @@ import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
 import ErrorBar from './ErrorBar'
-import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
+import { tileEntranceAttributes, tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
+import { HEADER_CENTER_TILE, HEADER_END_TILE, HEADER_START_TILE } from '../utils/adminEntrance'
 import useDocumentFullscreen from '../utils/useDocumentFullscreen'
 
 import arrowLeftIcon from '/assets/icons/arrowLeft.svg'
@@ -150,7 +151,11 @@ function AdminHeader({
 
   return (
     <Header data-test-id="admin-header">
-      <ButtonGroup $isTranslucent={isTranslucent} data-test-id="history-buttons">
+      <ButtonGroup
+        $isTranslucent={isTranslucent}
+        data-test-id="history-buttons"
+        {...tileEntranceAttributes(HEADER_START_TILE)}
+      >
         {historyButtons.map(({
           name, icon, isEnabled, onClick, testId,
         }) => (
@@ -174,15 +179,23 @@ function AdminHeader({
         ))}
       </ButtonGroup>
       {errorNotice ? (
-        <ErrorBar message={errorNotice.message} onRetry={errorNotice.onRetry} />
+        <ErrorBar
+          message={errorNotice.message}
+          onRetry={errorNotice.onRetry}
+          entrance={HEADER_CENTER_TILE}
+        />
       ) : (
-        <AdventureName data-test-id="adventure-name" $isTranslucent={isTranslucent}>
+        <AdventureName
+          data-test-id="adventure-name"
+          $isTranslucent={isTranslucent}
+          {...tileEntranceAttributes(HEADER_CENTER_TILE)}
+        >
           <AdventureNameText title={adventureName ?? undefined}>
             {adventureName ?? 'Kein Abenteuer'}
           </AdventureNameText>
         </AdventureName>
       )}
-      <ButtonGroup $isTranslucent={isTranslucent}>
+      <ButtonGroup $isTranslucent={isTranslucent} {...tileEntranceAttributes(HEADER_END_TILE)}>
         <ToggleButton
           type="button"
           title={isFullscreen ? 'Vollbild beenden' : 'Vollbild'}

@@ -8,8 +8,10 @@ import {
   WAIT_TIMEOUT,
   buildDriver,
   clickElement,
+  entrancePhasesUntil,
   openAdminScreen,
   openScreen,
+  recordEntrancePhases,
   waitForAttribute,
   waitForElement,
   waitForElementGone,
@@ -180,6 +182,7 @@ defineFeature(feature, (test) => {
 
   test('The header shows the active adventure and no settings button', ({ given, then, and }) => {
     given('I am on the admin screen', async () => {
+      await recordEntrancePhases(driver)
       await openAdmin(driver)
     })
 
@@ -199,6 +202,10 @@ defineFeature(feature, (test) => {
       expect(ids).toEqual([
         'history-back', 'history-forward', 'fullscreen-toggle', 'dashboard-toggle',
       ])
+    })
+
+    and('the admin screen stood there at once without building up its tiles', async () => {
+      expect(await entrancePhasesUntil(driver, 'done')).toEqual(['done'])
     })
   })
 

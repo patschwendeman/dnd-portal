@@ -1,7 +1,7 @@
 import {
   Builder, By, error, until, WebDriver, WebElement,
 } from 'selenium-webdriver'
-import { Options } from 'selenium-webdriver/chrome'
+import { Driver as ChromeDriver, Options } from 'selenium-webdriver/chrome'
 
 // Lives outside steps/ so jest (testMatch: __tests__/bdd/steps/*.ts) does not run it as a test file
 const BASE_URL = 'http://localhost:5173'
@@ -169,6 +169,53 @@ const restoreActiveScene = async ({ adventureId, previousSceneId }: ActiveScene)
   expect(response.ok).toBe(true)
 }
 
+// Keeps every value of data-entrance of the Admin Screen in window.__entrancePhases; it runs in
+// the open page and again in every page loaded later, so it also sees a reload from its start
+const ENTRANCE_RECORDER = `
+  if (!window.__entrancePhases) {
+    window.__entrancePhases = []
+    const record = () => {
+      const screen = document.querySelector('[data-test-id="admin-screen"]')
+      const phase = screen && screen.getAttribute('data-entrance')
+      const phases = window.__entrancePhases
+      if (phase && phases[phases.length - 1] !== phase) {
+        phases.push(phase)
+      }
+    }
+    new MutationObserver(record).observe(document, {
+      subtree: true, childList: true, attributes: true, attributeFilter: ['data-entrance'],
+    })
+    record()
+  }
+`
+
+const recordEntrancePhases = async (driver: WebDriver): Promise<void> => {
+  await (driver as ChromeDriver).sendDevToolsCommand(
+    'Page.addScriptToEvaluateOnNewDocument',
+    { source: ENTRANCE_RECORDER },
+  )
+  await driver.executeScript(ENTRANCE_RECORDER)
+}
+
+// Waits until the Admin Screen reached `last`, then returns all phases it went through
+const entrancePhasesUntil = async (driver: WebDriver, last: string): Promise<string[]> => {
+  const read = async (): Promise<string[]> => driver.executeScript(
+    'return window.__entrancePhases ?? []',
+  )
+  let phases: string[] = []
+  try {
+    await driver.wait(async () => {
+      phases = await read()
+      return phases[phases.length - 1] === last
+    }, WAIT_TIMEOUT)
+  } catch (err) {
+    if (!(err instanceof error.TimeoutError)) {
+      throw err
+    }
+  }
+  return phases
+}
+
 export type { ActiveScene }
 
 export {
@@ -181,11 +228,13 @@ export {
   clickElement,
   confirmDialog,
   ensureActiveAdventure,
+  entrancePhasesUntil,
   ensureActiveScene,
   getRandomNumber,
   openAdminScreen,
   openScreen,
   readJson,
+  recordEntrancePhases,
   restoreActiveScene,
   waitForAttribute,
   waitForElement,

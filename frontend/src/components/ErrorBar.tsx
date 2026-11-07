@@ -2,8 +2,9 @@ import { ReactElement } from 'react'
 import styled, { useTheme } from 'styled-components'
 import { ReactSVG } from 'react-svg'
 
-import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
+import { tileEntranceAttributes, tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
+import { TileEntrance } from '../utils/adminEntrance'
 
 import reloadIcon from '/assets/icons/reload.svg'
 
@@ -57,13 +58,15 @@ const RetryButton = styled.button`
 interface ErrorBarProps {
   message: string
   onRetry: () => void
+  /** Place and direction in the build-up of the Admin */
+  entrance: TileEntrance
 }
 
-function ErrorBar({ message, onRetry }: ErrorBarProps): ReactElement {
+function ErrorBar({ message, onRetry, entrance }: ErrorBarProps): ReactElement {
   const theme = useTheme()
 
   return (
-    <Bar role="alert">
+    <Bar role="alert" {...tileEntranceAttributes(entrance)}>
       <Message>{message}</Message>
       <RetryButton
         type="button"

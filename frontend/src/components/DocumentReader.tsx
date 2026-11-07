@@ -23,8 +23,15 @@ import { NoteHistoryEntry } from '../notes/noteHistory'
 import {
   buildNoteIndex, NoteIndex, NoteTarget, resolveNoteLink,
 } from '../notes/noteLinks'
-import { hoverScrollbar, tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
+import {
+  ENTRANCE_CONTENT_ATTRIBUTES,
+  hoverScrollbar,
+  tileEntranceAttributes,
+  tileSurface,
+  TileSurfaceProps,
+} from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
+import { notePageTile } from '../utils/adminEntrance'
 import { loadLatest } from '../utils/loadSafely'
 
 import arrowUpIcon from '/assets/icons/arrowUp.svg'
@@ -271,17 +278,22 @@ const NO_HEADINGS = new Map<number, string>()
 interface NotePageProps extends NoteFileContextValue {
   text: string
   isTranslucent: boolean
+  position: number
 }
 
 function NotePage({
-  path, text, headingAnchors, index, onFollow, isTranslucent,
+  path, text, headingAnchors, index, onFollow, isTranslucent, position,
 }: NotePageProps): ReactElement {
   const file = useMemo(() => ({
     path, headingAnchors, index, onFollow,
   }), [path, headingAnchors, index, onFollow])
   return (
-    <Page id={noteElementId(path)} $isTranslucent={isTranslucent}>
-      <PageText>
+    <Page
+      id={noteElementId(path)}
+      $isTranslucent={isTranslucent}
+      {...tileEntranceAttributes(notePageTile(position))}
+    >
+      <PageText {...ENTRANCE_CONTENT_ATTRIBUTES}>
         <NoteFileContext.Provider value={file}>
           <ReactMarkdown components={markdownComponents}>
             {text || 'Loading...'}
@@ -425,9 +437,10 @@ function DocumentReader({
     <StoryReaderContainer data-test-id="notes-view">
       <Background ref={scrollRef} onScroll={handleScroll} data-test-id="notes-scroll">
         {loadFailed && <LoadFailedText>Notizen konnten nicht geladen werden</LoadFailedText>}
-        {!loadFailed && shownFiles.map(({ path, text }) => (
+        {!loadFailed && shownFiles.map(({ path, text }, position) => (
           <NotePage
             key={path}
+            position={position}
             path={path}
             text={text}
             headingAnchors={headingAnchors.get(path) ?? NO_HEADINGS}

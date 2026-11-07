@@ -18,6 +18,8 @@ export const BACKGROUND_FADE_MS = 600
 interface AdventureBackground {
   layers: string[]
   shown: string | null
+  /** The held image: it appears without fading in */
+  instant: string | null
   isImageShown: boolean
   onLoad: (src: string) => void
   onError: (src: string) => void
@@ -25,12 +27,15 @@ interface AdventureBackground {
 
 /**
  * State of the adventure image behind the tiles of the Admin, the adventure selection and the
- * cards of the Player; without an image (or while the adventure loads) the background is plain
+ * cards of the Player; without an image (or while the adventure loads) the background is plain.
+ * `heldSource` (a media path) is shown instead of the image of `adventure` while it is set, e.g.
+ * the image of the card the Admin was opened from, before the Admin loaded the adventure.
  */
 export function useAdventureBackground(
   adventure: Pick<AdventureDetail, 'image'> | undefined,
+  heldSource: string | null = null,
 ): AdventureBackground {
-  const source = adventureBackgroundSource(adventure)
+  const source = heldSource ?? adventureBackgroundSource(adventure)
   const src = source === null ? null : mediaUrl(source)
   const [state, dispatch] = useReducer(adventureBackgroundReducer, src, initialAdventureBackground)
 
@@ -59,6 +64,7 @@ export function useAdventureBackground(
   return {
     layers: adventureBackgroundLayers(state),
     shown: state.shown,
+    instant: heldSource === null ? null : mediaUrl(heldSource),
     isImageShown: isBackgroundImageShown(state),
     onLoad,
     onError,

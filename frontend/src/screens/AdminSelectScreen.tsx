@@ -1,11 +1,12 @@
 import {
   ReactElement, ReactNode, useContext, useEffect, useState,
 } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { flushSync } from 'react-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ReactSVG } from 'react-svg'
 import styled, { keyframes, useTheme } from 'styled-components'
 
-import { ADMIN_PLAY_PATH } from '../app/adminPaths'
+import { ADMIN_PLAY_PATH, ADMIN_SELECT_PATH } from '../app/adminPaths'
 import AdventureBackground from '../components/AdventureBackground'
 import AdventureCard from '../components/AdventureCard'
 import Label from '../components/Label'
@@ -14,10 +15,13 @@ import { ActiveAdventureContext, FightContext } from '../context/context'
 import { AdventureSummary } from '../models/models'
 import { getAdventures, saveActiveAdventure } from '../service/adminScreen'
 import GlobalStyle, { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
+import PageTransitionStyle from '../style/PageTransitionStyle'
 import { textStyle } from '../style/tokens'
+import { AdminEntrance, readSelectReturn } from '../utils/adminEntrance'
 import { adventureSelectStatus, isAdventureLocked } from '../utils/adventureSelect'
 import { loadLatest } from '../utils/loadSafely'
 import { useAdventureBackground } from '../utils/useAdventureBackground'
+import { isHeroShown, startPageTransition } from '../utils/viewTransition'
 
 import infoIcon from '/assets/icons/info.svg'
 import reloadIcon from '/assets/icons/reload.svg'
@@ -171,10 +175,14 @@ function Icon({ src, size = undefined }: IconProps): ReactElement {
 /**
  * Start of the Admin: the adventures as cards. A click on a card makes it the active adventure of
  * the game table and opens the Admin; the active one opens it without a write. During a fight only
- * the active adventure can be opened.
+ * the active adventure can be opened. Both ways into the Admin, and the way back after ending the
+ * adventure, are a page transition in which the image of the card becomes the background.
  */
 function AdminSelectScreen(): ReactElement {
   const navigate = useNavigate()
+  const location = useLocation()
+  // The card whose image is shared with the Admin: the ended adventure, later the clicked one
+  const [heroId, setHeroId] = useState<number | null>(() => readSelectReturn(location.state))
   const { activeAdventureId } = useContext(ActiveAdventureContext)
   const { fight } = useContext(FightContext)
   const isFighting = fight !== null
@@ -183,6 +191,13 @@ function AdminSelectScreen(): ReactElement {
   const [reloadCount, setReloadCount] = useState<number>(0)
   const [isStarting, setIsStarting] = useState<boolean>(false)
   const [startFailed, setStartFailed] = useState<boolean>(false)
+
+  // history.state survives a reload, which must not look like the way back from the Admin
+  useEffect(() => {
+    if (location.state !== null) {
+      navigate(ADMIN_SELECT_PATH, { replace: true, state: null })
+    }
+  }, [location.state, navigate])
 
   useEffect(() => {
     let stale = false
@@ -210,10 +225,20 @@ function AdminSelectScreen(): ReactElement {
   const isTranslucent = background.isImageShown
   const status = adventureSelectStatus(adventures, loadFailed)
 
+  // The name moves to the clicked card before the transition captures the selection
+  const enter = (adventure: AdventureSummary) => {
+    const entrance: AdminEntrance = { entrance: 'select', image: adventure.image?.source ?? null }
+    flushSync(() => setHeroId(adventure.id))
+    startPageTransition(
+      () => navigate(ADMIN_PLAY_PATH, { state: entrance }),
+      entrance.image === null ? null : isHeroShown,
+    )
+  }
+
   // The Admin opens only after the write succeeded, so it never shows the previous adventure
   const select = (adventure: AdventureSummary) => {
     if (adventure.id === activeAdventureId) {
-      navigate(ADMIN_PLAY_PATH)
+      enter(adventure)
       return
     }
     if (isStarting) {
@@ -222,7 +247,7 @@ function AdminSelectScreen(): ReactElement {
     setIsStarting(true)
     setStartFailed(false)
     saveActiveAdventure(adventure.id)
-      .then(() => navigate(ADMIN_PLAY_PATH))
+      .then(() => enter(adventure))
       .catch((err) => {
         console.error('Error starting adventure:', err)
         setIsStarting(false)
@@ -234,7 +259,7 @@ function AdminSelectScreen(): ReactElement {
   if (status === 'list' && adventures !== undefined) {
     content = (
       <Cards>
-        {adventures.map((adventure) => (
+        {adventures.map((adventure, position) => (
           <li key={adventure.id}>
             <AdventureCard
               adventure={adventure}
@@ -242,6 +267,8 @@ function AdminSelectScreen(): ReactElement {
               isLocked={isAdventureLocked(adventure.id, activeAdventureId, isFighting)}
               isTranslucent={isTranslucent}
               onSelect={select}
+              position={position}
+              isHero={adventure.id === heroId}
             />
           </li>
         ))}
@@ -286,6 +313,7 @@ function AdminSelectScreen(): ReactElement {
   return (
     <>
       <GlobalStyle />
+      <PageTransitionStyle />
       <AdventureBackground
         layers={background.layers}
         shown={background.shown}
@@ -294,7 +322,7 @@ function AdminSelectScreen(): ReactElement {
       />
       <Screen data-test-id="adventure-select" data-status={status}>
         <Page>
-          <Header>
+          <Header data-view-head>
             <Label>Spielleiter</Label>
             <Heading>Abenteuer wählen</Heading>
           </Header>

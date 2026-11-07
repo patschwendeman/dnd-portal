@@ -1,10 +1,10 @@
 import {
   useCallback, useContext, ReactElement, useEffect, useRef, useState,
 } from 'react'
-import { Navigate, useNavigate } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { ADMIN_SELECT_PATH } from '../app/adminPaths'
+import { ADMIN_PLAY_PATH, ADMIN_SELECT_PATH } from '../app/adminPaths'
 
 import useAudioPlayback from '../audio/useAudioPlayback'
 import useAutoAudioOutput from '../audio/useAutoAudioOutput'
@@ -71,8 +71,26 @@ import { HistoryStep } from '../notes/historyShortcuts'
 import { useHistoryShortcuts, useNoteHistory } from '../notes/useNoteHistory'
 import { saveGroundGrid, saveGroundGridCellSize, saveWallOverlay } from '../service/gameTable'
 import { textStyle } from '../style/tokens'
-import GlobalStyle, { hoverScrollbar, tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
+import GlobalStyle, {
+  hoverScrollbar,
+  TILE_BUILD_MS,
+  TILE_EXIT_MS,
+  tileEntrance,
+  tileEntranceAttributes,
+  tileSurface,
+  TileSurfaceProps,
+} from '../style/GlobalStyle'
+import PageTransitionStyle from '../style/PageTransitionStyle'
+import {
+  dashboardTile,
+  EntrancePhase,
+  initialEntrancePhase,
+  NAV_PANEL_TILE,
+  readAdminEntrance,
+  SelectReturn,
+} from '../utils/adminEntrance'
 import mostImportantError from '../utils/adminError'
+import { adventureBackgroundSource } from '../utils/adventureBackground'
 import {
   countByKind,
   FightRow,
@@ -87,6 +105,13 @@ import { nextOpenPanel } from '../utils/navRail'
 import { useAdventureBackground } from '../utils/useAdventureBackground'
 import useFightPreparation from '../utils/useFightPreparation'
 import { filterSceneByKey } from '../utils/utils'
+import {
+  canTransition,
+  isHeroShown,
+  prefersReducedMotion,
+  runningPageTransition,
+  startPageTransition,
+} from '../utils/viewTransition'
 
 import notesIcon from '/assets/icons/notes.svg'
 import scenesIcon from '/assets/icons/scenes.svg'
@@ -154,6 +179,7 @@ const Screen = styled.div<LayoutProps>`
     a {
         color: ${(props) => props.theme.colors.primary};
     };
+    ${tileEntrance}
 `
 
 // One cell that its child fills, so the scroll areas inside get a definite height
@@ -196,6 +222,17 @@ const kindCounts = (combatants: Combatant[]): string => {
 // A write to the API; the screens change only with the push of the server that follows it
 type Save = () => Promise<unknown>
 
+interface Ending {
+  adventureId: number
+  /** Media path of the background, kept while the tiles fade out */
+  image: string | null
+}
+
+/**
+ * The Admin of the active adventure. Opened from the selection, it takes over the image of the
+ * card as background and then builds up its tiles; "Abenteuer beenden" plays this backwards.
+ * Opened any other way (reload, link, following another Admin window) everything stands at once.
+ */
 function AdminScreen(): ReactElement {
   const { activeAdventureId } = useContext(ActiveAdventureContext)
   const { activeSceneId } = useContext(ActiveSceneContext)
@@ -225,6 +262,64 @@ function AdminScreen(): ReactElement {
   const [isEndFightDialogOpen, setIsEndFightDialogOpen] = useState<boolean>(false)
   const [isEndAdventureDialogOpen, setIsEndAdventureDialogOpen] = useState<boolean>(false)
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // Read once: the state is cleared right after, and other ways in have none
+  const [entrance] = useState(() => readAdminEntrance(location.state))
+  const [phase, setPhase] = useState<EntrancePhase>(
+    () => initialEntrancePhase(entrance, prefersReducedMotion()),
+  )
+  // The card image, shown until the Admin loaded the adventure itself
+  const [entranceImage, setEntranceImage] = useState<string | null>(entrance?.image ?? null)
+  // From the confirmed "Abenteuer beenden" until the page transition: the push without an
+  // adventure must neither lead to the selection at once nor take away the background
+  const [ending, setEnding] = useState<Ending | null>(null)
+
+  // history.state survives a reload, which must not look like an entrance from the selection
+  useEffect(() => {
+    if (location.state !== null) {
+      navigate(ADMIN_PLAY_PATH, { replace: true, state: null })
+    }
+  }, [location.state, navigate])
+
+  // The snapshots of the page transition render the tile surfaces without their blur, so the
+  // tiles wait for its end instead of jumping when it is over
+  useEffect(() => {
+    if (phase !== 'pending') {
+      return undefined
+    }
+    let stale = false
+    runningPageTransition().then(() => {
+      if (!stale) {
+        setPhase('building')
+      }
+    })
+    return () => {
+      stale = true
+    }
+  }, [phase])
+
+  useEffect(() => {
+    if (phase !== 'building') {
+      return undefined
+    }
+    const timer = window.setTimeout(() => setPhase('done'), TILE_BUILD_MS)
+    return () => window.clearTimeout(timer)
+  }, [phase])
+
+  useEffect(() => {
+    if (phase !== 'exiting' || ending === null) {
+      return undefined
+    }
+    const state: SelectReturn = { endedAdventureId: ending.adventureId }
+    const timer = window.setTimeout(() => {
+      startPageTransition(
+        () => navigate(ADMIN_SELECT_PATH, { state }),
+        ending.image === null ? null : isHeroShown,
+      )
+    }, TILE_EXIT_MS)
+    return () => window.clearTimeout(timer)
+  }, [phase, ending, navigate])
 
   // Neither kept on the server nor in localStorage: after a reload the notes panel is open again
   const [openPanel, setOpenPanel] = useState<string | null>('docs')
@@ -387,7 +482,7 @@ function AdminScreen(): ReactElement {
   // Nothing changes locally: Admin, Wall and Ground switch with the push of the server. Only the
   // latest write may report its result, so an older failure cannot hide a newer success (or the
   // other way round). No automatic retry.
-  const runSave = useCallback((save: Save, onSaved?: () => void) => {
+  const runSave = useCallback((save: Save, onSaved?: () => void, onFailed?: () => void) => {
     latestSave.current += 1
     const request = latestSave.current
     loadLatest(
@@ -399,6 +494,7 @@ function AdminScreen(): ReactElement {
       (err) => {
         console.error('Error saving:', err)
         setFailedSave({ retry: save })
+        onFailed?.()
       },
       () => request !== latestSave.current,
     )
@@ -410,13 +506,30 @@ function AdminScreen(): ReactElement {
     }
   }
 
+  // Without an adventure the detail is dropped, so the background has to be read beforehand
+  const ownAdventure = adventureDetail?.id === loadedAdventureId ? adventureDetail : undefined
+  if (entranceImage !== null && ownAdventure !== undefined) {
+    setEntranceImage(null)
+  }
+  const shownImage = entranceImage ?? adventureBackgroundSource(ownAdventure)
+
   // The push without an adventure leads back to the selection as well; navigating at once spares
-  // the wait for it
+  // the wait for it. With motion the tiles fade out first and the page transition follows.
   const handleEndAdventureDialog = (confirmed: boolean) => {
     setIsEndAdventureDialogOpen(false)
-    if (confirmed && !isFighting) {
-      runSave(() => saveActiveAdventure(null), () => navigate(ADMIN_SELECT_PATH))
+    if (!confirmed || isFighting) {
+      return
     }
+    if (activeAdventureId === null || !canTransition()) {
+      runSave(() => saveActiveAdventure(null), () => navigate(ADMIN_SELECT_PATH))
+      return
+    }
+    setEnding({ adventureId: activeAdventureId, image: shownImage })
+    runSave(
+      () => saveActiveAdventure(null),
+      () => setPhase('exiting'),
+      () => setEnding(null),
+    )
   }
 
   const handleLevelChange = (level: number) => {
@@ -647,22 +760,35 @@ function AdminScreen(): ReactElement {
   // The detail of the previous adventure stays until the new one is loaded; meanwhile the
   // background is plain instead of showing the image of the previous adventure
   const background = useAdventureBackground(
-    adventureDetail?.id === loadedAdventureId ? adventureDetail : undefined,
+    ownAdventure,
+    ending !== null ? ending.image : entranceImage,
   )
   const isTranslucent = background.isImageShown
 
-  if (hasState && activeAdventureId === null) {
+  // Content that arrives after the build-up started fades in, until all of it is there; later
+  // changes (another folder, the dashboard shown again) appear at once as before
+  const isContentLoaded = hasState && ownAdventure !== undefined
+    && (activeSceneId === null || activeScene !== undefined)
+  const [isContentSettled, setIsContentSettled] = useState<boolean>(phase === 'done')
+  if (!isContentSettled && phase === 'done' && isContentLoaded) {
+    setIsContentSettled(true)
+  }
+
+  if (hasState && activeAdventureId === null && ending === null) {
     return <Navigate to={ADMIN_SELECT_PATH} replace />
   }
 
   return (
     <>
       <GlobalStyle />
+      <PageTransitionStyle />
       <AdventureBackground
         layers={background.layers}
         shown={background.shown}
+        instant={background.instant}
         onLoad={background.onLoad}
         onError={background.onError}
+        isHero
       />
       <Dialogue
         sceneOption={sceneOption}
@@ -689,7 +815,13 @@ function AdminScreen(): ReactElement {
           testId="end-adventure-dialog"
         />
       )}
-      <Screen $panelWidth={panelWidth} $isDashboardOpen={isDashboardOpen}>
+      <Screen
+        data-test-id="admin-screen"
+        data-entrance={phase}
+        data-content-fade={!isContentSettled || undefined}
+        $panelWidth={panelWidth}
+        $isDashboardOpen={isDashboardOpen}
+      >
         <RailArea $area="rail">
           <NavRail
             items={navItems}
@@ -705,6 +837,7 @@ function AdminScreen(): ReactElement {
             aria-label={openNavItem.name}
             data-test-id="nav-panel"
             $isTranslucent={isTranslucent}
+            {...tileEntranceAttributes(NAV_PANEL_TILE)}
           >
             {openNavItem.panel}
           </NavPanel>
@@ -744,6 +877,8 @@ function AdminScreen(): ReactElement {
                     )}
                     testId="dashboard-panel-turn"
                     isTranslucent={isTranslucent}
+                    entrance={dashboardTile(0)}
+                    hasLoadedContent
                   >
                     <TurnPanel
                       combatants={fight.combatants}
@@ -760,6 +895,8 @@ function AdminScreen(): ReactElement {
                     headEnd={<KindCounts>{kindCounts(fight.combatants)}</KindCounts>}
                     testId="dashboard-panel-initiative"
                     isTranslucent={isTranslucent}
+                    entrance={dashboardTile(1)}
+                    hasLoadedContent
                   >
                     <InitiativePanel
                       combatants={fight.combatants}
@@ -770,12 +907,17 @@ function AdminScreen(): ReactElement {
                   </DashboardPanel>
                 </>
               ) : (
-                <ActiveScenePanel activeScene={activeScene} testId="dashboard-panel-stage" />
+                <ActiveScenePanel
+                  activeScene={activeScene}
+                  testId="dashboard-panel-stage"
+                  entrance={dashboardTile(0)}
+                />
               )}
               <DashboardPanel
                 label="Audio"
                 testId="dashboard-panel-audio"
                 isTranslucent={isTranslucent}
+                entrance={dashboardTile(fight ? 2 : 1)}
               >
                 <AudioPanel
                   audio={audio}
@@ -789,6 +931,7 @@ function AdminScreen(): ReactElement {
                 label="Spieltisch"
                 testId="dashboard-panel-table"
                 isTranslucent={isTranslucent}
+                entrance={dashboardTile(fight ? 3 : 2)}
               >
                 <GameTablePanel
                   wallOverlay={wallOverlay}
@@ -804,6 +947,8 @@ function AdminScreen(): ReactElement {
                   headEnd={<LevelStepper level={level} onChange={handleLevelChange} />}
                   testId="dashboard-panel-party"
                   isTranslucent={isTranslucent}
+                  entrance={dashboardTile(3)}
+                  hasLoadedContent
                 >
                   <PlayersPanel players={players} />
                 </DashboardPanel>

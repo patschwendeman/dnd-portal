@@ -5,8 +5,11 @@ import DashboardPanel from './DashboardPanel'
 import Label from './Label'
 import { mediaUrl } from '../api/mediaUrl'
 import { Image, SceneDetail } from '../models/models'
-import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
+import {
+  ENTRANCE_CONTENT_ATTRIBUTES, tileEntranceAttributes, tileSurface, TileSurfaceProps,
+} from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
+import { TileEntrance } from '../utils/adminEntrance'
 
 const STAGE_LABEL = 'Aktive Szene'
 
@@ -119,23 +122,33 @@ const imageAlt = (label: string, image: Image): string => `${label}: ${image.nam
 interface ActiveScenePanelProps {
   activeScene: SceneDetail | undefined
   testId: string
+  /** Place and direction in the build-up of the Admin */
+  entrance: TileEntrance
 }
 
 /**
  * The stage of the dashboard: what Wall and Ground show, without looking at them. Name and
  * description wrap (long German words hyphenated, lang="de")
  */
-function ActiveScenePanel({ activeScene, testId }: ActiveScenePanelProps): ReactElement {
+function ActiveScenePanel({
+  activeScene, testId, entrance,
+}: ActiveScenePanelProps): ReactElement {
   if (!activeScene) {
     return (
-      <DashboardPanel label={STAGE_LABEL} testId={testId}>
+      <DashboardPanel label={STAGE_LABEL} testId={testId} entrance={entrance} hasLoadedContent>
         <NoScene data-test-id="no-active-scene">Keine Szene aktiv</NoScene>
       </DashboardPanel>
     )
   }
   const { wall_image: wallImage, ground_image: groundImage } = activeScene
   return (
-    <Stage aria-label={STAGE_LABEL} data-test-id={testId} lang="de">
+    <Stage
+      aria-label={STAGE_LABEL}
+      data-test-id={testId}
+      lang="de"
+      {...tileEntranceAttributes(entrance)}
+      {...ENTRANCE_CONTENT_ATTRIBUTES}
+    >
       {wallImage && (
         <StageImage
           src={mediaUrl(wallImage.source)}

@@ -2,7 +2,8 @@ import { ReactElement } from 'react'
 import { ReactSVG } from 'react-svg'
 import styled, { useTheme } from 'styled-components'
 
-import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
+import { tileEntranceAttributes, tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
+import { NAV_RAIL_TILE } from '../utils/adminEntrance'
 import { NavRailPlacement, splitByPlacement } from '../utils/navRail'
 
 interface NavRailItem {
@@ -167,7 +168,12 @@ function NavRail({
   }
 
   return (
-    <Rail aria-label="Navigation" data-test-id="nav-rail" $isTranslucent={isTranslucent}>
+    <Rail
+      aria-label="Navigation"
+      data-test-id="nav-rail"
+      $isTranslucent={isTranslucent}
+      {...tileEntranceAttributes(NAV_RAIL_TILE)}
+    >
       <Head>
         <Logo role="img" aria-label="DnD Portal" data-test-id="nav-logo">
           <ReactSVG src="/assets/icons/dice.svg" />

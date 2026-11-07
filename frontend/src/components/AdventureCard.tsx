@@ -7,6 +7,7 @@ import Label from './Label'
 import { mediaUrl } from '../api/mediaUrl'
 import { AdventureSummary } from '../models/models'
 import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
+import { NAMED_CARD_COUNT } from '../style/PageTransitionStyle'
 import { textStyle } from '../style/tokens'
 import { ADVENTURE_LOCKED_TITLE, partyPreview } from '../utils/adventureSelect'
 import { characterInitials } from '../utils/player'
@@ -244,6 +245,10 @@ interface AdventureCardProps {
   isLocked: boolean
   isTranslucent: boolean
   onSelect: (adventure: AdventureSummary) => void
+  /** Place in the list; the cards sink away and rise in this order in the page transition */
+  position: number
+  /** The image is the shared image of the page transition to and from the Admin */
+  isHero: boolean
 }
 
 /**
@@ -251,13 +256,14 @@ interface AdventureCardProps {
  * whole card is a button
  */
 function AdventureCard({
-  adventure, isActive, isLocked, isTranslucent, onSelect,
+  adventure, isActive, isLocked, isTranslucent, onSelect, position, isHero,
 }: AdventureCardProps): ReactElement {
   return (
     <Card
       type="button"
       lang="de"
       data-test-id={`adventure-card-${adventure.id}`}
+      data-view-card={position < NAMED_CARD_COUNT ? position : undefined}
       data-active={isActive}
       data-locked={isLocked}
       // aria-disabled instead of disabled, so the tooltip shows and the card keeps its focus
@@ -274,7 +280,12 @@ function AdventureCard({
     >
       <Picture>
         {adventure.image ? (
-          <img src={mediaUrl(adventure.image.source)} alt="" data-test-id="adventure-card-image" />
+          <img
+            src={mediaUrl(adventure.image.source)}
+            alt=""
+            data-test-id="adventure-card-image"
+            data-view-hero={isHero || undefined}
+          />
         ) : (
           <CardIcon src={imageIcon} size={PLACEHOLDER_ICON_SIZE} />
         )}

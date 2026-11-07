@@ -2,7 +2,10 @@ import { ReactElement, ReactNode } from 'react'
 import styled from 'styled-components'
 
 import Label from './Label'
-import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
+import {
+  ENTRANCE_CONTENT_ATTRIBUTES, tileEntranceAttributes, tileSurface, TileSurfaceProps,
+} from '../style/GlobalStyle'
+import { TileEntrance } from '../utils/adminEntrance'
 
 const Panel = styled.section<TileSurfaceProps>`
   ${tileSurface}
@@ -31,6 +34,10 @@ interface DashboardPanelProps {
   children: ReactNode
   /** While the background image of the adventure lies behind the tiles */
   isTranslucent?: boolean
+  /** Place and direction in the build-up of the Admin */
+  entrance?: TileEntrance
+  /** The content is loaded after the panel appears, so it fades in during the build-up */
+  hasLoadedContent?: boolean
 }
 
 /**
@@ -38,15 +45,27 @@ interface DashboardPanelProps {
  * different `title` is shown
  */
 function DashboardPanel({
-  label, title = undefined, headEnd = undefined, testId, children, isTranslucent = false,
+  label,
+  title = undefined,
+  headEnd = undefined,
+  testId,
+  children,
+  isTranslucent = false,
+  entrance = undefined,
+  hasLoadedContent = false,
 }: DashboardPanelProps): ReactElement {
   return (
-    <Panel aria-label={label} data-test-id={testId} $isTranslucent={isTranslucent}>
+    <Panel
+      aria-label={label}
+      data-test-id={testId}
+      $isTranslucent={isTranslucent}
+      {...(entrance && tileEntranceAttributes(entrance))}
+    >
       <Head>
         <Label>{title ?? label}</Label>
         {headEnd}
       </Head>
-      <div>{children}</div>
+      <div {...(hasLoadedContent && ENTRANCE_CONTENT_ATTRIBUTES)}>{children}</div>
     </Panel>
   )
 }

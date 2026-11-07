@@ -23,6 +23,14 @@ Scenario: I continue the active adventure
     And I click on the card of Erstes Abenteuer
     Then the admin screen shows Erstes Abenteuer and the active adventure is unchanged
 
+Scenario: The admin screen builds up after entering from the selection, not after a reload
+    Given the adventure Erstes Abenteuer is active
+    When I open the adventure selection
+    And I click on the card of Erstes Abenteuer
+    Then the admin screen builds up its tiles until all of them stand
+    When I reload the admin screen
+    Then the admin screen stands at once without building up its tiles
+
 Scenario: I end the adventure
     Given an adventure with an active scene is active, a wall and a second admin screen are open
     And I am on the admin screen with the settings open

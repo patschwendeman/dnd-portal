@@ -10,9 +10,11 @@ import {
   clickElement,
   ensureActiveAdventure,
   ensureActiveScene,
+  entrancePhasesUntil,
   openAdminScreen,
   openScreen,
   readJson,
+  recordEntrancePhases,
   restoreActiveScene,
   waitForAttribute,
   waitForElement,
@@ -37,6 +39,7 @@ const SELECT_STATE = '[data-test-id="adventure-select-state"]'
 const RETRY = '[data-test-id="adventure-select-retry"]'
 const BACKGROUND_IMAGES = '[data-test-id="adventure-background"] img'
 const ADMIN_ADVENTURE_NAME = '[data-test-id="admin-header"] [data-test-id="adventure-name"]'
+const ADMIN_SCREEN = '[data-test-id="admin-screen"]'
 const SETTINGS_ITEM = '[data-test-id="nav-item-settings"]'
 const END_ADVENTURE = '[data-test-id="nav-panel"] [data-test-id="end-adventure"]'
 const END_ADVENTURE_DIALOG = '[data-test-id="end-adventure-dialog"]'
@@ -57,6 +60,8 @@ const EMPTY_ADVENTURES_SCRIPT = `
 const STEP_CARD = 'the card shows image, name, level, description and the party of the adventure'
 const STEP_UNCHANGED = 'the admin screen shows Erstes Abenteuer '
   + 'and the active adventure is unchanged'
+const STEP_BUILD_UP = 'the admin screen builds up its tiles until all of them stand'
+const STEP_AT_ONCE = 'the admin screen stands at once without building up its tiles'
 
 interface Player { id: number, player_name: string, character_name: string }
 interface Adventure {
@@ -325,6 +330,43 @@ defineFeature(feature, (test) => {
       expect(await waitForPath(driver, PLAY_PATH)).toBe(PLAY_PATH)
       expect(await waitForAdminAdventure(driver, adventure.name)).toBe(adventure.name)
       expect(await activeAdventureId()).toBe(adventure.id)
+    })
+  }, SCENARIO_TIMEOUT)
+
+  test('The admin screen builds up after entering from the selection, not after a reload', ({
+    given, when, then, and,
+  }) => {
+    let adventure: Adventure
+
+    given('the adventure Erstes Abenteuer is active', async () => {
+      await givenActive()
+      adventure = await firstAdventure()
+    })
+
+    when('I open the adventure selection', async () => {
+      await openSelection(driver)
+      await recordEntrancePhases(driver)
+    })
+
+    and('I click on the card of Erstes Abenteuer', async () => {
+      await clickElement(driver, card(adventure.id))
+    })
+
+    then(STEP_BUILD_UP, async () => {
+      expect(await waitForPath(driver, PLAY_PATH)).toBe(PLAY_PATH)
+      const phases = await entrancePhasesUntil(driver, 'done')
+      expect(phases.slice(-2)).toEqual(['building', 'done'])
+      expect(await waitForAdminAdventure(driver, adventure.name)).toBe(adventure.name)
+    })
+
+    when('I reload the admin screen', async () => {
+      await driver.navigate().refresh()
+    })
+
+    then(STEP_AT_ONCE, async () => {
+      await waitForElement(driver, ADMIN_SCREEN)
+      expect(await waitForAdminAdventure(driver, adventure.name)).toBe(adventure.name)
+      expect(await entrancePhasesUntil(driver, 'done')).toEqual(['done'])
     })
   }, SCENARIO_TIMEOUT)
 

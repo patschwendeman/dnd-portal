@@ -1,7 +1,7 @@
 # DND-54: Auftritt des Admin Screens: Übergang aus der Abenteuerauswahl und Aufbau der Kacheln
 
 **Typ:** feat
-**Status:** Freigegeben
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -132,26 +132,26 @@ Abgestimmter Mockup: https://claude.ai/artifact/VYrcxZ1MP69WxZHRtzGCsz (Ablauf u
 ## Subtasks
 
 ### Frontend
-- [ ] Hilfsmodul für den Übergang (z. B. `src/utils/viewTransition.ts`): Prüfung auf API und „Bewegung reduzieren“,
+- [x] Hilfsmodul für den Übergang (z. B. `src/utils/viewTransition.ts`): Prüfung auf API und „Bewegung reduzieren“,
       Start mit `flushSync`, Warten auf ein Signal mit Obergrenze (`HERO_WAIT_MS`), Rückgabe von `finished`; mit
       Unit-Tests.
-- [ ] Globale Regeln für die Pseudo-Elemente `::view-transition-*` (Dauern und Kurven aus E5, Ausblenden der alten
+- [x] Globale Regeln für die Pseudo-Elemente `::view-transition-*` (Dauern und Kurven aus E5, Ausblenden der alten
       Seite, Sinken und Aufsteigen von Kopf und Karten, `object-fit: cover` und `overflow: hidden` für das Bild) an
       einer Stelle, die Auswahl und Admin teilen.
-- [ ] `AdminSelectScreen`: Namen für das Bild der angeklickten Karte, die übrigen Karten und den Kopf; Übergang beim
+- [x] `AdminSelectScreen`: Namen für das Bild der angeklickten Karte, die übrigen Karten und den Kopf; Übergang beim
       Starten (nach erfolgreichem Speichern) und beim Fortsetzen; Einstieg per `location.state` (E3, E4).
-- [ ] `AdventureBackground` bzw. `useAdventureBackground`: Bild aus dem Einstieg sofort ohne Überblendung zeigen;
+- [x] `AdventureBackground` bzw. `useAdventureBackground`: Bild aus dem Einstieg sofort ohne Überblendung zeigen;
       Name `adventure-hero` am Hintergrund; Signal, sobald das Bild geladen ist.
-- [ ] `AdminScreen`: Einstieg lesen und löschen; Zustand des Auftritts (`pending` → `building` → `done`, ohne Einstieg
+- [x] `AdminScreen`: Einstieg lesen und löschen; Zustand des Auftritts (`pending` → `building` → `done`, ohne Einstieg
       gleich `done`), als `data-entrance` am Screen für Tests; Kacheln mit Index und Herkunft nach E5 (gemeinsamer
       Baustein für die Keyframes, z. B. neben `tileSurface`).
-- [ ] Weiches Einblenden der nachgeladenen Inhalte nach E6.
-- [ ] Rückweg nach E8 in `AdminScreen` (nach erfolgreichem Speichern) und Ziel-Karte in `AdminSelectScreen`.
+- [x] Weiches Einblenden der nachgeladenen Inhalte nach E6.
+- [x] Rückweg nach E8 in `AdminScreen` (nach erfolgreichem Speichern) und Ziel-Karte in `AdminSelectScreen`.
 
 ### Doku
-- [ ] `docs/screens.md`, Ist von „Abenteuerauswahl“ und „Admin Screen“: Übergang, Aufbau, Rückweg, wann nichts
+- [x] `docs/screens.md`, Ist von „Abenteuerauswahl“ und „Admin Screen“: Übergang, Aufbau, Rückweg, wann nichts
       animiert ist.
-- [ ] `frontend/docs/design/components.md`: Abschnitte „Abenteuer-Karte“, „Abenteuer-Hintergrund“ und „Kachel“
+- [x] `frontend/docs/design/components.md`: Abschnitte „Abenteuer-Karte“, „Abenteuer-Hintergrund“ und „Kachel“
       (Auftritt mit Dauern, Reihenfolge, Herkunft, „Bewegung reduzieren“).
 
 ## Akzeptanzkriterien (nur feat)
