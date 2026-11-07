@@ -119,8 +119,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Einstellungen:** Das Panel „Einstellungen“ zeigt unter Labels die Abschnitte „Darstellung“ und „Ground-Raster“
   (siehe die folgenden Punkte) und ganz unten den Button „Abenteuer beenden“. Es öffnet, wechselt und klappt ein wie
   die anderen Panels.
-- **Abenteuer beenden:** Button ganz unten im Panel „Einstellungen“ (unter „Ground-Raster“) mit einem kleinen
-  Vorschaubild des Abenteuerbilds, „Abenteuer beenden“, darunter dem Namen des Abenteuers und einem Icon. Klick öffnet
+- **Abenteuer beenden:** Button ganz unten im Panel „Einstellungen“ (unter „Ground-Raster“) mit „Abenteuer
+  beenden“, darunter dem Namen des Abenteuers, und rechts einem Icon. Klick öffnet
   den Dialog „Abenteuer beenden“ mit dem Namen und dem Hinweis, dass Wall, Ground und Player danach kein Abenteuer
   mehr zeigen. „Confirm“ speichert „kein Abenteuer aktiv“: Wall und Ground zeigen kein Szenenbild, der Player „Noch
   kein Abenteuer aktiv“, und alle Admin-Fenster wechseln zur Abenteuerauswahl; die zuletzt aktive Szene bleibt im

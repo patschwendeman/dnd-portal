@@ -120,7 +120,7 @@ Mockup (ohne die Änderungen aus E3–E5): https://claude.ai/artifact/Xd6YwuvBvz
 - [x] `AdminScreen`: Umleitung nach `/admin` ohne aktives Abenteuer (E1); automatische Aktivierung entfernen (E5),
       `selectDefaultAdventureId` samt Tests löschen, falls ungenutzt.
 - [x] `SettingsPanel`: Abschnitt „Abenteuer“ und `AdventureSelect` entfernen; Button „Abenteuer beenden“ ganz unten
-      im Panel (unter „Ground-Raster“) mit Vorschaubild des Abenteuerbilds, Name und Icon; Sperre im Kampf und bei
+      im Panel (unter „Ground-Raster“) mit Name und Icon (Vorschaubild nach Runde 1 entfallen); Sperre im Kampf und bei
       stehender Hinweisleiste wie bisher bei der Auswahlliste; `ConfirmDialog` nach E4; nach Erfolg zu `/admin`.
 - [x] `AdventureSelect.tsx` löschen, falls ungenutzt.
 
@@ -209,3 +209,69 @@ Mockup (ohne die Änderungen aus E3–E5): https://claude.ai/artifact/Xd6YwuvBvz
 
 ## Offene Fragen
 - –
+
+## Review
+
+### Runde 1 – Review vom 2026-11-07 (Commit 9e10442, Gesamtstand gegen 73aee0b)
+
+**Empfehlung: Abnahme.** Kein blockierender Befund. AK1–AK10 erfüllt, alle Checks grün, auch die vollständige
+E2E-Suite (14 Suites, 61/61). Der E2E-Fehler beim Implementer („first interaction makes an admin window the audio
+output“) trat nicht auf; die Erklärung mit dem externen Fenster ist plausibel. Die Kampfsperre anderer Karten (AK7)
+wurde zusätzlich live mit einem eingeschleusten zweiten Abenteuer geprüft. Die gemeldeten Abweichungen verfehlen kein
+Akzeptanzkriterium; ob Abweichung 1 bleibt, entscheidet der User (Hinweis 1).
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Admin startet auf der Auswahl | erfüllt | Route `/admin` → `AdminSelectScreen` (`App.tsx:62-68`); Hintergrund über `useAdventureBackground(activeAdventure)`. BDD `adminAdventureSelect.feature:3` grün. |
+| AK2 Karte zeigt die Daten | erfüllt | `AdventureCard.tsx`: Bild 16:9, Name, Level-Badge, Beschreibung (2 Zeilen), Party. BDD `feature:8`; Backend-Test für Stufe und `image: null`; Unit `partyPreview`. |
+| AK3 Abenteuer starten | erfüllt | Erst `PATCH /table`, nach Erfolg `/admin/play`; bei Fehler Hinweis. BDD `feature:11`; Push an alle Screens per `test_ws.py`. |
+| AK4 Aktives Abenteuer fortsetzen | erfüllt | Aktive Karte navigiert ohne Schreibzugriff. BDD `feature:20`. |
+| AK5 Keine automatische Aktivierung | erfüllt | `selectDefaultAdventureId` entfernt. BDD `feature:11`: Server bleibt `null`. |
+| AK6 Abenteuer beenden | erfüllt | Button unten in „Einstellungen“, `ConfirmDialog`, `saveActiveAdventure(null)`, Navigation nach `/admin`. BDD `feature:26`, `adminSettings.feature:19`; Backend `test_ending_the_adventure_pushes_a_state_without_adventure`. |
+| AK7 Kampf sperrt den Wechsel | erfüllt | Unit `isAdventureLocked`, Guard `AdventureCard.tsx:267`, BDD `feature:33`, `adminFight.feature:25`; zusätzlich live geprüft (gesperrte Karte, Tooltip, kein PATCH). |
+| AK8 Beenden in anderem Admin-Fenster | erfüllt | `<Navigate replace>` bei `activeAdventureId === null`. BDD `feature:26`. |
+| AK9 Direkter Aufruf ohne Abenteuer | erfüllt | Gleiche Umleitung. BDD `feature:41`. |
+| AK10 Leer- und Fehlerzustände | erfüllt | Unit `adventureSelectStatus`; BDD `feature:46` und `feature:53`. |
+
+**Bewertung der gemeldeten Abweichungen**
+1. Beschreibung nicht gedämpft: weicht von E6 ab, nicht von AK2; begründet durch `contrast.md` (`text.muted` auf
+   `secondary` in Tavern 3,9:1). Regelkonform, Bestätigung durch den User.
+2. Schloss-Label zusätzlich „Gesperrt“: ergänzt E7, dokumentiert.
+3. Eigener `GameTableProvider` je Route: erfüllt den Subtask; Neuaufbau verhindert, dass die Auswahl Audioausgabe
+   bleibt; in `architecture.md` begründet.
+4. Button zweizeilig: Layout-Detail, dokumentiert.
+5. Kampfsperre anderer Karten nur Unit-Test: durch Live-Prüfung geschlossen (siehe Hinweis 4).
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+1. E6 „gedämpft“: Abweichung vom User bestätigen lassen.
+2. `frontend/CLAUDE.md` (Abschnitt „Struktur“) nennt `/admin/play` nicht; per Kurzweg nachziehen.
+3. `SelectList`-Props `isLocked`/`lockedTitle`/`isDisabled` ohne Aufrufer; `components.md` beschreibt das Schloss
+   weiter. Kandidat für Aufräumen bzw. `known-issues.md`.
+4. Testlücke AK7: kein automatischer Test für den Klick auf eine gesperrte Karte; BDD mit eingeschleustem zweiten
+   Abenteuer (analog `EMPTY_ADVENTURES_SCRIPT`) möglich.
+5. Keine neuen `contrast.md`-Zeilen; verwendete Paare sind bereits gemessen. Optional `LOCKED_OPACITY` unter
+   „Bewusste Ausnahmen“ in `DESIGN.md` 2.6.
+6. Plan-Wortlaut E3 („Speichern fehlgeschlagen“) weicht vom Code ab („Änderung konnte nicht gespeichert werden“);
+   `screens.md` ist korrekt.
+7. Flaky Backend-Test `test_ws.py::test_join_overlay_is_pushed_to_all_walls` (1 von 7 Läufen,
+   `InvalidRequestError`); vorbestehend wie in DND-51 Hinweis 2, nicht im Diff.
+8. Testablage: Push-Test in `test_ws.py` statt `test_table.py`; 409 mit `null` deckt
+   `test_fight.py::test_adventure_change_is_rejected_during_a_fight` ab.
+
+**Checks**
+- Backend: ruff, ruff format, mypy grün; pytest 338/338 (1 von 7 Läufen mit Flake aus Hinweis 7); `openapi.json` ohne Diff.
+- Frontend: lint, typecheck, Unit 351/351, knip, jscpd grün; `schema.d.ts` ohne Diff; `tsc -b` grün.
+- E2E: betroffene Suites 18/18, Gesamtsuite 61/61 grün.
+- Konventionen: ein Commit, Typ passt, keine KI-Signatur, keine Lint-Unterdrückungen, Änderungen im Scope.
+- Manuell offen: Plan-Tests 1–4, vor allem Test 4 (beide Themes, mit und ohne Abenteuerbild).
+
+**Entscheidung des Users nach Runde 1**
+- Das Vorschaubild des Abenteuers im Button „Abenteuer beenden“ (Panel „Einstellungen“) entfällt.
+
+**Umsetzung Runde 2**
+- [x] Vorschaubild aus „Abenteuer beenden“ entfernt; Button bleibt zweizeilig (oben „Abenteuer beenden“, darunter
+      der Name, Icon rechts über beide Zeilen), weil Text und Name im 240px breiten Panel nicht nebeneinander passen.
+      Prop `image` entfernt; `image.svg` bleibt (genutzt von `AdventureCard`). Doku: `screens.md`, `components.md`.
