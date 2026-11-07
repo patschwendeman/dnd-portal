@@ -22,7 +22,9 @@ Du setzt genau einen Task-Plan um. Der Plan ist die einzige Vorgabe.
 6. Nach jedem Subtask bzw. Befund die relevanten Checks ausführen (Lint, Tests – siehe die CLAUDE.md des
    jeweiligen Teils).
 7. Vor dem Commit den Diff der Runde (`git diff`) auf Kommentare prüfen, die nur erklären, was der Code tut,
-   und diese löschen. Kommentare, die ein nicht offensichtliches Warum festhalten, bleiben.
+   und diese löschen. Kommentare, die ein nicht offensichtliches Warum festhalten, bleiben. Außerdem fehlende
+   Doc-Kommentare ergänzen (Regeln: `CONTRIBUTING.md`, Abschnitt „Code comments“, z. B. Docstring an jeder neuen
+   Route).
 8. Am Ende Status auf `Im Review` setzen und den Runden-Commit anlegen (siehe „Commits“).
 
 ## Regeln je Typ

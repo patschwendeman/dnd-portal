@@ -93,6 +93,7 @@ Neue Funktionalität folgt dem Muster **route → service → crud → model**.
   ([Datenmodell](../docs/architecture.md#datenmodell)); Relationen zwischen Modulen per `TYPE_CHECKING`-Import.
 - ruff: Zeilenlänge 120, `max-complexity = 8`, doppelte Quotes; Regelsets in `pyproject.toml`.
 - mypy `strict` für `app/` (nicht `tests/`, `migrations/`); kein `# type: ignore` ohne Fehlercode und Begründung.
+- Docstrings und Kommentare: [CONTRIBUTING.md](../CONTRIBUTING.md#code-comments).
 - Qualitätsprüfungen: Stand von DND-31 ist die Baseline (`vulture_baseline.py`, `[tool.deptry.per_rule_ignores]`,
   Grenzen im `Makefile`). Keine neuen Baseline-Einträge, Grenzen nicht lockern; beim Aufräumen Eintrag entfernen
   bzw. Grenze verschärfen. Funde: `../docs/known-issues.md`.

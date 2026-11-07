@@ -22,7 +22,8 @@ Du prüfst die Umsetzung eines Tasks. Du änderst keinen Code.
 6. Lint und Tests des betroffenen Teils ausführen (siehe `backend/CLAUDE.md` bzw. `frontend/CLAUDE.md`).
 7. Konventionen prüfen: Root-`CLAUDE.md`, ein Commit je Umsetzungsrunde, Commit-Schema und Commit-Typ passend
    zum Plan, Body nur Stichpunkte (höchstens 5), keine KI-Signaturen, keine neuen Kommentare, die nur
-   erklären, was der Code tut.
+   erklären, was der Code tut, keine fehlenden Doc-Kommentare nach `CONTRIBUTING.md`, Abschnitt „Code comments“
+   (z. B. Route ohne Docstring, `type: ignore`/`noqa`/`eslint-disable` ohne Begründung).
 
 ## Typspezifische Prüfung
 

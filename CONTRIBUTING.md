@@ -74,6 +74,18 @@ Die Teil-`CLAUDE.md` (`frontend/`, `backend/`) bleiben knapp, Richtwert höchste
 - Neue Details zuerst in `docs/` ergänzen; wächst eine Teil-`CLAUDE.md` über den Richtwert, beim nächsten Eingriff
   kürzen.
 
+## Code comments
+
+Comments and doc comments are written in English and explain **why**, not what: a non-obvious reason, constraint
+or trade-off. Names and types already say what the code does.
+
+- No history ("was changed from …"), no ticket numbers, no references to docs sections; those go stale.
+- **Frontend:** a `/** */` comment on exported functions, hooks and components whose behavior is not obvious
+  from name and signature (side effects, timing, ordering, what the caller must guarantee).
+- **Backend:** a docstring on every route (FastAPI publishes it as the OpenAPI description) and on service
+  functions whose behavior is not obvious.
+- `# type: ignore`, `# noqa` and `eslint-disable` always carry a reason (and, for `type: ignore`, the error code).
+
 ## Commit-Nachrichten
 
 Jede Commit-Nachricht muss diesem Schema entsprechen:

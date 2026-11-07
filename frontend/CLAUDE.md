@@ -87,7 +87,7 @@ Ausführlicher: [../docs/architecture.md](../docs/architecture.md#frontend-front
 - Toter Code und Duplikate (knip, jscpd): Der Stand von DND-31 ist die Baseline (`knip.jsonc`, `threshold` in
   `.jscpd.json`). Keine neuen Baseline-Einträge, den Schwellwert nicht anheben; beim Aufräumen Eintrag entfernen bzw.
   Schwellwert senken. Funde: `../docs/known-issues.md`.
-- Code-Kommentare erklären das Warum, ohne Verweise auf DESIGN.md-/docs-Abschnitte.
+- Kommentare und `/** */`-Doc-Kommentare: [CONTRIBUTING.md](../CONTRIBUTING.md#code-comments).
 
 ## Wichtig beim Ändern
 
