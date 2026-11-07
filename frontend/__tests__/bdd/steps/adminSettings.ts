@@ -8,6 +8,7 @@ import {
   WAIT_TIMEOUT,
   buildDriver,
   clickElement,
+  openAdminScreen,
   openScreen,
   waitForAttribute,
   waitForElement,
@@ -27,9 +28,10 @@ const RAIL = '[data-test-id="nav-rail"]'
 const SETTINGS_ITEM = '[data-test-id="nav-item-settings"]'
 const SCENES_ITEM = '[data-test-id="nav-item-scenes"]'
 const PANEL = '[data-test-id="nav-panel"]'
-const SECTION_IDS = ['settings-adventure', 'settings-theme', 'settings-ground-grid']
+const SECTION_IDS = ['settings-theme', 'settings-ground-grid']
 const NOTES_VIEW = '[data-test-id="notes-view"]'
-const ADVENTURE_SELECT = `${PANEL} [data-test-id="adventure-select"]`
+const END_ADVENTURE = `${PANEL} [data-test-id="end-adventure"]`
+const END_ADVENTURE_DIALOG = '[data-test-id="end-adventure-dialog"]'
 const THEME_SELECT = `${PANEL} [data-test-id="theme-select"]`
 const LISTBOX = `${PANEL} [role="listbox"]`
 const themeOption = (theme: Theme): string => (
@@ -71,16 +73,22 @@ const setTheme = async (theme: Theme): Promise<void> => {
   await api('table', { method: 'PATCH', body: JSON.stringify({ theme }) })
 }
 
-// Without an adventure on the game table the Admin activates the first one of the list
+const activeAdventureId = async (): Promise<number | null> => (
+  (await api<TableState>('table')).active_adventure_id
+)
+
+// openAdminScreen makes sure an adventure is active
 const activeAdventureName = async (): Promise<string> => {
   const adventures = await api<{ id: number, name: string }[]>('adventures')
-  const { active_adventure_id: activeId } = await api<TableState>('table')
-  return (adventures.find((adventure) => adventure.id === activeId) ?? adventures[0]).name
+  const activeId = await activeAdventureId()
+  const active = adventures.find((adventure) => adventure.id === activeId)
+  expect(active).toBeDefined()
+  return active?.name ?? ''
 }
 
 const openAdmin = async (driver: WebDriver): Promise<void> => {
   await driver.manage().window().setRect(WINDOW_RECT)
-  await openScreen(driver, '/admin')
+  await openAdminScreen(driver)
 }
 
 const openSettings = async (driver: WebDriver): Promise<void> => {
@@ -218,15 +226,27 @@ defineFeature(feature, (test) => {
         .toBeLessThan(itemRect.y - (fight.y + fight.height))
     })
 
-    and('the panel shows the sections Abenteuer, Darstellung and Ground-Raster', async () => {
-      expect(await waitForAttribute(driver, PANEL, 'aria-label', 'Einstellungen'))
-        .toBe('Einstellungen')
-      const labels = await Promise.all(SECTION_IDS.map(async (id) => (
-        (await waitForElement(driver, `${PANEL} [data-test-id="${id}"] > span`)).getText()
-      )))
-      expect(labels.map((label) => label.toUpperCase()))
-        .toEqual(['ABENTEUER', 'DARSTELLUNG', 'GROUND-RASTER'])
-    })
+    and(
+      'the panel shows the sections Darstellung and Ground-Raster and below them Abenteuer beenden',
+      async () => {
+        expect(await waitForAttribute(driver, PANEL, 'aria-label', 'Einstellungen'))
+          .toBe('Einstellungen')
+        const labels = await Promise.all(SECTION_IDS.map(async (id) => (
+          (await waitForElement(driver, `${PANEL} [data-test-id="${id}"] > span`)).getText()
+        )))
+        expect(labels.map((label) => label.toUpperCase()))
+          .toEqual(['DARSTELLUNG', 'GROUND-RASTER'])
+        expect(await driver.findElements(By.css(`${PANEL} [data-test-id="adventure-select"]`)))
+          .toHaveLength(0)
+        const grid = await (
+          await waitForElement(driver, `${PANEL} [data-test-id="settings-ground-grid"]`)
+        ).getRect()
+        const button = await (await waitForElement(driver, END_ADVENTURE)).getRect()
+        expect(button.y).toBeGreaterThanOrEqual(grid.y + grid.height)
+        expect(await (await waitForElement(driver, END_ADVENTURE)).getText())
+          .toContain('Abenteuer beenden')
+      },
+    )
 
     and('the notes are still shown', async () => {
       expect(await (await waitForElement(driver, NOTES_VIEW)).isDisplayed()).toBe(true)
@@ -256,31 +276,39 @@ defineFeature(feature, (test) => {
     })
   })
 
-  test('I open the adventure select in the settings', ({ given, when, then }) => {
+  test('I decline ending the adventure', ({ given, when, then }) => {
+    let name = ''
+
     given('I am on the admin screen with the settings open', async () => {
       await openAdmin(driver)
       await openSettings(driver)
+      name = await activeAdventureName()
     })
 
-    when('I click on the adventure select', async () => {
-      await clickElement(driver, ADVENTURE_SELECT)
+    then('the button Abenteuer beenden shows the name of the active adventure', async () => {
+      const nameSelector = `${END_ADVENTURE} [data-test-id="end-adventure-name"]`
+      expect(await waitForText(driver, nameSelector, name)).toBe(name)
     })
 
-    then('the list shows the active adventure as selected', async () => {
-      const name = await activeAdventureName()
-      await waitForElement(driver, LISTBOX)
-      const selected = await waitForElement(driver, `${LISTBOX} [aria-selected="true"]`)
-      expect(await selected.getText()).toBe(name)
-      expect(await waitForText(driver, ADVENTURE_SELECT, name)).toBe(name)
+    when('I click on Abenteuer beenden', async () => {
+      await clickElement(driver, END_ADVENTURE)
     })
 
-    when('I press Escape', async () => {
-      await driver.actions().sendKeys(Key.ESCAPE).perform()
+    then('the dialog Abenteuer beenden names the active adventure', async () => {
+      const dialog = await waitForElement(driver, END_ADVENTURE_DIALOG)
+      expect(await dialog.getAttribute('aria-label')).toBe('Abenteuer beenden')
+      expect(await dialog.getText()).toContain(name)
     })
 
-    then('the list is closed and the focus is back on the adventure select', async () => {
-      await waitForElementGone(driver, LISTBOX)
-      expect(await focusedTestId(driver)).toBe('adventure-select')
+    when('I click on Decline', async () => {
+      await clickElement(driver, `${END_ADVENTURE_DIALOG} [data-test-id="decline-button"]`)
+    })
+
+    then('the dialog is closed and the adventure is still active', async () => {
+      await waitForElementGone(driver, END_ADVENTURE_DIALOG)
+      expect(await activeAdventureId()).not.toBeNull()
+      expect(new URL(await driver.getCurrentUrl()).pathname).toBe('/admin/play')
+      expect(await waitForText(driver, ADVENTURE_NAME, name)).toBe(name)
     })
   })
 

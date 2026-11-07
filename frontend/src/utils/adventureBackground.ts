@@ -87,5 +87,5 @@ export const isBackgroundImageShown = (state: AdventureBackgroundState): boolean
  * on nothing else, so neither a scene nor a theme change replaces the image.
  */
 export const adventureBackgroundSource = (
-  adventure: AdventureDetail | undefined,
+  adventure: Pick<AdventureDetail, 'image'> | undefined,
 ): string | null => adventure?.image?.source ?? null

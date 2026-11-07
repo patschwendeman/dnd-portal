@@ -5,20 +5,19 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.models import Adventure, Player
 
+_PLAYERS_AND_IMAGE = (
+    selectinload(Adventure.players).joinedload(Player.avatar),
+    joinedload(Adventure.image),
+)
+
 
 def read_adventures(db: Session) -> list[Adventure]:
-    return list(db.scalars(select(Adventure).order_by(Adventure.id)))
+    statement = select(Adventure).options(*_PLAYERS_AND_IMAGE).order_by(Adventure.id)
+    return list(db.scalars(statement))
 
 
 def read_adventure(db: Session, adventure_id: int) -> Adventure | None:
-    statement = (
-        select(Adventure)
-        .options(
-            selectinload(Adventure.players).joinedload(Player.avatar),
-            joinedload(Adventure.image),
-        )
-        .where(Adventure.id == adventure_id)
-    )
+    statement = select(Adventure).options(*_PLAYERS_AND_IMAGE).where(Adventure.id == adventure_id)
     return db.scalars(statement).one_or_none()
 
 

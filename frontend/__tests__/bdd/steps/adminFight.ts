@@ -7,7 +7,7 @@ import {
   buildDriver,
   clickElement,
   ensureActiveScene,
-  openScreen,
+  openAdminScreen,
   readJson,
   waitForAttribute,
   waitForElement,
@@ -40,7 +40,7 @@ const TURN_ROUND = `${TURN_PANEL} [data-test-id="turn-round"]`
 const END_TURN = `${TURN_PANEL} [data-test-id="end-turn"]`
 const INITIATIVE_ROWS = '[data-test-id="dashboard-panel-initiative"] li'
 const INITIATIVE_NAMES = `${INITIATIVE_ROWS} [data-test-id="combatant-name"]`
-const ADVENTURE_SELECT = '[data-test-id="nav-panel"] [data-test-id="adventure-select"]'
+const END_ADVENTURE = '[data-test-id="nav-panel"] [data-test-id="end-adventure"]'
 const LOCKED_TITLE = 'Während des Kampfes nicht wechselbar'
 const SCENE_ENTRIES = '[data-test-id="nav-panel"] [data-test-id="scene-navigation"] button'
 
@@ -79,7 +79,7 @@ const startFightOfTwoPlayersAndAnEnemy = async (): Promise<Player[]> => {
 
 const openAdmin = async (driver: WebDriver): Promise<void> => {
   await driver.manage().window().setRect(WINDOW_RECT)
-  await openScreen(driver, '/admin')
+  await openAdminScreen(driver)
   await waitForElement(driver, DASHBOARD)
 }
 
@@ -295,18 +295,21 @@ defineFeature(feature, (test) => {
         .toBe(activeSceneBefore)
     })
 
-    when('I click on the menu item Einstellungen and on the adventure select', async () => {
+    when('I click on the menu item Einstellungen and on Abenteuer beenden', async () => {
       await clickElement(driver, '[data-test-id="nav-item-settings"]')
-      await clickElement(driver, ADVENTURE_SELECT)
+      await clickElement(driver, END_ADVENTURE)
     })
 
-    then('the adventure select is locked and no list opens', async () => {
-      expect(await waitForAttribute(driver, ADVENTURE_SELECT, 'aria-disabled', 'true'))
+    then('Abenteuer beenden is locked and no dialog opens', async () => {
+      expect(await waitForAttribute(driver, END_ADVENTURE, 'aria-disabled', 'true'))
         .toBe('true')
-      expect(await waitForAttribute(driver, ADVENTURE_SELECT, 'title', LOCKED_TITLE))
+      expect(await waitForAttribute(driver, END_ADVENTURE, 'title', LOCKED_TITLE))
         .toBe(LOCKED_TITLE)
-      expect(await waitForElement(driver, '[data-test-id="adventure-select-lock"]')).toBeTruthy()
-      expect(await driver.findElements(By.css('[role="listbox"]'))).toHaveLength(0)
+      expect(await waitForElement(driver, '[data-test-id="end-adventure-lock"]')).toBeTruthy()
+      expect(await driver.findElements(By.css('[data-test-id="end-adventure-dialog"]')))
+        .toHaveLength(0)
+      expect((await readJson<{ active_adventure_id: number | null }>('table'))
+        .active_adventure_id).not.toBeNull()
     })
   }, SCENARIO_TIMEOUT)
 

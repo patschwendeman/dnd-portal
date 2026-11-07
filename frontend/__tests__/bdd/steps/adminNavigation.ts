@@ -4,7 +4,7 @@ import { WebDriver } from 'selenium-webdriver'
 import {
   buildDriver,
   clickElement,
-  openScreen,
+  openAdminScreen,
   waitForAttribute,
   waitForElement,
   waitForElementGone,
@@ -35,7 +35,7 @@ const LEVELING_NOTES = `${NOTES_VIEW} h1#note-leveling-level_1--level_1`
 
 const openAdmin = async (driver: WebDriver): Promise<void> => {
   await driver.manage().window().setRect(WINDOW_RECT)
-  await openScreen(driver, '/admin')
+  await openAdminScreen(driver)
 }
 
 const getScrollTop = async (driver: WebDriver): Promise<number> => driver.executeScript(

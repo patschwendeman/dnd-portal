@@ -6,6 +6,7 @@ import {
   WAIT_TIMEOUT,
   buildDriver,
   clickElement,
+  openAdminScreen,
   openScreen,
   waitForAttribute,
   waitForElement,
@@ -276,7 +277,7 @@ defineFeature(feature, (test) => {
     and('the admin screen is open', async () => {
       admin = buildDriver()
       await admin.manage().window().setRect(ADMIN_RECT)
-      await openScreen(admin, '/admin')
+      await openAdminScreen(admin)
       await waitForElement(admin, ADMIN_HERO_NAME)
     })
 

@@ -6,7 +6,7 @@ import {
   WAIT_TIMEOUT,
   buildDriver,
   clickElement,
-  openScreen,
+  openAdminScreen,
   waitForElement,
 } from '../support/helpers'
 
@@ -42,7 +42,7 @@ interface AdventureDetail { id: number, global_level: number }
 
 const openAdmin = async (driver: WebDriver): Promise<void> => {
   await driver.manage().window().setRect(WINDOW_RECT)
-  await openScreen(driver, '/admin')
+  await openAdminScreen(driver)
   await waitForElement(driver, DASHBOARD)
 }
 

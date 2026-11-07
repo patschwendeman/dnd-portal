@@ -8,6 +8,7 @@ import {
   buildDriver,
   clickElement,
   confirmDialog,
+  openAdminScreen,
   openScreen,
   waitForAttribute,
   waitForElement,
@@ -65,7 +66,7 @@ const sceneEntry = (name: string): string => `${SCENE_NAVIGATION} button[title="
 
 const openAdmin = async (driver: WebDriver): Promise<void> => {
   await driver.manage().window().setRect(WINDOW_RECT)
-  await openScreen(driver, '/admin')
+  await openAdminScreen(driver)
 }
 
 // Checks the candidates one after another and stops at the first inactive scene

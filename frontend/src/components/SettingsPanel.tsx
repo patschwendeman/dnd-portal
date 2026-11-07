@@ -1,13 +1,19 @@
 import { ReactElement, ReactNode, useState } from 'react'
+import { ReactSVG } from 'react-svg'
 import styled from 'styled-components'
 
-import AdventureSelect from './AdventureSelect'
 import Label from './Label'
 import { PanelSlider, PanelSliderArea, SliderValue } from './PanelSlider'
 import { SelectList, SelectOption } from './SelectList'
-import { AdventureSummary, Theme } from '../models/models'
+import { mediaUrl } from '../api/mediaUrl'
+import { Image, Theme } from '../models/models'
 import { textStyle } from '../style/tokens'
+import { ADVENTURE_LOCKED_TITLE } from '../utils/adventureSelect'
 import { GROUND_GRID_CELL_SIZE, toCellSize } from '../utils/groundGrid'
+
+import imageIcon from '/assets/icons/image.svg'
+import logoutIcon from '/assets/icons/logout.svg'
+import lockIcon from '/assets/icons/padlock.svg'
 
 const THEME_OPTIONS: readonly SelectOption<Theme>[] = [
   { value: 'cyber', label: 'Cyber' },
@@ -18,6 +24,7 @@ const Sections = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${(props) => props.theme.space[5]};
+  min-height: 100%;
 `
 
 const SectionBody = styled.div`
@@ -42,6 +49,133 @@ const CellSizeHead = styled.div`
 const PanelText = styled.span`
   ${textStyle('sm')}
 `
+
+// Pushed to the lower end of the panel, apart from the settings above it
+const EndArea = styled.div`
+  margin-top: auto;
+`
+
+// A field on the panel tile like the select lists (surface `background`). Two rows, because the
+// panel is too narrow for image, name and label side by side
+const EndButton = styled.button`
+  display: grid;
+  grid-template-areas: "preview name name" "label label icon";
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: ${(props) => props.theme.space[2]} ${(props) => props.theme.space[3]};
+  width: 100%;
+  min-height: ${(props) => props.theme.size.control.lg};
+  padding: ${(props) => props.theme.space[2]} ${(props) => props.theme.space[3]};
+  ${textStyle('sm')}
+  font-family: inherit;
+  font-weight: ${(props) => props.theme.fontWeight.medium};
+  text-align: left;
+  background-color: ${(props) => props.theme.colors.background};
+  color: ${(props) => props.theme.colors.text.color};
+  border: none;
+  border-radius: ${(props) => props.theme.radius.md};
+  cursor: pointer;
+
+  &:disabled {
+    color: ${(props) => props.theme.colors.text.muted};
+    cursor: default;
+  }
+
+  &[aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: ${(props) => props.theme.borderWidth.thick} solid
+      ${(props) => props.theme.colors.primary};
+    outline-offset: ${(props) => props.theme.borderWidth.thick};
+  }
+`
+
+// 16:9 like the image on the card of the adventure selection
+const Preview = styled.span`
+  grid-area: preview;
+  display: grid;
+  place-items: center;
+  height: ${(props) => props.theme.space[6]};
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background-color: ${(props) => props.theme.colors.secondary};
+  border-radius: ${(props) => props.theme.radius.sm};
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`
+
+const EndLabel = styled.span`
+  grid-area: label;
+`
+
+const EndName = styled.span`
+  grid-area: name;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: ${(props) => props.theme.colors.text.muted};
+  font-weight: ${(props) => props.theme.fontWeight.regular};
+`
+
+const ButtonIcon = styled.span<{ $area?: string }>`
+  ${(props) => (props.$area ? `grid-area: ${props.$area};` : '')}
+  justify-self: end;
+
+  svg {
+    display: block;
+    width: ${(props) => props.theme.size.icon};
+    height: ${(props) => props.theme.size.icon};
+  }
+`
+
+interface EndAdventureButtonProps {
+  name: string
+  image: Image | null
+  isLocked: boolean
+  isDisabled: boolean
+  onEnd: () => void
+}
+
+function EndAdventureButton({
+  name, image, isLocked, isDisabled, onEnd,
+}: EndAdventureButtonProps): ReactElement {
+  return (
+    <EndButton
+      type="button"
+      data-test-id="end-adventure"
+      // aria-disabled instead of disabled, so the tooltip shows and the button keeps its focus
+      aria-disabled={isLocked || undefined}
+      title={isLocked ? ADVENTURE_LOCKED_TITLE : undefined}
+      disabled={isDisabled}
+      onClick={() => {
+        if (!isLocked) {
+          onEnd()
+        }
+      }}
+    >
+      <Preview aria-hidden="true">
+        {image
+          ? <img src={mediaUrl(image.source)} alt="" />
+          : <ButtonIcon><ReactSVG src={imageIcon} /></ButtonIcon>}
+      </Preview>
+      <EndName data-test-id="end-adventure-name" title={name}>{name}</EndName>
+      <EndLabel>Abenteuer beenden</EndLabel>
+      <ButtonIcon
+        $area="icon"
+        aria-hidden="true"
+        data-test-id={isLocked ? 'end-adventure-lock' : undefined}
+      >
+        <ReactSVG src={isLocked ? lockIcon : logoutIcon} />
+      </ButtonIcon>
+    </EndButton>
+  )
+}
 
 interface SectionProps {
   label: string
@@ -101,12 +235,12 @@ function CellSizeControl({ cellSize, failedSave, onCommit }: CellSizeControlProp
 }
 
 interface SettingsPanelProps {
-  adventures: AdventureSummary[]
-  activeAdventureId: number | null
-  onSelectAdventure: (adventureId: number) => void
-  /** During a fight the adventure cannot change */
+  /** The active adventure; null while it loads (the button "Abenteuer beenden" is not shown) */
+  adventure: { name: string, image: Image | null } | null
+  onEndAdventure: () => void
+  /** During a fight the adventure cannot end */
   isAdventureLocked: boolean
-  /** While the error bar stands no adventure can be switched */
+  /** While the error bar stands the adventure cannot end */
   isAdventureDisabled: boolean
   theme: Theme
   onThemeChange: (theme: Theme) => void
@@ -116,9 +250,8 @@ interface SettingsPanelProps {
 }
 
 function SettingsPanel({
-  adventures,
-  activeAdventureId,
-  onSelectAdventure,
+  adventure,
+  onEndAdventure,
   isAdventureLocked,
   isAdventureDisabled,
   theme,
@@ -129,15 +262,6 @@ function SettingsPanel({
 }: SettingsPanelProps): ReactElement {
   return (
     <Sections data-test-id="settings-panel">
-      <Section label="Abenteuer" testId="settings-adventure">
-        <AdventureSelect
-          adventures={adventures}
-          activeAdventureId={activeAdventureId}
-          onSelectAdventure={onSelectAdventure}
-          isLocked={isAdventureLocked}
-          isDisabled={isAdventureDisabled}
-        />
-      </Section>
       <Section label="Darstellung" testId="settings-theme">
         <SelectList
           options={THEME_OPTIONS}
@@ -155,6 +279,17 @@ function SettingsPanel({
           onCommit={onGroundGridCellSizeCommit}
         />
       </Section>
+      {adventure !== null && (
+        <EndArea>
+          <EndAdventureButton
+            name={adventure.name}
+            image={adventure.image}
+            isLocked={isAdventureLocked}
+            isDisabled={isAdventureDisabled}
+            onEnd={onEndAdventure}
+          />
+        </EndArea>
+      )}
     </Sections>
   )
 }

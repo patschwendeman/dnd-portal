@@ -9,19 +9,20 @@ Scenario: I open the settings from the lower end of the navigation rail
     Given I am on the admin screen
     When I click on the menu item Einstellungen
     Then Einstellungen is highlighted at the lower end of the rail
-    And the panel shows the sections Abenteuer, Darstellung and Ground-Raster
+    And the panel shows the sections Darstellung and Ground-Raster and below them Abenteuer beenden
     And the notes are still shown
     When I click on the menu item Einstellungen again
     Then the panel is hidden
     When I click on the menu item Einstellungen and then on the menu item Szenen
     Then the panel shows the scenes
 
-Scenario: I open the adventure select in the settings
+Scenario: I decline ending the adventure
     Given I am on the admin screen with the settings open
-    When I click on the adventure select
-    Then the list shows the active adventure as selected
-    When I press Escape
-    Then the list is closed and the focus is back on the adventure select
+    Then the button Abenteuer beenden shows the name of the active adventure
+    When I click on Abenteuer beenden
+    Then the dialog Abenteuer beenden names the active adventure
+    When I click on Decline
+    Then the dialog is closed and the adventure is still active
 
 Scenario: I switch the theme with the keyboard and the mouse
     Given the theme is Cyber and a wall screen is open

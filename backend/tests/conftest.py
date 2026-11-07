@@ -154,11 +154,11 @@ def expected_scene_details(seed: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 @pytest.fixture(scope="session")
-def expected_adventures(seed: dict[str, Any]) -> list[dict[str, Any]]:
-    """Adventures in the `AdventureSummary` schema."""
+def expected_adventures(expected_adventure_details: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Adventures in the `AdventureSummary` schema: the details without the active scene."""
     return [
-        {"id": adventure["id"], "name": adventure["name"], "description": adventure["description"]}
-        for adventure in with_ids(seed["adventures"])
+        {field: value for field, value in adventure.items() if field != "active_scene_id"}
+        for adventure in expected_adventure_details
     ]
 
 

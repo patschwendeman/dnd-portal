@@ -26,7 +26,7 @@ def _not_found() -> HTTPException:
 
 @router.get("", response_model=list[AdventureSummary])
 def read_adventures(db: SessionDep) -> list[Adventure]:
-    """All adventures, ordered by ID."""
+    """All adventures, ordered by ID, each with its level, players and adventure image (for the selection)."""
     return adventure_service.get_adventures(db)
 
 

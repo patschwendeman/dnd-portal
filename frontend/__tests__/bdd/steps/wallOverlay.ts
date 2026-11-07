@@ -6,6 +6,7 @@ import {
   WAIT_TIMEOUT,
   buildDriver,
   clickElement,
+  openAdminScreen,
   openScreen,
   waitForAttribute,
   waitForElement,
@@ -164,7 +165,7 @@ defineFeature(feature, (test) => {
     walls = [buildDriver(), buildDriver()]
     await driver.manage().window().setRect(WINDOW_RECT)
     await Promise.all([
-      openScreen(driver, '/admin'),
+      openAdminScreen(driver),
       ...walls.map((wall) => openScreen(wall, '/wall')),
     ])
     await Promise.all(walls.map((wall) => expectWallOverlay(wall, wallOverlay)))

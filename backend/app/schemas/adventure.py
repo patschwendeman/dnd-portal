@@ -7,14 +7,6 @@ MIN_LEVEL = 1
 MAX_LEVEL = 20
 
 
-class AdventureSummary(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    name: str
-    description: str | None
-
-
 class Player(BaseModel):
     """A person with their character in one adventure (another adventure has its own entry for the same person)."""
 
@@ -26,6 +18,19 @@ class Player(BaseModel):
     race: str
     character_class: str
     avatar: Image | None
+
+
+class AdventureSummary(BaseModel):
+    """An adventure as a card in the adventure selection: without its active scene."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    description: str | None
+    global_level: int
+    players: list[Player]
+    image: Image | None
 
 
 class AdventureDetail(BaseModel):

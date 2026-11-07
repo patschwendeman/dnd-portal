@@ -7,6 +7,7 @@ import {
   buildDriver,
   clickElement,
   ensureActiveScene,
+  openAdminScreen,
   openScreen,
   restoreActiveScene,
   waitForAttribute,
@@ -109,7 +110,7 @@ const waitForScreenCounts = async (
 
 const openAdmin = async (driver: WebDriver): Promise<void> => {
   await driver.manage().window().setRect(WINDOW_RECT)
-  await openScreen(driver, '/admin')
+  await openAdminScreen(driver)
 }
 
 const getScrollTop = async (driver: WebDriver): Promise<number> => driver.executeScript(

@@ -13,7 +13,7 @@ export interface paths {
         };
         /**
          * Read Adventures
-         * @description All adventures, ordered by ID.
+         * @description All adventures, ordered by ID, each with its level, players and adventure image (for the selection).
          */
         get: operations["read_adventures_adventures_get"];
         put?: never;
@@ -324,14 +324,22 @@ export interface components {
             /** Players */
             players: components["schemas"]["Player"][];
         };
-        /** AdventureSummary */
+        /**
+         * AdventureSummary
+         * @description An adventure as a card in the adventure selection: without its active scene.
+         */
         AdventureSummary: {
             /** Description */
             description: string | null;
+            /** Global Level */
+            global_level: number;
             /** Id */
             id: number;
+            image: components["schemas"]["Image"] | null;
             /** Name */
             name: string;
+            /** Players */
+            players: components["schemas"]["Player"][];
         };
         /**
          * AdventureUpdate

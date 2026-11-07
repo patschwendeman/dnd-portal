@@ -24,11 +24,11 @@ interface AdventureBackground {
 }
 
 /**
- * State of the adventure image behind the tiles of the Admin and the cards of the Player; without
- * an image (or while the adventure loads) the background is plain
+ * State of the adventure image behind the tiles of the Admin, the adventure selection and the
+ * cards of the Player; without an image (or while the adventure loads) the background is plain
  */
 export function useAdventureBackground(
-  adventure: AdventureDetail | undefined,
+  adventure: Pick<AdventureDetail, 'image'> | undefined,
 ): AdventureBackground {
   const source = adventureBackgroundSource(adventure)
   const src = source === null ? null : mediaUrl(source)

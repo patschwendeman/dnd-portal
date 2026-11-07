@@ -95,7 +95,7 @@ und Laufweite nach [1.4](../../DESIGN.md#14-regeln).
 |---|---|
 | Aufbau | optional Label, optional Titel, Inhalt. Zeilen getrennt durch Trennlinien ([1.4](../../DESIGN.md#14-regeln) Rahmen). |
 | Maße | Innenabstand `space.5`, `radius.lg` |
-| Beispiele | Hero-Karte und Ressourcen des Player Screens, „Party“ der Charakterauswahl, Hinweis nach Abenteuerwechsel (Player); Fläche wie die [Kachel](#kachel) |
+| Beispiele | Hero-Karte und Ressourcen des Player Screens, „Party“ der Charakterauswahl, Hinweis nach Abenteuerwechsel (Player), [Abenteuer-Karte](#abenteuer-karte); Fläche wie die [Kachel](#kachel) |
 
 ## Kachel
 
@@ -420,24 +420,24 @@ Dashboard), scrollt nie ([screen-layouts.md](screen-layouts.md#screen-layouts)).
 |---|---|
 | Aufbau | Flex-Zeile aus [Kacheln](#kachel), `gap` `space.4`: ganz links eine Button-Gruppe mit „Zurück“ (`arrowLeft.svg`) und „Vor“ (`arrowRight.svg`, `data-test-id="history-buttons"`), daneben Abenteuername (bzw. Hinweisleiste) über die ganze restliche Breite (`flex: 1`), rechtsbündig eine Button-Gruppe mit „Vollbild“ (`fullscreen.svg` bzw. `fullscreenExit.svg`) und „Dashboard“ (`dashboard.svg`). Die linke Gruppe steht auch bei Hinweisleiste und ausgeblendetem Dashboard |
 | Höhe | alle Kacheln gleich hoch: `size.control.md` plus Innenabstand und Rand der Button-Gruppen; Abenteuername und Hinweisleiste strecken sich auf diese Höhe; immer einzeilig |
-| Abenteuername | Kachel mit dem Namen des aktiven Abenteuers, nur Anzeige (kein Button, `data-test-id="adventure-name"`): `text.md` `bold`, einzeilig mit Ellipse (voller Name als `title`), mittig, Innenabstand `0 space.5`; ohne Abenteuer „Kein Abenteuer“, solange die Abenteuer laden leer. Gewechselt wird im [Panel „Einstellungen“](#panel-einstellungen) |
+| Abenteuername | Kachel mit dem Namen des aktiven Abenteuers, nur Anzeige (kein Button, `data-test-id="adventure-name"`): `text.md` `bold`, einzeilig mit Ellipse (voller Name als `title`), mittig, Innenabstand `0 space.5`; ohne Abenteuer „Kein Abenteuer“, solange die Abenteuer laden leer. Gewechselt wird in der Abenteuerauswahl ([Abenteuer-Karte](#abenteuer-karte)), beendet im [Panel „Einstellungen“](#panel-einstellungen) |
 | Button-Gruppe | Kachel mit Innenabstand `space.1` und `gap` `space.1`; Buttons darin `radius.md`, so ergibt sich außen `radius.lg` |
 | Buttons | [Icon-Buttons](#icon-button), inaktiv transparent, Hover `background`; Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`). „Zurück“ und „Vor“ (`title` und `aria-label`, keine Toggle-Buttons): ohne Ziel im Verlauf `disabled`, Icon `text.muted`, ohne Hover-Fläche, `cursor: default`; nach dem Laden beide deaktiviert. „Dashboard“: aktiv bei offenem Dashboard Fläche `primary`, Icon `onPrimary` (auch bei Hover); Fokus als Outline `borderWidth.thick` in `primary`. „Vollbild“ wie „Dashboard“, aktiv solange das Admin-Fenster im Vollbild ist (`aria-pressed`) |
-| Fehler | bei einem Fehler ersetzt die [Hinweisleiste](#hinweisleiste) den Abenteuernamen an derselben Stelle und in derselben Größe; die Button-Gruppe bleibt, ein Abenteuerwechsel ist währenddessen nicht möglich (Abenteuer-Auswahl deaktiviert) |
+| Fehler | bei einem Fehler ersetzt die [Hinweisleiste](#hinweisleiste) den Abenteuernamen an derselben Stelle und in derselben Größe; die Button-Gruppe bleibt, das Abenteuer lässt sich währenddessen nicht beenden („Abenteuer beenden“ deaktiviert) |
 
 ## Auswahlliste
 
 Button mit aufklappender Liste nach dem ARIA-Muster „Listbox“ statt nativem `select`, dessen Menü das Betriebssystem
 zeichnet. Komponente `SelectList` ([src/components/SelectList.tsx](../../src/components/SelectList.tsx), Props
-`options`, `value`, `onChange`, `label`, `isLocked`/`lockedTitle`, `isDisabled`); Abenteuer-Auswahl `AdventureSelect`
-und Theme-Auswahl im [Panel „Einstellungen“](#panel-einstellungen). Die Logik der Liste (Öffnen, Tastatur, Fokus,
+`options`, `value`, `onChange`, `label`, `isLocked`/`lockedTitle`, `isDisabled`); Theme-Auswahl im
+[Panel „Einstellungen“](#panel-einstellungen). Die Logik der Liste (Öffnen, Tastatur, Fokus,
 Schließen bei Klick außerhalb) steckt im Hook `useListbox` (`src/utils/useListbox.ts`), den auch das
 [Settings-Menü](#settings-menü) nutzt.
 
 | Eigenschaft | Wert |
 |---|---|
-| Button | Feld über die Breite des Panels: Höhe `size.control.md`, Fläche `background`, `radius.md`, Innenabstand `0 space.3`, Text `text.sm` `medium` `text.color` linksbündig (einzeilig mit Ellipse), Pfeil rechts; Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`); ohne Einträge oder deaktiviert (`isDisabled`, z. B. Abenteuer bei Hinweisleiste) `disabled`, Text und Pfeil `text.muted`, `cursor: default`. `aria-haspopup="listbox"`, `aria-expanded` |
-| Chevron | rechts im Button, SVG-`polygon` (`viewBox 0 0 20 20`), `size.icon`, `fill` in der Textfarbe des Buttons; geöffnet um 180° gedreht. Gesperrt (`isLocked`, Abenteuer während eines Kampfes) statt des Chevrons das Schloss (`padlock.svg`, `text.muted`), `aria-disabled="true"`, `cursor: not-allowed`, Tooltip „Während des Kampfes nicht wechselbar“; die Liste öffnet sich nicht |
+| Button | Feld über die Breite des Panels: Höhe `size.control.md`, Fläche `background`, `radius.md`, Innenabstand `0 space.3`, Text `text.sm` `medium` `text.color` linksbündig (einzeilig mit Ellipse), Pfeil rechts; Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`); ohne Einträge oder deaktiviert (`isDisabled`) `disabled`, Text und Pfeil `text.muted`, `cursor: default`. `aria-haspopup="listbox"`, `aria-expanded` |
+| Chevron | rechts im Button, SVG-`polygon` (`viewBox 0 0 20 20`), `size.icon`, `fill` in der Textfarbe des Buttons; geöffnet um 180° gedreht. Gesperrt (`isLocked`) statt des Chevrons das Schloss (`padlock.svg`, `text.muted`), `aria-disabled="true"`, `cursor: not-allowed`, Tooltip „Während des Kampfes nicht wechselbar“; die Liste öffnet sich nicht |
 | Liste | direkt unter dem Button und so breit wie er (`position: absolute`, `top: calc(100% + space.1)`, `left`/`right` 0); Fläche `secondary`, Rand `borderWidth.thin` in `border`, `radius.lg`, Innenabstand `space.1`, `gap` `space.1`, ohne `box-shadow`; höchstens `SELECT_LIST_MAX_HEIGHT` hoch, darüber scrollt sie; Ebene `layer.popover` |
 | Eintrag | Höhe, Innenabstand und Schrift wie beim [Navigationseintrag](#navigationseintrag) (`text.sm` `medium`, `radius.md`, einzeilig mit Ellipse, voller Name als `title`), Fläche nicht gewählter Einträge aber wie die Liste. Gewählt: Fläche `primary`, Text `onPrimary`. Hover und Fokus: Fläche `background`. Gewählt mit Tastatur-Fokus (`:focus-visible`): bleibt `primary`, dazu Outline `borderWidth.thick` in `onPrimary`, nach innen versetzt (`outline-offset` −`borderWidth.thick`), damit die scrollende Liste sie nicht abschneidet. Nicht gewählt mit Tastatur-Fokus: Fläche `background`, dazu dieselbe innere Outline in `primary`. Hover und Maus ohne Outline. `role="option"`, `aria-selected` |
 | Bedienung | Klick auf den Button öffnet und schließt. Am Button öffnen Enter, Leertaste und Pfeil runter/hoch, der Fokus steht dann auf dem gewählten Eintrag. In der Liste bewegen Pfeile (ohne Umlauf) und Pos1/Ende; Enter/Leertaste wählen und schließen; Esc schließt und setzt den Fokus zurück auf den Button; Tab und Klick außerhalb schließen. Den gewählten Eintrag erneut zu wählen schließt nur |
@@ -476,6 +476,33 @@ Icons: `hourglass.svg` (kein Abenteuer), `people.svg` (keine Charaktere), `wifiO
 Hinweis nach Abenteuerwechsel steht als eigene [Karte](#karte) über der Party: Rand `primary`, `info.svg` in
 `primary`, Text `text.sm` `medium`, Innenabstand `space.3 space.4`, `role="status"`.
 
+## Abenteuer-Karte
+
+Nur in der Abenteuerauswahl (`/admin`), Komponente `AdventureCard`
+([src/components/AdventureCard.tsx](../../src/components/AdventureCard.tsx), `data-test-id="adventure-card-<id>"`).
+Die ganze Karte ist ein `<button>` (Tab, Enter, Leertaste), daher besteht ihr Inhalt nur aus `span`s.
+
+| Eigenschaft | Wert |
+|---|---|
+| Fläche | wie die [Kachel](#kachel) (`tileSurface`, durchscheinend über dem Abenteuerbild), ohne Innenabstand; Inhalt bündig oben, `overflow: hidden` |
+| Bild | Abenteuerbild 16:9 über die volle Breite, `object-fit: cover`; ohne Bild Fläche `background` mit `image.svg` (`PLACEHOLDER_ICON_SIZE`, `text.muted`) |
+| Labels auf dem Bild | oben links (`space.3`) als Pille ([Label](#label), Innenabstand `space.1 space.2`, `radius.pill`): „Aktiv“ in `onPrimary` auf `primary` beim aktiven Abenteuer; „Gesperrt“ mit `padlock.svg` auf `secondary` bei gesperrter Karte |
+| Inhalt | Spalte, Innenabstand `space.4`, `gap` `space.3`: Name (`text.lg` `semibold`, bricht um) mit rechts dem Level-Badge (`size.badge`, `radius.pill`, Fläche `primary`, Zahl `onPrimary` `text.sm` `medium`, ohne Ring); Beschreibung (`text.sm`, höchstens zwei Zeilen mit „…“, entfällt ohne Beschreibung; nicht gedämpft, weil `text.muted` auf `secondary` in Tavern 4,5:1 verfehlt); [Label](#label) „Party · N“ und die Mitglieder |
+| Mitglieder | Grid mit zwei Spalten, `gap` `space.2`; je Mitglied eine Fläche `background` (`radius.md`, Innenabstand `space.1`, `gap` `space.2`) mit [Kampf-Avatar](#kampf-avatar) `sm`, Charaktername (`text.sm` `medium`) und Spielername (`text.xs`, `text.muted`), beide einzeilig mit Ellipse. Ab 7 Mitgliedern die ersten 5 und „+N weitere“ (`partyPreview`, `src/utils/adventureSelect.ts`), ohne Mitglieder „Noch keine Charaktere“ (`text.sm`) |
+| Aktiv | Rahmen `borderWidth.thick` in `primary` |
+| Gesperrt | während eines Kampfes im aktiven Abenteuer alle anderen Karten: Deckkraft `LOCKED_OPACITY`, `aria-disabled="true"`, `cursor: not-allowed`, Tooltip „Während des Kampfes nicht wechselbar“; ein Klick tut nichts |
+| Fokus | Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`) |
+
+## Zustände der Abenteuerauswahl
+
+Statt der Karten steht beim Laden ein Raster aus drei Platzhalter-Karten (Fläche wie die Karte, Bildfläche 16:9 und
+zwei Textbalken `SKELETON_TEXT_HEIGHT` in `background`, pulsierend, ohne Animation bei „Bewegung reduzieren“), sonst
+eine [Kachel](#kachel) mit mittig untereinander (`gap` `space.3`) „Noch keine Abenteuer“ bzw. Icon `wifiOff.svg`
+(`STATE_ICON_SIZE`), „Keine Verbindung zum Server“ (beide `text.lg` `semibold`) und dem
+[Text-Button](#text-button) „Erneut versuchen“ (Variante `cancel`, mit `reload.svg`). Über den Karten stehen bei
+Bedarf der Kampf-Hinweis (wie der Hinweis nach Abenteuerwechsel im Player: Rand `primary`, `info.svg`, `text.sm`
+`medium`, `role="status"`) und der Fehler beim Starten (Fläche und Rand `error`, Text `onError`, `role="alert"`).
+
 ## Panel „Einstellungen“
 
 Nur im Admin, Komponente `SettingsPanel` ([src/components/SettingsPanel.tsx](../../src/components/SettingsPanel.tsx),
@@ -484,10 +511,10 @@ Bündelt, was der Spielleiter einmal einstellt.
 
 | Eigenschaft | Wert |
 |---|---|
-| Aufbau | Spalte aus drei Abschnitten, `gap` `space.5`; je Abschnitt ein Label (wie „Szenen“ im Panel „Szenen“, Innenabstand `0 space.3`) und darunter mit `gap` `space.2` die Steuerung |
-| Abenteuer | [Auswahlliste](#auswahlliste) `AdventureSelect` (zugänglicher Name „Abenteuer“) mit allen Abenteuern; gesperrt während eines Kampfes, deaktiviert solange die [Hinweisleiste](#hinweisleiste) steht |
+| Aufbau | Spalte aus zwei Abschnitten, `gap` `space.5`, mindestens so hoch wie das Panel; je Abschnitt ein Label (wie „Szenen“ im Panel „Szenen“, Innenabstand `0 space.3`) und darunter mit `gap` `space.2` die Steuerung; ganz unten (`margin-top: auto`) der Button „Abenteuer beenden“ |
 | Darstellung | [Auswahlliste](#auswahlliste) (zugänglicher Name „Darstellung“) mit „Cyber“ und „Taverne“, gewählt ist das Theme des Spieltischs |
 | Ground-Raster | Zeile „Zellgröße“ (`text.sm`) mit dem Wert rechts (`SliderValue`), Innenabstand `0 space.3`; darunter der Slider (`PanelSlider`, 100–200, Schritt 10, gespeichert beim Loslassen) |
+| Abenteuer beenden | Feld über die Breite des Panels wie der Button der [Auswahlliste](#auswahlliste) (Fläche `background`, `radius.md`, Fokus-Outline), aber Mindesthöhe `size.control.lg`, Innenabstand `space.2 space.3` (`data-test-id="end-adventure"`). Zwei Zeilen (Grid, `gap` `space.2 space.3`), weil Bild, Name und Text im 240px breiten Panel nicht nebeneinander passen: oben das Vorschaubild des Abenteuerbilds (Höhe `space.6`, 16:9, `object-fit: cover`, `radius.sm`; ohne Bild Fläche `secondary` mit `image.svg`) und der Name des Abenteuers (`text.sm` `regular`, `text.muted`, einzeilig mit Ellipse), darunter „Abenteuer beenden“ (`text.sm` `medium`) und rechts `logout.svg` (`size.icon`). Klick öffnet den [Dialog](#dialog) `ConfirmDialog` „Abenteuer beenden“. Gesperrt während eines Kampfes: `padlock.svg` statt des Icons, `aria-disabled="true"`, `cursor: not-allowed`, Tooltip „Während des Kampfes nicht wechselbar“, kein Dialog; deaktiviert (`disabled`, Text `text.muted`), solange die [Hinweisleiste](#hinweisleiste) steht |
 
 ## Hinweisleiste
 
@@ -498,7 +525,7 @@ Reihenfolge Verbindung getrennt → Laden fehlgeschlagen → Speichern fehlgesch
 
 | Eigenschaft | Wert |
 |---|---|
-| Position | in der [Kopfzeile](#kopfzeile) an der Stelle und in der Größe der Abenteuer-Auswahl ([screen-layouts.md](screen-layouts.md#screen-layouts)) |
+| Position | in der [Kopfzeile](#kopfzeile) an der Stelle und in der Größe des Abenteuernamens ([screen-layouts.md](screen-layouts.md#screen-layouts)) |
 | Form | [Kachel](#kachel) mit Fläche `error` (Rand und Lichtkante in `border`) |
 | Aufbau | `display: flex`, `justify-content: center`: Text und Icon-Button „Erneut versuchen“ zentriert nebeneinander, `gap` `space.4`; Text einzeilig mit Ellipse, damit die Kopfzeile ihre Höhe behält |
 | Button | Icon-Button als Ausnahme ohne `size.control.md`: nur so groß wie das Icon (`reload.svg`, `size.icon`, etwa Texthöhe); Icon in `onError`, ohne eigene Fläche und Rahmen; zugänglicher Name „Erneut versuchen“ (`aria-label`, `title`); Fokus als Outline `borderWidth.thick` in `onError` (`:focus-visible`) |

@@ -49,7 +49,10 @@ export const saveGlobalLevel = async (
   { global_level: level },
 )
 
-export const saveActiveAdventure = async (adventureId: number): Promise<GameTableState> => (
+/** null ends the adventure: no adventure is active on the game table any more */
+export const saveActiveAdventure = async (
+  adventureId: number | null,
+): Promise<GameTableState> => (
   saveData('active adventure', 'table', { active_adventure_id: adventureId })
 )
 

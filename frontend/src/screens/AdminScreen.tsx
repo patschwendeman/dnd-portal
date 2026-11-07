@@ -1,7 +1,10 @@
 import {
   useCallback, useContext, ReactElement, useEffect, useRef, useState,
 } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
+
+import { ADMIN_SELECT_PATH } from '../app/adminPaths'
 
 import useAudioPlayback from '../audio/useAudioPlayback'
 import useAutoAudioOutput from '../audio/useAutoAudioOutput'
@@ -70,7 +73,6 @@ import { saveGroundGrid, saveGroundGridCellSize, saveWallOverlay } from '../serv
 import { textStyle } from '../style/tokens'
 import GlobalStyle, { hoverScrollbar, tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import mostImportantError from '../utils/adminError'
-import selectDefaultAdventureId from '../utils/adventure'
 import {
   countByKind,
   FightRow,
@@ -221,6 +223,8 @@ function AdminScreen(): ReactElement {
   const [dialogueVisibility, setDialogueVisibility] = useState<boolean>(false)
   const [sceneOption, setSceneOption] = useState<SceneDetail | undefined>()
   const [isEndFightDialogOpen, setIsEndFightDialogOpen] = useState<boolean>(false)
+  const [isEndAdventureDialogOpen, setIsEndAdventureDialogOpen] = useState<boolean>(false)
+  const navigate = useNavigate()
 
   // Neither kept on the server nor in localStorage: after a reload the notes panel is open again
   const [openPanel, setOpenPanel] = useState<string | null>('docs')
@@ -383,12 +387,15 @@ function AdminScreen(): ReactElement {
   // Nothing changes locally: Admin, Wall and Ground switch with the push of the server. Only the
   // latest write may report its result, so an older failure cannot hide a newer success (or the
   // other way round). No automatic retry.
-  const runSave = useCallback((save: Save) => {
+  const runSave = useCallback((save: Save, onSaved?: () => void) => {
     latestSave.current += 1
     const request = latestSave.current
     loadLatest(
       save,
-      () => setFailedSave(null),
+      () => {
+        setFailedSave(null)
+        onSaved?.()
+      },
       (err) => {
         console.error('Error saving:', err)
         setFailedSave({ retry: save })
@@ -403,24 +410,13 @@ function AdminScreen(): ReactElement {
     }
   }
 
-  // Without an adventure on the game table the first one of the list is activated, so with a single
-  // adventure the Admin works without any selection. Runs again only when the list or the adventure
-  // changes, so a failed write is repeated only by "Erneut versuchen".
-  useEffect(() => {
-    if (!hasState || adventures === undefined) {
-      return
+  // The push without an adventure leads back to the selection as well; navigating at once spares
+  // the wait for it
+  const handleEndAdventureDialog = (confirmed: boolean) => {
+    setIsEndAdventureDialogOpen(false)
+    if (confirmed && !isFighting) {
+      runSave(() => saveActiveAdventure(null), () => navigate(ADMIN_SELECT_PATH))
     }
-    const defaultAdventureId = selectDefaultAdventureId(adventures, activeAdventureId)
-    if (defaultAdventureId !== null && defaultAdventureId !== activeAdventureId) {
-      runSave(() => saveActiveAdventure(defaultAdventureId))
-    }
-  }, [hasState, adventures, activeAdventureId, runSave])
-
-  const handleAdventureSelection = (adventureId: number) => {
-    if (adventureId === activeAdventureId || isFighting) {
-      return
-    }
-    runSave(() => saveActiveAdventure(adventureId))
   }
 
   const handleLevelChange = (level: number) => {
@@ -571,9 +567,8 @@ function AdminScreen(): ReactElement {
   })
 
   // Empty while the list of adventures is loading, so "Kein Abenteuer" does not flash up
-  const adventureName = activeAdventureId === null
-    ? null
-    : adventures?.find((adventure) => adventure.id === activeAdventureId)?.name ?? ''
+  const activeAdventure = adventures?.find((adventure) => adventure.id === activeAdventureId)
+  const adventureName = activeAdventureId === null ? null : activeAdventure?.name ?? ''
 
   const navItems: (NavRailItem & { panel: ReactElement })[] = [
     {
@@ -628,9 +623,8 @@ function AdminScreen(): ReactElement {
       placement: 'bottom',
       panel: (
         <SettingsPanel
-          adventures={adventures ?? []}
-          activeAdventureId={activeAdventureId}
-          onSelectAdventure={handleAdventureSelection}
+          adventure={activeAdventure ?? null}
+          onEndAdventure={() => setIsEndAdventureDialogOpen(true)}
           isAdventureLocked={isFighting}
           isAdventureDisabled={shownError !== null}
           theme={gameTableTheme}
@@ -657,6 +651,10 @@ function AdminScreen(): ReactElement {
   )
   const isTranslucent = background.isImageShown
 
+  if (hasState && activeAdventureId === null) {
+    return <Navigate to={ADMIN_SELECT_PATH} replace />
+  }
+
   return (
     <>
       <GlobalStyle />
@@ -679,6 +677,16 @@ function AdminScreen(): ReactElement {
           onDecline={() => handleEndFightDialog(false)}
           onConfirm={() => handleEndFightDialog(true)}
           testId="end-fight-dialog"
+        />
+      )}
+      {isEndAdventureDialogOpen && activeAdventure && (
+        <ConfirmDialog
+          title="Abenteuer beenden"
+          text={`„${activeAdventure.name}“ wird beendet. Wall, Ground und Player zeigen `
+            + 'danach kein Abenteuer mehr.'}
+          onDecline={() => handleEndAdventureDialog(false)}
+          onConfirm={() => handleEndAdventureDialog(true)}
+          testId="end-adventure-dialog"
         />
       )}
       <Screen $panelWidth={panelWidth} $isDashboardOpen={isDashboardOpen}>

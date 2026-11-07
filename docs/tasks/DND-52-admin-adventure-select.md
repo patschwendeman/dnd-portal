@@ -1,7 +1,7 @@
 # DND-52: Abenteuerauswahl vor dem Admin Screen, „Abenteuer beenden“ in den Einstellungen
 
 **Typ:** feat
-**Status:** Freigegeben
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -99,35 +99,35 @@ Mockup (ohne die Änderungen aus E3–E5): https://claude.ai/artifact/Xd6YwuvBvz
 ## Subtasks
 
 ### Vertrag
-- [ ] `AdventureSummary` um `global_level`, `image`, `players` erweitern; `openapi.json` und
+- [x] `AdventureSummary` um `global_level`, `image`, `players` erweitern; `openapi.json` und
       `frontend/src/api/schema.d.ts` neu erzeugen.
 
 ### Backend
-- [ ] `GET /adventures` lädt Bild und Spieler mit (ohne N+1-Abfragen, z. B. `selectinload`).
-- [ ] Tests: Response enthält Stufe, Bild (bzw. `null`) und Spieler; `PATCH /table` mit `active_adventure_id: null`
+- [x] `GET /adventures` lädt Bild und Spieler mit (ohne N+1-Abfragen, z. B. `selectinload`).
+- [x] Tests: Response enthält Stufe, Bild (bzw. `null`) und Spieler; `PATCH /table` mit `active_adventure_id: null`
       deaktiviert und pusht (falls nicht schon abgedeckt), 409 während eines Kampfes.
 
 ### Frontend
-- [ ] Routen: `/admin` → `AdminSelectScreen`, `/admin/play` → `AdminScreen`, beide im `GameTableProvider`
+- [x] Routen: `/admin` → `AdminSelectScreen`, `/admin/play` → `AdminScreen`, beide im `GameTableProvider`
       (`screen="admin"`), damit aktives Abenteuer und Kampf live ankommen.
-- [ ] `AdminSelectScreen`: Kopf (Label „Spielleiter“, Überschrift „Abenteuer wählen“), Raster der Karten
+- [x] `AdminSelectScreen`: Kopf (Label „Spielleiter“, Überschrift „Abenteuer wählen“), Raster der Karten
       (`repeat(auto-fill, minmax(min(100%, <Konstante>), 1fr))`), Hintergrund nach E2, Kampfsperre nach E7.
       Zustände: Laden (Platzhalter-Karten), „Noch keine Abenteuer“, „Keine Verbindung zum Server“ mit „Erneut
       versuchen“. Klick auf eine Karte: ist sie nicht aktiv, `PATCH /table` mit ihrer ID, nach Erfolg zu
       `/admin/play`; schlägt es fehl, Hinweis auf der Auswahl und keine Navigation. Ist sie aktiv, direkt navigieren.
-- [ ] Komponente `AdventureCard` nach E6; Party-Zeile wiederverwendet `CombatantAvatar` bzw. `PlayerRowContent`, wo
+- [x] Komponente `AdventureCard` nach E6; Party-Zeile wiederverwendet `CombatantAvatar` bzw. `PlayerRowContent`, wo
       es passt.
-- [ ] `AdminScreen`: Umleitung nach `/admin` ohne aktives Abenteuer (E1); automatische Aktivierung entfernen (E5),
+- [x] `AdminScreen`: Umleitung nach `/admin` ohne aktives Abenteuer (E1); automatische Aktivierung entfernen (E5),
       `selectDefaultAdventureId` samt Tests löschen, falls ungenutzt.
-- [ ] `SettingsPanel`: Abschnitt „Abenteuer“ und `AdventureSelect` entfernen; Button „Abenteuer beenden“ ganz unten
+- [x] `SettingsPanel`: Abschnitt „Abenteuer“ und `AdventureSelect` entfernen; Button „Abenteuer beenden“ ganz unten
       im Panel (unter „Ground-Raster“) mit Vorschaubild des Abenteuerbilds, Name und Icon; Sperre im Kampf und bei
       stehender Hinweisleiste wie bisher bei der Auswahlliste; `ConfirmDialog` nach E4; nach Erfolg zu `/admin`.
-- [ ] `AdventureSelect.tsx` löschen, falls ungenutzt.
+- [x] `AdventureSelect.tsx` löschen, falls ungenutzt.
 
 ### Doku
-- [ ] `docs/screens.md`: neuer Abschnitt Abenteuerauswahl (Soll/Ist), Einstellungen und Kopfzeile anpassen, Absatz
+- [x] `docs/screens.md`: neuer Abschnitt Abenteuerauswahl (Soll/Ist), Einstellungen und Kopfzeile anpassen, Absatz
       „Abenteuer-Auswahl“ ersetzen.
-- [ ] `docs/architecture.md` (Routen, Diagramm, Snapshot ohne Abenteuer: keine Auto-Aktivierung, Vertrag
+- [x] `docs/architecture.md` (Routen, Diagramm, Snapshot ohne Abenteuer: keine Auto-Aktivierung, Vertrag
       `AdventureSummary`), `docs/domain.md` (Route), `frontend/docs/design/components.md` (Abenteuer-Karte, Button
       „Abenteuer beenden“), `frontend/docs/design/screen-layouts.md` (Layout und Konstanten der Auswahl).
 

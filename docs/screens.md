@@ -4,13 +4,47 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 
 | Screen | Route | Gerät | Komponente |
 |---|---|---|---|
-| Admin | `/admin` | Rechner des Spielleiters | `src/screens/AdminScreen.tsx` |
+| Admin (Abenteuerauswahl) | `/admin` | Rechner des Spielleiters | `src/screens/AdminSelectScreen.tsx` |
+| Admin | `/admin/play` | Rechner des Spielleiters | `src/screens/AdminScreen.tsx` |
 | Player (Charakterauswahl) | `/` | Smartphone je Spieler | `src/screens/PlayerSelectScreen.tsx` |
 | Player | `/player/:id` | Smartphone je Spieler | `src/screens/PlayerScreen.tsx` |
 | Wall | `/wall` | Monitor (vertikal/Wand) | `src/screens/WallScreen.tsx` |
 | Ground | `/ground` | Monitor liegend auf dem Tisch | `src/screens/GroundScreen.tsx` |
 
 (Pfade relativ zu `frontend/`; beide Player-Routen teilen sich `src/screens/PlayerLayout.tsx`.)
+
+---
+
+## Abenteuerauswahl
+
+### Soll
+- Der Spielleiter startet ein Abenteuer bewusst: `/admin` zeigt vor dem Admin Screen alle Abenteuer als Karten mit
+  Bild, Name, Stufe, Beschreibung und Party; ein Klick startet es bzw. setzt das aktive fort (umgesetzt). Abenteuer
+  anlegen, bearbeiten oder ein Bild hochladen ist nicht vorgesehen (Seed bzw. Datenbank).
+
+### Ist
+- `/admin` zeigt immer die Auswahl, auch wenn am Server ein Abenteuer aktiv ist. Kopf: Label „Spielleiter“, darunter
+  „Abenteuer wählen“; darunter die Karten in einem Raster (so viele Spalten wie passen), in der Reihenfolge der API.
+- **Karte:** oben das Abenteuerbild (16:9; ohne Bild eine Fläche mit Bild-Icon), darunter Name und rechts daneben die
+  Stufe als Level-Badge, die Beschreibung (höchstens zwei Zeilen mit „…“, ohne Beschreibung entfällt sie) und „Party ·
+  N“ mit den Mitgliedern in zwei Spalten (Avatar bzw. Initialen, Charaktername, Spielername); ab 7 Mitgliedern die
+  ersten 5 und „+N weitere“, ohne Mitglieder „Noch keine Charaktere“. Das aktive Abenteuer trägt auf dem Bild das Label
+  „Aktiv“ und einen Rahmen in der Hauptfarbe. Die ganze Karte ist ein Button (Tab, Enter, Leertaste).
+- **Starten:** Klick auf ein nicht aktives Abenteuer speichert es als aktives Abenteuer des Spieltischs (Wall, Ground
+  und Player folgen) und öffnet danach `/admin/play`; schlägt das Speichern fehl, erscheint über den Karten „Das
+  Abenteuer konnte nicht gestartet werden.“ und die Auswahl bleibt. Klick auf das aktive Abenteuer öffnet
+  `/admin/play`, ohne etwas zu speichern. Ein Abenteuer wird nur so aktiv: Der Admin aktiviert keines von selbst, auch
+  wenn es nur eines gibt.
+- **Hintergrund:** das Abenteuerbild des am Server aktiven Abenteuers wie im Admin, die Karten sind dann
+  durchscheinend; ohne aktives Abenteuer oder ohne Bild die einfarbige Grundfläche.
+- **Kampf:** Läuft im aktiven Abenteuer ein Kampf, steht über den Karten „Im aktiven Abenteuer läuft ein Kampf.
+  Andere Abenteuer sind bis zu seinem Ende gesperrt.“; alle anderen Karten sind ausgegraut, tragen auf dem Bild das
+  Label „Gesperrt“ mit Schloss und den Tooltip „Während des Kampfes nicht wechselbar“, ein Klick tut nichts. Die Karte
+  des aktiven Abenteuers öffnet den Admin.
+- **Zustände:** drei Platzhalter-Karten beim Laden; „Noch keine Abenteuer“; „Keine Verbindung zum Server“ mit
+  „Erneut versuchen“ (lädt die Abenteuer neu), wenn das Laden fehlschlägt.
+- Die Auswahl ist kein Admin-Fenster, das Audioausgabe wird (eigene Verbindung, ohne Wiedergabe); Tastenkürzel gibt es
+  dort nicht.
 
 ---
 
@@ -37,6 +71,9 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   zur Auswahl, z. B. „Bento“ und „Cockpit“ aus dem Mockup `frontend/docs/design/mockup/admin-dashboard.html`).
 
 ### Ist
+- **Route:** `/admin/play`, geöffnet über die [Abenteuerauswahl](#abenteuerauswahl); ein Reload bleibt im Admin. Ist
+  am Server kein Abenteuer aktiv (beim Öffnen oder weil ein anderes Admin-Fenster es beendet hat), leitet er auf
+  `/admin` um. Wechselt ein anderes Admin-Fenster das Abenteuer, folgt er ohne Reload.
 - **Layout** (nach [frontend/DESIGN.md](../frontend/DESIGN.md)): frei stehende Kacheln mit Rand und Lichtkante auf dem
   Hintergrund, ohne Trennlinien und ohne Bottom-Bar. Ganz links die Navigationsleiste, daneben das Panel des aktiven
   Menüpunkts (beide über die volle Höhe, mit Abstand zum oberen und unteren Rand), in der Mitte die Notizen (je Seite
@@ -78,17 +115,21 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Kopfzeile:** Ganz links die Kachel mit den Icon-Buttons „Zurück“ und „Vor“ für den Verlauf der Notizen (siehe
   **Notizen**); ohne Ziel sind sie deaktiviert, nach dem Laden beide. Die Kachel steht auch bei der Hinweisleiste und bei
   ausgeblendetem Dashboard. Daneben steht in einer Kachel der Name des aktiven Abenteuers, nur zur Anzeige (kein
-  Button); ohne Abenteuer „Kein Abenteuer“. Rechts die Kachel mit „Vollbild“ und „Dashboard“.
-- **Einstellungen:** Das Panel „Einstellungen“ zeigt unter Labels die Abschnitte „Abenteuer“, „Darstellung“ und
-  „Ground-Raster“ (siehe die folgenden Punkte). Es öffnet, wechselt und klappt ein wie die anderen Panels.
-- **Abenteuer-Auswahl:** Im Abschnitt „Abenteuer“ des Panels „Einstellungen“ eine Auswahlliste über die Breite des
-  Panels (die Liste klappt darunter auf; per Maus und Tastatur bedienbar) mit allen Abenteuern. Ist auf dem Spieltisch (Server) kein Abenteuer aktiv, wird automatisch das erste
-  aktiviert (mit nur einem Abenteuer also ohne Zutun); ohne Abenteuer ist die Auswahl leer und deaktiviert, es werden
-  keine Szenen geladen. Gezeigt werden nur die Szenen des aktiven Abenteuers. Ein Wechsel wird gespeichert und gilt für
-  alle Spieltisch-Screens; Admin, Wall und Ground zeigen danach direkt die im neuen Abenteuer gespeicherte Szene (bzw.
-  keine), nie kurz die eines anderen Abenteuers. Während eines Kampfes ist die Auswahl gesperrt: Schloss statt Pfeil,
-  Tooltip „Während des Kampfes nicht wechselbar“, die Liste öffnet sich nicht. Solange die Hinweisleiste steht, ist die
-  Auswahl deaktiviert.
+  Button; gewechselt wird über die Abenteuerauswahl). Rechts die Kachel mit „Vollbild“ und „Dashboard“.
+- **Einstellungen:** Das Panel „Einstellungen“ zeigt unter Labels die Abschnitte „Darstellung“ und „Ground-Raster“
+  (siehe die folgenden Punkte) und ganz unten den Button „Abenteuer beenden“. Es öffnet, wechselt und klappt ein wie
+  die anderen Panels.
+- **Abenteuer beenden:** Button ganz unten im Panel „Einstellungen“ (unter „Ground-Raster“) mit einem kleinen
+  Vorschaubild des Abenteuerbilds, „Abenteuer beenden“, darunter dem Namen des Abenteuers und einem Icon. Klick öffnet
+  den Dialog „Abenteuer beenden“ mit dem Namen und dem Hinweis, dass Wall, Ground und Player danach kein Abenteuer
+  mehr zeigen. „Confirm“ speichert „kein Abenteuer aktiv“: Wall und Ground zeigen kein Szenenbild, der Player „Noch
+  kein Abenteuer aktiv“, und alle Admin-Fenster wechseln zur Abenteuerauswahl; die zuletzt aktive Szene bleibt im
+  Abenteuer gespeichert. „Decline“ bricht ab. Schlägt das Speichern fehl, bleibt der Admin und zeigt die Hinweisleiste
+  „Änderung konnte nicht gespeichert werden“. Während eines Kampfes ist der Button gesperrt (Schloss statt Icon,
+  Tooltip „Während des Kampfes nicht wechselbar“, kein Dialog), solange die Hinweisleiste steht, deaktiviert.
+- **Abenteuer und Szenen:** Gezeigt werden nur die Szenen des aktiven Abenteuers. Admin, Wall und Ground zeigen nach
+  einem Abenteuerwechsel direkt die im neuen Abenteuer gespeicherte Szene (bzw. keine), nie kurz die eines anderen
+  Abenteuers.
 - **Szenenauswahl:** Das Panel „Szenen“ listet unter dem Label „Szenen“ alle Szenen des aktiven Abenteuers in der
   Reihenfolge, in der sie angelegt sind (Seed: Default, Shop, Tavern, Level Up, Fight 1 … Fight 25), nur mit Namen;
   zu lange Namen enden mit „…“, der volle Name steht im Tooltip. Die aktive Szene ist hervorgehoben. Die Einträge sind
@@ -157,7 +198,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Admin die Hinweisleiste „Verbindung zum Server getrennt“ und behält den letzten Stand; er verbindet sich selbst neu
   (1 s, 2 s, 4 s … höchstens 10 s), „Erneut versuchen“ verbindet sofort. Danach verschwindet die Leiste.
 - **Hinweisleiste:** ersetzt in der Kopfzeile den Abenteuernamen an derselben Stelle und in derselben Größe (kein
-  Abenteuerwechsel, solange sie steht: die Abenteuer-Auswahl im Panel „Einstellungen“ ist deaktiviert); die Buttons
+  Beenden des Abenteuers, solange sie steht: „Abenteuer beenden“ im Panel „Einstellungen“ ist deaktiviert); die Buttons
   rechts bleiben. Stehen mehrere Fehler an, zeigt sie nur den
   wichtigsten (Verbindung getrennt → Laden fehlgeschlagen → Speichern fehlgeschlagen); ist er behoben, erscheint der
   nächste.
@@ -214,7 +255,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   Admin-Fenster in den Vollbildmodus des Browsers und wieder zurück; hervorgehoben, solange das Fenster im Vollbild ist
   (auch wenn es per Escape verlassen wird, folgt die Anzeige).
 - **Theme:** Im Abschnitt „Darstellung“ des Panels „Einstellungen“ eine Auswahlliste mit „Cyber“ und „Taverne“
-  (wie die Abenteuer-Auswahl per Maus und Tastatur bedienbar); gewählt ist das Theme des Spieltischs. Eine Wahl
+  (per Maus und Tastatur bedienbar); gewählt ist das Theme des Spieltischs. Eine Wahl
   speichert es und gilt für Admin, Wall, Ground und die Player Screens (außer auf Smartphones, deren Spieler lokal ein
   anderes Theme gewählt hat); die Wahl des aktiven Themes tut nichts.
 - **Spieltisch:** Panel mit je einer Zeile für Wall, Ground und Spieler, getrennt durch Linien. Wall und Ground: links

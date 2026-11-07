@@ -1,5 +1,5 @@
-"""Tests for /adventures: list, detail with players, scenes per adventure (incl. trailing-slash redirects), PATCH,
-404 for unknown IDs and for the removed maps endpoints.
+"""Tests for /adventures: list with level, image and players, detail with players, scenes per adventure (incl.
+trailing-slash redirects), PATCH, 404 for unknown IDs and for the removed maps endpoints.
 
 Tests that change data use the fixture `db` (tests/conftest.py): the API runs on a session in an outer transaction
 that is rolled back afterwards (commits become savepoints), so the shared test DB keeps the seed state. The persistence
@@ -44,6 +44,37 @@ def test_read_adventures_returns_seeded_adventures(
     assert response.status_code == 200
     assert response.json() == expected_adventures
     assert [adventure["name"] for adventure in response.json()] == ["Erstes Abenteuer"]
+
+
+def test_read_adventures_returns_level_image_and_players(client: TestClient) -> None:
+    response = client.get("/adventures")
+
+    assert response.status_code == 200
+    adventure = response.json()[0]
+    assert set(adventure) == ADVENTURE_FIELDS - {"active_scene_id"}
+    assert adventure["global_level"] == 1
+    assert adventure["image"] == {"id": 1, "name": "Forest", "source": "/media/images/wall_screen/forest.jpg"}
+    assert len(adventure["players"]) == 4
+    assert all(set(player) == PLAYER_FIELDS for player in adventure["players"])
+
+
+def test_read_adventures_follow_changes_and_return_null_without_image(
+    client: TestClient, db: Session, other_adventure: dict[str, int]
+) -> None:
+    adventure = db.get(Adventure, 1)
+    assert adventure is not None
+    adventure.image_media_id = None
+    adventure.global_level = 3
+    db.commit()
+
+    adventures = client.get("/adventures").json()
+
+    assert [item["id"] for item in adventures] == [1, other_adventure["id"]]
+    assert (adventures[0]["global_level"], adventures[0]["image"]) == (3, None)
+    assert [player["id"] for player in adventures[0]["players"]] == [
+        player["id"] for player in client.get("/adventures/1").json()["players"]
+    ]
+    assert adventures[1]["players"] == []
 
 
 def test_read_adventures_returns_empty_list_without_adventures(

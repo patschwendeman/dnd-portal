@@ -228,6 +228,29 @@ def test_switching_the_adventure_pushes_its_stored_scene(
         }
 
 
+def test_ending_the_adventure_pushes_a_state_without_adventure(client: TestClient, db: Session) -> None:
+    client.patch("/table", json={"active_adventure_id": 1})
+    client.patch("/adventures/1", json={"active_scene_id": 5})
+    with (
+        client.websocket_connect("/ws?screen=wall") as wall,
+        client.websocket_connect("/ws?screen=player") as player,
+    ):
+        receive_snapshot(wall)
+        receive_snapshot(player)
+
+        client.patch("/table", json={"active_adventure_id": None})
+
+        expected = {
+            "active_adventure_id": None,
+            "active_scene_id": None,
+            "theme": "cyber",
+            "wall_overlay": "off",
+            **DEFAULT_GRID,
+        }
+        assert receive_state(wall) == expected
+        assert receive_state(player) == expected
+
+
 def test_wall_overlay_is_pushed_to_all_walls(client: TestClient, db: Session) -> None:
     with (
         client.websocket_connect("/ws?screen=wall") as wall,

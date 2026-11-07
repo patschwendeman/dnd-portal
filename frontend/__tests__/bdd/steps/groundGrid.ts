@@ -6,6 +6,7 @@ import {
   WAIT_TIMEOUT,
   buildDriver,
   clickElement,
+  openAdminScreen,
   openScreen,
   waitForAttribute,
   waitForElement,
@@ -152,7 +153,7 @@ defineFeature(feature, (test) => {
         grounds = [buildDriver(), buildDriver()]
         await driver.manage().window().setRect(WINDOW_RECT)
         await Promise.all([
-          openScreen(driver, '/admin'),
+          openAdminScreen(driver),
           ...grounds.map((ground) => openScreen(ground, '/ground')),
         ])
         await expectGrounds('off', 100)

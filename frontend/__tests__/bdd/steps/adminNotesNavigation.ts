@@ -8,7 +8,7 @@ import {
   WAIT_TIMEOUT,
   buildDriver,
   clickElement,
-  openScreen,
+  openAdminScreen,
   waitForAttribute,
   waitForElement,
 } from '../support/helpers'
@@ -18,7 +18,7 @@ const feature = loadFeature('__tests__/bdd/features/adminNotesNavigation.feature
 // Wide enough for rail, panel, notes and dashboard side by side
 const WINDOW_RECT = { width: 1600, height: 1000 }
 
-const ADMIN_URL = `${BASE_URL}/admin`
+const ADMIN_URL = `${BASE_URL}/admin/play`
 const HEADER = '[data-test-id="admin-header"]'
 const HISTORY_BUTTONS = '[data-test-id="history-buttons"]'
 const BACK = '[data-test-id="history-back"]'
@@ -42,7 +42,7 @@ const entry = (id: string): string => `[data-test-id="notes-entry-${id}"]`
 
 const openAdmin = async (driver: WebDriver): Promise<void> => {
   await driver.manage().window().setRect(WINDOW_RECT)
-  await openScreen(driver, '/admin')
+  await openAdminScreen(driver)
 }
 
 const selectEntry = async (driver: WebDriver, id: string, notes: string): Promise<void> => {

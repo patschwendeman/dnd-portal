@@ -68,6 +68,7 @@
         "type": "object"
       },
       "AdventureSummary": {
+        "description": "An adventure as a card in the adventure selection: without its active scene.",
         "properties": {
           "description": {
             "anyOf": [
@@ -80,19 +81,43 @@
             ],
             "title": "Description"
           },
+          "global_level": {
+            "title": "Global Level",
+            "type": "integer"
+          },
           "id": {
             "title": "Id",
             "type": "integer"
           },
+          "image": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Image"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "name": {
             "title": "Name",
             "type": "string"
+          },
+          "players": {
+            "items": {
+              "$ref": "#/components/schemas/Player"
+            },
+            "title": "Players",
+            "type": "array"
           }
         },
         "required": [
           "id",
           "name",
-          "description"
+          "description",
+          "global_level",
+          "players",
+          "image"
         ],
         "title": "AdventureSummary",
         "type": "object"
@@ -753,7 +778,7 @@
   "paths": {
     "/adventures": {
       "get": {
-        "description": "All adventures, ordered by ID.",
+        "description": "All adventures, ordered by ID, each with its level, players and adventure image (for the selection).",
         "operationId": "read_adventures_adventures_get",
         "responses": {
           "200": {

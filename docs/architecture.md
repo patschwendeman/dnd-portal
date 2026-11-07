@@ -2,13 +2,14 @@
 
 ```
  Spieltisch-Screens (beliebige Browser/Geräte im LAN)                 Smartphones
- ┌──────────┐  ┌──────────┐  ┌──────────┐                            ┌──────────┐
- │ /admin   │  │ /wall    │  │ /ground  │                            │ /        │ × n
- └────┬─────┘  └────┬─────┘  └────┬─────┘                            └────┬─────┘
+ ┌─────────────┐  ┌──────────┐  ┌──────────┐                         ┌──────────┐
+ │ /admin      │  │ /wall    │  │ /ground  │                         │ /        │ × n
+ │ /admin/play │  └────┬─────┘  └────┬─────┘                         └────┬─────┘
+ └────┬────────┘       │             │                                    │
       │ HTTP GET/PATCH/POST/PUT/DELETE (axios, /api/...)                  │ HTTP GET /adventures/{id} (beim Laden und nach
       │                                                                   │ jedem Snapshot: Spieler, Level), POST /table/fight/turn
       │ WebSocket /ws?screen=… (Snapshots, Audio, Ping, an Admins Screen-Zahlen, an Admins, Walls und Player Kampf; Admin → Server: Audio-Meldungen)
-      └─────────────┴─────────────┴──────────────────────────────────────┘
+      └─────────────┬──┴─────────────┴────────────────────────────────────┘
                     │ gleicher Origin: Vite-Proxy (Dev :5173) bzw. nginx (Prod :8080)
                     │ /api/… → API (Präfix entfernt), /ws → API
             ┌───────▼────────┐         ┌──────────────┐
@@ -50,8 +51,10 @@
   oder das aktive Abenteuer, setzt der Server `wall_overlay` im selben Schreibzugriff auf `off` (ein Push); setzt
   derselbe `PATCH /table` auch `wall_overlay`, gilt dieser Wert. Das Ground-Raster bleibt bei Szenen- und
   Abenteuerwechseln unverändert. Admin, Wall und Ground wechseln erst mit dem Push; ein Abenteuerwechsel liefert direkt
-  die gespeicherte Szene des neuen Abenteuers, nie die eines anderen. Ist im Snapshot kein Abenteuer gesetzt, aktiviert
-  der Admin das erste der Liste (`selectDefaultAdventureId`) per `PATCH /table`. Schlägt ein Schreibzugriff fehl,
+  die gespeicherte Szene des neuen Abenteuers, nie die eines anderen. Ein Abenteuer wird nur durch einen Klick auf
+  seine Karte in der Abenteuerauswahl aktiv (`PATCH /table {"active_adventure_id": <id>}`, danach öffnet der Admin
+  `/admin/play`); „Abenteuer beenden“ setzt `{"active_adventure_id": null}`. Der Admin aktiviert keines von selbst;
+  ist im Snapshot kein Abenteuer gesetzt, leitet `/admin/play` auf die Auswahl `/admin` um. Schlägt ein Schreibzugriff fehl,
   zeigt der Admin „Änderung konnte nicht gespeichert werden“; „Erneut versuchen“ wiederholt den zuletzt
   fehlgeschlagenen Schreibzugriff (nur das Ergebnis des jüngsten zählt, keine automatischen Wiederholungen).
 - **Heartbeat:** Der Server sendet jeder Verbindung alle 15 s `{"type": "ping"}` (`PING_INTERVAL_SECONDS`,
@@ -85,6 +88,10 @@
   409 `{"detail": "Fight in progress"}` ab (der ganze Request, auch andere Felder darin); derselbe Wert ist kein
   Wechsel. Die Schreibzugriffe auf den Kampf sperren seine Zeile (`SELECT … FOR UPDATE`), damit gleichzeitige Klicks
   aus mehreren Admin-Fenstern nacheinander wirken.
+- **Abenteuerauswahl** (`/admin`) und **Admin Screen** (`/admin/play`) verbinden sich je als `admin`, mit eigenem
+  `GameTableProvider` je Route: Ein Wechsel zwischen beiden verbindet neu, sodass ein Admin, der zur Auswahl
+  zurückkehrt, nicht Audioausgabe bleibt. Die Auswahl nutzt vom Snapshot das aktive Abenteuer (Markierung und
+  Hintergrund) und den Kampf (Sperre der anderen Abenteuer), spielt nichts ab und meldet sich nie als Ausgabe.
 - **Charakterauswahl** (`/`) und **Player Screen** (`/player/:id`, Smartphones) teilen sich eine Verbindung als
   `player` (Layout-Route `PlayerLayout`, ein `GameTableProvider`; ein Wechsel zwischen beiden verbindet nicht neu).
   Vom Snapshot nutzen sie das aktive Abenteuer und das Theme; `audio` und `sound` empfangen sie, zeigen sie aber nicht
@@ -198,7 +205,7 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
 
 | Pfad | Liefert |
 |---|---|
-| `/adventures` | `list[AdventureSummary]`: alle Abenteuer nach ID (200, ggf. `[]`) |
+| `/adventures` | `list[AdventureSummary]`: alle Abenteuer nach ID mit Stufe, Spielern und Abenteuerbild (200, ggf. `[]`) |
 | `/adventures/{adventure_id}` | `AdventureDetail` inkl. Spieler und Abenteuerbild (200) bzw. 404 `{"detail": "Adventure not found"}` |
 | `PATCH /adventures/{adventure_id}` | Body `AdventureUpdate`, Antwort `AdventureDetail` (200); 404 wie oben; 422 `{"detail": "Scene does not belong to adventure"}`, wenn `active_scene_id` nicht existiert oder zu einem anderen Abenteuer gehört (nichts wird geändert), 422 im FastAPI-Standardformat bei `global_level` außerhalb 1–20; 409 `{"detail": "Fight in progress"}` bei einer anderen aktiven Szene, solange das Abenteuer einen Kampf hat (nichts wird geändert) |
 | `/adventures/{adventure_id}/scenes` | `list[SceneDetail]`: Szenen des Abenteuers nach ID (200, ggf. `[]`); 404 wie oben |
@@ -243,7 +250,8 @@ SceneDetail { id: int, name: str, description: str,
 Image       { id: int, name: str, source: str }
 Track       { id: int, name: str, source: str }
 
-AdventureSummary { id: int, name: str, description: str | null }
+AdventureSummary { id: int, name: str, description: str | null, global_level: int,
+                   players: list[Player], image: Image | null }                players nach ID sortiert
 AdventureDetail  { id: int, name: str, description: str | null, global_level: int,
                    active_scene_id: int | null, players: list[Player],         players nach ID sortiert
                    image: Image | null }
@@ -373,7 +381,7 @@ Datensatz, `size` = NULL) und biegt die Fremdschlüssel um. `0003` legt `adventu
 (das macht der Seeder). Die Spieler ergänzt der Seeder, weil `player` danach leer ist. `downgrade` entfernt Tabellen,
 Spalte und Fremdschlüssel, die Szenen bleiben erhalten. `0004` legt `game_table` an und fügt die eine Zeile ein:
 aktives Abenteuer = kleinste Abenteuer-ID (auf einer leeren DB NULL, weil der Seeder erst danach läuft; dann ist kein
-Abenteuer aktiv und Wall und Ground bleiben leer, bis ein Admin geöffnet wird und das erste Abenteuer aktiviert), Theme
+Abenteuer aktiv und Wall und Ground bleiben leer, bis der Spielleiter in der Abenteuerauswahl eines startet), Theme
 `dark`; `downgrade` entfernt die Tabelle. `0005` entfernt die Spalte `scene.main` (Kampf-/Nicht-Kampfszene); Szenen,
 Bilder, Tracks und die aktive Szene bleiben erhalten. `downgrade` legt sie wieder an (`NOT NULL`, alle Szenen
 `false`), die frühere Einteilung ist dann verloren. `0006` ergänzt `adventure.background_dark_media_id` und
@@ -518,7 +526,7 @@ Nach Änderungen an `frontend/package.json`: `docker compose -f compose.dev.yaml
 `node_modules`-Volume). Alte Container aus den früheren Einzel-Repos belegen dieselben Ports (5432, 8000, 5050, 5173) –
 vorher stoppen.
 
-UI unter http://localhost:5173 (`/admin`, `/wall`, `/ground`, `/`); das Frontend ruft die API über den Proxy des
+UI unter http://localhost:5173 (`/admin` mit `/admin/play`, `/wall`, `/ground`, `/`); das Frontend ruft die API über den Proxy des
 Vite-Dev-Servers auf (`/api/…` → API ohne Präfix, `/ws` → API, `server.proxy` in `frontend/vite.config.ts`). Ziel aus
 `API_PROXY_TARGET` (Default `http://localhost:8000`, im Dev-Compose `http://api:8000`).
 Node-Version: `frontend/.nvmrc` (CI) und `frontend/Dockerfile` (`node:24-slim`, Stages `dev` und `build`) synchron halten.

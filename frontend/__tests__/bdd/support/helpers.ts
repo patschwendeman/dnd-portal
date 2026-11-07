@@ -130,16 +130,29 @@ interface ActiveScene {
   previousSceneId: number | null
 }
 
+// After a fresh seed (or after "Abenteuer beenden") no adventure is active, and the Admin does
+// not activate one by itself; set over the API, so the scenario does not depend on another suite
+const ensureActiveAdventure = async (): Promise<number> => {
+  const table = await readJson<TableState>('table')
+  if (table.active_adventure_id !== null) {
+    return table.active_adventure_id
+  }
+  const [first] = await readJson<{ id: number }[]>('adventures')
+  expect((await api('PATCH', 'table', { active_adventure_id: first.id })).ok).toBe(true)
+  return first.id
+}
+
+// Without an active adventure the Admin Screen leads back to the adventure selection
+const openAdminScreen = async (driver: WebDriver): Promise<void> => {
+  await ensureActiveAdventure()
+  await openScreen(driver, '/admin/play')
+}
+
 // After a fresh seed neither an adventure nor a scene is active; both are set over the API, so
 // the scenario does not depend on another suite
 const ensureActiveScene = async (): Promise<ActiveScene> => {
-  let table = await readJson<TableState>('table')
-  if (table.active_adventure_id === null) {
-    const [first] = await readJson<{ id: number }[]>('adventures')
-    expect((await api('PATCH', 'table', { active_adventure_id: first.id })).ok).toBe(true)
-    table = await readJson('table')
-  }
-  const adventureId = Number(table.active_adventure_id)
+  const adventureId = await ensureActiveAdventure()
+  const table = await readJson<TableState>('table')
   const previousSceneId = table.active_scene_id
   if (previousSceneId === null) {
     const [scene] = await readJson<{ id: number }[]>(`adventures/${adventureId}/scenes`)
@@ -167,8 +180,10 @@ export {
   buildDriver,
   clickElement,
   confirmDialog,
+  ensureActiveAdventure,
   ensureActiveScene,
   getRandomNumber,
+  openAdminScreen,
   openScreen,
   readJson,
   restoreActiveScene,

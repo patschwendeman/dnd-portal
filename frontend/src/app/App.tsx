@@ -1,9 +1,11 @@
 import { ReactElement, useEffect, useState } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 
+import { ADMIN_PLAY_PATH, ADMIN_SELECT_PATH } from './adminPaths'
 import { Theme } from '../models/models'
 import GameTableProvider from '../realtime/GameTableProvider'
 import AdminScreen from '../screens/AdminScreen'
+import AdminSelectScreen from '../screens/AdminSelectScreen'
 import GroundScreen from '../screens/GroundScreen'
 import { PlayerLayout } from '../screens/PlayerLayout'
 import PlayerScreen from '../screens/PlayerScreen'
@@ -54,9 +56,23 @@ function App() {
             path="/ground"
             element={<GameTableProvider screen="ground"><GroundScreen /></GameTableProvider>}
           />
+          {/* Keys, so each route has its own connection: leaving the Admin Screen closes it, and
+              the selection never stays the audio output */}
           <Route
-            path="/admin"
-            element={<GameTableProvider screen="admin"><AdminScreen /></GameTableProvider>}
+            path={ADMIN_SELECT_PATH}
+            element={(
+              <GameTableProvider key="admin-select" screen="admin">
+                <AdminSelectScreen />
+              </GameTableProvider>
+            )}
+          />
+          <Route
+            path={ADMIN_PLAY_PATH}
+            element={(
+              <GameTableProvider key="admin-play" screen="admin">
+                <AdminScreen />
+              </GameTableProvider>
+            )}
           />
         </Routes>
       </div>
