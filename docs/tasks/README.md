@@ -54,3 +54,4 @@
 | DND-48 | feat | Querverweise zwischen Notizen und Vor/Zurück im Admin | Fertig | [DND-48-notes-cross-references.md](DND-48-notes-cross-references.md) |
 | DND-49 | feat | QR-Code für die Spieler auf dem Wall Screen | Fertig | [DND-49-wall-join-qr-code.md](DND-49-wall-join-qr-code.md) |
 | DND-50 | chore | Fehlende Doc-Kommentare nach CONTRIBUTING.md ergänzen | Fertig | [DND-50-doc-comments.md](DND-50-doc-comments.md) |
+| DND-51 | feat | Themes „Cyber“ und „Taverne“, ein Abenteuerbild für beide Themes | Freigegeben | [DND-51-themes-and-adventure-image.md](DND-51-themes-and-adventure-image.md) |
