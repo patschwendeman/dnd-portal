@@ -1,7 +1,7 @@
 # DND-50: Fehlende Doc-Kommentare nach CONTRIBUTING.md ergänzen
 
 **Typ:** chore
-**Status:** Entwurf
+**Status:** Freigegeben
 
 ## Kontext & Ziel
 
