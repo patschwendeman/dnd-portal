@@ -463,6 +463,11 @@ Datensatz trotzdem an (`size` = NULL).
   (Markdown-Notizen, deutsch) sowie das fest eingebundene Medium `assets/images/ground_screen/mapOverview.jpg`
   (Weltkarte im Wall Screen). Szenenbilder und Musik, auch die Standardmusik, kommen vom Backend (`/media/...`, siehe
   Datenmodell und [Audio](#audio)).
+- Web-App-Manifest `public/manifest.webmanifest` (Name „DnD Portal“, Start `/`, `display: standalone`, Farben
+  `#0e1117`) mit den App-Icons `assets/icons/appIcon-192.png` und `appIcon-512.png` (512 auch als `maskable`);
+  `index.html` verweist darauf und auf `assets/icons/appleTouchIcon-180.png` (iOS, ohne Transparenz) und setzt die
+  iOS-Meta-Tags. Quelle der PNGs ist `assets/icons/appIcon.svg` (Würfel aus `dice.svg` in `#4493F8` auf `#0e1117`);
+  sie werden nicht im Build erzeugt, sondern nach einer Änderung einmalig neu gerendert und eingecheckt.
 
 ## Lokal starten
 
@@ -575,7 +580,8 @@ Caching in nginx: Dateien direkt unter `/assets/` (Vite-Build, Hash im Namen) mi
 max-age=31536000, immutable`; `index.html` mit `no-cache`, damit ein neuer Build sofort greift; alles andere – Medien
 aus `public/` in Unterordnern von `/assets/` (z. B. `/assets/sounds/…`), Notizen unter `/story/` – mit dem
 Standardverhalten von nginx. gzip (mit `Vary`) ab 1 KB für Text, CSS, JavaScript, JSON, SVG und Markdown; `.md`
-liefert nginx als `text/markdown` aus, weil die Standard-`mime.types` die Endung nicht kennen.
+liefert nginx als `text/markdown` aus, `.webmanifest` als `application/manifest+json`, weil die Standard-`mime.types`
+die Endungen nicht kennen.
 Dev- und Prod-Stack nicht gleichzeitig betreiben: API (:8000) und DB (:5432) nutzen dieselben Ports.
 Healthchecks: `db` per `pg_isready`, `api` per Python-Einzeiler gegen `http://localhost:8000/adventures` (das Image hat
 kein curl); `api` startet erst bei gesunder DB, `ui` erst bei gesunder API. `docker ps` zeigt `dnd-prod-api (healthy)`.

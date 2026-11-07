@@ -47,6 +47,10 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
   erwarten, bis die aktive Szene wieder geleert wird (z. B. `PATCH /adventures/1` mit `{"active_scene_id": null}`) oder
   die DB zurückgesetzt ist. Ebenso hängen sie an `global_level` der Dev-DB (Seed-Stand 1, `conftest.py`
   `expected_adventure_details`): Ein per `PATCH` geänderter Wert lässt sie ebenfalls fehlschlagen.
+- Homescreen (seit DND-53): Chrome auf Android öffnet die Seite nur über HTTPS ohne Browserleiste; über
+  `http://<IP>:8080` im LAN legt es lediglich eine Verknüpfung mit Icon an (das iPhone kann es auch über HTTP).
+  Kein Service Worker, kein Offline-Betrieb.
+- Logo (seit DND-53): Navigationsleiste im Admin und App-Icons zeigen vorerst den Würfel `dice.svg` als Platzhalter.
 - `ResourceBarPlayer`: `spellData[].max` weicht von `SpellMax` ab (Stufe II: 4 vs. 3); Spezial startet bei 1 statt 3.
 - Kontrast (seit DND-40): Die Notizseiten sind Kacheln in `secondary`; die Text-Links in den Notizen
   (Inhaltsverzeichnisse und Querverweise, `primary`) verfehlen darauf in Tavern 4,5:1 (3,3:1, `frontend/docs/design/contrast.md`); auf den

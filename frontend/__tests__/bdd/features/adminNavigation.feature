@@ -18,3 +18,10 @@ Scenario: I collapse and expand the panel
     Then the panel is hidden, the notes are wider and the menu item is not active
     When I click on the menu item Notizen again
     Then the panel is shown again with Leveling selected and the notes at the same scroll position
+
+Scenario: The logo sits on top of the rail and has no function
+    Given I am on the admin screen
+    Then the logo is the first element of the navigation rail and no button
+    When I click on the logo
+    Then the notes panel stays open with Notizen as active menu item
+    And the logo does not get the focus, neither by click nor by keyboard

@@ -63,7 +63,7 @@ gemeinsam für die Notizen- und die Szenenliste im Panel (`DocumentNavigation`, 
 
 Nur im Admin, Komponente `NavRail` ([src/components/NavRail.tsx](../../src/components/NavRail.tsx)) mit dem Panel
 daneben (`AdminScreen`). Die Menüpunkte kommen als Liste (id, Name, Icon, Punkt, Platz, Panel-Inhalt) aus dem
-`AdminScreen`; vier Menüpunkte: „Notizen“ (`notes.svg`, Panel `DocumentNavigation`), darunter „Szenen“ (`scenes.svg`,
+`AdminScreen`; über ihnen das Logo, darunter vier Menüpunkte: „Notizen“ (`notes.svg`, Panel `DocumentNavigation`), darunter „Szenen“ (`scenes.svg`,
 Panel `SceneNavigation`) und „Kampf“ (`swords.svg`, Panel `FightPanel`, siehe [Panel „Kampf“](#panel-kampf)), am
 unteren Ende „Einstellungen“ (`settings.svg`, Panel `SettingsPanel`, siehe [Panel „Einstellungen“](#panel-einstellungen)).
 
@@ -71,7 +71,8 @@ unteren Ende „Einstellungen“ (`settings.svg`, Panel `SettingsPanel`, siehe [
 |---|---|
 | Breite | Leiste `NAV_RAIL_WIDTH`, Panel `LEFT_COLUMN_WIDTH`, Panel „Kampf“ `FIGHT_PANEL_WIDTH` ([screen-layouts.md](screen-layouts.md#layout-konstanten)) |
 | Fläche | Leiste und Panel sind je eine [Kachel](#kachel) über beide Zeilen des Admins, mit `space.5` Abstand zum oberen und unteren Rand; keine Trennlinien |
-| Leiste | Spalte, horizontal zentriert, Innenabstand `space.5` oben/unten, `gap` `space.2` zwischen den Menüpunkten; Menüpunkte mit `placement: 'bottom'` stehen als eigene Gruppe am unteren Ende (`margin-top: auto`, `splitByPlacement` in `src/utils/navRail.ts`) |
+| Leiste | Spalte, horizontal zentriert, Innenabstand `space.5` oben/unten; oben das Logo, `space.6` darunter die oberen Menüpunkte mit `gap` `space.2`; Menüpunkte mit `placement: 'bottom'` stehen als eigene Gruppe am unteren Ende (`margin-top: auto`, `splitByPlacement` in `src/utils/navRail.ts`) |
+| Logo | `dice.svg` (Platzhalter) in `LOGO_SIZE` und `primary` des aktiven Themes, auch bei eingeklapptem Panel und mit Hintergrundbild; ohne Funktion: kein Button, kein Hover, nicht fokussierbar, Klick ohne Wirkung; `role="img"`, `aria-label="DnD Portal"` |
 | Menüpunkt | [Icon-Button](#icon-button) (`<button type="button">`, `size.control.md`, `radius.md`), Icon abweichend `size.iconLg` (24px); Name als `aria-label` und `title`, `aria-pressed` für den Zustand, `aria-controls` aufs Panel |
 | Zustände | wie beim [Navigationseintrag](#navigationseintrag): aktiv (Panel offen): Fläche `primary`, Icon `onPrimary`, auch bei Hover; inaktiv: ohne eigene Fläche (`transparent`, also `secondary` der Kachel), Icon `text.color`; Hover (inaktiv): Fläche `background`; eingeklappt: kein Menüpunkt aktiv. Anders als der allgemeine [Icon-Button](#icon-button), der inaktiv gefüllt bleibt. Fokus als Outline `borderWidth.thick` in `primary`, `outline-offset` `borderWidth.thick` (`:focus-visible`) |
 | Panel | Innenabstand `space.5` oben/unten, `space.4` seitlich, scrollt bei Überlänge innerhalb seiner Kachel; Inhalt des aktiven Menüpunkts: bei „Notizen“ Label „Notizen“ und die [Navigationseinträge](#navigationseintrag) der Notizen, bei „Szenen“ Label „Szenen“ und je Szene ein Navigationseintrag (Reihenfolge der API), ohne Szenen der Hinweis „Keine Szenen“ (`text.sm`, Innenabstand `0 space.3`); während eines Kampfes darüber der Hinweis „Kampf läuft. …“ (Fläche `background`, `radius.md`, Innenabstand `space.3`, `text.sm`, links das Schloss `padlock.svg` in `size.icon` und `negative.text`, `gap` `space.2`) und gesperrte Einträge; bei „Kampf“ das [Panel „Kampf“](#panel-kampf), bei „Einstellungen“ das [Panel „Einstellungen“](#panel-einstellungen) |

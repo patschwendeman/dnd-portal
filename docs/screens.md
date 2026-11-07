@@ -103,8 +103,9 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   (die Musik spielt im Ausgabe-Fenster weiter) – und wieder ein. Auswahl und
   Scrollposition der Notizen bleiben erhalten; der Zustand wird nicht gespeichert, nach einem Reload ist das Dashboard
   offen.
-- **Navigationsleiste:** schmale Leiste mit Icon-Buttons „Notizen“, darunter „Szenen“ und „Kampf“ (gekreuzte
-  Schwerter) und am unteren Ende, abgesetzt von den anderen, „Einstellungen“ (Zahnrad); Tooltip mit dem Namen. Läuft ein Kampf und ist ein anderes Panel offen oder das Panel eingeklappt, trägt
+- **Navigationsleiste:** schmale Leiste, ganz oben das Logo (vorerst der Würfel `dice.svg` als Platzhalter, 32px in
+  `primary`; ohne Funktion: kein Klick, kein Hover, nicht per Tab erreichbar), 32px darunter Icon-Buttons
+  „Notizen“, „Szenen“ und „Kampf“ (gekreuzte Schwerter) und am unteren Ende, abgesetzt von den anderen, „Einstellungen“ (Zahnrad); Tooltip mit dem Namen. Läuft ein Kampf und ist ein anderes Panel offen oder das Panel eingeklappt, trägt
   „Kampf“ einen roten Punkt und den Tooltip „Kampf (läuft)“. Das Panel „Kampf“ ist 280px breit, die anderen
   (auch „Einstellungen“) 240px;
   beim Laden ist „Notizen“ aktiv und hervorgehoben. Klick (oder Enter/Leertaste) auf einen anderen Menüpunkt wechselt
@@ -321,6 +322,10 @@ Tipp auf den Avatar, Hinweis „Als Nächstes dran“.
 - Die Spieler lädt sie per `adventures/{id}` beim Laden, bei jedem Wechsel des aktiven Abenteuers und nach jedem
   Spieltisch-Zustand, den der Server schickt; ein Wechsel zeigt ohne Reload die Charaktere des neuen Abenteuers.
 - Hochformat und Querformat (dort mehrspaltig); kein Hinweis „Bitte das Handy quer halten“; scrollt bei langer Liste.
+- Homescreen: Über das Browsermenü lässt sich die Seite als „DnD Portal“ zum Homescreen hinzufügen (Web-App-Manifest
+  `manifest.webmanifest`, Icon: blauer Würfel auf dunklem Grund). Ein Tipp darauf öffnet die Charakterauswahl, auf dem
+  iPhone ohne Browserleiste; Chrome auf Android legt über HTTP nur eine Verknüpfung an (siehe
+  [known-issues.md](known-issues.md#frontend)).
 
 **Player Screen (`/player/:id`):**
 - **Aktion / Bonusaktion:** Antippen schaltet zwischen 1 und 0.

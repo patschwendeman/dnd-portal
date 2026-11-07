@@ -1,7 +1,7 @@
 # DND-53: Logo in der Navigationsleiste des Admins, Web-App-Manifest für den Homescreen
 
 **Typ:** feat
-**Status:** Freigegeben
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -76,31 +76,31 @@ Leiste“, Logo-Farbe primary, 32px); es liegt außerhalb des Repos.
 ## Subtasks
 
 ### Frontend
-- [ ] `NavRail` ([src/components/NavRail.tsx](../../frontend/src/components/NavRail.tsx)): Logo als erstes Element
+- [x] `NavRail` ([src/components/NavRail.tsx](../../frontend/src/components/NavRail.tsx)): Logo als erstes Element
       der Leiste (`ReactSVG` mit `/assets/icons/dice.svg`, Füllung `primary`, Größe `LOGO_SIZE` = 32px,
       `role="img"`, `aria-label="DnD Portal"`, `data-test-id="nav-logo"`, kein Button). Die oberen Menüpunkte als
       Gruppe mit `space.6` Abstand zum Logo; untere Gruppe unverändert. Menüpunkte, Punkt am „Kampf“, Bedienung und
       `nextOpenPanel`/`splitByPlacement` bleiben unverändert.
-- [ ] `frontend/public/assets/icons/appIcon.svg` und die PNGs (192, 512, Apple 180) nach E3/E5.
-- [ ] `frontend/public/manifest.webmanifest` nach E4 mit den Icons: 192 und 512 als `any`, 512 zusätzlich als
+- [x] `frontend/public/assets/icons/appIcon.svg` und die PNGs (192, 512, Apple 180) nach E3/E5.
+- [x] `frontend/public/manifest.webmanifest` nach E4 mit den Icons: 192 und 512 als `any`, 512 zusätzlich als
       eigener Eintrag mit `purpose: "maskable"`.
-- [ ] `frontend/index.html`: `<link rel="manifest">`, `<link rel="apple-touch-icon">`, `<meta name="theme-color">`
+- [x] `frontend/index.html`: `<link rel="manifest">`, `<link rel="apple-touch-icon">`, `<meta name="theme-color">`
       und die iOS-Meta-Tags nach E4. Favicon und `<title>` bleiben.
-- [ ] `frontend/nginx.conf`: prüfen, dass `.webmanifest` als `application/manifest+json` ausgeliefert wird; sonst
+- [x] `frontend/nginx.conf`: prüfen, dass `.webmanifest` als `application/manifest+json` ausgeliefert wird; sonst
       ergänzen (wie bei `.md`).
 
 ### Tests
-- [ ] BDD `adminNavigation.feature`: Szenario zum Logo (erstes Element der Leiste, nicht fokussierbar, kein Button;
+- [x] BDD `adminNavigation.feature`: Szenario zum Logo (erstes Element der Leiste, nicht fokussierbar, kein Button;
       Klick ändert weder Panel noch aktiven Menüpunkt).
-- [ ] Unit-Test zum Manifest: Pflichtfelder nach E4, jede Icon-Datei existiert unter `public/`, `index.html`
+- [x] Unit-Test zum Manifest: Pflichtfelder nach E4, jede Icon-Datei existiert unter `public/`, `index.html`
       verweist auf Manifest und Apple-Touch-Icon.
 
 ### Doku
-- [ ] `docs/screens.md`: Admin, Ist (Navigationsleiste mit Logo); Player, Ist (Homescreen: Name, Icon, Start in der
+- [x] `docs/screens.md`: Admin, Ist (Navigationsleiste mit Logo); Player, Ist (Homescreen: Name, Icon, Start in der
       Charakterauswahl, ohne Browserleiste).
-- [ ] `frontend/docs/design/components.md`, Abschnitt „Navigationsleiste“: Logo, Abstand `space.6`, ohne Funktion.
-- [ ] `frontend/docs/design/screen-layouts.md`: Konstante `LOGO_SIZE` (32px) in der Tabelle der Layout-Konstanten.
-- [ ] `docs/architecture.md` (Assets): Manifest und App-Icons; `docs/known-issues.md`: Android nur Verknüpfung ohne
+- [x] `frontend/docs/design/components.md`, Abschnitt „Navigationsleiste“: Logo, Abstand `space.6`, ohne Funktion.
+- [x] `frontend/docs/design/screen-layouts.md`: Konstante `LOGO_SIZE` (32px) in der Tabelle der Layout-Konstanten.
+- [x] `docs/architecture.md` (Assets): Manifest und App-Icons; `docs/known-issues.md`: Android nur Verknüpfung ohne
       HTTPS, Logo ist Platzhalter.
 
 ## Akzeptanzkriterien

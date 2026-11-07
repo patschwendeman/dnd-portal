@@ -26,6 +26,37 @@ const Rail = styled.nav<TileSurfaceProps>`
   min-height: 0;
 `
 
+// Logo and top menu items form one head; only the space below them stretches
+const Head = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${(props) => props.theme.space[6]};
+`
+
+const TopGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${(props) => props.theme.space[2]};
+`
+
+const LOGO_SIZE = '32px'
+
+// Placeholder logo without function: no button, no hover, not focusable
+const Logo = styled.div`
+  width: ${LOGO_SIZE};
+  height: ${LOGO_SIZE};
+  color: ${(props) => props.theme.colors.primary};
+
+  svg {
+    display: block;
+    width: ${LOGO_SIZE};
+    height: ${LOGO_SIZE};
+    fill: currentColor;
+  }
+`
+
 const BottomGroup = styled.div`
   display: flex;
   flex-direction: column;
@@ -98,8 +129,9 @@ interface NavRailProps {
 }
 
 /**
- * Icon buttons that open their panel; the parent keeps which one is open (`openItemId`). Items
- * with placement bottom sit at the lower end, a badge only shows while its panel is not open.
+ * Logo on top, then icon buttons that open their panel; the parent keeps which one is open
+ * (`openItemId`). Items with placement bottom sit at the lower end, a badge only shows while its
+ * panel is not open.
  */
 function NavRail({
   items, openItemId, panelId, onSelect, isTranslucent = false,
@@ -136,7 +168,12 @@ function NavRail({
 
   return (
     <Rail aria-label="Navigation" data-test-id="nav-rail" $isTranslucent={isTranslucent}>
-      {top.map(renderItem)}
+      <Head>
+        <Logo role="img" aria-label="DnD Portal" data-test-id="nav-logo">
+          <ReactSVG src="/assets/icons/dice.svg" />
+        </Logo>
+        <TopGroup>{top.map(renderItem)}</TopGroup>
+      </Head>
       {bottom.length > 0 && <BottomGroup>{bottom.map(renderItem)}</BottomGroup>}
     </Rail>
   )

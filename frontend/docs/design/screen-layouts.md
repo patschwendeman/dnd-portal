@@ -12,6 +12,7 @@ Regel: [1.3](../../DESIGN.md#13-layout-konstanten).
 | 64px | Navigationsleiste im Admin (`NAV_RAIL_WIDTH`: Icon-Button `size.control.md` plus `space.3` auf beiden Seiten) | `AdminScreen` |
 | 240px | Panel neben der Navigationsleiste im Admin (`LEFT_COLUMN_WIDTH`; auch „Einstellungen“) | `AdminScreen` |
 | 280px | Panel „Kampf“ (`FIGHT_PANEL_WIDTH`: Namen und Steuerung je Teilnehmer passen nebeneinander) | `AdminScreen` |
+| 32px | Logo oben in der Navigationsleiste im Admin (`LOGO_SIZE`) | `NavRail` |
 | 8px · 5px | Punkt am Menüpunkt „Kampf“ bei laufendem Kampf, Größe und Abstand zur Ecke (`BADGE_SIZE`, `BADGE_INSET`) | `NavRail` |
 | 400px · 560px | Mindest- und Höchstbreite des Dashboards (`DASHBOARD_MIN_WIDTH`: darunter werden die Zeilen im Panel „Spieltisch“ zu schmal für ihre Steuerung; `DASHBOARD_MAX_WIDTH`: darüber schöbe die Bühne auf großen Monitoren das Panel „Audio“ aus dem sichtbaren Bereich) | `AdminScreen` |
 | 12px | Unschärfe hinter durchscheinenden Kacheln im Admin (`TILE_BLUR`, `backdrop-filter: blur`) | `GlobalStyle` (`tileSurface`) |

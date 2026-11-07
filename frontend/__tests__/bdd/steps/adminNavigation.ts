@@ -1,5 +1,5 @@
 import { loadFeature, defineFeature } from 'jest-cucumber'
-import { WebDriver } from 'selenium-webdriver'
+import { Key, WebDriver } from 'selenium-webdriver'
 
 import {
   buildDriver,
@@ -17,6 +17,7 @@ const WINDOW_RECT = { width: 1600, height: 1000 }
 
 const RAIL = '[data-test-id="nav-rail"]'
 const NOTES_ITEM = '[data-test-id="nav-item-docs"]'
+const LOGO = '[data-test-id="nav-logo"]'
 const PANEL = '[data-test-id="nav-panel"]'
 const NOTES_VIEW = '[data-test-id="notes-view"]'
 const NOTES_SCROLL = '[data-test-id="notes-scroll"]'
@@ -37,6 +38,10 @@ const openAdmin = async (driver: WebDriver): Promise<void> => {
   await driver.manage().window().setRect(WINDOW_RECT)
   await openAdminScreen(driver)
 }
+
+const isLogoFocused = async (driver: WebDriver): Promise<boolean> => driver.executeScript(
+  `return document.activeElement === document.querySelector('${LOGO}')`,
+)
 
 const getScrollTop = async (driver: WebDriver): Promise<number> => driver.executeScript(
   `return document.querySelector('${NOTES_SCROLL}').scrollTop`,
@@ -155,5 +160,43 @@ defineFeature(feature, (test) => {
         expect(await getScrollTop(driver)).toBe(scrollTop)
       },
     )
+  })
+
+  test('The logo sits on top of the rail and has no function', ({
+    given, then, when, and,
+  }) => {
+    given('I am on the admin screen', async () => {
+      await openAdmin(driver)
+    })
+
+    then('the logo is the first element of the navigation rail and no button', async () => {
+      const rail = await waitForElement(driver, RAIL)
+      const first = await rail.findElement({ css: '[data-test-id]' })
+      expect(await first.getAttribute('data-test-id')).toBe('nav-logo')
+      expect(await first.getTagName()).not.toBe('button')
+      expect(await first.getAttribute('role')).toBe('img')
+      expect(await first.getAttribute('aria-label')).toBe('DnD Portal')
+      expect(await first.findElements({ css: 'button, a, [tabindex]' })).toHaveLength(0)
+      const logoRect = await first.getRect()
+      const notesRect = await (await waitForElement(driver, NOTES_ITEM)).getRect()
+      expect(logoRect.y + logoRect.height).toBeLessThan(notesRect.y)
+    })
+
+    when('I click on the logo', async () => {
+      await clickElement(driver, LOGO)
+    })
+
+    then('the notes panel stays open with Notizen as active menu item', async () => {
+      await waitForElement(driver, PANEL)
+      expect(await waitForAttribute(driver, NOTES_ITEM, 'aria-pressed', 'true')).toBe('true')
+      const pressed = await driver.findElements({ css: `${RAIL} [aria-pressed="true"]` })
+      expect(pressed).toHaveLength(1)
+    })
+
+    and('the logo does not get the focus, neither by click nor by keyboard', async () => {
+      expect(await isLogoFocused(driver)).toBe(false)
+      await (await waitForElement(driver, NOTES_ITEM)).sendKeys(Key.SHIFT, Key.TAB)
+      expect(await isLogoFocused(driver)).toBe(false)
+    })
   })
 })
