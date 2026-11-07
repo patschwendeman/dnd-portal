@@ -29,8 +29,7 @@ Teil-spezifischer Kontext (Befehle, Struktur, Konventionen): `frontend/CLAUDE.md
 
 ## Wichtige Leitplanken
 
-- **Branches:** Gearbeitet und committet wird ausschließlich auf `development` (keine Feature-/Hotfix-Branches;
-  Ausnahme: geparkte, unfertige Features auf `feature/<name>`, z. B. `feature/spells-screen` – dort nicht arbeiten).
+- **Branches:** Gearbeitet und committet wird ausschließlich auf `development` (keine Feature-/Hotfix-Branches).
   Niemals auf `main` committen oder pushen – `main` erhält Änderungen nur per Pull Request von `development`.
   Details: [CONTRIBUTING.md](CONTRIBUTING.md).
 - **Commits:** Nachricht nach Schema `^(feat|fix|chore|docs|refactor|test|style|setup)(\([A-Z]+-[0-9]+\))?: .+`,
@@ -53,8 +52,8 @@ Teil-spezifischer Kontext (Befehle, Struktur, Konventionen): `frontend/CLAUDE.md
   Musik und Soundeffekte spielt das Admin-Fenster, das Audioausgabe ist (Zustand auf dem Server; ohne Ausgabe wird
   es das Admin-Fenster, in dem als Nächstes geklickt oder eine Taste gedrückt wird); den Lautsprecher wählt der Spielleiter außerhalb der App (Betriebssystem bzw. Browser). Die Player-Screens laufen auf den Smartphones der Spieler (geöffnet per QR-Code, den der Admin auf der Wall einblendet),
   sind ebenfalls per WebSocket angebunden und übernehmen davon nur das Theme (pro Gerät abweichend wählbar).
-- **Begriffe:** Alle Szenen sind gleich (keine Kampf-/Nicht-Kampfszenen mehr, seit DND-29); ein Kampf soll künftig
-  in jeder Szene stattfinden können. Ältere Bezeichnungen (`main`, `side`, `fight`, `battlemap`) tauchen noch in
+- **Begriffe:** Alle Szenen sind gleich (keine Kampf-/Nicht-Kampfszenen mehr, seit DND-29); ein Kampf kann in
+  jeder Szene stattfinden (umgesetzt seit DND-43, Menüpunkt „Kampf“ im Admin). Ältere Bezeichnungen (`main`, `side`, `fight`, `battlemap`) tauchen noch in
   Asset-Pfaden auf (`music/main/`, `images/ground_screen/main_N.jpg`, `images/wall_screen/fight.jpg`).
 - **Sprache:** Docs auf Deutsch, Code-Bezeichner englisch. UI-Texte im Player Screen und die Markdown-Notizen sind deutsch.
 - **Verworfen:** `v1-roguelike` (Tags `archive/*-v1-roguelike`; gesperrte Karten, Loot, XP, Gegner) ist ein altes, verworfenes Konzept –

@@ -323,11 +323,6 @@ Tipp auf den Avatar, Hinweis „Als Nächstes dran“.
 - Ressourcen nur lokal: nicht gespeichert, nicht mit dem Admin synchronisiert, Reload setzt zurück; nicht pro Charakter
   konfigurierbar.
 
-### Geparkt: `/spells`
-Unfertige Variante mit Zauberleiste (`SpellBarPlayer`: 20 Platzhalter-Icons, fester Text „Rage“) und Karussell
-(`SliderPlayer`: 3 Platzhalter-Karten) plus `ResourceBarPlayer`. Aktuell keine Priorität: aus `development`
-entfernt und auf dem Branch `feature/spells-screen` geparkt (siehe CONTRIBUTING.md, „Branches“).
-
 ---
 
 ## Wall Screen

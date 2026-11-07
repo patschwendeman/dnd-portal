@@ -40,5 +40,5 @@ Der Spielleiter steuert das Geschehen über **Szenen**. Eine Szene umfasst immer
 - ein oder mehrere **Sound-Elemente** (Musik).
 
 Alle Szenen sind gleich (z. B. Dorf, Shop, Taverne, Kampfschauplatz). Ob gekämpft wird, entscheidet nicht die
-Szene: Einen Kampf startet der Spielleiter in jeder Szene (geplant, Menüpunkt „Kampf“ im Admin).
+Szene: Einen Kampf startet der Spielleiter in jeder Szene (Menüpunkt „Kampf“ im Admin, seit DND-43).
 Details: [domain.md](domain.md), [screens.md](screens.md).

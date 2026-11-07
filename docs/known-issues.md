@@ -7,16 +7,15 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - Player-Ressourcen sind nur lokal, nicht persistiert und nicht pro Charakter konfigurierbar (seit DND-46 hat
   jeder Charakter einen eigenen Player Screen unter `/player/:id`, die Ressourcen sind dort aber für alle gleich).
 - Keine NPC-, Charakter- oder Kampfdaten im Datenmodell – nur Markdown-Notizen.
-- Einen Kampf kann der Spielleiter noch nicht starten: Seit DND-29 sind alle Szenen gleich, der Menüpunkt „Kampf“
-  im Admin (und was Wall und Ground bei einem Kampf zeigen) folgt in einem eigenen Task.
+- Kampf (seit DND-43 im Admin startbar, Initiative auch auf der Wall, „Am Zug“ im Player Screen): Der Ground zeigt
+  noch nichts davon, und es gibt keine Kampfdaten über die Reihenfolge hinaus (keine Lebenspunkte, Werte, Gegnerkatalog).
 - Soundeffekte und Notizen sind nicht mit Szenen verknüpft (nur Frontend-Dateien).
 - Keine gebietsspezifische Übersichtskarte auf dem Wall Screen; Weltkarte ist ein fest eingebundenes Bild.
 - Doppelte Mediendatei: `mapOverview.jpg` (Weltkarte im Wall Screen) liegt zusätzlich zu `media/` als Kopie in
   `frontend/public/assets/...`, weil sie fest im Frontend eingebunden ist und an keiner Szene hängt. Ablösen gehört zur
   Weltkarten-/Upload-Thematik. (Die Standardmusik kommt seit DND-26 nur noch aus dem Backend.)
-- Grid-Einstellungen gelten global und werden nicht gespeichert; das Grid lässt sich nicht aus dem Admin steuern und
-  wird nicht zwischen Geräten synchronisiert.
-- Der Admin zeigt nicht an, welche Screens verbunden sind (der Server kennt sie).
+- Ground-Raster: Zellgröße (seit DND-44, Panel „Einstellungen“) liegt in der Datenbank; Rasterfarbe (Panel „Spieltisch“) nur im
+  Speicher des API-Prozesses und ist nach einem Neustart „Aus“.
 - Szenen lassen sich nur über `seed_data.json` pflegen (keine schreibenden Endpoints, Seeder aktualisiert bestehende DB nicht).
 
 ## Backend
@@ -46,7 +45,8 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - E2E-Tests (`npm run test:e2e`) aktivieren Szenen im Admin und speichern sie damit per `PATCH` dauerhaft in der
   Dev-DB (`adventure.active_scene_id`); Admin, Wall und Ground der Dev-Umgebung zeigen danach diese Szene. Danach schlagen die Backend-Tests fehl, die den Seed-Stand (keine aktive Szene)
   erwarten, bis die aktive Szene wieder geleert wird (z. B. `PATCH /adventures/1` mit `{"active_scene_id": null}`) oder
-  die DB zurückgesetzt ist.
+  die DB zurückgesetzt ist. Ebenso hängen sie an `global_level` der Dev-DB (Seed-Stand 1, `conftest.py`
+  `expected_adventure_details`): Ein per `PATCH` geänderter Wert lässt sie ebenfalls fehlschlagen.
 - `ResourceBarPlayer`: `spellData[].max` weicht von `SpellMax` ab (Stufe II: 4 vs. 3); Spezial startet bei 1 statt 3.
 - Kontrast (seit DND-40): Die Notizseiten sind Kacheln in `secondary`; die Text-Links in den Notizen
   (Inhaltsverzeichnisse und Querverweise, `primary`) verfehlen darauf in Tavern 4,5:1 (3,3:1, `frontend/docs/design/contrast.md`); auf den
@@ -67,8 +67,8 @@ in Folge-Tasks, danach den Eintrag in der jeweiligen Ignore-Liste entfernen bzw.
   `RECONNECT_MAX_DELAY_MS` (`src/realtime/backoff.ts`); Typen `TextButtonVariant` (`TextButton.tsx`), `Image`
   (`models.ts`), `OtherServerMessage` (`connection.ts`), `SoundListener` (`useGameTable.ts`). Falsch-Positive: die
   Exporte des generierten `src/api/schema.d.ts`.
-- jscpd (`frontend/.jscpd.json`, `threshold` 0,28 %, seit DND-44): 1 Duplikat, 22 von 8073 Zeilen (0,27 %, Stand
-  DND-44): `darkTheme.ts` ↔ `tavernTheme.ts` (22 Zeilen).
+- jscpd (`frontend/.jscpd.json`, `threshold` 0,28 %): 1 Duplikat, 22 von 10.600 Zeilen (0,21 %, Stand
+  2026-11-07): `darkTheme.ts` ↔ `tavernTheme.ts` (22 Zeilen).
 
 **Backend**
 - vulture (`backend/vulture_baseline.py`): Relationship `Adventure.active_scene` wird nirgends gelesen (nur
