@@ -12,20 +12,22 @@ import { effectiveTheme } from '../utils/playerTheme'
 import { useAdventureBackground } from '../utils/useAdventureBackground'
 
 export interface PlayerOutlet {
-  // Theme chosen on this device, null = follows the game table
+  /** Theme chosen on this device, null = follows the game table */
   themeOverride: Theme | null
   onChangeThemeOverride: (override: Theme | null) => void
-  // Name and players of the active adventure; null while they load, after a failed load or
-  // without an active adventure
+  /**
+   * Name and players of the active adventure; null while they load, after a failed load or
+   * without an active adventure
+   */
   adventureName: string | null
   players: Player[] | null
-  // Level of all players of the active adventure; null like the players
+  /** Level of all players of the active adventure; null like the players */
   globalLevel: number | null
   loadFailed: boolean
   retryLoad: () => void
-  // Whether the background image lies behind the surfaces
+  /** Whether the background image lies behind the surfaces */
   isTranslucent: boolean
-  // Hint on the selection after the adventure of the chosen character was replaced
+  /** Hint on the selection after the adventure of the chosen character was replaced */
   hasAdventureNotice: boolean
   setAdventureNotice: (hasNotice: boolean) => void
 }
@@ -37,8 +39,10 @@ interface PlayerLayoutProps {
   onChangeThemeOverride: (override: Theme | null) => void
 }
 
-// Shared by the selection and the Player Screen, so switching between them keeps the loaded
-// players, the background image and the hint instead of loading them again
+/**
+ * Shared by the selection and the Player Screen, so switching between them keeps the loaded
+ * players, the background image and the hint instead of loading them again
+ */
 export function PlayerLayout({
   themeOverride, onChangeThemeOverride,
 }: PlayerLayoutProps): ReactElement {

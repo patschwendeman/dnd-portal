@@ -22,17 +22,21 @@ const Head = styled.div`
 `
 
 interface DashboardPanelProps {
-  // Accessible name of the panel, also shown as its label unless `title` is given
+  /** Accessible name of the panel, also shown as its label unless `title` is given */
   label: string
   title?: string
-  // Controls at the right of the label, e.g. the level stepper of the party
+  /** Controls at the right of the label, e.g. the level stepper of the party */
   headEnd?: ReactNode
   testId: string
   children: ReactNode
-  // While the background image of the adventure lies behind the tiles
+  /** While the background image of the adventure lies behind the tiles */
   isTranslucent?: boolean
 }
 
+/**
+ * A tile of the dashboard with a label head; `label` is also the accessible name when a
+ * different `title` is shown
+ */
 function DashboardPanel({
   label, title = undefined, headEnd = undefined, testId, children, isTranslucent = false,
 }: DashboardPanelProps): ReactElement {

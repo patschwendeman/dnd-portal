@@ -1,7 +1,7 @@
 # DND-50: Fehlende Doc-Kommentare nach CONTRIBUTING.md ergänzen
 
 **Typ:** chore
-**Status:** Freigegeben
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -68,14 +68,14 @@ im ganzen Code, ohne dass sich Verhalten ändert.
 ## Subtasks
 
 ### Backend
-- [ ] Docstrings an den 15 Routen: `adventures.py` (`read_adventures`, `read_adventure`, `update_adventure`,
+- [x] Docstrings an den 15 Routen: `adventures.py` (`read_adventures`, `read_adventure`, `update_adventure`,
       `read_adventure_scenes`), `audio.py` (`read_audio`), `fight.py` (`start_fight`, `end_fight`, `add_combatant`,
       `update_combatant`, `remove_combatant`, `reorder`), `scenes.py` (`read_scene`), `table.py` (`read_table`,
       `read_join_info`, `update_table`). Inhalt knapp: Verhalten und Fehlerfälle laut Endpoint-Tabelle in
       `docs/architecture.md` und laut Code (z. B. `update_adventure`: 404 unbekanntes Abenteuer, 422 Szene gehört nicht
       zum Abenteuer, 409 laufender Kampf beim Szenenwechsel; Push an alle Screens). Stil wie die vorhandenen
       Route-Docstrings (`update_audio`, `play_sound`, `read_fight`, `end_turn`).
-- [ ] Docstrings an Service-Funktionen:
+- [x] Docstrings an Service-Funktionen:
   - `services/adventure.py`: `get_adventure`, `get_scenes` (`None` bei unbekannter ID, `get_scenes` auch ohne Szenen
     eine leere Liste statt `None`); `update_adventure` (`None` bei unbekannter ID, `SceneNotInAdventureError`,
     `FightInProgressError` nur bei tatsächlichem Szenenwechsel, danach `scene_changed`).
@@ -84,7 +84,7 @@ im ganzen Code, ohne dass sich Verhalten ändert.
     Abenteuerwechsel, außer ein Overlay kommt im selben Request mit).
   - `services/fight.py`: `end_fight`, `reorder` (`InvalidFightChangeError`, wenn die IDs nicht genau die Kämpfer
     des Kampfes sind).
-- [ ] Docstrings an Realtime-Funktionen:
+- [x] Docstrings an Realtime-Funktionen:
   - `realtime/audio.py` `AudioService`: `update` (Abspielen nur mit Track; Pause immer), `set_output` (gibt die
     vorherige Ausgabe zurück, die benachrichtigt werden muss), `release_output`, `track_ended` (nur von der aktuellen
     Ausgabe und nur für den laufenden Track; Rückgabe = geändert).
@@ -92,12 +92,12 @@ im ganzen Code, ohne dass sich Verhalten ändert.
     `make_audio_output`, `report_track_ended`, `release_audio_output`.
   - `realtime/manager.py`: `broadcast`, `send_admins`, `send_screen` (fehlgeschlagene Sends entfernen die Verbindung,
     siehe `send`).
-- [ ] `uv run python scripts/export_openapi.py` (in `backend/`).
+- [x] `uv run python scripts/export_openapi.py` (in `backend/`).
 
 ### Frontend
-- [ ] `npm run generate:api`; Diff von `src/api/schema.d.ts` nur Kommentarzeilen.
-- [ ] `//` → `/** */` nach E1, E2 und E3 in `src/` (ohne `schema.d.ts`).
-- [ ] Neue `/** */` an Exporten mit nicht offensichtlichem Verhalten:
+- [x] `npm run generate:api`; Diff von `src/api/schema.d.ts` nur Kommentarzeilen.
+- [x] `//` → `/** */` nach E1, E2 und E3 in `src/` (ohne `schema.d.ts`).
+- [x] Neue `/** */` an Exporten mit nicht offensichtlichem Verhalten:
   - `realtime/useGameTable.ts`: `useGameTable` (Verbindungsaufbau und Reconnect für den übergebenen Screen, was der Hook
     liefert – laut Code).
   - `api/loadData.ts`: `loadData`, `describeFailure` (Fehlertexte; leere Antwort gilt als „nicht gefunden“).

@@ -47,8 +47,10 @@ const Content = styled.span<TileSurfaceProps>`
 // touch would otherwise cover the screen without a way to hide it again
 const isMouse = (event: PointerEvent): boolean => event.pointerType === 'mouse'
 
-// Wall and ground have no controls; this is the only exception, because the full screen of a
-// window can only be requested by an interaction in that window
+/**
+ * Wall and ground have no controls; this is the only exception, because the full screen of a
+ * window can only be requested by an interaction in that window
+ */
 function FullscreenHoverOverlay(): ReactElement | null {
   const theme = useTheme()
   const { isFullscreen, toggle } = useDocumentFullscreen()

@@ -8,9 +8,11 @@ interface Preparation {
   combatants: PreparedCombatant[]
 }
 
-// The preparation of a fight is local to this Admin window until "Kampf starten". It starts with
-// all players of the adventure; another adventure, and the start or end of a fight (also from
-// another window), start it anew.
+/**
+ * The preparation of a fight is local to this Admin window until "Kampf starten". It starts with
+ * all players of the adventure; another adventure, and the start or end of a fight (also from
+ * another window), start it anew.
+ */
 const useFightPreparation = (
   adventureId: number | null,
   players: Player[],

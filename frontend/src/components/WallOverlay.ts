@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { tileSurface, TileSurfaceProps } from '../style/GlobalStyle'
 import { textStyle } from '../style/tokens'
 
-// Dims the whole screen below the overlay panel, as below a dialog in the Admin
+/** Dims the whole screen below the overlay panel, as below a dialog in the Admin */
 export const OverlayLayer = styled.div<{ $isVisible: boolean }>`
     display: ${({ $isVisible }) => ($isVisible ? 'flex' : 'none')};
     position: fixed;

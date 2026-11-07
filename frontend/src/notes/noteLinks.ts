@@ -1,16 +1,17 @@
 import { noteHeadings } from './noteAnchors'
 import { noteFolderOf } from './noteFolders'
 
-// Anchors of every known note file, keyed by its path relative to public/story/
+/** Anchors of every known note file, keyed by its path relative to public/story/ */
 export type NoteIndex = Map<string, Set<string>>
 
+/** Anchors of the headings of every file, so links can be checked without rendering the target */
 export const buildNoteIndex = (files: { path: string, text: string }[]): NoteIndex => new Map(
   files.map(({ path, text }) => [path, new Set(noteHeadings(text).map(({ anchor }) => anchor))]),
 )
 
 export interface NoteTarget {
   path: string
-  // null: the start of the file
+  /** null: the start of the file */
   anchor: string | null
 }
 

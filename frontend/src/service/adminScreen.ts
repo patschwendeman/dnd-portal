@@ -19,6 +19,7 @@ export const getAdventure = async (id: number): Promise<AdventureDetail> => (
   loadData(`adventure ${id}`, `adventures/${id}`)
 )
 
+/** The scenes of the adventure */
 export const getAdminData = async (adventureId: number): Promise<SceneDetail[]> => (
   loadData('scenes details', `adventures/${adventureId}/scenes`)
 )

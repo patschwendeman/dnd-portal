@@ -1,4 +1,6 @@
-// The server pings every 15 s; without any message for this long the connection counts as broken
+/**
+ * The server pings every 15 s; without any message for this long the connection counts as broken
+ */
 export const HEARTBEAT_TIMEOUT_MS = 35000
 
 export interface Timers {
@@ -12,13 +14,15 @@ export const browserTimers: Timers = {
 }
 
 export interface HeartbeatWatchdog {
-  // Called for every received message (and when the connection opens)
+  /** Called for every received message (and when the connection opens) */
   reset: () => void
   stop: () => void
 }
 
-// Calls onTimeout once if reset() is not called within timeoutMs. A silently broken connection
-// (e.g. WLAN of another device gone) is otherwise noticed by the browser only much later.
+/**
+ * Calls onTimeout once if reset() is not called within timeoutMs. A silently broken connection
+ * (e.g. WLAN of another device gone) is otherwise noticed by the browser only much later.
+ */
 export const createHeartbeatWatchdog = (
   onTimeout: () => void,
   timeoutMs: number = HEARTBEAT_TIMEOUT_MS,

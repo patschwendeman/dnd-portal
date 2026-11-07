@@ -2,7 +2,7 @@ import { SoundName } from '../models/models'
 
 export interface Sound {
   name: SoundName
-  // Paths below public/, served by the frontend itself
+  /** Paths below public/, served by the frontend itself */
   icon: string
   file: string
 }
@@ -13,7 +13,7 @@ const sound = (name: SoundName, icon: string, file: string): Sound => ({
   file: `/assets/sounds/${file}`,
 })
 
-// Groups as shown in the dashboard panel "Audio" of the Admin
+/** Groups as shown in the dashboard panel "Audio" of the Admin */
 export const SOUND_GROUPS: readonly (readonly Sound[])[] = [
   [sound('heal', 'heart.svg', 'heal.wav'), sound('bottle', 'bottle.svg', 'bottle.wav')],
   [

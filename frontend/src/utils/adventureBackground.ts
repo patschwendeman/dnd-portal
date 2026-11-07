@@ -1,14 +1,16 @@
 import { AdventureDetail, Theme } from '../models/models'
 
-// Image layers behind the tiles of the Admin and the cards of the Player. An image is only shown
-// once it is loaded, so the old one stays until the new one can replace it; the one that is
-// replaced stays as `leaving` until its fade-out is over.
+/**
+ * Image layers behind the tiles of the Admin and the cards of the Player. An image is only shown
+ * once it is loaded, so the old one stays until the new one can replace it; the one that is
+ * replaced stays as `leaving` until its fade-out is over.
+ */
 export interface AdventureBackgroundState {
-  // Loaded and visible
+  /** Loaded and visible */
   shown: string | null
-  // Loading, still invisible
+  /** Loading, still invisible */
   pending: string | null
-  // Fading out
+  /** Fading out */
   leaving: string | null
 }
 
@@ -29,6 +31,12 @@ const hide = (state: AdventureBackgroundState): AdventureBackgroundState => ({
   leaving: state.shown ?? state.leaving,
 })
 
+/**
+ * `target`: the image to show next (null hides the background, an image that is still fading
+ * out comes back without loading); `loaded`/`failed`: outcome of loading the pending image, a
+ * failure hides the background; `settled`: the fade-out of the leaving image is over. Results
+ * for images that are no longer pending or leaving are ignored.
+ */
 export function adventureBackgroundReducer(
   state: AdventureBackgroundState,
   action: AdventureBackgroundAction,
@@ -61,8 +69,10 @@ export function adventureBackgroundReducer(
   }
 }
 
-// The images to render, each once, in a stable order, so a layer keeps its element (and its
-// loaded image) while it changes from pending to shown to leaving
+/**
+ * The images to render, each once, in a stable order, so a layer keeps its element (and its
+ * loaded image) while it changes from pending to shown to leaving
+ */
 export const adventureBackgroundLayers = (state: AdventureBackgroundState): string[] => (
   [state.leaving, state.shown, state.pending]
     .filter((src, index, all): src is string => src !== null && all.indexOf(src) === index)
@@ -72,8 +82,10 @@ export const isBackgroundImageShown = (state: AdventureBackgroundState): boolean
   state.shown !== null
 )
 
-// Media path of the image of the adventure for the theme; null while the adventure loads or
-// without an image for the theme. Depends on nothing else, so a scene change keeps the image.
+/**
+ * Media path of the image of the adventure for the theme; null while the adventure loads or
+ * without an image for the theme. Depends on nothing else, so a scene change keeps the image.
+ */
 export const adventureBackgroundSource = (
   adventure: AdventureDetail | undefined,
   theme: Theme,

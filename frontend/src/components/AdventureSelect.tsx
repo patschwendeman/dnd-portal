@@ -7,9 +7,9 @@ interface AdventureSelectProps {
   adventures: AdventureSummary[]
   activeAdventureId: number | null
   onSelectAdventure: (adventureId: number) => void
-  // During a fight: the list does not open, a lock replaces the arrow
+  /** During a fight: the list does not open, a lock replaces the arrow */
   isLocked?: boolean
-  // While the error bar stands no adventure can be switched
+  /** While the error bar stands no adventure can be switched */
   isDisabled?: boolean
 }
 

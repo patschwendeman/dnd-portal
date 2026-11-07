@@ -16,17 +16,19 @@ import { effectiveTheme } from '../utils/playerTheme'
 
 interface GameTableProviderProps {
   screen: GameTableScreen
-  // Theme chosen on this device (Player); null or missing = theme of the game table
+  /** Theme chosen on this device (Player); null or missing = theme of the game table */
   themeOverride?: Theme | null
   children: ReactNode
 }
 
-// Connects the screen to the game table of the server and passes the state on: active adventure,
-// active scene, theme, overlay of the Walls and grid of the Grounds, the audio state, (Admin only)
-// the number of connected screens and (not Ground) the fight. Until the first snapshot nothing
-// is active, the theme is dark and there is neither overlay nor grid; after a disconnect the last
-// state stays. A theme override only changes the look of this screen; the contexts keep the theme
-// of the game table.
+/**
+ * Connects the screen to the game table of the server and passes the state on: active adventure,
+ * active scene, theme, overlay of the Walls and grid of the Grounds, the audio state, (Admin only)
+ * the number of connected screens and (not Ground) the fight. Until the first snapshot nothing
+ * is active, the theme is dark and there is neither overlay nor grid; after a disconnect the last
+ * state stays. A theme override only changes the look of this screen; the contexts keep the theme
+ * of the game table.
+ */
 function GameTableProvider({
   screen,
   themeOverride = null,

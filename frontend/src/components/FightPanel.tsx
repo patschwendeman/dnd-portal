@@ -190,7 +190,7 @@ const Foot = styled.div`
 `
 
 interface FightPanelProps {
-  // Preparation (local) or the running fight, in initiative order
+  /** Preparation (local) or the running fight, in initiative order */
   rows: FightRow[]
   players: Player[]
   isFighting: boolean
@@ -205,8 +205,10 @@ interface FightPanelProps {
   onEnd: () => void
 }
 
-// Content of the panel "Kampf": before the fight its preparation, during the fight its list;
-// both in initiative order with move, remove and add
+/**
+ * Content of the panel "Kampf": before the fight its preparation, during the fight its list;
+ * both in initiative order with move, remove and add
+ */
 function FightPanel({
   rows, players, isFighting, round, activeKey, canStart,
   onMove, onRemove, onAddNpc, onAddPlayer, onStart, onEnd,

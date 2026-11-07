@@ -75,6 +75,10 @@ const DialogueImage = styled.img`
     object-fit: cover;
 `
 
+/**
+ * Asks before the active scene changes, with Wall image, name and description of the scene;
+ * unlike ConfirmDialog it shows an image, has no Escape and is only hidden (`isVisible`)
+ */
 function Dialogue({ sceneOption, handleDialogueOption, isVisible }: DialogueProps): ReactElement {
   const handleConfirm = () => {
     if (!sceneOption) {

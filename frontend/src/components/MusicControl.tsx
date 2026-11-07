@@ -81,9 +81,9 @@ const Volume = styled.div`
 `
 
 interface MusicControlProps {
-  // null until the first audio state of the server arrived
+  /** null until the first audio state of the server arrived */
   audio: AudioState | null
-  // The last failed write; a new one ends a drag of the slider like a new audio state
+  /** The last failed write; a new one ends a drag of the slider like a new audio state */
   failedSave: object | null
   onToggle: () => void
   onVolumeCommit: (volume: number) => void

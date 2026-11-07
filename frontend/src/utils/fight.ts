@@ -9,8 +9,10 @@ const MAX_NUMBER = 99
 
 type NpcKind = Exclude<CombatantKind, 'player'>
 
-// A combatant of the preparation (local to the Admin window until "Kampf starten"); the same
-// fields as a combatant of the fight, without an ID
+/**
+ * A combatant of the preparation (local to the Admin window until "Kampf starten"); the same
+ * fields as a combatant of the fight, without an ID
+ */
 interface PreparedCombatant {
   key: string
   kind: CombatantKind
@@ -24,7 +26,7 @@ type CombatantFields = Pick<Combatant, 'kind' | 'player_id' | 'number' | 'label'
   defeated?: boolean
 }
 
-// A row of the panel "Kampf": a prepared combatant or one of the running fight
+/** A row of the panel "Kampf": a prepared combatant or one of the running fight */
 interface FightRow {
   key: string
   combatant: CombatantFields
@@ -40,7 +42,7 @@ const preparedNpc = (kind: NpcKind, number: number, label: string): PreparedComb
   key: `npc-${number}`, kind, player_id: null, number, label: label.trim() || null,
 })
 
-// Start of every preparation: all players of the adventure in the order of the API, no NPCs
+/** Start of every preparation: all players of the adventure in the order of the API, no NPCs */
 const initialPreparation = (players: Player[]): PreparedCombatant[] => players.map(preparedPlayer)
 
 const toCombatantCreate = ({
@@ -55,8 +57,10 @@ const usedNumbers = (combatants: CombatantFields[]): number[] => combatants
   .map((combatant) => combatant.number)
   .filter((number): number is number => number !== null)
 
-// Enemies and allies share one series of numbers; a number stays taken while its combatant is in
-// the list, also when defeated. null if all are taken.
+/**
+ * Enemies and allies share one series of numbers; a number stays taken while its combatant is in
+ * the list, also when defeated. null if all are taken.
+ */
 const smallestFreeNumber = (combatants: CombatantFields[]): number | null => {
   const used = new Set(usedNumbers(combatants))
   for (let number = MIN_NUMBER; number <= MAX_NUMBER; number += 1) {
@@ -67,7 +71,7 @@ const smallestFreeNumber = (combatants: CombatantFields[]): number | null => {
   return null
 }
 
-// Error message for the number field, null if the number can be added
+/** Error message for the number field, null if the number can be added */
 const numberError = (input: string, combatants: CombatantFields[]): string | null => {
   const number = Number(input.trim())
   const isInRange = Number.isInteger(number) && number >= MIN_NUMBER && number <= MAX_NUMBER
@@ -80,8 +84,10 @@ const numberError = (input: string, combatants: CombatantFields[]): string | nul
   return null
 }
 
-// The list with the item at `index` moved one place forward (-1) or back (+1); unchanged at the
-// ends
+/**
+ * The list with the item at `index` moved one place forward (-1) or back (+1); unchanged at the
+ * ends
+ */
 const moveItem = <T>(items: T[], index: number, step: -1 | 1): T[] => {
   const target = index + step
   if (index < 0 || index >= items.length || target < 0 || target >= items.length) {
@@ -92,15 +98,15 @@ const moveItem = <T>(items: T[], index: number, step: -1 | 1): T[] => {
   return moved
 }
 
-// Players of the adventure that are not in the list (to add them again)
+/** Players of the adventure that are not in the list (to add them again) */
 const missingPlayers = (players: Player[], combatants: CombatantFields[]): Player[] => (
   players.filter((player) => !combatants.some((combatant) => combatant.player_id === player.id))
 )
 
-// Short name of a player on the button "+ Vorname": the first word of the character name
+/** Short name of a player on the button "+ Vorname": the first word of the character name */
 const firstName = (player: Player): string => player.character_name.trim().split(/\s+/)[0] ?? ''
 
-// The name shown for a combatant: the character name of a player, "Gegner 3" or "Verbündeter 4"
+/** The name shown for a combatant: the character name of a player, "Gegner 3" or "Verbündeter 4" */
 const combatantName = (combatant: CombatantFields, players: Player[]): string => {
   if (combatant.kind === 'player') {
     return players.find((player) => player.id === combatant.player_id)?.character_name ?? ''
@@ -108,8 +114,10 @@ const combatantName = (combatant: CombatantFields, players: Player[]): string =>
   return `${KIND_NAMES[combatant.kind]} ${combatant.number}`
 }
 
-// The line below the name: race, class and player name, or the label of an NPC; out of the fight
-// "Tot" (player) or "Besiegt" (NPC) comes first
+/**
+ * The line below the name: race, class and player name, or the label of an NPC; out of the fight
+ * "Tot" (player) or "Besiegt" (NPC) comes first
+ */
 const combatantDetails = (combatant: CombatantFields, players: Player[]): string => {
   const isPlayer = combatant.kind === 'player'
   const player = isPlayer ? players.find((p) => p.id === combatant.player_id) : undefined
@@ -120,7 +128,7 @@ const combatantDetails = (combatant: CombatantFields, players: Player[]): string
   return [...status, ...details].filter((part) => part !== '').join(' · ')
 }
 
-// Text of the avatar without an image: initials of a player, number of an NPC
+/** Text of the avatar without an image: initials of a player, number of an NPC */
 const combatantAvatarText = (combatant: CombatantFields, players: Player[]): string => (
   combatant.kind === 'player'
     ? characterInitials(combatantName(combatant, players))
@@ -129,8 +137,10 @@ const combatantAvatarText = (combatant: CombatantFields, players: Player[]): str
 
 const kindName = (kind: NpcKind): string => KIND_NAMES[kind]
 
-// Who follows the combatant on turn: the next one not defeated; `newRound` if the search went
-// past the end of the list. null without a turn or if nobody is left.
+/**
+ * Who follows the combatant on turn: the next one not defeated; `newRound` if the search went
+ * past the end of the list. null without a turn or if nobody is left.
+ */
 const nextOnTurn = (
   combatants: Combatant[],
   activeId: number | null,
@@ -148,8 +158,10 @@ const nextOnTurn = (
   return null
 }
 
-// The combatant of the player on turn on his Player Screen; null without a fight, if the player
-// does not take part or another combatant is on turn
+/**
+ * The combatant of the player on turn on his Player Screen; null without a fight, if the player
+ * does not take part or another combatant is on turn
+ */
 const ownTurnCombatantId = (fight: FightState | null, playerId: number | null): number | null => {
   if (fight === null || playerId === null) {
     return null
@@ -158,7 +170,7 @@ const ownTurnCombatantId = (fight: FightState | null, playerId: number | null): 
   return active?.kind === 'player' && active.player_id === playerId ? active.id : null
 }
 
-// Number of combatants per kind, for the head of the panel "Initiative"
+/** Number of combatants per kind, for the head of the panel "Initiative" */
 const countByKind = (combatants: CombatantFields[]): Record<CombatantKind, number> => ({
   player: combatants.filter((combatant) => combatant.kind === 'player').length,
   enemy: combatants.filter((combatant) => combatant.kind === 'enemy').length,

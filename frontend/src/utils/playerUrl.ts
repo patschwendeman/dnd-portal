@@ -2,8 +2,10 @@
 // smartphone
 const LOCAL_HOSTNAMES = ['localhost', '127.0.0.1', '[::1]']
 
-// URL of the Player Screen for the QR code: the one from the API (set by the start script),
-// otherwise the origin of the Wall, unless it was opened locally. null = unknown.
+/**
+ * URL of the Player Screen for the QR code: the one from the API (set by the start script),
+ * otherwise the origin of the Wall, unless it was opened locally. null = unknown.
+ */
 const selectPlayerUrl = (
   apiPlayerUrl: string | null,
   location: Pick<Location, 'origin' | 'hostname'>,

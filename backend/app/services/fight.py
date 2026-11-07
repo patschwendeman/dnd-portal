@@ -140,6 +140,10 @@ def start_fight(db: Session, start: FightStart) -> FightState:
 
 
 def end_fight(db: Session) -> None:
+    """Deletes the fight of the active adventure with its combatants.
+
+    Raises NoActiveAdventureError without an active adventure and NoFightError without a fight.
+    """
     fight_crud.delete_fight(db, _locked_fight(db))
 
 
@@ -191,6 +195,7 @@ def remove_combatant(db: Session, combatant_id: int) -> FightState:
 
 
 def reorder(db: Session, combatant_ids: list[int]) -> FightState:
+    """Raises InvalidFightChangeError unless `combatant_ids` are exactly the combatants of the fight, each once."""
     fight = _locked_fight(db)
     current = {c.id: c for c in fight.combatants}
     if len(combatant_ids) != len(current) or set(combatant_ids) != set(current):

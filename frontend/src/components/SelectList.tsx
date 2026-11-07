@@ -145,21 +145,25 @@ interface SelectOption<T> {
 
 interface SelectListProps<T extends string | number> {
   options: readonly SelectOption<T>[]
-  // null: no entry selected (the button shows no text)
+  /** null: no entry selected (the button shows no text) */
   value: T | null
   onChange: (value: T) => void
-  // Accessible name of button and list
+  /** Accessible name of button and list */
   label: string
   testId: string
-  // Test ids: entries `${optionTestIdPrefix}-${value}`, lock `${testId}-lock`
+  /** Test ids: entries `${optionTestIdPrefix}-${value}`, lock `${testId}-lock` */
   optionTestIdPrefix: string
-  // The list does not open, a lock replaces the arrow, `lockedTitle` is the tooltip
+  /** The list does not open, a lock replaces the arrow, `lockedTitle` is the tooltip */
   isLocked?: boolean
   lockedTitle?: string
-  // Disabled like without entries
+  /** Disabled like without entries */
   isDisabled?: boolean
 }
 
+/**
+ * Dropdown after the ARIA pattern "Listbox" (keyboard, focus); calls onChange only for an entry
+ * other than the selected one. A lock closes an open list.
+ */
 function SelectList<T extends string | number>({
   options,
   value,

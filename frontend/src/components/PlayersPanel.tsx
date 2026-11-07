@@ -11,11 +11,11 @@ const NoPlayers = styled.p`
 `
 
 interface PlayersPanelProps {
-  // In the order of the API; empty without an adventure
+  /** In the order of the API; empty without an adventure */
   players: Player[]
 }
 
-// Content of the dashboard panel "Party": one row per player of the active adventure
+/** Content of the dashboard panel "Party": one row per player of the active adventure */
 function PlayersPanel({ players }: PlayersPanelProps): ReactElement {
   if (players.length === 0) {
     return <NoPlayers data-test-id="no-players">Keine Spieler</NoPlayers>

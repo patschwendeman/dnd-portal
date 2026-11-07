@@ -74,11 +74,13 @@ const glide = (element: HTMLElement, from: DOMRect, to: DOMRect): void => {
   )
 }
 
-// When the turn passes on, the tiles of the strip glide to their new place and size; whoever moves
-// to the end fades out at the old place and comes in from the right, whoever is gone fades out.
-// Other changes appear without animation, as does everything with reduced motion. The tiles are the
-// children of `strip` with a data-key; the fading copies go into `ghostLayer`, which React leaves
-// empty.
+/**
+ * When the turn passes on, the tiles of the strip glide to their new place and size; whoever moves
+ * to the end fades out at the old place and comes in from the right, whoever is gone fades out.
+ * Other changes appear without animation, as does everything with reduced motion. The tiles are the
+ * children of `strip` with a data-key; the fading copies go into `ghostLayer`, which React leaves
+ * empty.
+ */
 const useInitiativeTransitions = (
   strip: RefObject<HTMLElement | null>,
   ghostLayer: RefObject<HTMLElement | null>,

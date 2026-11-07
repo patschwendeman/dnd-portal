@@ -33,6 +33,10 @@ const GridLine = styled.div<GridLineProps>`
     background-color: ${(props) => props.$gridColor};
 `
 
+/**
+ * Lines every `gridOption` × devicePixelRatio CSS pixels over the whole window, redrawn on
+ * resize; clicks pass through
+ */
 function GridOverlay({ gridColor, gridOption }: GridOverlayProps): ReactElement {
   const [screenSize, setScreenSize] = useState({
     width: window.innerWidth,

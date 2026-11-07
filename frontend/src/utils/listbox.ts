@@ -6,8 +6,10 @@ export const isListboxNavigationKey = (key: string): key is ListboxNavigationKey
   NAVIGATION_KEYS.includes(key)
 )
 
-// Opening the list focuses the selected entry so the Game Master continues from the current
-// adventure; without a selection it starts at the top. -1 means there is nothing to focus.
+/**
+ * Opening the list focuses the selected entry so the Game Master continues from the current
+ * adventure; without a selection it starts at the top. -1 means there is nothing to focus.
+ */
 export const getListboxStartIndex = (selectedIndex: number, count: number): number => {
   if (count <= 0) {
     return -1
@@ -15,7 +17,7 @@ export const getListboxStartIndex = (selectedIndex: number, count: number): numb
   return selectedIndex >= 0 && selectedIndex < count ? selectedIndex : 0
 }
 
-// The arrows stop at the first and last entry instead of wrapping around, like a native select.
+/** The arrows stop at the first and last entry instead of wrapping around, like a native select. */
 export const getListboxNextIndex = (
   key: ListboxNavigationKey,
   currentIndex: number,

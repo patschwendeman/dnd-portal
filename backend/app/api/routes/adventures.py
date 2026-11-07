@@ -26,11 +26,13 @@ def _not_found() -> HTTPException:
 
 @router.get("", response_model=list[AdventureSummary])
 def read_adventures(db: SessionDep) -> list[Adventure]:
+    """All adventures, ordered by ID."""
     return adventure_service.get_adventures(db)
 
 
 @router.get("/{adventure_id}", response_model=AdventureDetail, responses=NOT_FOUND)
 def read_adventure(adventure_id: int, db: SessionDep) -> Adventure:
+    """The adventure with its players and background images; 404 for an unknown adventure."""
     adventure = adventure_service.get_adventure(db, adventure_id)
     if adventure is None:
         raise _not_found()
@@ -41,6 +43,11 @@ def read_adventure(adventure_id: int, db: SessionDep) -> Adventure:
 def update_adventure(
     adventure_id: int, update: AdventureUpdate, db: SessionDep, background_tasks: BackgroundTasks
 ) -> Adventure:
+    """Changes the fields set in the body and pushes the state to all screens.
+
+    404 for an unknown adventure; 422 if the active scene does not exist or belongs to another adventure; 409 if
+    the active scene would change while the adventure has a fight. On an error nothing is changed.
+    """
     try:
         adventure = adventure_service.update_adventure(db, adventure_id, update)
     except adventure_service.SceneNotInAdventureError as error:
@@ -56,6 +63,7 @@ def update_adventure(
 
 @router.get("/{adventure_id}/scenes", response_model=list[SceneDetail], responses=NOT_FOUND)
 def read_adventure_scenes(adventure_id: int, db: SessionDep) -> list[Scene]:
+    """The scenes of the adventure, ordered by ID (an empty list without scenes); 404 for an unknown adventure."""
     scenes = adventure_service.get_scenes(db, adventure_id)
     if scenes is None:
         raise _not_found()

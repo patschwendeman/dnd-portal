@@ -40,12 +40,12 @@ const StepButton = styled(PanelButton)`
 `
 
 interface LevelStepperProps {
-  // Level of all players of the active adventure; null without an adventure
+  /** Level of all players of the active adventure; null without an adventure */
   level: number | null
   onChange: (level: number) => void
 }
 
-// The level shown changes only with the push of the server that follows the write
+/** The level shown changes only with the push of the server that follows the write */
 function LevelStepper({ level, onChange }: LevelStepperProps): ReactElement {
   const lower = level === null ? null : steppedLevel(level, -1)
   const higher = level === null ? null : steppedLevel(level, 1)

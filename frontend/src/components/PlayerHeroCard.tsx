@@ -97,7 +97,7 @@ const EndTurnError = styled.p`
 `
 
 interface PlayerHeroCardProps {
-  // null while the players load
+  /** null while the players load */
   player: Player | null
   level: number | null
   isOnTurn: boolean
@@ -108,7 +108,7 @@ interface PlayerHeroCardProps {
   isTranslucent?: boolean
 }
 
-// The own character on the Player Screen; on turn with frame, badge and "Zug beenden"
+/** The own character on the Player Screen; on turn with frame, badge and "Zug beenden" */
 function PlayerHeroCard({
   player, level, isOnTurn, isEnding, endFailed, onEndTurn, menu, isTranslucent = false,
 }: PlayerHeroCardProps): ReactElement {

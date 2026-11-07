@@ -75,8 +75,10 @@ const toggleTitle = (combatant: Combatant): string => {
   return combatant.kind === 'player' ? 'Als tot markieren' : 'Als besiegt markieren'
 }
 
-// Content of the dashboard panel "Initiative": all combatants in initiative order; the one on turn
-// is framed, defeated ones are faded and can be taken back
+/**
+ * Content of the dashboard panel "Initiative": all combatants in initiative order; the one on turn
+ * is framed, defeated ones are faded and can be taken back
+ */
 function InitiativePanel({
   combatants, activeCombatantId, players, onToggleDefeated,
 }: InitiativePanelProps): ReactElement {

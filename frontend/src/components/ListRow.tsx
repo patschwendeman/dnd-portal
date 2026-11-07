@@ -2,7 +2,7 @@ import styled from 'styled-components'
 
 import { textStyle } from '../style/tokens'
 
-// A row of a list in a dashboard panel (party, initiative): avatar, name and details
+/** A row of a list in a dashboard panel (party, initiative): avatar, name and details */
 const ListRow = styled.li`
   display: flex;
   align-items: center;
@@ -13,7 +13,7 @@ const ListRow = styled.li`
   border-radius: ${(props) => props.theme.radius.lg};
 `
 
-// Long names wrap (German words hyphenated, lang="de") instead of widening the row
+/** Long names wrap (German words hyphenated, lang="de") instead of widening the row */
 const RowInfo = styled.div`
   display: flex;
   flex: 1 1 auto;
@@ -33,7 +33,7 @@ const RowDetails = styled.span`
   color: ${(props) => props.theme.colors.text.muted};
 `
 
-// Always one column: one row per entry reads faster at the table than a grid
+/** Always one column: one row per entry reads faster at the table than a grid */
 const RowList = styled.ul`
   display: flex;
   flex-direction: column;

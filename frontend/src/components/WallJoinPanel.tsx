@@ -59,8 +59,10 @@ const Hint = styled.p`
 // undefined while loading, null if the URL is unknown
 type PlayerUrl = string | null | undefined
 
-// Shows the URL of the Player Screen as QR code for all players at the table. Mounted while the
-// overlay is `join`, so the URL is loaded every time the overlay opens.
+/**
+ * Shows the URL of the Player Screen as QR code for all players at the table. Mounted while the
+ * overlay is `join`, so the URL is loaded every time the overlay opens.
+ */
 function WallJoinPanel(): ReactElement {
   const theme = useTheme()
   const [playerUrl, setPlayerUrl] = useState<PlayerUrl>(undefined)

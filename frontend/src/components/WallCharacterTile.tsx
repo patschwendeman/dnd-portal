@@ -9,9 +9,11 @@ import { textStyle } from '../style/tokens'
 
 import skullIcon from '/assets/icons/skull.svg'
 
-// Tile sizes in px on the Wall; the initiative strip also computes from them how many tiles fit.
-// The small tiles of the strip have a fixed height, so the strip stays aligned while names and
-// details change
+/**
+ * Tile sizes in px on the Wall; the initiative strip also computes from them how many tiles fit.
+ * The small tiles of the strip have a fixed height, so the strip stays aligned while names and
+ * details change
+ */
 export const WALL_TILE_SIZE = {
   party: { width: 176 },
   initiative: { width: 168, height: 176 },
@@ -127,19 +129,19 @@ const Details = styled.span<{ $variant: TileVariant }>`
 interface WallCharacterTileProps {
   variant: TileVariant
   kind: CombatantKind
-  // Initials of a player, number of an NPC; shown without an image
+  /** Initials of a player, number of an NPC; shown without an image */
   avatarText: string
   image?: Image | null
   name: string
   details: string
   isDead?: boolean
-  // Above the avatar, only on the tile on turn
+  /** Above the avatar, only on the tile on turn */
   header?: ReactNode
   testId?: string
   dataKey?: string
 }
 
-// A character on the Wall: a player of the party or a combatant of the initiative strip
+/** A character on the Wall: a player of the party or a combatant of the initiative strip */
 function WallCharacterTile({
   variant, kind, avatarText, image = null, name, details, isDead = false, header = null,
   testId = undefined, dataKey = undefined,

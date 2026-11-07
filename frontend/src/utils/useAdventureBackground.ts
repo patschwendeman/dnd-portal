@@ -23,8 +23,10 @@ interface AdventureBackground {
   onError: (src: string) => void
 }
 
-// State of the image behind the tiles of the Admin and the cards of the Player; without an image
-// for the theme (or while the adventure loads) the background is plain
+/**
+ * State of the image behind the tiles of the Admin and the cards of the Player; without an image
+ * for the theme (or while the adventure loads) the background is plain
+ */
 export function useAdventureBackground(
   adventure: AdventureDetail | undefined,
   theme: Theme,

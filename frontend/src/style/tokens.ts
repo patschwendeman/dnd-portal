@@ -89,6 +89,7 @@ export const tokens = {
 
 export type TextStep = keyof typeof text
 
+/** Font size and line height of a step, read from the theme: only inside styled-components */
 export const textStyle = (step: TextStep) => css`
   font-size: ${(props) => props.theme.text[step].fontSize};
   line-height: ${(props) => props.theme.text[step].lineHeight};

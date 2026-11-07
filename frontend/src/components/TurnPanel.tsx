@@ -60,7 +60,7 @@ interface TurnPanelProps {
   activeCombatantId: number | null
   round: number
   players: Player[]
-  // Level of the adventure, shown on the avatar of a player
+  /** Level of the adventure, shown on the avatar of a player */
   level: number | null
   onEndTurn: (combatantId: number) => void
 }
@@ -72,7 +72,9 @@ const heroChips = (combatant: Combatant, player: Player | undefined): string[] =
   return combatant.label ? [combatant.label] : []
 }
 
-// Content of the dashboard panel "Am Zug": the combatant on turn, who follows, and "Zug beenden"
+/**
+ * Content of the dashboard panel "Am Zug": the combatant on turn, who follows, and "Zug beenden"
+ */
 function TurnPanel({
   combatants, activeCombatantId, round, players, level, onEndTurn,
 }: TurnPanelProps): ReactElement {

@@ -110,6 +110,10 @@ interface ResourceBarPlayerProps {
   isTranslucent?: boolean
 }
 
+/**
+ * Resources of the character: only local state of this page (lost on reload, not sent to the
+ * server); the maxima of the spell slots are hard-coded
+ */
 function ResourceBarPlayer({ isTranslucent = false }: ResourceBarPlayerProps): ReactElement {
   const SpellMax: Record<number, number> = {
     1: 4,

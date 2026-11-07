@@ -2,7 +2,7 @@ import { soundFile } from './sounds'
 import { mediaUrl } from '../api/mediaUrl'
 import { AudioState, SoundName } from '../models/models'
 
-// The part of HTMLAudioElement used here, so tests can pass a fake
+/** The part of HTMLAudioElement used here, so tests can pass a fake */
 export interface PlayableAudio {
   src: string
   currentTime: number

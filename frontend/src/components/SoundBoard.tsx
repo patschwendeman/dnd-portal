@@ -39,7 +39,7 @@ interface SoundBoardProps {
   onPlaySound: (name: SoundName) => void
 }
 
-// Sound effects of the dashboard panel "Audio": one button per sound effect, in its groups
+/** Sound effects of the dashboard panel "Audio": one button per sound effect, in its groups */
 function SoundBoard({ onPlaySound }: SoundBoardProps): ReactElement {
   const theme = useTheme()
 

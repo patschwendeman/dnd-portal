@@ -1,11 +1,11 @@
 const UMLAUTS: [RegExp, string][] = [[/ä/g, 'ae'], [/ö/g, 'oe'], [/ü/g, 'ue'], [/ß/g, 'ss']]
 
-// Replaces character by character, so anchors of headings without umlauts stay stable
+/** Replaces character by character, so anchors of headings without umlauts stay stable */
 export const headingAnchor = (text: string): string => UMLAUTS
   .reduce((anchor, [umlaut, spelling]) => anchor.replace(umlaut, spelling), text.toLowerCase())
   .replace(/[^a-z0-9_]/g, '-')
 
-// Repeated headings of a file get -2, -3 …, so every anchor leads to exactly one heading
+/** Repeated headings of a file get -2, -3 …, so every anchor leads to exactly one heading */
 export const uniqueAnchors = (anchors: string[]): string[] => {
   const used = new Set<string>()
   return anchors.map((anchor) => {
@@ -19,7 +19,7 @@ export const uniqueAnchors = (anchors: string[]): string[] => {
 }
 
 export interface NoteHeading {
-  // 1-based, like the source positions of react-markdown
+  /** 1-based, like the source positions of react-markdown */
   line: number
   anchor: string
 }
@@ -53,7 +53,7 @@ export const noteHeadings = (markdown: string): NoteHeading[] => {
   return found.map(({ line }, index) => ({ line, anchor: anchors[index] }))
 }
 
-// Unique in the whole page, also for the same heading in several files of a folder
+/** Unique in the whole page, also for the same heading in several files of a folder */
 export const noteElementId = (path: string, anchor: string | null = null): string => {
   const file = path.replace(/\.md$/, '').replace(/[^A-Za-z0-9_-]/g, '-')
   return anchor === null ? `note-${file}` : `note-${file}--${anchor}`

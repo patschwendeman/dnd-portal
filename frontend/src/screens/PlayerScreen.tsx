@@ -69,8 +69,10 @@ const OverlayText = styled.p`
   font-weight: ${(props) => props.theme.fontWeight.medium};
 `
 
-// Hero card and resources of the character with the ID from the URL; returns to the selection once
-// the character does not belong to the active adventure
+/**
+ * Hero card and resources of the character with the ID from the URL; returns to the selection once
+ * the character does not belong to the active adventure
+ */
 function PlayerScreen(): ReactElement {
   const theme = useTheme()
   const navigate = useNavigate()

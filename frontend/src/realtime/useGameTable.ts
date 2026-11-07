@@ -15,30 +15,43 @@ export type GameTableScreen = 'admin' | 'wall' | 'ground' | 'player'
 export type SoundListener = (name: SoundName) => void
 
 export interface GameTable {
-  // null until the first snapshot of the server arrived
+  /** null until the first snapshot of the server arrived */
   state: GameTableState | null
-  // null until the first audio state of the server arrived
+  /** null until the first audio state of the server arrived */
   audio: AudioState | null
-  // Only for an Admin: whether this connection is the audio output (false while disconnected)
+  /** Only for an Admin: whether this connection is the audio output (false while disconnected) */
   isAudioOutput: boolean
-  // Only for the Admin: connected screens per type; null until the first counts arrived
+  /** Only for the Admin: connected screens per type; null until the first counts arrived */
   screens: ScreenCounts | null
-  // Only for Admin, Wall and Player: the fight of the active adventure; null without one or until
-  // it arrived
+  /**
+   * Only for Admin, Wall and Player: the fight of the active adventure; null without one or until
+   * it arrived
+   */
   fight: FightState | null
-  // false once the connection broke or could not be established; the first attempt counts as
-  // connected, so the Admin does not show the hint on every load
+  /**
+   * false once the connection broke or could not be established; the first attempt counts as
+   * connected, so the Admin does not show the hint on every load
+   */
   connected: boolean
   reconnectNow: () => void
-  // Admin: become the audio output, also again after every reconnect until another Admin takes
-  // over
+  /**
+   * Admin: become the audio output, also again after every reconnect until another Admin takes
+   * over
+   */
   requestAudioOutput: () => void
   reportTrackEnded: (trackId: number) => void
-  // Sound effects sent to this connection (only to the audio output); returns the unsubscribe
-  // function
+  /**
+   * Sound effects sent to this connection (only to the audio output); returns the unsubscribe
+   * function
+   */
   subscribeSound: (listener: SoundListener) => () => void
 }
 
+/**
+ * Opens a WebSocket for `screen` that reconnects on its own and closes on unmount; returns what
+ * the server pushed last and the commands for this connection. Every call opens its own
+ * connection, so a screen calls it once (in GameTableProvider).
+ */
 export const useGameTable = (screen: GameTableScreen): GameTable => {
   const [state, setState] = useState<GameTableState | null>(null)
   const [audio, setAudio] = useState<AudioState | null>(null)

@@ -2,8 +2,10 @@
 const MIN_LEVEL = 1
 const MAX_LEVEL = 20
 
-// Placeholder for a missing avatar: first letters of the first and the last word of the character
-// name ("Thorin Eichenschild" → "TE", "Gimli" → "G")
+/**
+ * Placeholder for a missing avatar: first letters of the first and the last word of the character
+ * name ("Thorin Eichenschild" → "TE", "Gimli" → "G")
+ */
 export const characterInitials = (characterName: string): string => {
   const words = characterName.trim().split(/\s+/).filter((word) => word !== '')
   if (words.length === 0) {
@@ -15,7 +17,9 @@ export const characterInitials = (characterName: string): string => {
   return initials.toLocaleUpperCase('de')
 }
 
-// The level after one step down (-1) or up (+1); null beyond the limits, so the button is disabled
+/**
+ * The level after one step down (-1) or up (+1); null beyond the limits, so the button is disabled
+ */
 export const steppedLevel = (level: number, step: -1 | 1): number | null => {
   const next = level + step
   return next >= MIN_LEVEL && next <= MAX_LEVEL ? next : null

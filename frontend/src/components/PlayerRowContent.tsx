@@ -9,8 +9,10 @@ interface PlayerRowContentProps {
   player: Player
 }
 
-// Avatar, character name and "Volk · Klasse · Spielername" of a player row, in the party of the
-// Admin and in the character selection
+/**
+ * Avatar, character name and "Volk · Klasse · Spielername" of a player row, in the party of the
+ * Admin and in the character selection
+ */
 function PlayerRowContent({ player }: PlayerRowContentProps): ReactElement {
   return (
     <>

@@ -109,7 +109,7 @@ const NAV_PANEL_ID = 'admin-nav-panel'
 const DASHBOARD_ID = 'admin-dashboard'
 
 interface LayoutProps {
-  // Width of the open panel, null while it is collapsed
+  /** Width of the open panel, null while it is collapsed */
   $panelWidth: string | null
   $isDashboardOpen: boolean
 }

@@ -764,6 +764,7 @@
   "paths": {
     "/adventures": {
       "get": {
+        "description": "All adventures, ordered by ID.",
         "operationId": "read_adventures_adventures_get",
         "responses": {
           "200": {
@@ -789,6 +790,7 @@
     },
     "/adventures/{adventure_id}": {
       "get": {
+        "description": "The adventure with its players and background images; 404 for an unknown adventure.",
         "operationId": "read_adventure_adventures__adventure_id__get",
         "parameters": [
           {
@@ -832,6 +834,7 @@
         ]
       },
       "patch": {
+        "description": "Changes the fields set in the body and pushes the state to all screens.\n\n404 for an unknown adventure; 422 if the active scene does not exist or belongs to another adventure; 409 if\nthe active scene would change while the adventure has a fight. On an error nothing is changed.",
         "operationId": "update_adventure_adventures__adventure_id__patch",
         "parameters": [
           {
@@ -883,6 +886,7 @@
     },
     "/adventures/{adventure_id}/scenes": {
       "get": {
+        "description": "The scenes of the adventure, ordered by ID (an empty list without scenes); 404 for an unknown adventure.",
         "operationId": "read_adventure_scenes_adventures__adventure_id__scenes_get",
         "parameters": [
           {
@@ -932,6 +936,7 @@
     },
     "/scenes/{scene_id}": {
       "get": {
+        "description": "The scene with its images and tracks; 404 for an unknown scene.",
         "operationId": "read_scene_scenes__scene_id__get",
         "parameters": [
           {
@@ -977,6 +982,7 @@
     },
     "/table": {
       "get": {
+        "description": "The state of the game table that the screens also receive as `state` over the WebSocket.",
         "operationId": "read_table_table_get",
         "responses": {
           "200": {
@@ -996,6 +1002,7 @@
         ]
       },
       "patch": {
+        "description": "Changes the fields set in the body and pushes the state to all screens.\n\nA change of the active adventure also pushes its fight and closes the Wall overlay, unless the request sets\none. 422 for an unknown adventure; 409 if the active adventure would change while it has a fight. On an\nerror nothing is changed.",
         "operationId": "update_table_table_patch",
         "requestBody": {
           "content": {
@@ -1033,6 +1040,7 @@
     },
     "/table/audio": {
       "get": {
+        "description": "The music state; it is kept in memory only, so after a restart the music is paused.",
         "operationId": "read_audio_table_audio_get",
         "responses": {
           "200": {
@@ -1087,6 +1095,7 @@
     },
     "/table/fight": {
       "delete": {
+        "description": "Ends the fight of the active adventure and pushes null; 404 without a fight.",
         "operationId": "end_fight_table_fight_delete",
         "responses": {
           "204": {
@@ -1133,6 +1142,7 @@
         ]
       },
       "post": {
+        "description": "Starts a fight in the active scene: round 1, the first combatant of the list has the turn.\n\n409 without an active adventure or scene, or while a fight is in progress; 422 for a player of another\nadventure.",
         "operationId": "start_fight_table_fight_post",
         "requestBody": {
           "content": {
@@ -1170,6 +1180,7 @@
     },
     "/table/fight/combatants": {
       "post": {
+        "description": "Adds a combatant at the end of the initiative; if nobody has the turn, the first one not defeated gets it.\n\n422 for a player of another adventure, or a player or number that already takes part.",
         "operationId": "add_combatant_table_fight_combatants_post",
         "requestBody": {
           "content": {
@@ -1210,6 +1221,7 @@
     },
     "/table/fight/combatants/{combatant_id}": {
       "delete": {
+        "description": "Removes a combatant; if it had the turn, the next one not defeated gets it, without a new round.\n\n404 for an unknown combatant.",
         "operationId": "remove_combatant_table_fight_combatants__combatant_id__delete",
         "parameters": [
           {
@@ -1249,6 +1261,7 @@
         ]
       },
       "patch": {
+        "description": "Marks a combatant as defeated or not: a defeated one keeps a running turn, but is skipped afterwards.\n\n404 for an unknown combatant.",
         "operationId": "update_combatant_table_fight_combatants__combatant_id__patch",
         "parameters": [
           {
@@ -1300,6 +1313,7 @@
     },
     "/table/fight/order": {
       "put": {
+        "description": "Sets the initiative order; 422 unless `combatant_ids` contains each combatant exactly once.",
         "operationId": "reorder_table_fight_order_put",
         "requestBody": {
           "content": {
@@ -1381,6 +1395,7 @@
     },
     "/table/join": {
       "get": {
+        "description": "The URL of the Player Screen in the LAN (null if not configured), the base of the QR code.",
         "operationId": "read_join_info_table_join_get",
         "responses": {
           "200": {

@@ -12,6 +12,10 @@ export const filterSceneByKey = <K extends keyof SceneDetail>(
   return scene
 }
 
+/**
+ * Title from the file name of a track: without extension and the hash Vite appends, underscores
+ * as spaces
+ */
 export const getMusicTitle = (source: string): string => {
   const fileName = source.split('/').pop() ?? ''
   const withoutExtension = fileName.replace(/\.[^.]+$/, '')

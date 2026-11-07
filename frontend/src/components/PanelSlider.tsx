@@ -7,7 +7,7 @@ const PANEL_SLIDER_THUMB_SIZE = '16px'
 // Room for three digits, so the slider does not shift while dragging
 const SLIDER_VALUE_MIN_WIDTH = '3ch'
 
-// The rail takes the colour of the panel area (`background`)
+/** The rail takes the colour of the panel area (`background`) */
 const PanelSlider = styled(Slider)`
   & .MuiSlider-thumb {
     width: ${PANEL_SLIDER_THUMB_SIZE};
@@ -29,8 +29,10 @@ const PanelSlider = styled(Slider)`
   }
 `
 
-// Half a thumb left and right, so the thumb stays inside the panel at both ends; the invisible
-// touch area around the thumb is cut off instead of overflowing the panel
+/**
+ * Half a thumb left and right, so the thumb stays inside the panel at both ends; the invisible
+ * touch area around the thumb is cut off instead of overflowing the panel
+ */
 const PanelSliderArea = styled.div`
   display: flex;
   align-items: center;

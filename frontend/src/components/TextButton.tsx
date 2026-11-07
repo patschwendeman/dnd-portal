@@ -4,7 +4,7 @@ import { textStyle } from '../style/tokens'
 
 type TextButtonVariant = 'default' | 'active' | 'cancel'
 
-// No letter spacing: it is only used for labels in capitals.
+/** No letter spacing: it is only used for labels in capitals. */
 const TextButton = styled.button<{ $variant: TextButtonVariant }>`
   min-width: ${(props) => props.theme.size.button.minWidth};
   height: ${(props) => props.theme.size.control.md};

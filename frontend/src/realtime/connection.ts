@@ -6,11 +6,13 @@ import { ClientMessage, parseServerMessage, ServerMessage } from './messages'
 import { browserVisibility, VisibilitySource } from './visibility'
 import { GameTableState } from '../models/models'
 
-// connecting: first attempt still running; open: connected; closed: broken or not reachable, a
-// reconnect is planned
+/**
+ * connecting: first attempt still running; open: connected; closed: broken or not reachable, a
+ * reconnect is planned
+ */
 export type ConnectionStatus = 'connecting' | 'open' | 'closed'
 
-// The part of the browser WebSocket used here, so tests can pass a fake
+/** The part of the browser WebSocket used here, so tests can pass a fake */
 export interface SocketLike {
   onopen: (() => void) | null
   onmessage: ((event: { data: unknown }) => void) | null
@@ -33,9 +35,9 @@ export interface GameTableConnectionOptions {
 }
 
 export interface GameTableConnection {
-  // Connects at once (e.g. "Erneut versuchen"), drops a running attempt or a planned reconnect
+  /** Connects at once (e.g. "Erneut versuchen"), drops a running attempt or a planned reconnect */
   reconnectNow: () => void
-  // Sends only over an open connection; otherwise the message is dropped (false)
+  /** Sends only over an open connection; otherwise the message is dropped (false) */
   send: (message: ClientMessage) => boolean
   close: () => void
 }
@@ -55,10 +57,12 @@ const browserSocket = (url: string): SocketLike => {
   return like
 }
 
-// Keeps a WebSocket to the server open: reconnects with backoff after every disconnect and treats a
-// connection without messages for longer than the heartbeat timeout as broken. When the page
-// becomes visible again (e.g. an unlocked smartphone) without an open connection, it connects at
-// once instead of waiting for the heartbeat or the backoff.
+/**
+ * Keeps a WebSocket to the server open: reconnects with backoff after every disconnect and treats a
+ * connection without messages for longer than the heartbeat timeout as broken. When the page
+ * becomes visible again (e.g. an unlocked smartphone) without an open connection, it connects at
+ * once instead of waiting for the heartbeat or the backoff.
+ */
 export const createGameTableConnection = ({
   url,
   onState,

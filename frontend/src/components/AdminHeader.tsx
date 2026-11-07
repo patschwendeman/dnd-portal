@@ -105,14 +105,14 @@ interface AdminHeaderProps {
   canGoForward: boolean
   onBack: () => void
   onForward: () => void
-  // Name of the active adventure; null without one, '' while it is loading
+  /** Name of the active adventure; null without one, '' while it is loading */
   adventureName: string | null
-  // Replaces the adventure name while it is set
+  /** Replaces the adventure name while it is set */
   errorNotice: ErrorNotice | null
   isDashboardOpen: boolean
   dashboardId: string
   onToggleDashboard: () => void
-  // While the background image of the adventure lies behind the tiles
+  /** While the background image of the adventure lies behind the tiles */
   isTranslucent?: boolean
 }
 

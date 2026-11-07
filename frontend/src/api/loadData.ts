@@ -12,6 +12,10 @@ export class LoadError extends Error {
   }
 }
 
+/**
+ * Short reason for error messages: the HTTP status, "backend not reachable" (also on timeout)
+ * or the message of the error.
+ */
 export const describeFailure = (error: unknown): string => {
   if (isAxiosError(error)) {
     if (error.response) {
@@ -25,6 +29,10 @@ export const describeFailure = (error: unknown): string => {
   return error instanceof Error ? error.message : String(error)
 }
 
+/**
+ * GET `path`; throws a LoadError named after `what` when the request fails and also when the
+ * response is empty ("not found").
+ */
 export const loadData = async (
   what: string,
   path: string,

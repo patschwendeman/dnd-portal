@@ -181,7 +181,7 @@ function MarkdownImage({ src = undefined, alt = '' }: MarkdownImageProps): React
 
 interface NoteFileContextValue {
   path: string
-  // Anchor of each heading by its line in the file
+  /** Anchor of each heading by its line in the file */
   headingAnchors: Map<number, string>
   index: NoteIndex
   onFollow: (target: NoteTarget) => void
@@ -325,17 +325,21 @@ const targetTop = (container: HTMLElement, target: NoteTarget | null): number =>
 }
 
 interface DocumentReaderProps {
-  // Folder and position to show, chosen in the panel, by a link or by "Zurück"/"Vor"
+  /** Folder and position to show, chosen in the panel, by a link or by "Zurück"/"Vor" */
   entry: NoteHistoryEntry
-  // Changes with every move in the history, so the reader applies the position once per move
+  /** Changes with every move in the history, so the reader applies the position once per move */
   moves: number
-  // The scroll area, so the history can save the position before a move
+  /** The scroll area, so the history can save the position before a move */
   scrollRef: RefObject<HTMLDivElement>
   onFollow: (target: NoteTarget) => void
-  // While the background image of the adventure lies behind the tiles
+  /** While the background image of the adventure lies behind the tiles */
   isTranslucent?: boolean
 }
 
+/**
+ * Shows the notes of the folder of `entry`: loads all note files up front (links into other folders
+ * need their anchors) and scrolls to the saved position or the link target once per move
+ */
 function DocumentReader({
   entry, moves, scrollRef, onFollow, isTranslucent = false,
 }: DocumentReaderProps): ReactElement {

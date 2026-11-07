@@ -17,16 +17,24 @@ def get_adventures(db: Session) -> list[Adventure]:
 
 
 def get_adventure(db: Session, adventure_id: int) -> Adventure | None:
+    """None for an unknown ID."""
     return adventure_crud.read_adventure(db, adventure_id)
 
 
 def get_scenes(db: Session, adventure_id: int) -> list[Scene] | None:
+    """None for an unknown ID; an adventure without scenes gives an empty list."""
     if not adventure_crud.adventure_exists(db, adventure_id):
         return None
     return scene_crud.read_scenes(db, adventure_id)
 
 
 def update_adventure(db: Session, adventure_id: int, update: AdventureUpdate) -> Adventure | None:
+    """Changes the set fields; None for an unknown ID.
+
+    Raises SceneNotInAdventureError if the active scene does not exist or belongs to another adventure, and
+    FightInProgressError only if the active scene actually changes while the adventure has a fight; nothing is
+    changed then. After a scene change the Walls close their overlay if the adventure is the active one.
+    """
     adventure = adventure_crud.read_adventure(db, adventure_id)
     if adventure is None:
         return None

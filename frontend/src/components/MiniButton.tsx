@@ -43,11 +43,11 @@ const Button = styled.button<{ $isStacked: boolean }>`
 
 interface MiniButtonProps {
   icon: string
-  // Accessible name and tooltip
+  /** Accessible name and tooltip */
   name: string
   onClick: () => void
   disabled?: boolean
-  // One of the two move buttons above each other
+  /** One of the two move buttons above each other */
   isStacked?: boolean
   testId?: string
 }

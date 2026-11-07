@@ -136,8 +136,10 @@ function renderItem(item: InitiativeItem, fight: FightState, players: Player[]):
   )
 }
 
-// The initiative strip at the top of the Wall during a fight: the combatant on turn large at the
-// left, the following ones in initiative order to the right of it
+/**
+ * The initiative strip at the top of the Wall during a fight: the combatant on turn large at the
+ * left, the following ones in initiative order to the right of it
+ */
 function WallInitiative({ fight, players }: WallInitiativeProps): ReactElement {
   const strip = useRef<HTMLElement>(null)
   const ghostLayer = useRef<HTMLDivElement>(null)

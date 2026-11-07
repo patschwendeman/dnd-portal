@@ -39,6 +39,7 @@ class AudioService:
         self.track = self._choose(self.playlist)
 
     def update(self, update: AudioUpdate) -> None:
+        """`playing: true` is ignored without a track (empty playlist); pausing always works."""
         values = update.model_dump(exclude_unset=True)
         if "volume" in values:
             self.volume = values["volume"]
@@ -46,17 +47,24 @@ class AudioService:
             self.playing = values["playing"]
 
     def set_output(self, connection: Connection) -> Connection | None:
+        """Returns the previous output, which has to be told that it lost the role; None if there was none or it is
+        `connection` itself.
+        """
         previous = self.output
         self.output = connection
         return previous if previous is not connection else None
 
     def release_output(self, connection: Connection) -> bool:
+        """Clears the output only if it is `connection`; returns whether it was."""
         if self.output is not connection:
             return False
         self.output = None
         return True
 
     def track_ended(self, connection: Connection, track_id: int) -> bool:
+        """Moves on to the next track, but only for a report from the current output about the current track (a late
+        or duplicate report changes nothing); returns whether the state changed.
+        """
         if self.output is not connection or self.track is None or self.track.id != track_id:
             return False
         self._next_track()

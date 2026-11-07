@@ -46,10 +46,10 @@ const EmptyHint = styled.p`
 `
 
 interface SceneNavigationProps {
-  // In the order of the API (as created), not sorted again
+  /** In the order of the API (as created), not sorted again */
   scenes: SceneDetail[]
   onSelectScene: (sceneId: number) => void
-  // During a fight the scene cannot change: the entries are shown, but do nothing
+  /** During a fight the scene cannot change: the entries are shown, but do nothing */
   isLocked?: boolean
 }
 

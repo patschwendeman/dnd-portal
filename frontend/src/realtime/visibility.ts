@@ -1,11 +1,11 @@
-// Visibility of the page, so tests can pass a fake (like Timers and SocketLike)
+/** Visibility of the page, so tests can pass a fake (like Timers and SocketLike) */
 export interface VisibilitySource {
   isVisible: () => boolean
-  // Calls the listener on every change of the visibility; returns the unsubscribe function
+  /** Calls the listener on every change of the visibility; returns the unsubscribe function */
   subscribe: (listener: () => void) => () => void
 }
 
-// Without a document (vitest runs in node) the page counts as visible and never changes
+/** Without a document (vitest runs in node) the page counts as visible and never changes */
 export const browserVisibility: VisibilitySource = {
   isVisible: () => typeof document === 'undefined' || document.visibilityState === 'visible',
   subscribe: (listener) => {

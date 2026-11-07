@@ -15,8 +15,10 @@ const endFight = async (): Promise<void> => {
   await deleteCommand('fight end', 'table/fight')
 }
 
-// The server ignores the request if it is no longer the turn of this combatant (double click, two
-// screens)
+/**
+ * The server ignores the request if it is no longer the turn of this combatant (double click, two
+ * screens)
+ */
 const endTurn = async (fromCombatantId: number): Promise<FightState> => (
   postCommand('end of turn', 'table/fight/turn', { from_combatant_id: fromCombatantId })
 )
@@ -33,7 +35,7 @@ const removeCombatant = async (combatantId: number): Promise<FightState> => (
   deleteCommand(`combatant ${combatantId}`, `table/fight/combatants/${combatantId}`)
 )
 
-// The whole order instead of a single step, so two Admin windows cannot mix up their steps
+/** The whole order instead of a single step, so two Admin windows cannot mix up their steps */
 const saveFightOrder = async (combatantIds: number[]): Promise<FightState> => (
   replaceData('fight order', 'table/fight/order', { combatant_ids: combatantIds })
 )

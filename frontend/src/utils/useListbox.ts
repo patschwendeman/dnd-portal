@@ -7,11 +7,13 @@ import { getListboxNextIndex, getListboxStartIndex, isListboxNavigationKey } fro
 interface ListboxOptions {
   count: number
   selectedIndex: number
-  // Called with the index of the entry chosen by click, Enter or Space; the list is closed already
+  /**
+   * Called with the index of the entry chosen by click, Enter or Space; the list is closed already
+   */
   onChoose: (index: number) => void
-  // While false the list does not open (e.g. locked during a fight)
+  /** While false the list does not open (e.g. locked during a fight) */
   canOpen?: boolean
-  // pointerdown on smartphones, so a tap outside closes the list as well
+  /** pointerdown on smartphones, so a tap outside closes the list as well */
   outsideEvent?: 'mousedown' | 'pointerdown'
 }
 
@@ -28,7 +30,7 @@ interface Listbox {
   handleListKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void
 }
 
-// Button with a list after the ARIA pattern "Listbox"
+/** Button with a list after the ARIA pattern "Listbox" */
 const useListbox = ({
   count, selectedIndex, onChoose, canOpen = true, outsideEvent = 'mousedown',
 }: ListboxOptions): Listbox => {

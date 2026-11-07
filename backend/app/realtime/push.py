@@ -33,6 +33,9 @@ def _read_state_and_playlist(scene_id: int | None) -> tuple[GameTableState, list
 
 
 def reset_audio(db: Session) -> None:
+    """Initializes the music for the stored game table (at app start): paused, default volume, no output, the
+    playlist of the active scene (or the default music).
+    """
     scene_id = game_table_service.get_state(db).active_scene_id
     audio.reset(scene_id, audio_service.get_playlist(db, scene_id))
 
@@ -75,6 +78,7 @@ async def push_state() -> None:
 
 
 async def push_audio() -> None:
+    """Sends the music state to all connected screens."""
     async with manager.state_lock:
         await manager.broadcast(audio_message())
 
@@ -118,12 +122,16 @@ async def send_initial_state(connection: Connection) -> bool:
 
 
 async def send_sound(name: SoundName) -> None:
+    """Sends the sound effect only to the audio output; without an output it is dropped."""
     async with manager.state_lock:
         if audio.output is not None:
             await manager.send(audio.output, {"type": "sound", "payload": {"name": name}})
 
 
 async def make_audio_output(connection: Connection) -> None:
+    """Makes `connection` the audio output: tells the previous output that it lost the role, the new one that it
+    has it, and sends the new music state to all screens.
+    """
     async with manager.state_lock:
         previous = audio.set_output(connection)
         if previous is not None:
@@ -133,12 +141,16 @@ async def make_audio_output(connection: Connection) -> None:
 
 
 async def report_track_ended(connection: Connection, track_id: int) -> None:
+    """Moves on to the next track and pushes the music state, if the end comes from the output and is about the
+    current track.
+    """
     async with manager.state_lock:
         if audio.track_ended(connection, track_id):
             await manager.broadcast(audio_message())
 
 
 async def release_audio_output(connection: Connection) -> None:
+    """Clears the audio output if it is `connection` and pushes the music state (`output_ready` false)."""
     async with manager.state_lock:
         if audio.release_output(connection):
             await manager.broadcast(audio_message())

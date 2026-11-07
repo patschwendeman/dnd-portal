@@ -28,7 +28,7 @@ export interface NoteHistoryControl {
   follow: (target: NoteTarget) => void
 }
 
-// Only in memory: no URL, no browser history, no localStorage; after a reload Main is open
+/** Only in memory: no URL, no browser history, no localStorage; after a reload Main is open */
 export function useNoteHistory(scrollRef: RefObject<HTMLElement>): NoteHistoryControl {
   const [history, setHistory] = useState(initialNoteHistory)
 
@@ -70,8 +70,10 @@ export function useNoteHistory(scrollRef: RefObject<HTMLElement>): NoteHistoryCo
   }
 }
 
-// In the whole Admin window; the browser must not leave the Admin, also without a target in the
-// history
+/**
+ * In the whole Admin window; the browser must not leave the Admin, also without a target in the
+ * history
+ */
 export function useHistoryShortcuts(onStep: (step: HistoryStep) => void): void {
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {

@@ -102,15 +102,19 @@ const Frame = styled.div<FrameProps>`
 
 interface CombatantAvatarProps {
   kind: CombatantKind
-  // Initials of a player, number of an NPC; shown without an image
+  /** Initials of a player, number of an NPC; shown without an image */
   text: string
   image?: Image | null
   size?: AvatarSize
-  // Directly on the tile instead of on a row with its own surface
+  /** Directly on the tile instead of on a row with its own surface */
   onTile?: boolean
   testId?: string
 }
 
+/**
+ * Image of a combatant, or `text` without one; enemies and allies are framed in the colors of
+ * their kind
+ */
 function CombatantAvatar({
   kind, text, image = null, size = 'md', onTile = false, testId = undefined,
 }: CombatantAvatarProps): ReactElement {

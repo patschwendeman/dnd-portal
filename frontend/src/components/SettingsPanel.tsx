@@ -60,7 +60,7 @@ function Section({ label, testId, children }: SectionProps): ReactElement {
 
 interface CellSizeControlProps {
   cellSize: number
-  // The last failed write; a new one ends a drag of the slider like a new cell size
+  /** The last failed write; a new one ends a drag of the slider like a new cell size */
   failedSave: object | null
   onCommit: (cellSize: number) => void
 }
@@ -104,9 +104,9 @@ interface SettingsPanelProps {
   adventures: AdventureSummary[]
   activeAdventureId: number | null
   onSelectAdventure: (adventureId: number) => void
-  // During a fight the adventure cannot change
+  /** During a fight the adventure cannot change */
   isAdventureLocked: boolean
-  // While the error bar stands no adventure can be switched
+  /** While the error bar stands no adventure can be switched */
   isAdventureDisabled: boolean
   theme: Theme
   onThemeChange: (theme: Theme) => void

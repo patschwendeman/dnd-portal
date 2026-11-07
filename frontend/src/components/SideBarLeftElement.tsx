@@ -62,7 +62,7 @@ interface SideBarLeftElementProps {
   name: string
   isActive: boolean
   onSelect: () => void
-  // Shown, but without effect (aria-disabled keeps it focusable and its tooltip)
+  /** Shown, but without effect (aria-disabled keeps it focusable and its tooltip) */
   isDisabled?: boolean
   testId?: string
 }

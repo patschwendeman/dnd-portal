@@ -28,20 +28,22 @@ export const ActiveAdventureContext = createContext<ActiveAdventureContextType>(
 })
 
 interface GameTableContextType {
-  // false until the first snapshot of the server arrived
+  /** false until the first snapshot of the server arrived */
   hasState: boolean
-  // The last snapshot, a new object with every push (also an unchanged state after a write), so
-  // the Admin can reload what the snapshot does not contain; null until the first one arrived
+  /**
+   * The last snapshot, a new object with every push (also an unchanged state after a write), so
+   * the Admin can reload what the snapshot does not contain; null until the first one arrived
+   */
   snapshot: GameTableState | null
   theme: Theme
-  // Overlay of the Walls; 'off' until the first snapshot arrived
+  /** Overlay of the Walls; 'off' until the first snapshot arrived */
   wallOverlay: WallOverlay
-  // Grid of the Grounds; 'off' and the smallest cell size until the first snapshot arrived
+  /** Grid of the Grounds; 'off' and the smallest cell size until the first snapshot arrived */
   groundGrid: GroundGrid
   groundGridCellSize: number
   connected: boolean
   reconnectNow: () => void
-  // Only for the Admin: connected Walls, Grounds and Players; null until the server sent them
+  /** Only for the Admin: connected Walls, Grounds and Players; null until the server sent them */
   screens: ScreenCounts | null
 }
 
@@ -58,7 +60,7 @@ export const GameTableContext = createContext<GameTableContextType>({
 })
 
 interface GameAudioContextType {
-  // null until the first audio state of the server arrived
+  /** null until the first audio state of the server arrived */
   audio: AudioState | null
   isAudioOutput: boolean
   requestAudioOutput: () => void

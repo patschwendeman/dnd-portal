@@ -25,7 +25,7 @@ interface WallPartyProps {
   players: Player[]
 }
 
-// The players of the active adventure at the left and the right edge of the Wall
+/** The players of the active adventure at the left and the right edge of the Wall */
 function WallParty({ players }: WallPartyProps): ReactElement {
   const { left, right } = splitParty(players)
   const sides = [['left', left], ['right', right]] as const

@@ -13,14 +13,14 @@ import {
 } from '../models/models'
 import { GROUND_GRID_CELL_SIZE } from '../utils/groundGrid'
 
-// Number of open connections per screen type, without the Admins
+/** Number of open connections per screen type, without the Admins */
 export interface ScreenCounts {
   wall: number
   ground: number
   player: number
 }
 
-// Messages on /ws (not part of the OpenAPI contract)
+/** Messages on /ws (not part of the OpenAPI contract) */
 export type ServerMessage = { type: 'state', payload: GameTableState }
   | { type: 'audio', payload: AudioState }
   // Only to Admins: whether this connection is the audio output
@@ -34,7 +34,7 @@ export type ServerMessage = { type: 'state', payload: GameTableState }
   | { type: 'fight', payload: FightState | null }
   | { type: 'ping' }
 
-// Sent only by the Admin; the server ignores messages of the other screens
+/** Sent only by the Admin; the server ignores messages of the other screens */
 export type ClientMessage = { type: 'audio_ready' }
   | { type: 'track_ended', payload: { track_id: number } }
 
@@ -196,8 +196,10 @@ const parseFight = (payload: unknown): FightState | null | undefined => {
   }
 }
 
-// Returns null for anything that is not a valid, known message, so a newer server can add message
-// types
+/**
+ * Returns null for anything that is not a valid, known message, so a newer server can add message
+ * types
+ */
 export const parseServerMessage = (data: unknown): ServerMessage | null => {
   if (typeof data !== 'string') {
     return null

@@ -14,6 +14,7 @@ class AdventureNotFoundError(ValueError):
 
 
 def get_state(db: Session) -> GameTableState:
+    """Combines the stored game table with the Wall overlay and the Ground grid color, which live in memory only."""
     game_table = game_table_crud.read_game_table(db)
     adventure = game_table.active_adventure
     return GameTableState.model_validate(
@@ -29,6 +30,11 @@ def get_state(db: Session) -> GameTableState:
 
 
 def update_state(db: Session, update: GameTableUpdate) -> GameTableState:
+    """Changes the set fields; raises AdventureNotFoundError for an unknown adventure.
+
+    Raises FightInProgressError if the active adventure changes (also to null) while it has a fight; nothing is
+    changed then. A change of the active adventure closes the Wall overlay, unless the request sets one.
+    """
     values = update.model_dump(exclude_unset=True)
     overlay = values.pop("wall_overlay", None)
     grid = values.pop("ground_grid", None)

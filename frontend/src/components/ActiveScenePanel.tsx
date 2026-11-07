@@ -121,8 +121,10 @@ interface ActiveScenePanelProps {
   testId: string
 }
 
-// The stage of the dashboard: what Wall and Ground show, without looking at them. Name and
-// description wrap (long German words hyphenated, lang="de")
+/**
+ * The stage of the dashboard: what Wall and Ground show, without looking at them. Name and
+ * description wrap (long German words hyphenated, lang="de")
+ */
 function ActiveScenePanel({ activeScene, testId }: ActiveScenePanelProps): ReactElement {
   if (!activeScene) {
     return (

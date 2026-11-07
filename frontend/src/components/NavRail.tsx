@@ -7,12 +7,12 @@ import { NavRailPlacement, splitByPlacement } from '../utils/navRail'
 
 interface NavRailItem {
   id: string
-  // Accessible name and tooltip of the icon button
+  /** Accessible name and tooltip of the icon button */
   name: string
   icon: string
-  // Red dot: something runs there (the fight) while its panel is not shown
+  /** Red dot: something runs there (the fight) while its panel is not shown */
   hasBadge?: boolean
-  // Default top; bottom: at the lower end of the rail
+  /** Default top; bottom: at the lower end of the rail */
   placement?: NavRailPlacement
 }
 
@@ -88,15 +88,19 @@ const Badge = styled.span`
 
 interface NavRailProps {
   items: NavRailItem[]
-  // Menu item whose panel is open, null while the panel is collapsed
+  /** Menu item whose panel is open, null while the panel is collapsed */
   openItemId: string | null
-  // id of the panel element the buttons control
+  /** id of the panel element the buttons control */
   panelId: string
   onSelect: (id: string) => void
-  // While the background image of the adventure lies behind the tiles
+  /** While the background image of the adventure lies behind the tiles */
   isTranslucent?: boolean
 }
 
+/**
+ * Icon buttons that open their panel; the parent keeps which one is open (`openItemId`). Items
+ * with placement bottom sit at the lower end, a badge only shows while its panel is not open.
+ */
 function NavRail({
   items, openItemId, panelId, onSelect, isTranslucent = false,
 }: NavRailProps): ReactElement {

@@ -52,7 +52,7 @@ interface ConfirmDialogProps {
   testId?: string
 }
 
-// A question with Decline and Confirm like "Szene wechseln", without an image; Escape declines
+/** A question with Decline and Confirm like "Szene wechseln", without an image; Escape declines */
 function ConfirmDialog({
   title, text, onDecline, onConfirm, testId = undefined,
 }: ConfirmDialogProps): ReactElement {

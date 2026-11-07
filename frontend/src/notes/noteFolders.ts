@@ -1,5 +1,7 @@
-// The entries of the panel "Notizen", each one a folder of public/story/. A new folder only needs a
-// line here.
+/**
+ * The entries of the panel "Notizen", each one a folder of public/story/. A new folder only needs a
+ * line here.
+ */
 export const NOTE_FOLDERS = [
   { id: 'main', label: 'Main' },
   { id: 'fight', label: 'Fight' },
@@ -15,14 +17,14 @@ export const DEFAULT_NOTE_FOLDER_ID: NoteFolderId = 'main'
 const GLOB_PREFIX = '../../public/story/'
 const globbedFiles = Object.keys(import.meta.glob('../../public/story/*/*.md'))
 
-// Note paths relative to public/story/, e.g. "mechanics/rest.md"
+/** Note paths relative to public/story/, e.g. "mechanics/rest.md" */
 export const noteFolderOf = (path: string): string => path.split('/')[0]
 
 export const noteFolderIdOf = (path: string): NoteFolderId | null => (
   NOTE_FOLDERS.find((folder) => folder.id === noteFolderOf(path))?.id ?? null
 )
 
-// Files in folders without an entry cannot be shown, so they are no link targets either
+/** Files in folders without an entry cannot be shown, so they are no link targets either */
 export const NOTE_FILES: string[] = globbedFiles
   .map((file) => file.slice(GLOB_PREFIX.length))
   .filter((path) => noteFolderIdOf(path) !== null)

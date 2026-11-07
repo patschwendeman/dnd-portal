@@ -1,13 +1,15 @@
 import { Combatant, FightState, Player } from '../models/models'
 import { firstName, kindName } from './fight'
 
-// One entry of the initiative strip on the Wall: a combatant, the divider before the next round or
-// the tile that stands for the combatants that do not fit
+/**
+ * One entry of the initiative strip on the Wall: a combatant, the divider before the next round or
+ * the tile that stands for the combatants that do not fit
+ */
 type InitiativeItem = { type: 'combatant', key: string, combatant: Combatant, isActive: boolean }
   | { type: 'round', key: string, round: number }
   | { type: 'more', key: string, count: number }
 
-// Widths of the entries and the gap between them, in px
+/** Widths of the entries and the gap between them, in px */
 interface InitiativeWidths {
   active: number
   combatant: number
@@ -18,13 +20,13 @@ interface InitiativeWidths {
 
 // What happens to each entry of the strip when the turn passes on
 interface InitiativeTransitions {
-  // Still there, moves forward (and grows if it is now on turn)
+  /** Still there, moves forward (and grows if it is now on turn) */
   moved: string[]
-  // Moved to the end: fades out at its old place and comes in from the right
+  /** Moved to the end: fades out at its old place and comes in from the right */
   wrapped: string[]
-  // Not there before
+  /** Not there before */
   entered: string[]
-  // Gone: fades out
+  /** Gone: fades out */
   left: string[]
 }
 
@@ -40,9 +42,11 @@ const combatantItem = (combatant: Combatant, activeId: number | null): Initiativ
   isActive: combatant.id === activeId,
 })
 
-// The queue from the combatant on turn on, in initiative order. The divider "Runde N+1" stands
-// where the order starts again (at the end if the first of the order is on turn). Without anybody
-// on turn the combatants in initiative order, without divider.
+/**
+ * The queue from the combatant on turn on, in initiative order. The divider "Runde N+1" stands
+ * where the order starts again (at the end if the first of the order is on turn). Without anybody
+ * on turn the combatants in initiative order, without divider.
+ */
 const initiativeQueue = (fight: FightState): InitiativeItem[] => {
   const activeId = fight.active_combatant_id
   const shown = fight.combatants.filter((combatant) => isShownOnWall(combatant, activeId))
@@ -74,8 +78,10 @@ const countCombatants = (items: InitiativeItem[]): number => (
   items.filter((item) => item.type === 'combatant').length
 )
 
-// As many entries as fit into the width; if combatants are left over, a tile "+N weitere" takes
-// their place (room for it is kept as long as combatants follow)
+/**
+ * As many entries as fit into the width; if combatants are left over, a tile "+N weitere" takes
+ * their place (room for it is kept as long as combatants follow)
+ */
 const fitToWidth = (
   items: InitiativeItem[],
   available: number,
@@ -96,6 +102,11 @@ const fitToWidth = (
   return fitted
 }
 
+/**
+ * Compares the keys of the strip before and after the turn passes on: a key further back than
+ * before went to the end (wrapped), every other key that stays moved forward or kept its place
+ * (moved)
+ */
 const planTransitions = (before: string[], after: string[]): InitiativeTransitions => {
   const transitions: InitiativeTransitions = {
     moved: [], wrapped: [], entered: [], left: [],
@@ -116,8 +127,10 @@ const planTransitions = (before: string[], after: string[]): InitiativeTransitio
 
 const playerDetails = (player: Player): string => `${player.race} · ${player.character_class}`
 
-// On turn the full character name, otherwise the first name; NPCs as "Gegner 3" or "Verbündeter 4",
-// never with their label
+/**
+ * On turn the full character name, otherwise the first name; NPCs as "Gegner 3" or "Verbündeter 4",
+ * never with their label
+ */
 const wallName = (combatant: Combatant, player: Player | undefined, isActive: boolean): string => {
   if (combatant.kind !== 'player') {
     return `${kindName(combatant.kind)} ${combatant.number}`
@@ -128,7 +141,7 @@ const wallName = (combatant: Combatant, player: Player | undefined, isActive: bo
   return isActive ? player.character_name : firstName(player)
 }
 
-// The line below the name: "Tot" or race and class of a player, nothing for an NPC
+/** The line below the name: "Tot" or race and class of a player, nothing for an NPC */
 const wallDetails = (combatant: Combatant, player: Player | undefined): string => {
   if (combatant.kind !== 'player') {
     return ''

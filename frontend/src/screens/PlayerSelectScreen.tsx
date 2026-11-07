@@ -266,8 +266,10 @@ function Characters({ players, onSelect }: CharacterListProps): ReactElement {
   )
 }
 
-// Target of the QR code: the characters of the active adventure; a tap opens the Player Screen of
-// the character. Gives no access to Admin, Wall or Ground.
+/**
+ * Target of the QR code: the characters of the active adventure; a tap opens the Player Screen of
+ * the character. Gives no access to Admin, Wall or Ground.
+ */
 function PlayerSelectScreen(): ReactElement {
   const theme = useTheme()
   const navigate = useNavigate()

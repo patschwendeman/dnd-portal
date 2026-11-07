@@ -92,24 +92,26 @@ const Chip = styled.span`
 `
 
 interface HeroCardProps {
-  // Portrait (CombatantAvatar in size hero)
+  /** Portrait (CombatantAvatar in size hero) */
   avatar: ReactNode
-  // Above the name: the player name, or the kind of an NPC
+  /** Above the name: the player name, or the kind of an NPC */
   caption: string
   name: string
-  // Race and class of a player, the label of an NPC
+  /** Race and class of a player, the label of an NPC */
   chips: string[]
-  // Level badge on the avatar, only for players
+  /** Level badge on the avatar, only for players */
   level?: number | null
-  // Next to the caption, e.g. "Am Zug" on the Player Screen
+  /** Next to the caption, e.g. "Am Zug" on the Player Screen */
   badge?: ReactNode
-  // Takes the height it is given, the avatar (CombatantAvatar in size fill) grows with it
+  /** Takes the height it is given, the avatar (CombatantAvatar in size fill) grows with it */
   fill?: boolean
   testId?: string
 }
 
-// A large card for one character: avatar (with the level of a player), caption, name and chips;
-// the dashboard shows it for the combatant on turn, the Player Screen for its own character
+/**
+ * A large card for one character: avatar (with the level of a player), caption, name and chips;
+ * the dashboard shows it for the combatant on turn, the Player Screen for its own character
+ */
 function HeroCard({
   avatar, caption, name, chips, level = null, badge = null, fill = false, testId = undefined,
 }: HeroCardProps): ReactElement {

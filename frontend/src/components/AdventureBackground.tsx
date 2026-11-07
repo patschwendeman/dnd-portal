@@ -37,15 +37,17 @@ const Image = styled.img`
 `
 
 interface AdventureBackgroundProps {
-  // Image URLs from useAdventureBackground; all but the shown one are invisible
+  /** Image URLs from useAdventureBackground; all but the shown one are invisible */
   layers: string[]
   shown: string | null
   onLoad: (src: string) => void
   onError: (src: string) => void
 }
 
-// The image of the active adventure for the theme behind the tiles of the Admin and the cards of
-// the Player, darkened; pure decoration
+/**
+ * The image of the active adventure for the theme behind the tiles of the Admin and the cards of
+ * the Player, darkened; pure decoration
+ */
 function AdventureBackground({
   layers, shown, onLoad, onError,
 }: AdventureBackgroundProps): ReactElement {

@@ -56,6 +56,11 @@ def read_fight(db: SessionDep) -> FightState | None:
 
 @router.post("", status_code=status.HTTP_201_CREATED, responses=START_RESPONSES)
 def start_fight(start: FightStart, db: SessionDep, background_tasks: BackgroundTasks) -> FightState:
+    """Starts a fight in the active scene: round 1, the first combatant of the list has the turn.
+
+    409 without an active adventure or scene, or while a fight is in progress; 422 for a player of another
+    adventure.
+    """
     with _http_errors():
         fight = fight_service.start_fight(db, start)
     background_tasks.add_task(push_fight)
@@ -64,6 +69,7 @@ def start_fight(start: FightStart, db: SessionDep, background_tasks: BackgroundT
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT, responses=NO_FIGHT)
 def end_fight(db: SessionDep, background_tasks: BackgroundTasks) -> None:
+    """Ends the fight of the active adventure and pushes null; 404 without a fight."""
     with _http_errors():
         fight_service.end_fight(db)
     background_tasks.add_task(push_fight)
@@ -81,6 +87,10 @@ def end_turn(turn: TurnRequest, db: SessionDep, background_tasks: BackgroundTask
 
 @router.post("/combatants", status_code=status.HTTP_201_CREATED, responses=ADD_RESPONSES)
 def add_combatant(new: CombatantCreate, db: SessionDep, background_tasks: BackgroundTasks) -> FightState:
+    """Adds a combatant at the end of the initiative; if nobody has the turn, the first one not defeated gets it.
+
+    422 for a player of another adventure, or a player or number that already takes part.
+    """
     with _http_errors():
         fight = fight_service.add_combatant(db, new)
     background_tasks.add_task(push_fight)
@@ -91,6 +101,10 @@ def add_combatant(new: CombatantCreate, db: SessionDep, background_tasks: Backgr
 def update_combatant(
     combatant_id: int, update: CombatantUpdate, db: SessionDep, background_tasks: BackgroundTasks
 ) -> FightState:
+    """Marks a combatant as defeated or not: a defeated one keeps a running turn, but is skipped afterwards.
+
+    404 for an unknown combatant.
+    """
     with _http_errors():
         fight = fight_service.set_defeated(db, combatant_id, update.defeated)
     background_tasks.add_task(push_fight)
@@ -99,6 +113,10 @@ def update_combatant(
 
 @router.delete("/combatants/{combatant_id}", responses=COMBATANT_RESPONSES)
 def remove_combatant(combatant_id: int, db: SessionDep, background_tasks: BackgroundTasks) -> FightState:
+    """Removes a combatant; if it had the turn, the next one not defeated gets it, without a new round.
+
+    404 for an unknown combatant.
+    """
     with _http_errors():
         fight = fight_service.remove_combatant(db, combatant_id)
     background_tasks.add_task(push_fight)
@@ -107,6 +125,7 @@ def remove_combatant(combatant_id: int, db: SessionDep, background_tasks: Backgr
 
 @router.put("/order", responses=ORDER_RESPONSES)
 def reorder(order: FightOrder, db: SessionDep, background_tasks: BackgroundTasks) -> FightState:
+    """Sets the initiative order; 422 unless `combatant_ids` contains each combatant exactly once."""
     with _http_errors():
         fight = fight_service.reorder(db, order.combatant_ids)
     background_tasks.add_task(push_fight)

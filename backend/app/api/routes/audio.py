@@ -14,6 +14,7 @@ SOUND_RESPONSES: dict[int | str, dict[str, Any]] = {422: {"description": "Unknow
 
 @router.get("/audio")
 async def read_audio() -> AudioState:
+    """The music state; it is kept in memory only, so after a restart the music is paused."""
     return audio.state()
 
 

@@ -56,12 +56,12 @@ interface OptionButtonsProps<T extends string> {
   options: readonly Option<T>[]
   value: T
   label: string
-  // data-test-id of a button: `<testIdPrefix>-<value>`
+  /** data-test-id of a button: `<testIdPrefix>-<value>` */
   testIdPrefix: string
   onChange: (value: T) => void
 }
 
-// The highlighted option changes only with the push of the server that follows the write
+/** The highlighted option changes only with the push of the server that follows the write */
 function OptionButtons<T extends string>({
   options, value, label, testIdPrefix, onChange,
 }: OptionButtonsProps<T>): ReactElement {

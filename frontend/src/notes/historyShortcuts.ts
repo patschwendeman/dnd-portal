@@ -24,7 +24,7 @@ const isTextField = (target: EventTarget | null): boolean => {
   )
 }
 
-// Alt+←/→ like in the browser; in a text field they stay with the field (e.g. word by word)
+/** Alt+←/→ like in the browser; in a text field they stay with the field (e.g. word by word) */
 export const keyHistoryStep = (event: ShortcutKeyEvent): HistoryStep | null => {
   if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
     || isTextField(event.target)) {
@@ -36,7 +36,7 @@ export const keyHistoryStep = (event: ShortcutKeyEvent): HistoryStep | null => {
   return event.key === 'ArrowRight' ? 'forward' : null
 }
 
-// The thumb buttons of a mouse (MouseEvent.button 3 and 4)
+/** The thumb buttons of a mouse (MouseEvent.button 3 and 4) */
 export const mouseHistoryStep = (button: number): HistoryStep | null => {
   if (button === 3) {
     return 'back'

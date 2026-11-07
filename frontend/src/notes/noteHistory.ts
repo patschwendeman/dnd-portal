@@ -5,16 +5,18 @@ export const NOTE_HISTORY_LIMIT = 50
 
 export interface NoteHistoryEntry {
   folderId: NoteFolderId
-  // Where a link pointed to; null for the start of the folder
+  /** Where a link pointed to; null for the start of the folder */
   target: NoteTarget | null
-  // Saved when the entry is left; once set, it wins over the target
+  /** Saved when the entry is left; once set, it wins over the target */
   scrollTop: number | null
 }
 
 export interface NoteHistory {
   entries: NoteHistoryEntry[]
   index: number
-  // Counts every move, so the reader also applies a move to an entry that looks like the last one
+  /**
+   * Counts every move, so the reader also applies a move to an entry that looks like the last one
+   */
   moves: number
 }
 
@@ -38,7 +40,7 @@ const withSavedScroll = (history: NoteHistory, scrollTop: number): NoteHistoryEn
   history.entries.map((entry, index) => (index === history.index ? { ...entry, scrollTop } : entry))
 )
 
-// Like a browser: a new entry drops the entries ahead and, beyond the limit, the oldest ones
+/** Like a browser: a new entry drops the entries ahead and, beyond the limit, the oldest ones */
 export const pushNoteEntry = (
   history: NoteHistory,
   scrollTop: number,
@@ -50,7 +52,7 @@ export const pushNoteEntry = (
   return { entries, index: entries.length - 1, moves: history.moves + 1 }
 }
 
-// The entry that is already shown gets no new entry
+/** The entry that is already shown gets no new entry */
 export const selectNoteFolder = (
   history: NoteHistory,
   scrollTop: number,
@@ -69,10 +71,12 @@ const moveBy = (history: NoteHistory, scrollTop: number, step: -1 | 1): NoteHist
   return { entries: withSavedScroll(history, scrollTop), index, moves: history.moves + 1 }
 }
 
+/** Saves `scrollTop` in the entry that is left; at the first entry nothing changes */
 export const goBack = (history: NoteHistory, scrollTop: number): NoteHistory => (
   moveBy(history, scrollTop, -1)
 )
 
+/** Saves `scrollTop` in the entry that is left; at the last entry nothing changes */
 export const goForward = (history: NoteHistory, scrollTop: number): NoteHistory => (
   moveBy(history, scrollTop, 1)
 )

@@ -11,7 +11,7 @@ import { textStyle } from '../style/tokens'
 import useListbox from '../utils/useListbox'
 
 interface ThemeOption {
-  // null = follows the game table
+  /** null = follows the game table */
   value: Theme | null
   label: string
 }
@@ -126,14 +126,14 @@ const Option = styled.div<{ $isSelected: boolean }>`
 interface SettingsMenuProps {
   themeOverride: Theme | null
   onChangeThemeOverride: (override: Theme | null) => void
-  // Adds the entry "Charakter wechseln" after the themes
+  /** Adds the entry "Charakter wechseln" after the themes */
   onSwitchCharacter?: (() => void) | null
-  // Side of the button the list is aligned to
+  /** Side of the button the list is aligned to */
   placement?: MenuPlacement
   isTranslucent?: boolean
 }
 
-// Settings of this device: the theme and, on the Player Screen, the way back to the selection
+/** Settings of this device: the theme and, on the Player Screen, the way back to the selection */
 function SettingsMenu({
   themeOverride,
   onChangeThemeOverride,

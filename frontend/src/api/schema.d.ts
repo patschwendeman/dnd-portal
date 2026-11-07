@@ -11,7 +11,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read Adventures */
+        /**
+         * Read Adventures
+         * @description All adventures, ordered by ID.
+         */
         get: operations["read_adventures_adventures_get"];
         put?: never;
         post?: never;
@@ -28,14 +31,23 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read Adventure */
+        /**
+         * Read Adventure
+         * @description The adventure with its players and background images; 404 for an unknown adventure.
+         */
         get: operations["read_adventure_adventures__adventure_id__get"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        /** Update Adventure */
+        /**
+         * Update Adventure
+         * @description Changes the fields set in the body and pushes the state to all screens.
+         *
+         *     404 for an unknown adventure; 422 if the active scene does not exist or belongs to another adventure; 409 if
+         *     the active scene would change while the adventure has a fight. On an error nothing is changed.
+         */
         patch: operations["update_adventure_adventures__adventure_id__patch"];
         trace?: never;
     };
@@ -46,7 +58,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read Adventure Scenes */
+        /**
+         * Read Adventure Scenes
+         * @description The scenes of the adventure, ordered by ID (an empty list without scenes); 404 for an unknown adventure.
+         */
         get: operations["read_adventure_scenes_adventures__adventure_id__scenes_get"];
         put?: never;
         post?: never;
@@ -63,7 +78,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read Scene */
+        /**
+         * Read Scene
+         * @description The scene with its images and tracks; 404 for an unknown scene.
+         */
         get: operations["read_scene_scenes__scene_id__get"];
         put?: never;
         post?: never;
@@ -80,14 +98,24 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read Table */
+        /**
+         * Read Table
+         * @description The state of the game table that the screens also receive as `state` over the WebSocket.
+         */
         get: operations["read_table_table_get"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        /** Update Table */
+        /**
+         * Update Table
+         * @description Changes the fields set in the body and pushes the state to all screens.
+         *
+         *     A change of the active adventure also pushes its fight and closes the Wall overlay, unless the request sets
+         *     one. 422 for an unknown adventure; 409 if the active adventure would change while it has a fight. On an
+         *     error nothing is changed.
+         */
         patch: operations["update_table_table_patch"];
         trace?: never;
     };
@@ -98,7 +126,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read Audio */
+        /**
+         * Read Audio
+         * @description The music state; it is kept in memory only, so after a restart the music is paused.
+         */
         get: operations["read_audio_table_audio_get"];
         put?: never;
         post?: never;
@@ -125,9 +156,18 @@ export interface paths {
          */
         get: operations["read_fight_table_fight_get"];
         put?: never;
-        /** Start Fight */
+        /**
+         * Start Fight
+         * @description Starts a fight in the active scene: round 1, the first combatant of the list has the turn.
+         *
+         *     409 without an active adventure or scene, or while a fight is in progress; 422 for a player of another
+         *     adventure.
+         */
         post: operations["start_fight_table_fight_post"];
-        /** End Fight */
+        /**
+         * End Fight
+         * @description Ends the fight of the active adventure and pushes null; 404 without a fight.
+         */
         delete: operations["end_fight_table_fight_delete"];
         options?: never;
         head?: never;
@@ -143,7 +183,12 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Add Combatant */
+        /**
+         * Add Combatant
+         * @description Adds a combatant at the end of the initiative; if nobody has the turn, the first one not defeated gets it.
+         *
+         *     422 for a player of another adventure, or a player or number that already takes part.
+         */
         post: operations["add_combatant_table_fight_combatants_post"];
         delete?: never;
         options?: never;
@@ -161,11 +206,21 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Remove Combatant */
+        /**
+         * Remove Combatant
+         * @description Removes a combatant; if it had the turn, the next one not defeated gets it, without a new round.
+         *
+         *     404 for an unknown combatant.
+         */
         delete: operations["remove_combatant_table_fight_combatants__combatant_id__delete"];
         options?: never;
         head?: never;
-        /** Update Combatant */
+        /**
+         * Update Combatant
+         * @description Marks a combatant as defeated or not: a defeated one keeps a running turn, but is skipped afterwards.
+         *
+         *     404 for an unknown combatant.
+         */
         patch: operations["update_combatant_table_fight_combatants__combatant_id__patch"];
         trace?: never;
     };
@@ -177,7 +232,10 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Reorder */
+        /**
+         * Reorder
+         * @description Sets the initiative order; 422 unless `combatant_ids` contains each combatant exactly once.
+         */
         put: operations["reorder_table_fight_order_put"];
         post?: never;
         delete?: never;
@@ -213,7 +271,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read Join Info */
+        /**
+         * Read Join Info
+         * @description The URL of the Player Screen in the LAN (null if not configured), the base of the QR code.
+         */
         get: operations["read_join_info_table_join_get"];
         put?: never;
         post?: never;
