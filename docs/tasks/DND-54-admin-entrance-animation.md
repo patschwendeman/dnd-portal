@@ -1,7 +1,7 @@
 # DND-54: Auftritt des Admin Screens: Übergang aus der Abenteuerauswahl und Aufbau der Kacheln
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -230,3 +230,45 @@ Abgestimmter Mockup: https://claude.ai/artifact/VYrcxZ1MP69WxZHRtzGCsz (Ablauf u
 - (keine)
 
 ## Review
+
+### Runde 1 – Review vom 2026-11-07 (Commit ab96baf, Gesamtstand gegen bc0df03)
+
+**Empfehlung: Abnahme.** Es gibt keinen blockierenden Befund. Alle neun AK sind erfüllt, belegt durch Code, Unit- und BDD-Tests und eine eigene Live-Messung in headless Chrome (`document.startViewTransition` instrumentiert, `data-entrance` und `getAnimations()` mitgeschrieben; Skript außerhalb des Repos). Die fünf gemeldeten Abweichungen sind vertretbar (Hinweise 1–5); die einzige echte Abweichung vom Plan betrifft nur Listen mit mehr als 12 Abenteuern (Hinweis 5). Lint, Typecheck, Unit-Tests, Build, knip und jscpd sind grün. Im ersten E2E-Lauf waren 2 von 63 Tests rot, weil gleichzeitig jemand anderes auf den Server schrieb (Hinweis 6); die Wiederholung lief mit 63/63 grün.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Abenteuer starten mit Übergang | erfüllt | Live gestartet, als kein Abenteuer aktiv war. Vor dem Übergang trägt das `IMG` der Karte `data-view-hero`, danach das `DIV` des Admin-Hintergrunds; das Bild war innerhalb der Wartezeit da. Gemessene Dauern: `group(adventure-hero)` 500 ms, `old(adventure-select-head)` und `old(adventure-card-0)` 260 ms (Sinken), `root` 250 ms. Abdunklung: Das `::after` mit `backdrop` liegt im benannten `Layer` (`AdventureBackground.tsx:14-32`, `data-view-hero` an Zeile 68), dadurch geht das Bild von hell zu abgedunkelt über. Start erst nach dem Speichern: `AdminSelectScreen.tsx:249` `.then(() => enter(adventure))`. Regeln in `PageTransitionStyle.ts`. |
+| AK2 Aufbau der Kacheln | erfüllt | Live: Transition endet bei 1791 ms, `building` bei 1818, `done` bei 2736, also nach 918 ms. Index/Herkunft/Verzögerung je Kachel wie E5: history-buttons 0/top/0 ms, adventure-name 1/top/65, Vollbild-Gruppe 2/top/130, nav-rail 2/left/130, nav-panel 3/left/195, erste Notizseite 4/bottom/260, weitere Notizseiten 5/bottom/325, Bühne 5/right/325, Audio 6/390, Spieltisch 7/455, Party 8/520. Je Kachel 380 ms, Versatz ±12px bzw. ±16px. Kampf laut Code: `dashboardTile(0..3)`, `AdminScreen.tsx:880-950`. `backdrop-filter: blur(12px)` schon beim Start des Aufbaus gesetzt. BDD „builds up … until all of them stand“ grün. |
+| AK3 Sofort bedienbar | erfüllt | Live während `building`: Klick auf „Szenen“ wechselt das Panel nach 75 ms, Klick auf „Dashboard“ blendet es sofort aus. Keyframes nur auf `opacity` und `transform`, nirgends `pointer-events` (`GlobalStyle.ts`, `tileEntrance`). Tastenkürzel nicht live geprüft; laut Code blockiert nichts. |
+| AK4 Fortsetzen | erfüllt | Live: Klick auf die aktive Karte startet denselben Übergang mit Bild und denselben Aufbau (918 ms). Nichts gespeichert: `AdminSelectScreen.tsx:240-243` ruft `enter` ohne `saveActiveAdventure`. BDD „I continue the active adventure“ grün. |
+| AK5 Kein Aufbau ohne Betreten aus der Auswahl | erfüllt | Live nach Reload: `data-entrance` direkt `done`, `history.state.usr` nach dem Betreten `null` (`navigate(ADMIN_PLAY_PATH, { replace: true, state: null })`). BDD: Reload-Schritt und `adminSettings` „stood there at once“ grün. Folgen eines anderen Fensters nur im Code: `AdminScreen` ist nicht nach Abenteuer gekeyt (`App.tsx:72-73`), die Phase wird nur beim Mounten bestimmt. |
+| AK6 Rückweg bei „Abenteuer beenden“ | erfüllt | Live: nach Bestätigen `exiting` mit 200 ms `tileOut`, nach 201 ms startet die View Transition. Hintergrund (`DIV`) wird zum Kartenbild (`IMG`), `group(adventure-hero)` 500 ms, `new(adventure-select-head)` 300 ms ab 300 ms, `new(adventure-card-0)` 300 ms ab 350 ms. Endstand: `/admin`, 0 aktive Karten, 0 Hintergrundbilder. BDD „I end the adventure“ grün. |
+| AK7 Fehler beim Speichern | erfüllt | Live, `PATCH /api/table` per CDP blockiert. Starten: kein `startViewTransition`, bleibt `/admin`, Hinweis „Das Abenteuer konnte nicht gestartet werden.“. Beenden: kein `exiting`, keine Transition, bleibt `/admin/play`, Hinweisleiste „Änderung konnte nicht gespeichert werden“, Hintergrund steht. `onFailed` setzt `ending` zurück (`handleEndAdventureDialog`). |
+| AK8 Bewegung reduzieren / ohne API | erfüllt | Live mit `prefers-reduced-motion: reduce` (CDP): Fortsetzen und Starten ohne Transition, Phase direkt `done`, Beenden ohne `exiting`. Ohne API: keine Transition, `pending` → `building` nach 4 ms, `done` nach rund 920 ms; Beenden ohne Rückweg. Unit-Tests `viewTransition.spec.ts` grün. |
+| AK9 Ohne Bild / Bild zu spät | erfüllt | Live ohne Bild (Kartenliste per XHR-Hook ohne `image`): kein `data-view-hero`, nur `root`, Kopf und Karte sinken, danach `building` und `done`. Rückweg mit Karte zu spät (700 ms Latenz): Wartezeit 338 ms, kein Hero auf der neuen Seite, nur `old(adventure-hero)` blendet aus. „Bild zu spät“ beim Betreten nicht live erzeugbar (Cache); gleicher Code (`waitUntil`, `HERO_WAIT_MS`), per Unit-Test abgedeckt („captures the new page after the limit“). |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+1. **Zusätzlicher Zustand `exiting`:** vertretbar; E8 Schritt 1 braucht ihn. In `adminEntrance.ts` beschrieben und in `components.md` („Auftritt im Admin“) dokumentiert.
+2. **Medienpfad statt URL im Einstieg:** vertretbar; E3 nennt die URL nur als Beispiel, `frontend/CLAUDE.md` verlangt `mediaUrl` (geschieht in `useAdventureBackground.ts`).
+3. **`{ endedAdventureId }` an die Auswahl:** vertretbar; die Auswahl löscht den State nach dem Lesen, ein Reload sieht keinen Rückweg. `heroId` bleibt auf der beendeten Karte und wandert beim nächsten Klick per `flushSync` – unkritisch, pro Seite trägt nur ein Element den Namen.
+4. **Push „kein Abenteuer“ während `ending` nicht sofort umleiten, Hintergrund halten:** vertretbar und für E8 nötig. Kein Pfad gefunden, auf dem der Admin ohne Abenteuer hängen bleibt. Vermutung, nicht beobachtet: Kommt der Push vor der REST-Antwort, zeigen die Kacheln bis `exiting` kurz „Kein Abenteuer“ im Kopf. Beim manuellen Test (Schritt 1) darauf achten.
+5. **`NAMED_CARD_COUNT` = 12:** echte, kleine Abweichung von E2/E8. Ab der 13. Karte sinken/steigen die Karten nicht, sondern blenden mit der Seite aus/ein (`PageTransitionStyle.ts:13`). In `components.md` dokumentiert. Ob das reicht, entscheidet der User.
+6. **E2E:** Im ersten Lauf 2/63 rot (`groundGrid` „I set the grid of all grounds“, `adminAdventureSelect` „I start an adventure while none is active“). Backend-Logs zeigen fremde `PATCH /table` mit neuen Admin-WebSockets vor und während des Laufs. Einzeln wiederholt grün, voller Lauf 63/63 grün.
+7. **E6 nur eingeschränkt:** Weich eingeblendet werden nur direkte Kinder von `[data-entrance-content]`, die während `data-content-fade` neu ins DOM kommen; geänderter Text in bestehenden Elementen (z. B. „Party · N“) erscheint hart. Vermutung: Die Bühne tauscht beim Laden das ganze Kachel-Element und beginnt ihren Auftritt neu. Kein AK prüft E6 direkt; manueller Schritt 3 steht aus.
+8. Die angeklickte Karte trägt selbst `adventure-card-N` und sinkt als Rahmen ohne Bild mit, während ihr Bild wächst. Laut E2 sinken nur die „übrigen Karten“. Nur visuell prüfbar (Schritt 1).
+9. Manuelle Schritte offen: Safari (1), zwei Admin-Fenster (5), Monitor ≥ 2560px (6). Chrome nur headless geprüft.
+10. Konventionen: `feat(DND-54): …` passt zum Plan-Typ, ein Commit, 5 Stichpunkte, keine KI-Signatur. Alle Subtasks abgehakt, nichts außerhalb des Scopes. Neue optionale Props von `AdventureBackground`/`useAdventureBackground` mit Defaults, Player und Auswahl unverändert. `screens.md` und `components.md` stimmen mit Code und Messung überein.
+11. Server-Zustand nach den Checks: aktives Abenteuer 1 und `wall_overlay: join` wie vorher, `active_scene_id` 6 statt 1 (durch E2E und Live-Checks).
+
+**Checks**
+- `npm run lint`: grün, ohne Fehler und Warnungen.
+- `npm run typecheck`: grün.
+- `npm run test:unit`: 37 Dateien, 382/382 grün, darunter `viewTransition.spec.ts` und `adminEntrance.spec.ts`.
+- `npm run build`: grün; die Warnung zur Chunk-Größe gab es schon vorher.
+- `npm run check:deadcode` (knip): grün.
+- `npm run check:dupes` (jscpd): grün, 0,22 %, 1 Klon (Baseline).
+- E2E (`jest --runInBand` gegen `dnd-dev-api` und `dnd-dev-ui`): erster Lauf 61/63 (Hinweis 6), Wiederholung 63/63 grün.
+- Live-Prüfung in headless Chrome 1920×1080: normal, reduced motion, ohne API, Beenden fehlgeschlagen, Auswahl langsam, Start fehlgeschlagen, Start ohne Bild.
