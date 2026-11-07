@@ -4,8 +4,7 @@
       "name": "Erstes Abenteuer",
       "description": "Das erste Abenteuer",
       "global_level": 1,
-      "background_dark_media_id": 2,
-      "background_tavern_media_id": 4
+      "image_media_id": 1
     }
   ],
   "media": [

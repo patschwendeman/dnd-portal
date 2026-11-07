@@ -51,7 +51,7 @@ Stand: Analyse vom 2026-09-27, Backend-Struktur/Best Practices ergänzt am 2026-
 - Kontrast (seit DND-40): Die Notizseiten sind Kacheln in `secondary`; die Text-Links in den Notizen
   (Inhaltsverzeichnisse und Querverweise, `primary`) verfehlen darauf in Tavern 4,5:1 (3,3:1, `frontend/docs/design/contrast.md`); auf den
   durchscheinenden Kacheln über einem hellen Hintergrundbild (seit DND-41, Werte seit DND-42) in Tavern 3,0:1 und
-  auch in Dark 4,0:1. Lösung offen. Defekte Querverweise (seit DND-48) stehen als Text in `error` und verfehlen 4,5:1
+  auch in Cyber 4,0:1. Lösung offen. Defekte Querverweise (seit DND-48) stehen als Text in `error` und verfehlen 4,5:1
   in beiden Themes deutlich; sie sind ein Hinweis für den Spielleiter beim Pflegen der Notizen (Tooltip, gepunktete
   Unterstreichung) und kommen im geprüften Bestand nicht vor (`npm run test:unit`).
 
@@ -68,7 +68,7 @@ in Folge-Tasks, danach den Eintrag in der jeweiligen Ignore-Liste entfernen bzw.
   (`models.ts`), `OtherServerMessage` (`connection.ts`), `SoundListener` (`useGameTable.ts`). Falsch-Positive: die
   Exporte des generierten `src/api/schema.d.ts`.
 - jscpd (`frontend/.jscpd.json`, `threshold` 0,28 %): 1 Duplikat, 22 von 10.600 Zeilen (0,21 %, Stand
-  2026-11-07): `darkTheme.ts` ↔ `tavernTheme.ts` (22 Zeilen).
+  2026-11-07): `cyberTheme.ts` ↔ `tavernTheme.ts` (22 Zeilen).
 
 **Backend**
 - vulture (`backend/vulture_baseline.py`): Relationship `Adventure.active_scene` wird nirgends gelesen (nur

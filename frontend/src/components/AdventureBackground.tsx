@@ -45,14 +45,14 @@ interface AdventureBackgroundProps {
 }
 
 /**
- * The image of the active adventure for the theme behind the tiles of the Admin and the cards of
- * the Player, darkened; pure decoration
+ * The adventure image of the active adventure behind the tiles of the Admin and the cards of the
+ * Player, darkened; pure decoration
  */
 function AdventureBackground({
   layers, shown, onLoad, onError,
 }: AdventureBackgroundProps): ReactElement {
   return (
-    <Root aria-hidden="true">
+    <Root aria-hidden="true" data-test-id="adventure-background">
       {layers.map((src) => (
         <Layer key={src} $isShown={src === shown}>
           <Image src={src} alt="" onLoad={() => onLoad(src)} onError={() => onError(src)} />

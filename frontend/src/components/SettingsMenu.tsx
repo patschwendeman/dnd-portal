@@ -18,7 +18,7 @@ interface ThemeOption {
 
 const OPTIONS: ThemeOption[] = [
   { value: null, label: 'Wie Spieltisch' },
-  { value: 'dark', label: 'Dunkel' },
+  { value: 'cyber', label: 'Cyber' },
   { value: 'tavern', label: 'Taverne' },
 ]
 

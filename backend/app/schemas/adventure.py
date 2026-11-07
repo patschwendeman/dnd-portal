@@ -37,9 +37,8 @@ class AdventureDetail(BaseModel):
     global_level: int
     active_scene_id: int | None
     players: list[Player]
-    # Image behind the tiles of the Admin per theme; null = plain background.
-    background_dark: Image | None
-    background_tavern: Image | None
+    # Adventure image, the same in every theme; null = plain background.
+    image: Image | None
 
 
 def _without_default(schema: JsonDict) -> None:

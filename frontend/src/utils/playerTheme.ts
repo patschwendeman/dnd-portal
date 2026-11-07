@@ -10,13 +10,24 @@ export const PLAYER_THEME_OVERRIDE_KEY = 'playerThemeOverride'
  */
 export const LEGACY_PLAYER_THEME_KEY = 'isDarkTheme'
 
-const THEMES: string[] = ['dark', 'tavern'] satisfies Theme[]
+const THEMES: string[] = ['cyber', 'tavern'] satisfies Theme[]
+/** Earlier name of the theme `cyber`; a stored override keeps working */
+const LEGACY_CYBER_THEME = 'dark'
 
 const isTheme = (value: string | null): value is Theme => value !== null && THEMES.includes(value)
 
-/** A missing or invalid value means "Wie Spieltisch" (null) */
-export const readThemeOverride = (storage: Pick<Storage, 'getItem'>): Theme | null => {
+/**
+ * A missing or invalid value means "Wie Spieltisch" (null); a stored `dark` is read as `cyber`
+ * and rewritten
+ */
+export const readThemeOverride = (
+  storage: Pick<Storage, 'getItem' | 'setItem'>,
+): Theme | null => {
   const value = storage.getItem(PLAYER_THEME_OVERRIDE_KEY)
+  if (value === LEGACY_CYBER_THEME) {
+    storage.setItem(PLAYER_THEME_OVERRIDE_KEY, 'cyber')
+    return 'cyber'
+  }
   return isTheme(value) ? value : null
 }
 

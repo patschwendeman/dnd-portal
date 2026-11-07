@@ -49,7 +49,7 @@ function GameTableProvider({
 
   const activeAdventureId = state?.active_adventure_id ?? null
   const activeSceneId = state?.active_scene_id ?? null
-  const theme = state?.theme ?? 'dark'
+  const theme = state?.theme ?? 'cyber'
   const wallOverlay = state?.wall_overlay ?? 'off'
   const groundGrid = state?.ground_grid ?? 'off'
   const groundGridCellSize = state?.ground_grid_cell_size ?? GROUND_GRID_CELL_SIZE.min

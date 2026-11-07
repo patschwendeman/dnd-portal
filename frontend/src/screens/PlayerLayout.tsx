@@ -8,7 +8,6 @@ import { ActiveAdventureContext, GameTableContext } from '../context/context'
 import { AdventureDetail, Player, Theme } from '../models/models'
 import getPlayerAdventure from '../service/playerScreen'
 import { loadLatest } from '../utils/loadSafely'
-import { effectiveTheme } from '../utils/playerTheme'
 import { useAdventureBackground } from '../utils/useAdventureBackground'
 
 export interface PlayerOutlet {
@@ -47,7 +46,7 @@ export function PlayerLayout({
   themeOverride, onChangeThemeOverride,
 }: PlayerLayoutProps): ReactElement {
   const { activeAdventureId } = useContext(ActiveAdventureContext)
-  const { theme: tableTheme, snapshot } = useContext(GameTableContext)
+  const { snapshot } = useContext(GameTableContext)
   const [adventure, setAdventure] = useState<AdventureDetail>()
   const [loadFailed, setLoadFailed] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
@@ -93,10 +92,7 @@ export function PlayerLayout({
   const activeAdventure = activeAdventureId !== null && adventure?.id === activeAdventureId
     ? adventure
     : undefined
-  const background = useAdventureBackground(
-    activeAdventure,
-    effectiveTheme(themeOverride, tableTheme),
-  )
+  const background = useAdventureBackground(activeAdventure)
 
   const outlet = useMemo<PlayerOutlet>(() => ({
     themeOverride,

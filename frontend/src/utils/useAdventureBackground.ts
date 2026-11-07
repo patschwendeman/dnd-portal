@@ -3,7 +3,7 @@ import {
 } from 'react'
 
 import { mediaUrl } from '../api/mediaUrl'
-import { AdventureDetail, Theme } from '../models/models'
+import { AdventureDetail } from '../models/models'
 
 import {
   adventureBackgroundLayers,
@@ -24,14 +24,13 @@ interface AdventureBackground {
 }
 
 /**
- * State of the image behind the tiles of the Admin and the cards of the Player; without an image
- * for the theme (or while the adventure loads) the background is plain
+ * State of the adventure image behind the tiles of the Admin and the cards of the Player; without
+ * an image (or while the adventure loads) the background is plain
  */
 export function useAdventureBackground(
   adventure: AdventureDetail | undefined,
-  theme: Theme,
 ): AdventureBackground {
-  const source = adventureBackgroundSource(adventure, theme)
+  const source = adventureBackgroundSource(adventure)
   const src = source === null ? null : mediaUrl(source)
   const [state, dispatch] = useReducer(adventureBackgroundReducer, src, initialAdventureBackground)
 

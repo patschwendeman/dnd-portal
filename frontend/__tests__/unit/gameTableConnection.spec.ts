@@ -11,7 +11,7 @@ import { VisibilitySource } from '../../src/realtime/visibility'
 const state = {
   active_adventure_id: 1,
   active_scene_id: 5,
-  theme: 'dark',
+  theme: 'cyber',
   wall_overlay: 'off',
   ground_grid: 'off',
   ground_grid_cell_size: 100,

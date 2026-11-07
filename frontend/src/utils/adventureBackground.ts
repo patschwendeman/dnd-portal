@@ -1,4 +1,4 @@
-import { AdventureDetail, Theme } from '../models/models'
+import { AdventureDetail } from '../models/models'
 
 /**
  * Image layers behind the tiles of the Admin and the cards of the Player. An image is only shown
@@ -83,13 +83,9 @@ export const isBackgroundImageShown = (state: AdventureBackgroundState): boolean
 )
 
 /**
- * Media path of the image of the adventure for the theme; null while the adventure loads or
- * without an image for the theme. Depends on nothing else, so a scene change keeps the image.
+ * Media path of the adventure image; null while the adventure loads or without an image. Depends
+ * on nothing else, so neither a scene nor a theme change replaces the image.
  */
 export const adventureBackgroundSource = (
   adventure: AdventureDetail | undefined,
-  theme: Theme,
-): string | null => {
-  const image = theme === 'tavern' ? adventure?.background_tavern : adventure?.background_dark
-  return image?.source ?? null
-}
+): string | null => adventure?.image?.source ?? null

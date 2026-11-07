@@ -43,7 +43,7 @@ def test_get_returns_the_stored_state(client: TestClient, expected_adventures: l
     # Migration 0004 activates the smallest adventure, or none if the DB was empty before (the seeder runs after it).
     assert body["active_adventure_id"] in {None, expected_adventures[0]["id"]}
     assert body["active_scene_id"] is None
-    assert body["theme"] == "dark"
+    assert body["theme"] == "cyber"
     assert body["wall_overlay"] == "off"
     assert {key: body[key] for key in DEFAULT_GRID} == DEFAULT_GRID
 
@@ -59,7 +59,7 @@ def test_patch_sets_active_adventure_and_returns_its_active_scene(
     expected = {
         "active_adventure_id": other_adventure["id"],
         "active_scene_id": other_adventure["second_scene_id"],
-        "theme": "dark",
+        "theme": "cyber",
         "wall_overlay": "off",
         **DEFAULT_GRID,
     }
@@ -95,7 +95,7 @@ def test_patch_sets_theme_and_keeps_unset_fields(client: TestClient, db: Session
         "wall_overlay": "off",
         **DEFAULT_GRID,
     }
-    assert client.patch("/table", json={"theme": "dark"}).json()["theme"] == "dark"
+    assert client.patch("/table", json={"theme": "cyber"}).json()["theme"] == "cyber"
 
 
 def test_patch_with_empty_body_changes_nothing(client: TestClient, db: Session) -> None:
@@ -137,7 +137,7 @@ def test_patch_rejects_unknown_adventure(
     assert client.get("/table").json() == before
 
 
-@pytest.mark.parametrize("theme", ["light", None, 1])
+@pytest.mark.parametrize("theme", ["light", "dark", None, 1])
 def test_patch_rejects_invalid_theme(client: TestClient, db: Session, theme: Any) -> None:
     before = client.get("/table").json()
 
@@ -164,10 +164,10 @@ def test_patch_sets_wall_overlay_and_keeps_unset_fields(client: TestClient, db: 
     }
     assert response.json() == expected
     assert client.get("/table").json() == expected
-    assert client.patch("/table", json={"theme": "dark"}).json()["wall_overlay"] == "world"
+    assert client.patch("/table", json={"theme": "cyber"}).json()["wall_overlay"] == "world"
     assert client.patch("/table", json={"wall_overlay": "off"}).json() == {
         **expected,
-        "theme": "dark",
+        "theme": "cyber",
         "wall_overlay": "off",
     }
 
@@ -302,10 +302,10 @@ def test_patch_sets_ground_grid_and_keeps_unset_fields(client: TestClient, db: S
     response = client.patch("/table", json={"ground_grid_cell_size": 150})
 
     assert response.json() == {**expected, "ground_grid_cell_size": 150}
-    assert client.patch("/table", json={"theme": "dark"}).json()["ground_grid_cell_size"] == 150
+    assert client.patch("/table", json={"theme": "cyber"}).json()["ground_grid_cell_size"] == 150
     assert client.patch("/table", json={"ground_grid": "black", "ground_grid_cell_size": 200}).json() == {
         **expected,
-        "theme": "dark",
+        "theme": "cyber",
         "ground_grid": "black",
         "ground_grid_cell_size": 200,
     }

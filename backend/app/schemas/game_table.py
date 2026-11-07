@@ -4,8 +4,8 @@ from pydantic import BaseModel, Field
 
 from app.schemas.adventure import _without_default
 
-Theme = Literal["dark", "tavern"]
-DEFAULT_THEME: Theme = "dark"
+Theme = Literal["cyber", "tavern"]
+DEFAULT_THEME: Theme = "cyber"
 WallOverlay = Literal["world", "join", "off"]
 DEFAULT_WALL_OVERLAY: WallOverlay = "off"
 GroundGrid = Literal["black", "white", "off"]

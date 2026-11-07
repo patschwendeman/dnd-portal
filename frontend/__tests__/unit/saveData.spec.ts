@@ -123,7 +123,7 @@ describe('game table writes', () => {
 
   it('reports a failure as SaveError', async () => {
     patch.mockRejectedValue(networkError())
-    const error = await failure(saveTheme('dark'))
+    const error = await failure(saveTheme('cyber'))
     expect(error).toBeInstanceOf(SaveError)
     expect(error?.message).toMatch(/^Saving theme failed: backend not reachable$/)
   })

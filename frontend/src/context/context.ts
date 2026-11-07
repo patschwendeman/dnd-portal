@@ -50,7 +50,7 @@ interface GameTableContextType {
 export const GameTableContext = createContext<GameTableContextType>({
   hasState: false,
   snapshot: null,
-  theme: 'dark',
+  theme: 'cyber',
   wallOverlay: 'off',
   groundGrid: 'off',
   groundGridCellSize: GROUND_GRID_CELL_SIZE.min,

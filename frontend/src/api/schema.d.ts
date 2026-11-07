@@ -312,14 +312,13 @@ export interface components {
         AdventureDetail: {
             /** Active Scene Id */
             active_scene_id: number | null;
-            background_dark: components["schemas"]["Image"] | null;
-            background_tavern: components["schemas"]["Image"] | null;
             /** Description */
             description: string | null;
             /** Global Level */
             global_level: number;
             /** Id */
             id: number;
+            image: components["schemas"]["Image"] | null;
             /** Name */
             name: string;
             /** Players */
@@ -463,7 +462,7 @@ export interface components {
              * Theme
              * @enum {string}
              */
-            theme: "dark" | "tavern";
+            theme: "cyber" | "tavern";
             /**
              * Wall Overlay
              * @enum {string}
@@ -488,7 +487,7 @@ export interface components {
              * Theme
              * @enum {string}
              */
-            theme?: "dark" | "tavern";
+            theme?: "cyber" | "tavern";
             /**
              * Wall Overlay
              * @enum {string}

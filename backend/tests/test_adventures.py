@@ -22,8 +22,7 @@ ADVENTURE_FIELDS = {
     "global_level",
     "active_scene_id",
     "players",
-    "background_dark",
-    "background_tavern",
+    "image",
 }
 PLAYER_FIELDS = {"id", "player_name", "character_name", "race", "character_class", "avatar"}
 NOT_FOUND = {"detail": "Adventure not found"}
@@ -89,31 +88,24 @@ def test_read_adventure_returns_player_avatar_as_image(client: TestClient, db: S
     assert avatar == {"id": 1, "name": "Forest", "source": "/media/images/wall_screen/forest.jpg"}
 
 
-def test_read_adventure_returns_background_per_theme_as_image(client: TestClient) -> None:
+def test_read_adventure_returns_adventure_image(client: TestClient) -> None:
     response = client.get("/adventures/1")
 
     assert response.status_code == 200
-    body = response.json()
-    assert body["background_dark"] == {"id": 2, "name": "Fight", "source": "/media/images/wall_screen/fight.jpg"}
-    assert body["background_tavern"] == {
-        "id": 4,
-        "name": "Tavern",
-        "source": "/media/images/wall_screen/tavern.jpg",
-    }
+    assert response.json()["image"] == {"id": 1, "name": "Forest", "source": "/media/images/wall_screen/forest.jpg"}
 
 
-def test_read_adventure_returns_null_without_background(client: TestClient, db: Session) -> None:
+def test_read_adventure_returns_null_without_image(client: TestClient, db: Session) -> None:
     adventure = db.get(Adventure, 1)
     assert adventure is not None
-    adventure.background_tavern_media_id = None
+    adventure.image_media_id = None
     db.commit()
 
     response = client.get("/adventures/1")
 
     assert response.status_code == 200
     body = response.json()
-    assert body["background_tavern"] is None
-    assert body["background_dark"] is not None
+    assert body["image"] is None
     assert set(body) == ADVENTURE_FIELDS
 
 

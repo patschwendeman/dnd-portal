@@ -8,13 +8,13 @@ Verbindliche Gestaltungsregeln für das Frontend.
 
 - Details: [Bausteine](docs/design/components.md) (Maße und Werte je Baustein), [Layout-Konstanten und
   Screen-Layouts](docs/design/screen-layouts.md), [Kontrast und Theme-Werte](docs/design/contrast.md)
-- Code: [tokens.ts](src/style/tokens.ts), [darkTheme.ts](src/style/darkTheme.ts),
+- Code: [tokens.ts](src/style/tokens.ts), [cyberTheme.ts](src/style/cyberTheme.ts),
   [tavernTheme.ts](src/style/tavernTheme.ts)
 
 ## Architektur
 
 - Das Theme für `styled-components` besteht aus `tokens` (`style/tokens.ts`, statisch, für alle Themes gleich) und
-  `colors` des aktiven Themes (`darkTheme.ts`, `tavernTheme.ts`); typisiert in `style/styled.d.ts`. Components lesen
+  `colors` des aktiven Themes (`cyberTheme.ts`, `tavernTheme.ts`); typisiert in `style/styled.d.ts`. Components lesen
   beides über `props.theme.*` und setzen Schrift mit `textStyle(stufe)`.
 - `GlobalStyle.ts` enthält die Grundregeln aus [1.1](#11-grundsätze) und wird als `<GlobalStyle />` in jedem Screen
   gerendert, nicht in `App.tsx` (jeder Screen läuft in einem eigenen Fenster).
@@ -135,7 +135,7 @@ Wechselt mit dem Theme.
 - Components verwenden nur **Farbrollen** aus `theme.colors`, nie Farbwerte direkt (kein `#…`, `white`, `black`).
 - Jede Rolle gibt es in **jedem** Theme. Ein Theme ist nur ein anderer Satz Werte für dieselben Rollen.
 - Eine neue Farbe ist immer eine neue Rolle und wird in **allen** Themes angelegt.
-- Das Theme (`dark` | `tavern`) wählt der Admin im Panel „Einstellungen“, der Server pusht es
+- Das Theme (`cyber` | `tavern`) wählt der Admin im Panel „Einstellungen“, der Server pusht es
   ([Synchronisation](../docs/architecture.md#synchronisation)); ein Spieler kann im Player für sein Gerät abweichen.
 
 ### 2.2 Rollen
@@ -146,7 +146,7 @@ Rolle je Baustein: [components.md](docs/design/components.md).
 |---|---|---|
 | `background` | Grundfläche | Hintergrund von Admin, Player, Ground; Flächen in Dashboard-Panels; Nebenaktion |
 | `secondary` | erhöhte Fläche | Kacheln, Karten, Dialog, Wall-Hintergrund; inaktiver Zustand |
-| `secondaryTranslucent` | `secondary` über einem Bild (Dark 75 %, Tavern 92 %) | Kacheln mit Hintergrundbild; Panels auf Wall und Ground |
+| `secondaryTranslucent` | `secondary` über einem Bild (Cyber 75 %, Tavern 92 %) | Kacheln mit Hintergrundbild; Panels auf Wall und Ground |
 | `primary` · `onPrimary` | Akzent, aktiv · Vordergrund darauf | Links, Slider-Füllung, Level-Badge, aktiver Zustand |
 | `border` | Linien | Trennlinien, Rand und Lichtkante der Kacheln |
 | `overlay` · `backdrop` | Abdunklung der Overlays · des Hintergrundbilds | Dialog, Vollbild-Overlay · Bild hinter den Kacheln |
@@ -160,7 +160,7 @@ Rolle je Baustein: [components.md](docs/design/components.md).
 
 ### 2.3 Themes
 
-Zwei Themes: Dark ([darkTheme.ts](src/style/darkTheme.ts)) und Tavern ([tavernTheme.ts](src/style/tavernTheme.ts)).
+Zwei Themes: Cyber ([cyberTheme.ts](src/style/cyberTheme.ts)) und Tavern ([tavernTheme.ts](src/style/tavernTheme.ts)).
 Gleich in beiden sind `resource.*`, `negative.*`, `positive.*`, `qr.*`, `error`, `onError` (Bedeutung, nicht Stimmung)
 sowie `scrim`, `onScrim` und `backdrop` (müssen auf beliebigen Bildern funktionieren). Dass in Tavern `primary` rot ist
 wie die Gegner, ist gewollt. Werte: [contrast.md](docs/design/contrast.md#theme-werte).
@@ -185,11 +185,11 @@ Prop `gridColor` an `GridOverlay`): Die Gitterfarbe wählt der Spielleiter, sie 
 
 Geprüft nach WCAG 2.1, Ziel AA: Text 4,5:1 (große Schrift ab 24px bzw. 18,66px fett 3:1), Bedienelemente und Grafik 3:1.
 
-- **Bewusste Ausnahmen:** `border` im Dark-Theme, auf `secondaryTranslucent` und auf `error` (Gestaltung, kein
+- **Bewusste Ausnahmen:** `border` im Cyber-Theme, auf `secondaryTranslucent` und auf `error` (Gestaltung, kein
   Bedienelement); Flächen in `background` auf `secondary` in Dashboard-Panels (nur Zusatzsignal); tote Spieler auf den
   Wall-Kacheln (`DEAD_OPACITY` 0,45, vom User entschieden, DND-45: das Ausgrauen ist das Signal).
 - **Offen:** `primary` verfehlt für Text 4,5:1 (Tavern auf `secondary` 3,3:1, auf `secondaryTranslucent` über hellem Bild
-  3,0:1; Dark dort 4,0:1), betroffen sind die Text-Links in den Notizen ([known-issues.md](../docs/known-issues.md)).
+  3,0:1; Cyber dort 4,0:1), betroffen sind die Text-Links in den Notizen ([known-issues.md](../docs/known-issues.md)).
 - **Auf Bildern:** Gemessen wird der ungünstigste Fall (weißes bzw. schwarzes Bild). Verfehlt `secondaryTranslucent` sein
   Ziel, wird die Deckkraft erhöht, nicht die Abdunklung verringert. Wall-Kacheln: Text nur in `text.color`, Akzente als
   Fläche mit eigenem Vordergrund. Text auf der Bühne liegt auf voller Abdunklung `scrim`.

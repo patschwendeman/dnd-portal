@@ -166,7 +166,7 @@ defineFeature(feature, (test) => {
     then('the menu offers the themes and "Charakter wechseln"', async () => {
       await waitForElement(phone, SWITCH_CHARACTER)
       expect(await readTexts(phone, MENU_ITEMS))
-        .toEqual(['Wie Spieltisch', 'Dunkel', 'Taverne', 'Charakter wechseln'])
+        .toEqual(['Wie Spieltisch', 'Cyber', 'Taverne', 'Charakter wechseln'])
       // At the center of the last entry nothing lies above the list
       const onTop: boolean = await phone.executeScript(
         `const item = document.querySelector('${SWITCH_CHARACTER}')
@@ -186,7 +186,7 @@ defineFeature(feature, (test) => {
     and('the settings menu of the selection has no entry "Charakter wechseln"', async () => {
       await clickElement(phone, SETTINGS_MENU)
       await waitForElement(phone, MENU_ITEMS)
-      expect(await readTexts(phone, MENU_ITEMS)).toEqual(['Wie Spieltisch', 'Dunkel', 'Taverne'])
+      expect(await readTexts(phone, MENU_ITEMS)).toEqual(['Wie Spieltisch', 'Cyber', 'Taverne'])
       await waitForElementGone(phone, SWITCH_CHARACTER)
     })
   }, SCENARIO_TIMEOUT)

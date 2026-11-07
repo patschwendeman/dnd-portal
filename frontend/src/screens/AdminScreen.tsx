@@ -654,7 +654,6 @@ function AdminScreen(): ReactElement {
   // background is plain instead of showing the image of the previous adventure
   const background = useAdventureBackground(
     adventureDetail?.id === loadedAdventureId ? adventureDetail : undefined,
-    gameTableTheme,
   )
   const isTranslucent = background.isImageShown
 

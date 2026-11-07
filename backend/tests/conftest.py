@@ -187,8 +187,7 @@ def expected_adventure_details(seed: dict[str, Any]) -> list[dict[str, Any]]:
                 for player in players
                 if player["adventure_id"] == adventure["id"]
             ],
-            "background_dark": optional_image(media, adventure.get("background_dark_media_id")),
-            "background_tavern": optional_image(media, adventure.get("background_tavern_media_id")),
+            "image": optional_image(media, adventure.get("image_media_id")),
         }
         for adventure in with_ids(seed["adventures"])
     ]

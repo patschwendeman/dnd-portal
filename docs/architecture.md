@@ -39,7 +39,7 @@
   Spieler und Level des aktiven Abenteuers (`GET /adventures/{id}`; `global_level` steht nicht im Snapshot), ebenso
   Charakterauswahl und Player Screen (`PlayerLayout`). Ohne aktive Szene zeigen Wall und Ground
   nur die Hintergrundfarbe und stellen keinen Request. Bis zum ersten Snapshot gilt „kein Abenteuer, keine Szene,
-  Theme `dark`, kein Wall-Overlay, kein Ground-Raster (Zellgröße 100)“.
+  Theme `cyber`, kein Wall-Overlay, kein Ground-Raster (Zellgröße 100)“.
 - Schreiben nur per REST, **ohne lokale Vorwegnahme**: Der Admin wechselt das Abenteuer per `PATCH /table
   {"active_adventure_id": <id>}`, die Szene per `PATCH /adventures/{id} {"active_scene_id": <id>}`, das Level per
   `PATCH /adventures/{id} {"global_level": <n>}` und das Theme per `PATCH /table {"theme": …}`; das Wall-Overlay
@@ -90,15 +90,16 @@
   Vom Snapshot nutzen sie das aktive Abenteuer und das Theme; `audio` und `sound` empfangen sie, zeigen sie aber nicht
   an, und sie senden nichts über den WebSocket. Den Kampf (`fight`, ohne Bezeichnungen) nutzt nur der Player Screen:
   Ist sein Charakter am Zug (`ownTurnCombatantId`, `src/utils/fight.ts`), zeigt er „Am Zug“ und „Zug beenden“
-  (`POST /table/fight/turn`, `usePlayerEndTurn`). Spieler, Level und Hintergrundbilder stehen nicht im Snapshot:
+  (`POST /table/fight/turn`, `usePlayerEndTurn`). Spieler, Level und Abenteuerbild stehen nicht im Snapshot:
   `PlayerLayout` lädt `adventures/{id}` des aktiven Abenteuers beim Laden und nach jedem Snapshot (`loadLatest`), so
   folgen Charaktere und Level-Badge einem Abenteuerwechsel und einer Level-Änderung im Admin ohne Reload. Die Auswahl zeigt
   „Keine Verbindung zum Spieltisch“, wenn die Verbindung vor dem ersten Snapshot getrennt ist oder das Laden
   fehlschlägt; der Player Screen zeigt keinen Verbindungsstatus. Ob der Player Screen zur Auswahl zurückkehrt
   (Charakter gehört nicht zum aktiven Abenteuer) und mit welchem Hinweis, entscheidet `playerRedirect`
   (`src/utils/playerSelect.ts`). Im Settings-Menü kann ein Spieler
-  auf seinem Gerät vom Spieltisch-Theme abweichen („Wie Spieltisch“, „Dunkel“, „Taverne“): gespeichert in
-  `localStorage` `playerThemeOverride` (`dark` | `tavern`, fehlend oder ungültig = „Wie Spieltisch“,
+  auf seinem Gerät vom Spieltisch-Theme abweichen („Wie Spieltisch“, „Cyber“, „Taverne“): gespeichert in
+  `localStorage` `playerThemeOverride` (`cyber` | `tavern`, fehlend oder ungültig = „Wie Spieltisch“; ein
+  gespeichertes `dark` aus der Zeit vor dem Theme `cyber` wird als `cyber` gelesen und umgeschrieben,
   `src/utils/playerTheme.ts`); wirksam ist `Abweichung ?? Spieltisch-Theme` (Prop `themeOverride` des
   `GameTableProvider`, die Contexts behalten das Spieltisch-Theme). Ein Theme-Wechsel im Admin ändert eine gesetzte
   Abweichung nicht. Den alten Schlüssel `isDarkTheme` entfernt das Frontend beim Start, ohne ihn zu übernehmen.
@@ -198,7 +199,7 @@ eine offene Verbindung, sonst verwirft er die Nachricht.
 | Pfad | Liefert |
 |---|---|
 | `/adventures` | `list[AdventureSummary]`: alle Abenteuer nach ID (200, ggf. `[]`) |
-| `/adventures/{adventure_id}` | `AdventureDetail` inkl. Spieler und Hintergrundbildern (200) bzw. 404 `{"detail": "Adventure not found"}` |
+| `/adventures/{adventure_id}` | `AdventureDetail` inkl. Spieler und Abenteuerbild (200) bzw. 404 `{"detail": "Adventure not found"}` |
 | `PATCH /adventures/{adventure_id}` | Body `AdventureUpdate`, Antwort `AdventureDetail` (200); 404 wie oben; 422 `{"detail": "Scene does not belong to adventure"}`, wenn `active_scene_id` nicht existiert oder zu einem anderen Abenteuer gehört (nichts wird geändert), 422 im FastAPI-Standardformat bei `global_level` außerhalb 1–20; 409 `{"detail": "Fight in progress"}` bei einer anderen aktiven Szene, solange das Abenteuer einen Kampf hat (nichts wird geändert) |
 | `/adventures/{adventure_id}/scenes` | `list[SceneDetail]`: Szenen des Abenteuers nach ID (200, ggf. `[]`); 404 wie oben |
 | `/scenes/{scene_id}` | `SceneDetail` (200) bzw. 404 `{"detail": "Scene not found"}` |
@@ -245,17 +246,17 @@ Track       { id: int, name: str, source: str }
 AdventureSummary { id: int, name: str, description: str | null }
 AdventureDetail  { id: int, name: str, description: str | null, global_level: int,
                    active_scene_id: int | null, players: list[Player],         players nach ID sortiert
-                   background_dark: Image | null, background_tavern: Image | null }
-                   Hintergrundbild des Admins je Theme (null = einfarbig)
+                   image: Image | null }
+                   Abenteuerbild, in beiden Themes gleich (null = einfarbig)
 Player           { id: int, player_name: str, character_name: str, race: str,
                    character_class: str, avatar: Image | null }
 AdventureUpdate  { active_scene_id?: int | null, global_level?: int (1–20) }  Request-Body von PATCH
 
-GameTableState   { active_adventure_id: int | null, active_scene_id: int | null, theme: "dark" | "tavern",
+GameTableState   { active_adventure_id: int | null, active_scene_id: int | null, theme: "cyber" | "tavern",
                    wall_overlay: "world" | "join" | "off", ground_grid: "black" | "white" | "off",
                    ground_grid_cell_size: int (100–200, Schritt 10) }
                    active_scene_id = active_scene_id des aktiven Abenteuers (null ohne Abenteuer)
-GameTableUpdate  { active_adventure_id?: int | null, theme?: "dark" | "tavern",
+GameTableUpdate  { active_adventure_id?: int | null, theme?: "cyber" | "tavern",
                    wall_overlay?: "world" | "join" | "off", ground_grid?: "black" | "white" | "off", ground_grid_cell_size?: int (100–200, Schritt 10) }
                                                                                 Request-Body von PATCH /table
 
@@ -311,9 +312,9 @@ CI prüft beide Dateien auf Aktualität (Export bzw. Generierung + `git diff --e
 ```
 Adventure → adventure (id, name, description (Text, nullable), global_level (1–20, Default 1),
                        active_scene_id → scene (nullable, ON DELETE SET NULL),
-                       background_dark_media_id → media (nullable), background_tavern_media_id → media (nullable))
+                       image_media_id → media (nullable))
               Adventure.scenes: 1:N, Adventure.players: 1:N (beide nach ID), Adventure.active_scene: N:1,
-              Adventure.background_dark, Adventure.background_tavern: N:1
+              Adventure.image: N:1
 Player    → player    (id, adventure_id → adventure, player_name, character_name, race, character_class,
                        avatar_media_id → media (nullable))
               Player.avatar: N:1
@@ -323,7 +324,7 @@ Scene     → scene     (id, adventure_id → adventure, name, description, wall
               Scene.tracks: N:M über scene_track(scene_id, media_id; PK aus beiden)
 Media     → media     (id, kind: 'image' | 'audio', name, storage_key (unique), content_type, size (Bytes, nullable))
 GameTable → game_table (id (CHECK id = 1), active_adventure_id → adventure (nullable, ON DELETE SET NULL),
-                        theme (Text, Default 'dark', CHECK theme IN ('dark', 'tavern')),
+                        theme (Text, Default 'cyber', CHECK theme IN ('cyber', 'tavern')),
                         ground_grid_cell_size (int, Default 100, CHECK 100–200 und Vielfaches von 10))
               GameTable.active_adventure: N:1; genau eine Zeile (ein Server = ein Spieltisch)
 Fight     → fight     (id, adventure_id → adventure (unique, ON DELETE CASCADE),
@@ -349,7 +350,7 @@ das Umsortieren Positionen tauschen kann. Gelöschte Abenteuer, Szenen bzw. Spie
 Teilnehmer mit; dass Spieler zum Abenteuer des Kampfes gehören, prüft der Service.
 
 Nullable sind nur `media.size`, `adventure.description`, `adventure.active_scene_id`,
-`adventure.background_dark_media_id`, `adventure.background_tavern_media_id`, `player.avatar_media_id` und
+`adventure.image_media_id`, `player.avatar_media_id` und
 `game_table.active_adventure_id` sowie `fight.active_combatant_id`, `combatant.player_id`, `combatant.number` und
 `combatant.label`. `kind` beschreibt die Dateiart, nicht die Verwendung: Eine Datei ist
 genau ein Datensatz und kann mehrfach genutzt werden (z. B. das Level-Up-Bild als Wall- und Ground-Bild).
@@ -381,15 +382,18 @@ die Standardbilder ein, gesucht über `storage_key` (`images/wall_screen/fight.j
 fehlt ein Bild in `media`, bleibt die Spalte leer. `downgrade` entfernt beide Spalten. `0007` legt `fight` und
 `combatant` an (bestehende Daten bleiben unberührt, der Seeder legt keinen Kampf an); `downgrade` entfernt beide
 Tabellen. `0008` ergänzt `game_table.ground_grid_cell_size` (Default 100, CHECK 100–200 in 10er-Schritten), damit
-die Zellgröße einen Neustart übersteht; `downgrade` entfernt die Spalte. Bestehende Datenbanken laufen jeweils ohne
-Reset weiter.
+die Zellgröße einen Neustart übersteht; `downgrade` entfernt die Spalte. `0009` benennt das Theme `dark` in `cyber` um
+(gespeicherter Wert, CHECK und Default von `game_table.theme`), ersetzt die beiden Hintergrundspalten durch
+`adventure.image_media_id` (Abenteuerbild, für beide Themes) und trägt für jedes vorhandene Abenteuer
+`images/wall_screen/forest.jpg` ein, gesucht über `storage_key` (fehlt es in `media`, bleibt die Spalte leer);
+`downgrade` stellt `dark` und die beiden Spalten wieder her und füllt sie wie `0006`. Bestehende Datenbanken laufen
+jeweils ohne Reset weiter.
 
-**Seed-Daten:** Listen `adventures` (`name`, `description`, `global_level`, `background_dark_media_id`,
-`background_tavern_media_id`), `media` (`kind`, `name`, `storage_key`),
+**Seed-Daten:** Listen `adventures` (`name`, `description`, `global_level`, `image_media_id`), `media` (`kind`, `name`, `storage_key`),
 `scenes` (Referenz `adventure_id` sowie `wall_image_id`, `ground_image_id`, `track_ids` auf Media-IDs) und `players`
 (`adventure_id`, `player_name`, `character_name`, `race`, `character_class`, `avatar_media_id`). Reihenfolge im
 Seeder: `media` → `adventure` → `scene` → `player`, `active_scene_id` bleibt leer. Ein Abenteuer („Erstes Abenteuer“,
-Hintergrund Dark `fight.jpg`, Tavern `tavern.jpg`) mit allen Szenen und vier Platzhalter-Spielern („Spieler 1..4“, ohne Avatar). 29 Szenen in dieser Reihenfolge:
+Abenteuerbild `forest.jpg`) mit allen Szenen und vier Platzhalter-Spielern („Spieler 1..4“, ohne Avatar). 29 Szenen in dieser Reihenfolge:
 Default (Dorf), Shop, Tavern, Level Up und „Fight 1..25“ (teils mit Tags wie Boss, Loot, Ereignis, Key), 76 Medien (33 Bilder, 43 Musiktracks).
 IDs ergeben sich aus der Reihenfolge in der JSON-Datei (Autoincrement). Der Seeder ermittelt `content_type` (per
 Dateiendung) und `size` aus der Datei im Medienordner; fehlt sie, schreibt er eine Warnung ins Log und legt den
@@ -427,7 +431,7 @@ Datensatz trotzdem an (`size` = NULL).
   src/utils/       reine Logik und Hooks je Thema: Kampf (fight.ts, useFightPreparation.ts), Initiative und
                    Party der Wall, Auswahllisten (useListbox), Hintergrundbild, Fehlerbehandlung (loadSafely),
                    Musiktitel, Navigationsleiste, Player-Theme und -URL, Vollbild
-  src/style/       Tokens, Themes (darkTheme, tavernTheme, appTheme), styled.d.ts, GlobalStyle
+  src/style/       Tokens, Themes (cyberTheme, tavernTheme, appTheme), styled.d.ts, GlobalStyle
   public/assets/   Soundeffekte, Icons, Weltkarte images/ground_screen/mapOverview.jpg
   public/story/    Markdown-Notizen, je Ordner ein Eintrag im Panel „Notizen“
   __tests__/       unit/ (vitest), bdd/ (jest-cucumber + Selenium: features/, steps/, support/)

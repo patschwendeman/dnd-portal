@@ -38,7 +38,7 @@ export type ServerMessage = { type: 'state', payload: GameTableState }
 export type ClientMessage = { type: 'audio_ready' }
   | { type: 'track_ended', payload: { track_id: number } }
 
-const THEMES: readonly Theme[] = ['dark', 'tavern']
+const THEMES: readonly Theme[] = ['cyber', 'tavern']
 const WALL_OVERLAYS: readonly WallOverlay[] = ['world', 'join', 'off']
 const GROUND_GRIDS: readonly GroundGrid[] = ['black', 'white', 'off']
 const COMBATANT_KINDS: readonly CombatantKind[] = ['player', 'enemy', 'ally']

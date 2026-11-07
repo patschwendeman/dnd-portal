@@ -173,7 +173,7 @@ def test_two_clients_receive_the_push_after_patch_adventure(client: TestClient, 
         expected = {
             "active_adventure_id": 1,
             "active_scene_id": 5,
-            "theme": "dark",
+            "theme": "cyber",
             "wall_overlay": "off",
             **DEFAULT_GRID,
         }
@@ -222,7 +222,7 @@ def test_switching_the_adventure_pushes_its_stored_scene(
         assert receive_state(wall) == {
             "active_adventure_id": other_adventure["id"],
             "active_scene_id": other_adventure["first_scene_id"],
-            "theme": "dark",
+            "theme": "cyber",
             "wall_overlay": "off",
             **DEFAULT_GRID,
         }
@@ -282,7 +282,7 @@ def test_scene_change_pushes_the_closed_wall_overlay_once(client: TestClient, db
         assert receive_state(wall) == {
             "active_adventure_id": 1,
             "active_scene_id": 5,
-            "theme": "dark",
+            "theme": "cyber",
             "wall_overlay": "off",
             **DEFAULT_GRID,
         }

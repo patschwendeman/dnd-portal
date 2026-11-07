@@ -14,26 +14,6 @@
             ],
             "title": "Active Scene Id"
           },
-          "background_dark": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Image"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "background_tavern": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Image"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "description": {
             "anyOf": [
               {
@@ -52,6 +32,16 @@
           "id": {
             "title": "Id",
             "type": "integer"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Image"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "name": {
             "title": "Name",
@@ -72,8 +62,7 @@
           "global_level",
           "active_scene_id",
           "players",
-          "background_dark",
-          "background_tavern"
+          "image"
         ],
         "title": "AdventureDetail",
         "type": "object"
@@ -433,7 +422,7 @@
           },
           "theme": {
             "enum": [
-              "dark",
+              "cyber",
               "tavern"
             ],
             "title": "Theme",
@@ -492,7 +481,7 @@
           },
           "theme": {
             "enum": [
-              "dark",
+              "cyber",
               "tavern"
             ],
             "title": "Theme",

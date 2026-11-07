@@ -15,8 +15,7 @@ def read_adventure(db: Session, adventure_id: int) -> Adventure | None:
         select(Adventure)
         .options(
             selectinload(Adventure.players).joinedload(Player.avatar),
-            joinedload(Adventure.background_dark),
-            joinedload(Adventure.background_tavern),
+            joinedload(Adventure.image),
         )
         .where(Adventure.id == adventure_id)
     )

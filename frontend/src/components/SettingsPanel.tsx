@@ -10,7 +10,7 @@ import { textStyle } from '../style/tokens'
 import { GROUND_GRID_CELL_SIZE, toCellSize } from '../utils/groundGrid'
 
 const THEME_OPTIONS: readonly SelectOption<Theme>[] = [
-  { value: 'dark', label: 'Dunkel' },
+  { value: 'cyber', label: 'Cyber' },
   { value: 'tavern', label: 'Taverne' },
 ]
 

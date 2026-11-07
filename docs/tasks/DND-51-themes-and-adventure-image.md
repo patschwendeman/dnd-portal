@@ -1,7 +1,7 @@
 # DND-51: Themes „Cyber“ und „Taverne“, ein Abenteuerbild für beide Themes
 
 **Typ:** feat
-**Status:** Freigegeben
+**Status:** Im Review
 
 ## Kontext & Ziel
 
@@ -63,42 +63,42 @@ so: Ein Theme-Wechsel ändert nur die Farben, das Bild bleibt.
 ## Subtasks
 
 ### Vertrag
-- [ ] `Theme = "cyber" | "tavern"` in `GameTableState`/`GameTableUpdate` (`theme: "dark"` → 422).
-- [ ] `AdventureDetail`: `image: Image | null` statt `background_dark`/`background_tavern`.
+- [x] `Theme = "cyber" | "tavern"` in `GameTableState`/`GameTableUpdate` (`theme: "dark"` → 422).
+- [x] `AdventureDetail`: `image: Image | null` statt `background_dark`/`background_tavern`.
 
 ### Backend
-- [ ] `schemas/game_table.py`, `models/game_table.py` (CHECK, Default `cyber`) anpassen.
-- [ ] `models/adventure.py`: Relationship `image` statt der beiden Hintergründe. Dazu `schemas/adventure.py` und
+- [x] `schemas/game_table.py`, `models/game_table.py` (CHECK, Default `cyber`) anpassen.
+- [x] `models/adventure.py`: Relationship `image` statt der beiden Hintergründe. Dazu `schemas/adventure.py` und
       `crud/adventure.py` (joinedload) anpassen.
-- [ ] Migration `0009_adventure_image_and_cyber_theme.py` nach E4 (upgrade + downgrade).
-- [ ] `seed_data.json`: `image_media_id` = Forest (Media 1) statt der beiden Hintergrund-IDs, Seeder anpassen.
-- [ ] `openapi.json` neu erzeugen.
-- [ ] Tests: `test_table`, `test_adventures`, `test_ws`, `test_seed`, `test_fight`, `conftest` anpassen. Neu
+- [x] Migration `0009_adventure_image_and_cyber_theme.py` nach E4 (upgrade + downgrade).
+- [x] `seed_data.json`: `image_media_id` = Forest (Media 1) statt der beiden Hintergrund-IDs, Seeder anpassen.
+- [x] `openapi.json` neu erzeugen.
+- [x] Tests: `test_table`, `test_adventures`, `test_ws`, `test_seed`, `test_fight`, `conftest` anpassen. Neu
       `test_migration_0009.py` (Upgrade mit Daten aus 0008 inkl. `dark` → `cyber`, Bild = forest, fehlendes
       Medium → NULL; Downgrade).
 
 ### Frontend
-- [ ] `api/schema.d.ts` regenerieren, `models/models.ts` (`Theme`, `AdventureDetail`) anpassen.
-- [ ] `style/darkTheme.ts` → `style/cyberTheme.ts` (Inhalt unverändert), `appTheme.ts`, `styled.d.ts` anpassen.
-- [ ] `realtime/messages.ts`, `GameTableProvider.tsx`, `context/context.ts`: `dark` → `cyber` (auch
+- [x] `api/schema.d.ts` regenerieren, `models/models.ts` (`Theme`, `AdventureDetail`) anpassen.
+- [x] `style/darkTheme.ts` → `style/cyberTheme.ts` (Inhalt unverändert), `appTheme.ts`, `styled.d.ts` anpassen.
+- [x] `realtime/messages.ts`, `GameTableProvider.tsx`, `context/context.ts`: `dark` → `cyber` (auch
       Default-/Fallback-Werte).
-- [ ] `utils/playerTheme.ts`: Themes `cyber`/`tavern`, gespeichertes `dark` wird als `cyber` gelesen und
+- [x] `utils/playerTheme.ts`: Themes `cyber`/`tavern`, gespeichertes `dark` wird als `cyber` gelesen und
       umgeschrieben (E4).
-- [ ] `utils/adventureBackground.ts`: `adventureBackgroundSource(adventure)` liefert `adventure?.image?.source`
+- [x] `utils/adventureBackground.ts`: `adventureBackgroundSource(adventure)` liefert `adventure?.image?.source`
       ohne Theme-Parameter. Aufrufer (Admin, Charakterauswahl, Player) anpassen.
-- [ ] `SettingsPanel.tsx`, `SettingsMenu.tsx`: Optionen „Cyber“ (`cyber`) und „Taverne“ (`tavern`). Im Player-Menü
+- [x] `SettingsPanel.tsx`, `SettingsMenu.tsx`: Optionen „Cyber“ (`cyber`) und „Taverne“ (`tavern`). Im Player-Menü
       bleibt „Wie Spieltisch“.
-- [ ] Tests: Unit (`adventureBackground`, `playerTheme`, `realtimeMessages`, `gameTableConnection`, `saveData`
+- [x] Tests: Unit (`adventureBackground`, `playerTheme`, `realtimeMessages`, `gameTableConnection`, `saveData`
       u. a.) und BDD (`adminSettings.feature` + Steps, `playerSelect`, `selectScene`) auf `cyber`/„Cyber“ und das
       Abenteuerbild umstellen.
 
 ### Doku
-- [ ] `docs/domain.md`: Theme (`cyber`/`tavern`), neuer Begriff „Abenteuerbild“ (`adventure.image`).
-- [ ] `docs/screens.md`: Admin (Hintergrund, Einstellungen), Charakterauswahl/Player (Hintergrund, Theme-Wahl).
-- [ ] `docs/architecture.md`: Schemas, Tabelle `adventure`/`game_table`, Migration `0009`, Player-Abweichung,
+- [x] `docs/domain.md`: Theme (`cyber`/`tavern`), neuer Begriff „Abenteuerbild“ (`adventure.image`).
+- [x] `docs/screens.md`: Admin (Hintergrund, Einstellungen), Charakterauswahl/Player (Hintergrund, Theme-Wahl).
+- [x] `docs/architecture.md`: Schemas, Tabelle `adventure`/`game_table`, Migration `0009`, Player-Abweichung,
       Ordner `src/style`.
-- [ ] `frontend/DESIGN.md`, `frontend/docs/design/contrast.md`: Dark → Cyber (Werte unverändert).
-- [ ] `docs/known-issues.md` prüfen (Verweis `darkTheme.ts` ↔ `tavernTheme.ts`).
+- [x] `frontend/DESIGN.md`, `frontend/docs/design/contrast.md`: Dark → Cyber (Werte unverändert).
+- [x] `docs/known-issues.md` prüfen (Verweis `darkTheme.ts` ↔ `tavernTheme.ts`).
 
 ## Akzeptanzkriterien
 

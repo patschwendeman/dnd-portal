@@ -472,7 +472,7 @@ def test_adventure_change_is_rejected_during_a_fight(
 ) -> None:
     start(client, enemy(1))
     before = client.get("/table").json()
-    other_theme = "dark" if before["theme"] == "tavern" else "tavern"
+    other_theme = "cyber" if before["theme"] == "tavern" else "tavern"
 
     for adventure_id in (other_adventure["id"], None):
         response = client.patch("/table", json={"active_adventure_id": adventure_id, "theme": other_theme})

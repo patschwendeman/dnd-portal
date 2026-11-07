@@ -18,7 +18,7 @@ class GameTable(Base):
     __tablename__ = "game_table"
     __table_args__ = (
         CheckConstraint(f"id = {GAME_TABLE_ID}", name="single_row"),
-        CheckConstraint("theme IN ('dark', 'tavern')", name="theme"),
+        CheckConstraint("theme IN ('cyber', 'tavern')", name="theme"),
         CheckConstraint(
             "ground_grid_cell_size BETWEEN 100 AND 200 AND ground_grid_cell_size % 10 = 0",
             name="ground_grid_cell_size",
@@ -27,6 +27,6 @@ class GameTable(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False)
     active_adventure_id: Mapped[int | None] = mapped_column(ForeignKey("adventure.id", ondelete="SET NULL"))
-    theme: Mapped[str] = mapped_column(Text, default="dark", server_default="dark")
+    theme: Mapped[str] = mapped_column(Text, default="cyber", server_default="cyber")
     ground_grid_cell_size: Mapped[int] = mapped_column(default=100, server_default="100")
     active_adventure: Mapped["Adventure | None"] = relationship()

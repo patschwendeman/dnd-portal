@@ -38,14 +38,21 @@ describe('readThemeOverride', () => {
     storage.setItem(PLAYER_THEME_OVERRIDE_KEY, 'tavern')
     expect(readThemeOverride(storage)).toBe('tavern')
 
+    storage.setItem(PLAYER_THEME_OVERRIDE_KEY, 'cyber')
+    expect(readThemeOverride(storage)).toBe('cyber')
+  })
+
+  it('reads a stored dark as cyber and rewrites it', () => {
     storage.setItem(PLAYER_THEME_OVERRIDE_KEY, 'dark')
-    expect(readThemeOverride(storage)).toBe('dark')
+
+    expect(readThemeOverride(storage)).toBe('cyber')
+    expect(storage.getItem(PLAYER_THEME_OVERRIDE_KEY)).toBe('cyber')
   })
 
   it('follows the game table without or with an invalid value', () => {
     expect(readThemeOverride(storage)).toBeNull()
 
-    const invalidValues = ['', 'Dark', 'true', 'light', '"tavern"']
+    const invalidValues = ['', 'Dark', 'Cyber', 'true', 'light', '"tavern"']
     invalidValues.forEach((value) => {
       storage.setItem(PLAYER_THEME_OVERRIDE_KEY, value)
       expect(readThemeOverride(storage)).toBeNull()
@@ -78,9 +85,9 @@ describe('discardLegacyPlayerTheme', () => {
 
 describe('effectiveTheme', () => {
   it('uses the override, otherwise the theme of the game table', () => {
-    expect(effectiveTheme(null, 'dark')).toBe('dark')
+    expect(effectiveTheme(null, 'cyber')).toBe('cyber')
     expect(effectiveTheme(null, 'tavern')).toBe('tavern')
-    expect(effectiveTheme('tavern', 'dark')).toBe('tavern')
-    expect(effectiveTheme('dark', 'tavern')).toBe('dark')
+    expect(effectiveTheme('tavern', 'cyber')).toBe('tavern')
+    expect(effectiveTheme('cyber', 'tavern')).toBe('cyber')
   })
 })

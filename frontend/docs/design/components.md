@@ -111,7 +111,7 @@ der Settings-Button dieselbe Fläche; durchscheinend, solange das Hintergrundbil
 
 | Eigenschaft | Wert |
 |---|---|
-| Fläche | `secondary`, `radius.lg`; mit Hintergrundbild dahinter `secondaryTranslucent` (Dark 75 %, Tavern 92 % deckend) und `backdrop-filter: blur(TILE_BLUR)` |
+| Fläche | `secondary`, `radius.lg`; mit Hintergrundbild dahinter `secondaryTranslucent` (Cyber 75 %, Tavern 92 % deckend) und `backdrop-filter: blur(TILE_BLUR)` |
 | Rand | `borderWidth.thin` in `border` |
 | Lichtkante | innen oben: `box-shadow: inset 0 borderWidth.thin 0` in `border`; kein äußerer Schatten |
 | Abweichende Fläche | Hinweisleiste `error`, [Bühne](#bühne) `background`, beide immer deckend; Form, Rand und Lichtkante wie oben |
@@ -121,8 +121,8 @@ der Settings-Button dieselbe Fläche; durchscheinend, solange das Hintergrundbil
 
 ## Abenteuer-Hintergrund
 
-Im Admin und im Player (Charakterauswahl und Player Screen, gerendert von `PlayerLayout` zum wirksamen Theme des
-Geräts), Komponente `AdventureBackground` ([src/components/AdventureBackground.tsx](../../src/components/AdventureBackground.tsx)),
+Im Admin und im Player (Charakterauswahl und Player Screen, gerendert von `PlayerLayout`), in beiden Themes gleich,
+Komponente `AdventureBackground` ([src/components/AdventureBackground.tsx](../../src/components/AdventureBackground.tsx)),
 Zustand aus `useAdventureBackground` ([src/utils/useAdventureBackground.ts](../../src/utils/useAdventureBackground.ts), Logik in
 [src/utils/adventureBackground.ts](../../src/utils/adventureBackground.ts)). Im JSX vor dem Grid des Admins bzw. vor dem
 Inhalt der Player-Routen; beide sind `position: fixed`, die Reihenfolge legt die Ebenen fest (kein `z-index`).
@@ -130,9 +130,9 @@ Inhalt der Player-Routen; beide sind `position: fixed`, die Reihenfolge legt die
 | Eigenschaft | Wert |
 |---|---|
 | Fläche | `position: fixed`, `inset: 0`, `background` |
-| Bild | Hintergrundbild des aktiven Abenteuers zum Theme des Spieltischs (`background_dark` bzw. `background_tavern` aus `adventures/{id}`, `mediaUrl`), `object-fit: cover` über den ganzen Bildschirm, darüber `backdrop` (50 %); Dekoration (`aria-hidden`, `alt=""`). Die aktive Szene spielt keine Rolle |
-| Ohne Bild | kein Bild für das aktive Theme festgelegt, Abenteuer lädt noch, Bild nicht ladbar: nur die Fläche `background`, die Kacheln sind deckend |
-| Wechsel | nur bei Abenteuer- oder Themewechsel, nicht bei Szenenwechsel; das neue Bild erscheint erst, wenn es geladen ist; Bild und Abdunklung blenden gemeinsam über (`BACKGROUND_FADE_MS`, 600 ms), ohne Bild zur Fläche aus. Bei `prefers-reduced-motion: reduce` ohne Übergang |
+| Bild | Abenteuerbild des aktiven Abenteuers (`image` aus `adventures/{id}`, `mediaUrl`), in beiden Themes dasselbe, `object-fit: cover` über den ganzen Bildschirm, darüber `backdrop` (50 %); Dekoration (`aria-hidden`, `alt=""`). Die aktive Szene spielt keine Rolle |
+| Ohne Bild | kein Abenteuerbild festgelegt, Abenteuer lädt noch, Bild nicht ladbar: nur die Fläche `background`, die Kacheln sind deckend |
+| Wechsel | nur bei Abenteuerwechsel, nicht bei Szenen- oder Themewechsel (der ändert nur die Farben); das neue Bild erscheint erst, wenn es geladen ist; Bild und Abdunklung blenden gemeinsam über (`BACKGROUND_FADE_MS`, 600 ms), ohne Bild zur Fläche aus. Bei `prefers-reduced-motion: reduce` ohne Übergang |
 | Scrollen | steht fest, Notizen und Dashboard scrollen darüber; deren Scrollbereich hat `space.5` Innenabstand unten, oben keinen (der Abstand zur Kopfzeile ist das `gap` des Grids) |
 
 ## Dashboard-Panel
@@ -453,7 +453,7 @@ Nur im Player (Charakterauswahl und Player Screen), Komponente `SettingsMenu`
 |---|---|
 | Button | Icon-Button mit Settings-Icon, `size.control.lg`, Fläche nach [Icon-Button](#icon-button) (Player); zugänglicher Name „Einstellungen“, `aria-haspopup="menu"` |
 | Liste | `role="menu"`, deckend `secondary`, ohne Höhenbegrenzung, Ebene `layer.popover` (siehe [1.2](../../DESIGN.md#12-tokens) Ebenen); Player Screen und Charakterauswahl rechts am Button (`placement` `end`) |
-| Einträge | „Wie Spieltisch“, „Dunkel“, „Taverne“ (`menuitemradio`, `aria-checked`); Höhe `size.control.lg` (Touch-Ziel), Innenabstand `0 space.4`. Nur im Player Screen danach eine Trennlinie (`borderWidth.thin` in `border`, seitlich `space.2` eingerückt) und „Charakter wechseln“ (`menuitem`, Wechsel-Icon `swap.svg` in `size.icon`, `gap` `space.3`), per Tastatur erreichbar wie die anderen |
+| Einträge | „Wie Spieltisch“, „Cyber“, „Taverne“ (`menuitemradio`, `aria-checked`); Höhe `size.control.lg` (Touch-Ziel), Innenabstand `0 space.4`. Nur im Player Screen danach eine Trennlinie (`borderWidth.thin` in `border`, seitlich `space.2` eingerückt) und „Charakter wechseln“ (`menuitem`, Wechsel-Icon `swap.svg` in `size.icon`, `gap` `space.3`), per Tastatur erreichbar wie die anderen |
 | Bedienung | zusätzlich schließt Tippen außerhalb (`pointerdown`) |
 
 ## Charakterzeile
@@ -486,7 +486,7 @@ Bündelt, was der Spielleiter einmal einstellt.
 |---|---|
 | Aufbau | Spalte aus drei Abschnitten, `gap` `space.5`; je Abschnitt ein Label (wie „Szenen“ im Panel „Szenen“, Innenabstand `0 space.3`) und darunter mit `gap` `space.2` die Steuerung |
 | Abenteuer | [Auswahlliste](#auswahlliste) `AdventureSelect` (zugänglicher Name „Abenteuer“) mit allen Abenteuern; gesperrt während eines Kampfes, deaktiviert solange die [Hinweisleiste](#hinweisleiste) steht |
-| Darstellung | [Auswahlliste](#auswahlliste) (zugänglicher Name „Darstellung“) mit „Dunkel“ und „Taverne“, gewählt ist das Theme des Spieltischs |
+| Darstellung | [Auswahlliste](#auswahlliste) (zugänglicher Name „Darstellung“) mit „Cyber“ und „Taverne“, gewählt ist das Theme des Spieltischs |
 | Ground-Raster | Zeile „Zellgröße“ (`text.sm`) mit dem Wert rechts (`SliderValue`), Innenabstand `0 space.3`; darunter der Slider (`PanelSlider`, 100–200, Schritt 10, gespeichert beim Loslassen) |
 
 ## Hinweisleiste

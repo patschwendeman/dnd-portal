@@ -22,7 +22,7 @@ describe('parseServerMessage', () => {
     const empty = {
       active_adventure_id: null,
       active_scene_id: null,
-      theme: 'dark',
+      theme: 'cyber',
       wall_overlay: 'off',
       ground_grid: 'off',
       ground_grid_cell_size: 100,
@@ -71,10 +71,10 @@ describe('parseServerMessage', () => {
     ['a missing cell size', {
       type: 'state', payload: { ...state, ground_grid_cell_size: undefined },
     }],
-    ['a missing field', { type: 'state', payload: { active_adventure_id: 1, theme: 'dark' } }],
+    ['a missing field', { type: 'state', payload: { active_adventure_id: 1, theme: 'cyber' } }],
     ['an ID as string', { type: 'state', payload: { ...state, active_scene_id: '5' } }],
     ['a fractional ID', { type: 'state', payload: { ...state, active_adventure_id: 1.5 } }],
-    ['a payload that is a list', { type: 'state', payload: [1, 5, 'dark'] }],
+    ['a payload that is a list', { type: 'state', payload: [1, 5, 'cyber'] }],
   ])('rejects a state with %s', (_case, message) => {
     expect(parseServerMessage(JSON.stringify(message))).toBeNull()
   })

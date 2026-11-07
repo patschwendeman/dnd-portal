@@ -36,13 +36,20 @@ const themeOption = (theme: Theme): string => (
   `${PANEL} [data-test-id="theme-select-option-${theme}"]`
 )
 const WALL_SCREEN = '[data-test-id="wall-world-map-layer"]'
+const ADVENTURE_IMAGES = '[data-test-id="adventure-background"] img'
+// Adventure image of the seed adventure; the URL path depends on the API base URL
+const ADVENTURE_IMAGE = '/media/images/wall_screen/forest.jpg'
+const isAdventureImage = (sources: string[]): boolean => (
+  sources.length === 1 && sources[0].includes(ADVENTURE_IMAGE)
+)
+const ONLY_THE_ADVENTURE_IMAGE = [expect.stringContaining(ADVENTURE_IMAGE)]
 
-type Theme = 'dark' | 'tavern'
+type Theme = 'cyber' | 'tavern'
 
-const THEME_LABELS: Record<Theme, string> = { dark: 'Dunkel', tavern: 'Taverne' }
+const THEME_LABELS: Record<Theme, string> = { cyber: 'Cyber', tavern: 'Taverne' }
 // Surface `secondary` of the Wall in each theme
 const WALL_COLORS: Record<Theme, string> = {
-  dark: 'rgb(22, 27, 35)',
+  cyber: 'rgb(22, 27, 35)',
   tavern: 'rgb(61, 39, 28)',
 }
 
@@ -123,6 +130,27 @@ const waitForText = async (
   return actual
 }
 
+// Exactly one image layer: a theme change neither replaces the image nor fades to another one
+const adventureImageSources = async (driver: WebDriver): Promise<string[]> => driver.executeScript(
+  `return [...document.querySelectorAll('${ADVENTURE_IMAGES}')]
+    .map((image) => image.complete && image.naturalWidth > 0 ? new URL(image.src).pathname : '')`,
+)
+
+const waitForAdventureImage = async (driver: WebDriver): Promise<string[]> => {
+  let actual: string[] = []
+  try {
+    await driver.wait(async () => {
+      actual = await adventureImageSources(driver)
+      return isAdventureImage(actual)
+    }, WAIT_TIMEOUT)
+  } catch (err) {
+    if (!(err instanceof error.TimeoutError)) {
+      throw err
+    }
+  }
+  return actual
+}
+
 const focusedTestId = async (driver: WebDriver): Promise<string | null> => (
   driver.switchTo().activeElement().getAttribute('data-test-id')
 )
@@ -139,7 +167,7 @@ defineFeature(feature, (test) => {
     const drivers = wall === null ? [driver] : [driver, wall]
     wall = null
     await Promise.allSettled(drivers.map((item) => item.quit()))
-    await setTheme('dark')
+    await setTheme('cyber')
   })
 
   test('The header shows the active adventure and no settings button', ({ given, then, and }) => {
@@ -267,11 +295,11 @@ defineFeature(feature, (test) => {
         .toBe(THEME_LABELS[theme])
     }
 
-    given('the theme is Dunkel and a wall screen is open', async () => {
-      await setTheme('dark')
+    given('the theme is Cyber and a wall screen is open', async () => {
+      await setTheme('cyber')
       wall = buildDriver()
       await openScreen(wall, '/wall')
-      expect(await waitForWallColor(wall, WALL_COLORS.dark)).toBe(WALL_COLORS.dark)
+      expect(await waitForWallColor(wall, WALL_COLORS.cyber)).toBe(WALL_COLORS.cyber)
     })
 
     and('I am on the admin screen with the settings open', async () => {
@@ -279,8 +307,12 @@ defineFeature(feature, (test) => {
       await openSettings(driver)
     })
 
-    then('the theme select shows Dunkel', async () => {
-      expect(await waitForText(driver, THEME_SELECT, 'Dunkel')).toBe('Dunkel')
+    then('the theme select shows Cyber', async () => {
+      expect(await waitForText(driver, THEME_SELECT, 'Cyber')).toBe('Cyber')
+    })
+
+    and('the admin shows the adventure image', async () => {
+      expect(await waitForAdventureImage(driver)).toEqual(ONLY_THE_ADVENTURE_IMAGE)
     })
 
     when('I focus the theme select and press the arrow down', async () => {
@@ -288,11 +320,11 @@ defineFeature(feature, (test) => {
       await driver.actions().sendKeys(Key.ARROW_DOWN).perform()
     })
 
-    then('the list opens with Dunkel selected and focused', async () => {
-      expect(await waitForAttribute(driver, themeOption('dark'), 'aria-selected', 'true'))
+    then('the list opens with Cyber selected and focused', async () => {
+      expect(await waitForAttribute(driver, themeOption('cyber'), 'aria-selected', 'true'))
         .toBe('true')
       expect(await waitForAttribute(driver, THEME_SELECT, 'aria-expanded', 'true')).toBe('true')
-      expect(await focusedTestId(driver)).toBe('theme-select-option-dark')
+      expect(await focusedTestId(driver)).toBe('theme-select-option-cyber')
     })
 
     when('I press the arrow down and Enter', async () => {
@@ -312,19 +344,27 @@ defineFeature(feature, (test) => {
       },
     )
 
-    when('I open the theme select and click on Dunkel', async () => {
+    and('the admin still shows the adventure image', async () => {
+      expect(await adventureImageSources(driver)).toEqual(ONLY_THE_ADVENTURE_IMAGE)
+    })
+
+    when('I open the theme select and click on Cyber', async () => {
       await clickElement(driver, THEME_SELECT)
       expect(await waitForAttribute(driver, themeOption('tavern'), 'aria-selected', 'true'))
         .toBe('true')
-      await clickElement(driver, themeOption('dark'))
+      await clickElement(driver, themeOption('cyber'))
     })
 
     then(
-      'the theme on the server is Dunkel, the wall shows Dunkel and the select shows Dunkel',
+      'the theme on the server is Cyber, the wall shows Cyber and the select shows Cyber',
       async () => {
         await waitForElementGone(driver, LISTBOX)
-        await expectTheme('dark')
+        await expectTheme('cyber')
       },
     )
+
+    and('the admin still shows the adventure image', async () => {
+      expect(await adventureImageSources(driver)).toEqual(ONLY_THE_ADVENTURE_IMAGE)
+    })
   }, SCENARIO_TIMEOUT)
 })

@@ -2,7 +2,7 @@
 const RED = { surface: '#290000', border: '#ff2424' }
 const GREEN = { surface: '#072900', border: '#099000' }
 
-const darkTheme = {
+const cyberTheme = {
   colors: {
     primary: '#4493F8',
     secondary: '#161b23',
@@ -39,4 +39,4 @@ const darkTheme = {
   },
 }
 
-export default darkTheme
+export default cyberTheme

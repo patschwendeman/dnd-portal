@@ -24,12 +24,15 @@ Scenario: I open the adventure select in the settings
     Then the list is closed and the focus is back on the adventure select
 
 Scenario: I switch the theme with the keyboard and the mouse
-    Given the theme is Dunkel and a wall screen is open
+    Given the theme is Cyber and a wall screen is open
     And I am on the admin screen with the settings open
-    Then the theme select shows Dunkel
+    Then the theme select shows Cyber
+    And the admin shows the adventure image
     When I focus the theme select and press the arrow down
-    Then the list opens with Dunkel selected and focused
+    Then the list opens with Cyber selected and focused
     When I press the arrow down and Enter
     Then the theme on the server is Taverne, the wall shows Taverne and the select shows Taverne
-    When I open the theme select and click on Dunkel
-    Then the theme on the server is Dunkel, the wall shows Dunkel and the select shows Dunkel
+    And the admin still shows the adventure image
+    When I open the theme select and click on Cyber
+    Then the theme on the server is Cyber, the wall shows Cyber and the select shows Cyber
+    And the admin still shows the adventure image

@@ -14,8 +14,7 @@ import { AdventureDetail } from '../../src/models/models'
 const FOREST = '/media/images/wall_screen/forest.jpg'
 const SHOP = '/media/images/wall_screen/shop.jpg'
 
-const FIGHT_IMAGE = { id: 2, name: 'Fight', source: '/media/images/wall_screen/fight.jpg' }
-const TAVERN_IMAGE = { id: 4, name: 'Tavern', source: '/media/images/wall_screen/tavern.jpg' }
+const FOREST_IMAGE = { id: 1, name: 'Forest', source: FOREST }
 const SHOP_IMAGE = { id: 3, name: 'Shop', source: SHOP }
 
 const adventure = (overrides: Partial<AdventureDetail> = {}): AdventureDetail => ({
@@ -25,8 +24,7 @@ const adventure = (overrides: Partial<AdventureDetail> = {}): AdventureDetail =>
   global_level: 1,
   active_scene_id: null,
   players: [],
-  background_dark: FIGHT_IMAGE,
-  background_tavern: TAVERN_IMAGE,
+  image: FOREST_IMAGE,
   ...overrides,
 })
 
@@ -40,36 +38,31 @@ const showing = (src: string): AdventureBackgroundState => run(
 )
 
 describe('adventureBackgroundSource', () => {
-  it('takes the image of the adventure for the theme', () => {
-    expect(adventureBackgroundSource(adventure(), 'dark')).toBe(FIGHT_IMAGE.source)
-    expect(adventureBackgroundSource(adventure(), 'tavern')).toBe(TAVERN_IMAGE.source)
+  it('takes the adventure image', () => {
+    expect(adventureBackgroundSource(adventure())).toBe(FOREST)
   })
 
   it('has no image while the adventure loads', () => {
-    expect(adventureBackgroundSource(undefined, 'dark')).toBeNull()
-    expect(adventureBackgroundSource(undefined, 'tavern')).toBeNull()
+    expect(adventureBackgroundSource(undefined)).toBeNull()
   })
 
-  it('has no image without an image for the theme', () => {
-    const withoutTavern = adventure({ background_tavern: null })
-    expect(adventureBackgroundSource(withoutTavern, 'tavern')).toBeNull()
-    expect(adventureBackgroundSource(withoutTavern, 'dark')).toBe(FIGHT_IMAGE.source)
+  it('has no image without an adventure image', () => {
+    expect(adventureBackgroundSource(adventure({ image: null }))).toBeNull()
   })
 
   it('changes with the adventure', () => {
-    const other = adventure({ id: 2, background_dark: SHOP_IMAGE })
-    expect(adventureBackgroundSource(other, 'dark')).toBe(SHOP)
+    const other = adventure({ id: 2, image: SHOP_IMAGE })
+    expect(adventureBackgroundSource(other)).toBe(SHOP)
   })
 
   it('keeps the image when the active scene changes', () => {
     const reloaded = adventure({ active_scene_id: 8 })
-    expect(adventureBackgroundSource(reloaded, 'dark'))
-      .toBe(adventureBackgroundSource(adventure(), 'dark'))
+    expect(adventureBackgroundSource(reloaded)).toBe(adventureBackgroundSource(adventure()))
   })
 })
 
 describe('adventureBackgroundReducer', () => {
-  it('shows no image without an image for the theme', () => {
+  it('shows no image without an adventure image', () => {
     const state = initialAdventureBackground(null)
     expect(isBackgroundImageShown(state)).toBe(false)
     expect(adventureBackgroundLayers(state)).toEqual([])

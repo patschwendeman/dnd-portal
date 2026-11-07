@@ -27,8 +27,8 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - Kampf: Initiative-Reihenfolge, Zug und Runde im Blick, NPCs mit der Nummer ihrer Figur (umgesetzt); geplant:
   Trefferpunkte, Effekte mit Rundenzahl, „Zug beenden“ auf dem Smartphone, NPC-Katalog je Abenteuer.
 - Ruhiges, einheitliches Kachel-Layout mit fester Kopfzeile, unter der Notizen und Dashboard scrollen, dahinter
-  ein Hintergrundbild des Abenteuers je Theme, das durch die Kacheln scheint und nicht mit der Szene wechselt
-  (umgesetzt; die Bilder werden über Seed bzw. Datenbank festgelegt, nicht im Admin).
+  das Abenteuerbild, das durch die Kacheln scheint und weder mit der Szene noch mit dem Theme wechselt
+  (umgesetzt; das Bild wird über Seed bzw. Datenbank festgelegt, nicht im Admin).
 - Musik ein- und ausschalten.
 - Verschiedene Sounds abspielen.
 - Alles, was Wall und Ground zeigen, vom Admin aus steuern; an Wall und Ground wird nichts bedient.
@@ -46,13 +46,14 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   „Vollbild“ und „Dashboard“.
   Notizen und Dashboard scrollen jeweils für sich unter der Kopfzeile, die stehen bleibt; der Abstand darunter bleibt
   frei, ganz nach unten gescrollt endet die letzte Kachel auf Höhe der Navigationsleiste.
-- **Abenteuer-Hintergrund:** Hinter den Kacheln liegt das Hintergrundbild des aktiven Abenteuers zum Theme des
-  Spieltischs (je Abenteuer ein Bild für Dark und eins für Tavern, festgelegt über Seed bzw. Datenbank, im Admin nicht
-  wählbar), zu 50 % abgedunkelt und bildschirmfüllend; es steht fest, während Notizen und Dashboard scrollen. Solange es zu sehen ist, sind Navigationsleiste, Panel,
+- **Abenteuer-Hintergrund:** Hinter den Kacheln liegt das Abenteuerbild des aktiven Abenteuers (ein Bild je
+  Abenteuer für beide Themes, im bestehenden Abenteuer `forest.jpg`, festgelegt über Seed bzw. Datenbank, im Admin
+  nicht wählbar), in beiden Themes zu 50 % abgedunkelt und bildschirmfüllend; es steht fest, während Notizen und Dashboard scrollen. Solange es zu sehen ist, sind Navigationsleiste, Panel,
   Kopfzeile, Notizseiten und Dashboard-Panels durchscheinend und zeichnen das Bild weich; Bühne, Hinweisleiste und die
-  Bedienflächen in den Kacheln bleiben deckend (die Kacheln sind in Dark zu 75 %, in Tavern zu 92 % deckend). Das Bild
-  wechselt nur mit Abenteuer oder Theme, nicht mit der Szene: das alte bleibt, bis das neue geladen ist, dann blenden
-  sie ineinander über (bei „Bewegung reduzieren“ im System ohne Übergang). Ohne Bild für das aktive Theme, solange das
+  Bedienflächen in den Kacheln bleiben deckend (die Kacheln sind in Cyber zu 75 %, in Taverne zu 92 % deckend). Das Bild
+  wechselt nur mit dem Abenteuer, weder mit der Szene noch mit dem Theme (ein Theme-Wechsel ändert nur die Farben):
+  das alte bleibt, bis das neue geladen ist, dann blenden sie ineinander über (bei „Bewegung reduzieren“ im System
+  ohne Übergang). Ohne Abenteuerbild, solange das
   Abenteuer lädt oder wenn das Bild nicht geladen werden kann, ist der Hintergrund einfarbig und die Kacheln sind
   deckend.
 - **Dashboard:** eine Spalte mit vier Panels in fester Reihenfolge (kein Verschieben): oben die Bühne („Aktive
@@ -212,7 +213,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - **Vollbild (Admin):** Icon-Button „Vollbild“ rechts in der Kopfzeile (links vom Icon-Button „Dashboard“) schaltet das
   Admin-Fenster in den Vollbildmodus des Browsers und wieder zurück; hervorgehoben, solange das Fenster im Vollbild ist
   (auch wenn es per Escape verlassen wird, folgt die Anzeige).
-- **Theme:** Im Abschnitt „Darstellung“ des Panels „Einstellungen“ eine Auswahlliste mit „Dunkel“ und „Taverne“
+- **Theme:** Im Abschnitt „Darstellung“ des Panels „Einstellungen“ eine Auswahlliste mit „Cyber“ und „Taverne“
   (wie die Abenteuer-Auswahl per Maus und Tastatur bedienbar); gewählt ist das Theme des Spieltischs. Eine Wahl
   speichert es und gilt für Admin, Wall, Ground und die Player Screens (außer auf Smartphones, deren Spieler lokal ein
   anderes Theme gewählt hat); die Wahl des aktiven Themes tut nichts.
@@ -304,17 +305,17 @@ Tipp auf den Avatar, Hinweis „Als Nächstes dran“.
   gewechselt. Wähle deinen Charakter neu.“ zeigt (weg nach der Wahl eines Charakters oder einem Reload). Eine
   unbekannte ID, eine ID eines anderen Abenteuers oder eine ungültige ID führt ohne Hinweis zur Auswahl. Solange die
   Spieler laden oder ihr Laden fehlschlägt, bleibt der Screen.
-- **Settings-Menü:** Der Settings-Button („Einstellungen“) oben rechts in der Hero-Karte öffnet „Wie Spieltisch“ (Standard), „Dunkel“,
+- **Settings-Menü:** Der Settings-Button („Einstellungen“) oben rechts in der Hero-Karte öffnet „Wie Spieltisch“ (Standard), „Cyber“,
   „Taverne“ und nach einer Trennlinie „Charakter wechseln“ (zurück zur Auswahl). Auf der Auswahl fehlt dieser Eintrag.
   Die offene Liste liegt über allen anderen Elementen, nur der Hinweis „Bitte das Handy quer halten“ verdeckt sie.
 - **Theme:** Auswahl und Player Screen sind per WebSocket mit dem Spieltisch verbunden (beide als `player`) und folgen
   dessen Theme ohne Reload (Szene und Musik zeigen sie nicht an). Die Theme-Wahl im Settings-Menü gilt nur auf diesem
   Gerät (auch nach einem Reload) und bleibt bei Theme-Wechseln im Admin bestehen. Nach dem Entsperren des Smartphones
-  verbinden sie sich sofort neu.
-- **Hintergrund:** Hinter Auswahl und Player Screen liegt wie im Admin das Hintergrundbild des aktiven Abenteuers zum
-  wirksamen Theme des Geräts, abgedunkelt; Überblendung bei Wechsel von Abenteuer oder Theme. Solange das Bild zu
+  verbinden sie sich sofort neu. Eine auf dem Gerät gespeicherte Wahl des früheren Themes „Dunkel“ gilt als „Cyber“.
+- **Hintergrund:** Hinter Auswahl und Player Screen liegt wie im Admin das Abenteuerbild des aktiven Abenteuers, in
+  beiden Themes abgedunkelt; Überblendung nur bei Wechsel des Abenteuers, nicht des Themes. Solange das Bild zu
   sehen ist, sind die Karten (Hero und Ressourcen) und der Settings-Button durchscheinend mit Unschärfe; ohne Bild (kein Abenteuer, keine
-  Verbindung, kein Bild zum Theme, Ladefehler) ist der Hintergrund einfarbig und die Flächen sind deckend.
+  Verbindung, kein Abenteuerbild, Ladefehler) ist der Hintergrund einfarbig und die Flächen sind deckend.
 - Layout: oben die Hero-Karte, unten die Ressourcen-Karte, je die halbe Höhe. Die Ressourcen-Buttons füllen ihre
   Hälfte in zwei Zeilen: Aktion · Bonusaktion · Bewegung · Spezial und Zauberplätze I–IV; ihre Namen stehen nicht
   sichtbar, sondern nur als Beschriftung für Screenreader (`aria-label`). Die Ressourcen sind per Tastatur bedienbar
