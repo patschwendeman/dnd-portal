@@ -1,7 +1,7 @@
 # DND-55: Einfarbiger Hintergrund in der Abenteuerauswahl
 
 **Typ:** style
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 Die Abenteuerauswahl (`/admin`, `AdminSelectScreen`) zeigt heute hinter den Karten das abgedunkelte Abenteuerbild
@@ -116,3 +116,34 @@ Abenteuer aktiv ist. Die Auswahl wirkt dadurch ruhiger; das Abenteuerbild ersche
 - keine
 
 ## Review
+
+### Runde 1 – Review vom 2026-11-07 (Commit d66dd74, Gesamtstand gegen 3fb442a)
+
+**Empfehlung: Abnahme.** Es gibt keinen blockierenden Befund. Alle fünf AK sind erfüllt. Lint, Typecheck, Unit-Tests, Build, knip, jscpd und E2E sind grün.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Nur einfarbige Fläche `colors.background` | erfüllt | `AdminSelectScreen.tsx:44`: `Screen` mit `background-color: props.theme.colors.background`, weiter `position: fixed`. `AdventureBackground` und `useAdventureBackground` sind aus der Auswahl entfernt; die Farbe hängt nur vom Theme ab. BDD `adminAdventureSelect.ts:182` prüft: berechnete Farbe gleich `background` des Server-Themes, kein `adventure-background`. Grün mit aktivem Abenteuer mit Bild (Szenario 1) und ohne aktives Abenteuer (Szenario 2). |
+| AK2 Flächen durchscheinend, Fehler deckend | erfüllt | `AdventureCard.tsx:278` `$isTranslucent` fest, Prop entfernt; SkeletonCard (`:277`), State (`:287`/`:293`), Notice (`:320`) fest durchscheinend. `ErrorNotice` unverändert deckend `error` ohne Blur (`:79-80`, `:327`). `tileSurface` setzt `secondaryTranslucent` + `blur(TILE_BLUR)`. |
+| AK3 Invarianten | erfüllt | Kein Diff in `PageTransitionStyle.ts`, `viewTransition.ts`, `AdminScreen.tsx`, `PlayerLayout.tsx`, `AdventureBackground.tsx`, `adventureBackground.ts`; in `useAdventureBackground.ts` nur Doc-Kommentar. Die Auswahl renderte `AdventureBackground` ohne `isHero`, war also nie Teil des Hero-Übergangs. `data-view-head`/`-card`/`-hero` unverändert. BDD `adminSettings` (Rückweg) und Admin-Auftritt grün. Manuelle Schritte 1–5 nicht ausgeführt. |
+| AK4 Checks, BDD prüft einfarbigen Hintergrund | erfüllt | Schritt „the background is plain“ in `adminAdventureSelect.feature:9` und `:14`, gemeinsame Hilfsfunktion `expectPlainBackground` (`steps/adminAdventureSelect.ts:281`, `:308`). Farbe aus `cyberTheme`/`tavernTheme`, nicht hart kodiert. Gegenprobe des Implementers: mit altem Code rot (`rgba(0, 0, 0, 0)` statt `rgba(14, 17, 23, 1)`). |
+| AK5 Doku | erfüllt | `docs/screens.md:47`/`:49`, `screen-layouts.md` (Abenteuerauswahl), `components.md` (Kachel, Abenteuer-Karte, Zustände; Abschnitt Abenteuer-Hintergrund nennt nur Admin und Player), `DESIGN.md` § 1.4 mit Ausnahme, `architecture.md` „(Markierung)“. |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+1. Manuelle Prüfschritte (Glas-Look, Themewechsel Cyber ↔ Taverne, wachsendes/schrumpfendes Kartenbild, „Bewegung reduzieren“) offen; der zugehörige Code ist unverändert.
+2. BDD prüft nur das am Server aktive Theme; für das andere belegt den Wert nur der Code.
+3. `hexToRgba` (`steps/adminAdventureSelect.ts:86`) setzt `#rrggbb` voraus; passt für beide `background`-Werte, nicht für Hex mit Alpha.
+4. Außerhalb des Scopes, schon vorher veraltet: `docs/domain.md:5` nennt noch „Abenteuer-Auswahl im Panel ‚Einstellungen‘“ (seit DND-52 eigener Screen) – Kandidat für `/quick-task`.
+5. Kosmetisch: `docs/screens.md:47` und `components.md:499-500` deutlich länger als die umliegenden Zeilen.
+6. Konventionen: `style(DND-55): …` passt zum Plan-Typ, ein Commit, 5 Stichpunkte, keine KI-Signatur, nichts außerhalb des Scopes.
+
+**Checks** (in `frontend/`)
+- `npm run lint`: grün, ohne Fehler und Warnungen.
+- `npm run typecheck`: grün.
+- `npm run test:unit`: 37 Dateien, 382/382 grün.
+- `npm run build`: grün (bekannte Warnung zur Chunk-Größe).
+- `npm run check:deadcode` (knip), `npm run check:dupes` (jscpd, 1 Klon wie Baseline): grün.
+- E2E (`npx jest --runInBand` gegen Docker-Backend :8000 und Vite :5173): 14 Suites, 63/63 grün. Die Läufe ändern den Spieltisch-Zustand des Dev-Backends.
