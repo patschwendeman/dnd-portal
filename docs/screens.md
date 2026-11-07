@@ -68,7 +68,7 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
 - Alles, was Wall und Ground zeigen, vom Admin aus steuern; an Wall und Ground wird nichts bedient.
 - Dashboard rechts neben den Notizen: Panels, in denen alles gebündelt ist, was der Spielleiter während des Spiels
   steuert (umgesetzt: Layout „Bühne“ mit „Aktive Szene“, „Audio“, „Spieltisch“, „Party“; geplant: weitere Layouts
-  zur Auswahl, z. B. „Bento“ und „Cockpit“ aus dem Mockup `frontend/docs/design/mockup/admin-dashboard.html`).
+  zur Auswahl, z. B. „Bento“ und „Cockpit“).
 
 ### Ist
 - **Route:** `/admin/play`, geöffnet über die [Abenteuerauswahl](#abenteuerauswahl); ein Reload bleibt im Admin. Ist

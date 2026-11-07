@@ -156,8 +156,7 @@ wiederverwenden können.
 ## Bühne
 
 Nur im Admin, oberstes Element des Dashboards, Komponente `ActiveScenePanel`
-([src/components/ActiveScenePanel.tsx](../../src/components/ActiveScenePanel.tsx)) nach dem Mockup
-[admin-dashboard.html](mockup/admin-dashboard.html) (Tab „A · Bühne“). Kein Dashboard-Panel: ohne Innenabstand und ohne
+([src/components/ActiveScenePanel.tsx](../../src/components/ActiveScenePanel.tsx)). Kein Dashboard-Panel: ohne Innenabstand und ohne
 Label über dem Bild.
 
 | Eigenschaft | Wert |
@@ -202,8 +201,8 @@ Eine Zeile je Screen: Wall, Ground, Spieler.
 Nur im Panel „Party“, Komponente `PlayerListItem` ([src/components/PlayerListItem.tsx](../../src/components/PlayerListItem.tsx),
 Avatar und Text als `PlayerRowContent`, auch in der [Charakterzeile](#charakterzeile);
 Zeile, Name und Details als gemeinsame Styled Components `ListRow`, `RowInfo`, `RowName`, `RowDetails`, `RowList` in
-[ListRow.tsx](../../src/components/ListRow.tsx), auch für die [Initiative-Zeile](#initiative-zeile))
-nach dem Mockup [player-card-compact.html](mockup/player-card-compact.html), ohne Level-Chip (das Level steht einmal im
+[ListRow.tsx](../../src/components/ListRow.tsx), auch für die [Initiative-Zeile](#initiative-zeile)),
+ohne Level-Chip (das Level steht einmal im
 Kopf) und ohne hervorgehobene Zeile (es gibt keine Auswahl). Prop `player`.
 
 | Eigenschaft | Wert |
@@ -227,27 +226,25 @@ Nur im Kopf des Panels „Party“, Komponente `LevelStepper` ([src/components/L
 ## Hero-Karte
 
 Im Panel „Am Zug“ des Admins während eines Kampfes, Komponente `HeroCard`
-([src/components/HeroCard.tsx](../../src/components/HeroCard.tsx)) nach dem Mockup
-[admin-fight-mockup.html](mockup/admin-fight-mockup.html). Props `avatar`, `caption`, `name`, `chips`, `level` (nur bei
+([src/components/HeroCard.tsx](../../src/components/HeroCard.tsx)). Props `avatar`, `caption`, `name`, `chips`, `level` (nur bei
 Spielern), optional `badge` (neben der Überschrift) und `fill`. Im Player Screen oben als eigene Karte mit dem
 eigenen Charakter (siehe [Hero-Karte im Player](#hero-karte-im-player)).
 
 | Eigenschaft | Wert |
 |---|---|
 | Element | `<article>` mit dem Namen als `aria-label`, `lang="de"`; ohne eigene Fläche (steht direkt im Dashboard-Panel) |
-| Aufbau | `display: flex`, vertikal zentriert, `gap` `space.5`: links Avatar mit Level-Badge, rechts eine Spalte (`gap` `space.1`) aus Überschrift ([Label](#label): Spielername bzw. „Gegner“/„Verbündeter“; anders als im Mockup nicht gedämpft, weil `text.muted` auf `secondary` in Tavern 4,5:1 verfehlt), Name (`text.xl` `semibold`, bricht um mit Silbentrennung) und den Chips (`padding-top` `space.1`) |
+| Aufbau | `display: flex`, vertikal zentriert, `gap` `space.5`: links Avatar mit Level-Badge, rechts eine Spalte (`gap` `space.1`) aus Überschrift ([Label](#label): Spielername bzw. „Gegner“/„Verbündeter“; nicht gedämpft, weil `text.muted` auf `secondary` in Tavern 4,5:1 verfehlt), Name (`text.xl` `semibold`, bricht um mit Silbentrennung) und den Chips (`padding-top` `space.1`) |
 | Avatar | [Kampf-Avatar](#kampf-avatar) in Größe `hero`: `size.avatar.width` × `size.avatar.height`, `radius.lg`; Initialen bzw. Nummer in `text.2xl` `medium` |
 | Level-Badge | nur bei Spielern, über der oberen linken Ecke des Avatars (`top`/`left` −`space.2`), `size.badge`, `radius.pill`, Fläche `primary`, Zahl `onPrimary` `text.sm` `medium` `tabular-nums`, Ring `borderWidth.thick` in `secondary` (Farbe der Kachel); zeigt das Level des Abenteuers |
 | Chips | Volk und Klasse bzw. die Bezeichnung eines NPCs (ohne Bezeichnung keine), umbrechend mit `gap` `space.1`; Innenabstand `0 space.2`, `text.sm`, Fläche `background`, Rand `borderWidth.thin` in `border`, `radius.md` |
 | Fuß im Panel „Am Zug“ | `TurnPanel`: unter der Karte eine Trennlinie (`borderWidth.thin` `border`, `padding-top` `space.3`), links „Als Nächstes:“ bzw. „Runde N+1:“ (`text.sm`) mit kleinem Kampf-Avatar und Name (`text.sm` `medium`, einzeilig mit Ellipse), rechts der [Text-Button](#text-button) „Zug beenden“ (`active`); ohne Zug nur „Niemand am Zug – alle Teilnehmer sind ausgeschieden.“ (`text.sm`) |
-| Nicht umgesetzt | Effektzeile, Variante „Kachel“ aus [player-card-hero.html](mockup/player-card-hero.html) |
+| Nicht umgesetzt | Effektzeile, Variante „Kachel“ |
 
 ### Hero-Karte im Player
 
 Obere Hälfte des Player Screens, Komponente `PlayerHeroCard`
-([src/components/PlayerHeroCard.tsx](../../src/components/PlayerHeroCard.tsx)) um die `HeroCard` mit `fill`, nach dem
-Mockup [player-hero-split-mockup.html](mockup/player-hero-split-mockup.html) (Querformat; Effekte und Detail-Sheet
-dort sind Soll).
+([src/components/PlayerHeroCard.tsx](../../src/components/PlayerHeroCard.tsx)) um die `HeroCard` mit `fill`
+(Querformat; Effekte und Detail-Sheet sind Soll).
 
 | Eigenschaft | Wert |
 |---|---|
@@ -324,8 +321,7 @@ Nur im Player.
 
 ## Overlay-Panel
 
-Nur auf der Wall (Weltkarte und QR-Code für die Spieler), nach dem Mockup
-[wall-party-mockup.html](mockup/wall-party-mockup.html), aber durchscheinend. Gemeinsame Styled Components
+Nur auf der Wall (Weltkarte und QR-Code für die Spieler), durchscheinend. Gemeinsame Styled Components
 `OverlayLayer`, `OverlayPanel`, `PanelHeader`, `PanelTitle` ([src/components/WallOverlay.ts](../../src/components/WallOverlay.ts)).
 
 | Eigenschaft | Wert |
@@ -354,8 +350,7 @@ ist, und lädt dabei `GET /table/join`.
 ## Wall-Kachel
 
 Ein Charakter auf der Wall, Komponente `WallCharacterTile`
-([src/components/WallCharacterTile.tsx](../../src/components/WallCharacterTile.tsx)) nach den Mockups
-[wall-party-mockup.html](mockup/wall-party-mockup.html) und [wall-fight-mockup.html](mockup/wall-fight-mockup.html).
+([src/components/WallCharacterTile.tsx](../../src/components/WallCharacterTile.tsx)).
 Props `variant` (`party`, `initiative`, `turn`), `kind`, `avatarText`, `image`, `name`, `details`, `isDead`, `header`.
 
 | Eigenschaft | Wert |

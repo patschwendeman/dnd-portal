@@ -154,7 +154,7 @@ auf der jeweiligen Fläche gemessen. Fett = verfehlt das Ziel.
 - **Ressourcen (Player):** Die Spannen reichen über alle fünf Ressourcen.
 - **Durchscheinende Karten (Player):** Karten und Settings-Button im Player haben dieselbe Fläche wie die Kacheln im
   Admin, es gelten die Werte für `secondaryTranslucent`. Offen (DND-46): Der Kopf der
-  Charakterauswahl (Abenteuername als Label, „Charakter wählen“) steht wie im Mockup direkt auf dem abgedunkelten
+  Charakterauswahl (Abenteuername als Label, „Charakter wählen“) steht direkt auf dem abgedunkelten
   Hintergrundbild, nicht auf einer Karte; über sehr hellen Bildern kann `text.color` dort unter 4,5:1 fallen
   (über einem weißen Bild unter `backdrop`, etwa `#808080`: Cyber 3,6:1, Tavern 1,8:1;
   über einem schwarzen deutlich darüber).
