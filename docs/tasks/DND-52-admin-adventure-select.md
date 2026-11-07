@@ -1,7 +1,7 @@
 # DND-52: Abenteuerauswahl vor dem Admin Screen, „Abenteuer beenden“ in den Einstellungen
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -275,3 +275,40 @@ Akzeptanzkriterium; ob Abweichung 1 bleibt, entscheidet der User (Hinweis 1).
 - [x] Vorschaubild aus „Abenteuer beenden“ entfernt; Button bleibt zweizeilig (oben „Abenteuer beenden“, darunter
       der Name, Icon rechts über beide Zeilen), weil Text und Name im 240px breiten Panel nicht nebeneinander passen.
       Prop `image` entfernt; `image.svg` bleibt (genutzt von `AdventureCard`). Doku: `screens.md`, `components.md`.
+
+### Runde 2 – Review vom 2026-11-07 (Commit 587c5dd, Gesamtstand gegen 73aee0b)
+
+**Empfehlung: Abnahme.** Kein blockierender Befund. Die Entscheidung des Users ist umgesetzt: Der Button
+„Abenteuer beenden“ hat kein Vorschaubild mehr (Prop `image`, `Preview`, `mediaUrl`, Import `image.svg` aus
+`SettingsPanel.tsx` entfernt; `image.svg` nutzt weiter `AdventureCard.tsx`). AK1–AK10 bleiben erfüllt, alle
+Frontend-Checks grün, Gesamt-E2E 61/61. Layout per Screenshot in beiden Themes geprüft; der gedämpfte Name erreicht AA.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1–AK5, AK8–AK10 | erfüllt | In Runde 2 unverändert; BDD `adminAdventureSelect.feature` in der Gesamtsuite grün. |
+| AK6 Abenteuer beenden | erfüllt | Button unten im Panel (Screenshot Tavern, 206×56 px unter „Ground-Raster“), Name `end-adventure-name`. BDD `adminSettings.feature:12/21-23`, `adminAdventureSelect.feature:29` grün. |
+| AK7 Kampf sperrt den Wechsel | erfüllt | Schloss und `aria-disabled` unverändert (`end-adventure-lock`). BDD `adminFight.feature:31-32` grün. |
+
+**Prüfung der Userentscheidung und des Layouts**
+- Diff 9e10442..587c5dd: nur `SettingsPanel.tsx`, `docs/screens.md`, `frontend/docs/design/components.md`, Plan.
+- Grid `"label icon" "name icon"`, Spalten `minmax(0, 1fr) auto`, `column-gap` `space.3`, Icon über beide Zeilen
+  zentriert; entspricht `components.md` und `screens.md`.
+- Screenshots Cyber und Tavern: oben „Abenteuer beenden“, darunter Name in `text.muted`, rechts `logout.svg`. Langer
+  Name wird einzeilig mit „…“ gekürzt, Höhe bleibt 56 px.
+- Kontrast Name (`text.muted` auf `background`): Cyber 8,56:1, Tavern 4,82:1 (Ziel 4,5) – deckt sich mit `contrast.md:65`.
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+1. `contrast.md:65` nennt den Namen im Button „Abenteuer beenden“ nicht unter „Verwendung“; optional ergänzen.
+2. Gesperrter/deaktivierter Zustand des Buttons nur per BDD geprüft, nicht im Screenshot; deaktiviert ist nach WCAG
+   vom Kontrastziel ausgenommen.
+3. Hinweise 2–8 aus Runde 1 bleiben offen.
+4. Plan-Test 4 (beide Themes, mit/ohne Abenteuerbild) bleibt manuell offen, betrifft nur noch die Abenteuerkarten.
+
+**Checks**
+- Frontend: lint, `tsc -b`, Unit 351/351, knip, jscpd grün.
+- E2E: Gesamtsuite 14 Suites, 61/61 grün.
+- Backend: in Runde 2 unverändert, nicht erneut ausgeführt (Runde 1: 338/338).
+- Konventionen: ein Commit `feat(DND-52): address review round 1`, 3 Stichpunkte, keine KI-Signatur, im Scope.
