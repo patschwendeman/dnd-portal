@@ -243,7 +243,6 @@ interface AdventureCardProps {
   isActive: boolean
   /** During a fight in another adventure: faded, with a lock on the image; a click does nothing */
   isLocked: boolean
-  isTranslucent: boolean
   onSelect: (adventure: AdventureSummary) => void
   /** Place in the list; the cards sink away and rise in this order in the page transition */
   position: number
@@ -256,7 +255,7 @@ interface AdventureCardProps {
  * whole card is a button
  */
 function AdventureCard({
-  adventure, isActive, isLocked, isTranslucent, onSelect, position, isHero,
+  adventure, isActive, isLocked, onSelect, position, isHero,
 }: AdventureCardProps): ReactElement {
   return (
     <Card
@@ -276,7 +275,7 @@ function AdventureCard({
       }}
       $isActive={isActive}
       $isLocked={isLocked}
-      $isTranslucent={isTranslucent}
+      $isTranslucent
     >
       <Picture>
         {adventure.image ? (

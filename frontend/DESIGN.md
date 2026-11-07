@@ -104,7 +104,10 @@ Die Bereiche im Admin trennt der Abstand zwischen den [Kacheln](docs/design/comp
 ([Abenteuer-Hintergrund](docs/design/components.md#abenteuer-hintergrund)) haben die Kacheln im Admin die Fläche
 `secondaryTranslucent` und `backdrop-filter: blur(TILE_BLUR)`, sonst deckend `secondary`. Deckend bleiben immer Bühne,
 Hinweisleiste, Flächen in den Kacheln, Auswahllisten und Dialog. Schalter `$isTranslucent` an `tileSurface`. Auf Wall
-und Ground sind Panels und Overlays immer durchscheinend.
+und Ground sind Panels und Overlays immer durchscheinend. Ausnahme Abenteuerauswahl: Dort liegt nur die Fläche
+`background`, die Karten, Platzhalter, Zustands-Kachel und Kampf-Hinweis sind trotzdem immer durchscheinend (gleicher
+Glas-Look wie über einem Bild; der Kontrast von `secondaryTranslucent` ist gegen das ungünstigste Bild gemessen); der
+Fehler beim Starten bleibt deckend `error`.
 
 **Bilder:** Szenenbilder 16:9 mit `object-fit: cover`, Karten (Weltkarte) `contain`, Vollbild-Hintergründe `fixed` mit
 `inset: 0`. **Zahlen:** `tabular-nums`, wo sie sich ändern oder untereinander stehen. **Übergangsdauern:** keine

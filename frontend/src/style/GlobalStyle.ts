@@ -37,7 +37,9 @@ export interface TileSurfaceProps {
   /**
    * Only while an image lies behind the tile (background image in Admin and Player, scene on Wall
    * and Ground): over the plain background the translucent surface would give another tone than the
-   * one the contrast was measured for
+   * one the contrast was measured for. Exception: the adventure selection is always translucent
+   * over its plain background, so its cards keep the look they have in front of an image; the
+   * contrast holds, as it was measured against the worst image (white or black)
    */
   $isTranslucent?: boolean
 }

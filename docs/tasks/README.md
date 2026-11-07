@@ -58,4 +58,4 @@
 | DND-52 | feat | Abenteuerauswahl vor dem Admin Screen, „Abenteuer beenden“ in den Einstellungen | Fertig | [DND-52-admin-adventure-select.md](DND-52-admin-adventure-select.md) |
 | DND-53 | feat | Logo in der Navigationsleiste des Admins, Web-App-Manifest für den Homescreen | Fertig | [DND-53-admin-logo-and-web-manifest.md](DND-53-admin-logo-and-web-manifest.md) |
 | DND-54 | feat | Auftritt des Admin Screens: Übergang aus der Abenteuerauswahl und Aufbau der Kacheln | Fertig | [DND-54-admin-entrance-animation.md](DND-54-admin-entrance-animation.md) |
-| DND-55 | style | Einfarbiger Hintergrund in der Abenteuerauswahl | Freigegeben | [DND-55-select-plain-background.md](DND-55-select-plain-background.md) |
+| DND-55 | style | Einfarbiger Hintergrund in der Abenteuerauswahl | Im Review | [DND-55-select-plain-background.md](DND-55-select-plain-background.md) |

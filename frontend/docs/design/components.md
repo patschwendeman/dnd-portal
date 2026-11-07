@@ -108,7 +108,9 @@ Panels und Overlays dieselbe Fläche, immer durchscheinend: [Overlay-Panel](#ove
 [Vollbild-Overlay](#vollbild-overlay), [Wall-Kachel](#wall-kachel) (Party, Initiative) und die Kacheln „Runde N“ und
 „+N weitere“ der [Initiative-Leiste](#initiative-leiste). Im Player haben die Karten (Party, Hinweis, Hero, Ressourcen) und
 der Settings-Button dieselbe Fläche; durchscheinend, solange das Hintergrundbild zu sehen ist (`PlayerLayout` gibt
-`isTranslucent` per Outlet-Context weiter).
+`isTranslucent` per Outlet-Context weiter). In der Abenteuerauswahl sind Karten, Platzhalter-Karten, Zustands-Kachel
+und Kampf-Hinweis immer durchscheinend, obwohl dahinter nur die Fläche `background` liegt (bewusste Ausnahme, siehe
+[DESIGN.md](../../DESIGN.md#14-regeln) „Durchscheinende Kacheln“).
 
 | Eigenschaft | Wert |
 |---|---|
@@ -116,7 +118,7 @@ der Settings-Button dieselbe Fläche; durchscheinend, solange das Hintergrundbil
 | Rand | `borderWidth.thin` in `border` |
 | Lichtkante | innen oben: `box-shadow: inset 0 borderWidth.thin 0` in `border`; kein äußerer Schatten |
 | Abweichende Fläche | Hinweisleiste `error`, [Bühne](#bühne) `background`, beide immer deckend; Form, Rand und Lichtkante wie oben |
-| Durchscheinend | im Admin nur mit Hintergrundbild: Navigationsleiste und ihr Panel, Abenteuername und Button-Gruppe der Kopfzeile, Notizseiten, Dashboard-Panels; auf Wall und Ground immer. Flächen in den Kacheln (`background`) bleiben deckend |
+| Durchscheinend | im Admin nur mit Hintergrundbild: Navigationsleiste und ihr Panel, Abenteuername und Button-Gruppe der Kopfzeile, Notizseiten, Dashboard-Panels; auf Wall und Ground und in der Abenteuerauswahl immer. Flächen in den Kacheln (`background`) bleiben deckend |
 | Verwendung | [Navigationsleiste](#navigationsleiste) und ihr Panel, Kacheln der [Kopfzeile](#kopfzeile) (Abenteuername, Button-Gruppe, [Hinweisleiste](#hinweisleiste)), Notizseiten, [Dashboard-Panels](#dashboard-panel), [Bühne](#bühne); Wall und Ground siehe oben |
 | Auftritt im Admin | nur nach dem Betreten aus der Abenteuerauswahl, gesteuert über `data-entrance` am Screen (`pending` → `building` → `done`, beim Beenden `exiting`) und den CSS-Baustein `tileEntrance` ([src/style/GlobalStyle.ts](../../src/style/GlobalStyle.ts)); jede Kachel trägt Index und Herkunft (`tileEntranceAttributes`, Werte in [src/utils/adminEntrance.ts](../../src/utils/adminEntrance.ts)). Aufbau erst nach dem Übergang: `opacity` 0 → 1 und `transform` vom Versatz an den Platz, 380 ms, Start um 65 ms × Index versetzt (Index 0–8, `TILE_BUILD_MS` 900 ms bis alles steht), Kurve `MOTION_EASING` (`cubic-bezier(.2, .7, .2, 1)`). Index und Herkunft: 0 „Zurück \| Vor“, 1 Abenteuername bzw. Hinweisleiste (beide 12px von oben), 2 „Vollbild \| Dashboard“ (von oben) und Navigationsleiste (16px von links), 3 Panel (von links), 4 erste Notizseite, 5 weitere Notizseiten (12px von unten) und erstes Dashboard-Panel, 5–8 Dashboard-Panels der Reihe nach (16px von rechts). Beim Beenden blenden alle gleichzeitig aus (`scale(.98)`, `TILE_EXIT_MS` 200 ms, `ease-in`). Animiert werden nur `opacity` und `transform` der Kachel selbst (nie ein Elternelement, nie `backdrop-filter`), Klicks wirken die ganze Zeit. Inhalte, die während des Aufbaus nachgeladen werden (Notizseiten, Bühne, „Party“, „Am Zug“, „Initiative“), blenden in 200 ms ein. Bei „Bewegung reduzieren“ kein Auftritt |
 | Notizseite | volle Breite der mittleren Spalte, Innenabstand `space.7` oben/unten, `space.8` seitlich; der Text darin höchstens `LINE_MAX_WIDTH` breit und zentriert; Abstand zwischen den Seiten `space.5`. Der Nach-oben-Button schwebt über den Kacheln und hat deshalb die Fläche `background`. Links in `primary` ohne Unterstreichung; ein Querverweis ohne Ziel als Text in `error`, gepunktet unterstrichen, `cursor: default`, Tooltip „Verweis-Ziel nicht gefunden“ |
@@ -482,7 +484,7 @@ Die ganze Karte ist ein `<button>` (Tab, Enter, Leertaste), daher besteht ihr In
 
 | Eigenschaft | Wert |
 |---|---|
-| Fläche | wie die [Kachel](#kachel) (`tileSurface`, durchscheinend über dem Abenteuerbild), ohne Innenabstand; Inhalt bündig oben, `overflow: hidden` |
+| Fläche | wie die [Kachel](#kachel) (`tileSurface`, immer durchscheinend über `background`), ohne Innenabstand; Inhalt bündig oben, `overflow: hidden` |
 | Bild | Abenteuerbild 16:9 über die volle Breite, `object-fit: cover`; ohne Bild Fläche `background` mit `image.svg` (`PLACEHOLDER_ICON_SIZE`, `text.muted`) |
 | Labels auf dem Bild | oben links (`space.3`) als Pille ([Label](#label), Innenabstand `space.1 space.2`, `radius.pill`): „Aktiv“ in `onPrimary` auf `primary` beim aktiven Abenteuer; „Gesperrt“ mit `padlock.svg` auf `secondary` bei gesperrter Karte |
 | Inhalt | Spalte, Innenabstand `space.4`, `gap` `space.3`: Name (`text.lg` `semibold`, bricht um) mit rechts dem Level-Badge (`size.badge`, `radius.pill`, Fläche `primary`, Zahl `onPrimary` `text.sm` `medium`, ohne Ring); Beschreibung (`text.sm`, höchstens zwei Zeilen mit „…“, entfällt ohne Beschreibung; nicht gedämpft, weil `text.muted` auf `secondary` in Tavern 4,5:1 verfehlt); [Label](#label) „Party · N“ und die Mitglieder |
@@ -494,7 +496,8 @@ Die ganze Karte ist ein `<button>` (Tab, Enter, Leertaste), daher besteht ihr In
 
 ## Zustände der Abenteuerauswahl
 
-Statt der Karten steht beim Laden ein Raster aus drei Platzhalter-Karten (Fläche wie die Karte, Bildfläche 16:9 und
+Alle Flächen der Auswahl außer dem Fehler beim Starten sind wie die [Abenteuer-Karte](#abenteuer-karte) immer
+durchscheinend. Statt der Karten steht beim Laden ein Raster aus drei Platzhalter-Karten (Fläche wie die Karte, Bildfläche 16:9 und
 zwei Textbalken `SKELETON_TEXT_HEIGHT` in `background`, pulsierend, ohne Animation bei „Bewegung reduzieren“), sonst
 eine [Kachel](#kachel) mit mittig untereinander (`gap` `space.3`) „Noch keine Abenteuer“ bzw. Icon `wifiOff.svg`
 (`STATE_ICON_SIZE`), „Keine Verbindung zum Server“ (beide `text.lg` `semibold`) und dem

@@ -1,7 +1,7 @@
 # DND-55: Einfarbiger Hintergrund in der Abenteuerauswahl
 
 **Typ:** style
-**Status:** Freigegeben
+**Status:** Im Review
 
 ## Kontext & Ziel
 Die Abenteuerauswahl (`/admin`, `AdminSelectScreen`) zeigt heute hinter den Karten das abgedunkelte Abenteuerbild
@@ -53,37 +53,37 @@ Abenteuer aktiv ist. Die Auswahl wirkt dadurch ruhiger; das Abenteuerbild ersche
 ## Subtasks
 
 ### Frontend
-- [ ] `src/screens/AdminSelectScreen.tsx`: Import und Rendern von `AdventureBackground` sowie
+- [x] `src/screens/AdminSelectScreen.tsx`: Import und Rendern von `AdventureBackground` sowie
       `useAdventureBackground` entfernen; `isTranslucent`/`activeAdventure` nur noch, soweit gebraucht.
       `Screen` erhält `background-color: colors.background` (bleibt `position: fixed; inset: 0`, scrollt).
       Doc-Kommentar der Komponente prüfen.
-- [ ] `SkeletonCard`, `State`, `Notice` (Kampf-Hinweis) mit `$isTranslucent` fest; `ErrorNotice` unverändert deckend.
-- [ ] `src/components/AdventureCard.tsx`: Prop `isTranslucent` entfernen, `$isTranslucent` fest (E2).
-- [ ] `src/utils/useAdventureBackground.ts`: Doc-Kommentar ohne „the adventure selection“.
-- [ ] `src/style/GlobalStyle.ts`: Kommentar an `tileSurface`/`TileSurfaceProps` um die Ausnahme Abenteuerauswahl
+- [x] `SkeletonCard`, `State`, `Notice` (Kampf-Hinweis) mit `$isTranslucent` fest; `ErrorNotice` unverändert deckend.
+- [x] `src/components/AdventureCard.tsx`: Prop `isTranslucent` entfernen, `$isTranslucent` fest (E2).
+- [x] `src/utils/useAdventureBackground.ts`: Doc-Kommentar ohne „the adventure selection“.
+- [x] `src/style/GlobalStyle.ts`: Kommentar an `tileSurface`/`TileSurfaceProps` um die Ausnahme Abenteuerauswahl
       ergänzen (E1).
 
 ### Tests
-- [ ] BDD `adminAdventureSelect.feature` / `steps/adminAdventureSelect.ts`: Schritt „the adventure image lies behind
+- [x] BDD `adminAdventureSelect.feature` / `steps/adminAdventureSelect.ts`: Schritt „the adventure image lies behind
       the cards“ ersetzen durch „the background is plain“: kein `[data-test-id="adventure-background"]` in der
       Auswahl und die berechnete `background-color` von `[data-test-id="adventure-select"]` entspricht
       `colors.background` des aktiven Themes (Wert aus den Theme-Dateien in `src/style/`, nicht hart kodiert).
-- [ ] Szenario „I start an adventure while none is active“: Schritt „the background is plain“ auf dieselbe Prüfung
+- [x] Szenario „I start an adventure while none is active“: Schritt „the background is plain“ auf dieselbe Prüfung
       umstellen (Hilfsfunktion teilen).
-- [ ] Prüfen, ob `steps/adminSettings.ts` (`ADVENTURE_IMAGES`, Rückweg nach „Abenteuer beenden“) Annahmen über das
+- [x] Prüfen, ob `steps/adminSettings.ts` (`ADVENTURE_IMAGES`, Rückweg nach „Abenteuer beenden“) Annahmen über das
       Bild in der Auswahl trifft; ggf. anpassen. Unit-Tests (`adventureBackground.spec.ts`) bleiben unverändert.
 
 ### Doku
-- [ ] `docs/screens.md`, Abenteuerauswahl (Ist): **Hintergrund** = einfarbig `background` des Themes, Karten
+- [x] `docs/screens.md`, Abenteuerauswahl (Ist): **Hintergrund** = einfarbig `background` des Themes, Karten
       durchscheinend; **Übergang in den Admin** ohne „auch der Hintergrund des bisher aktiven Abenteuers“; Satz „Die
       Auswahl hat danach keinen Hintergrund“ beim Rückweg anpassen.
-- [ ] `frontend/docs/design/screen-layouts.md` (Zeile „Admin: Abenteuerauswahl“): über der Fläche `background`
+- [x] `frontend/docs/design/screen-layouts.md` (Zeile „Admin: Abenteuerauswahl“): über der Fläche `background`
       statt über dem Abenteuer-Hintergrund.
-- [ ] `frontend/docs/design/components.md`: [Abenteuer-Karte] Fläche „durchscheinend über `background`“; [Zustände
+- [x] `frontend/docs/design/components.md`: [Abenteuer-Karte] Fläche „durchscheinend über `background`“; [Zustände
       der Abenteuerauswahl] Flächen durchscheinend; [Abenteuer-Hintergrund] nennt die Auswahl nicht als Ort; ggf.
       Absatz zu `tileSurface`/`$isTranslucent` (Abschnitt Kachel) um die Auswahl ergänzen.
-- [ ] `frontend/DESIGN.md`, „Durchscheinende Kacheln“: Ausnahme Abenteuerauswahl (immer durchscheinend) ergänzen.
-- [ ] `docs/architecture.md`, `docs/domain.md`, `docs/known-issues.md` auf Aussagen zum Hintergrund der Auswahl
+- [x] `frontend/DESIGN.md`, „Durchscheinende Kacheln“: Ausnahme Abenteuerauswahl (immer durchscheinend) ergänzen.
+- [x] `docs/architecture.md`, `docs/domain.md`, `docs/known-issues.md` auf Aussagen zum Hintergrund der Auswahl
       prüfen.
 
 ## Akzeptanzkriterien

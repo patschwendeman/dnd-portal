@@ -37,17 +37,18 @@ Die App hat einen **Admin-Bereich** und einen **Spieler-Bereich** (Player Screen
   wenn es nur eines gibt.
 - **Übergang in den Admin:** Beim Starten (erst nach erfolgreichem Speichern) und beim Fortsetzen wächst das Bild der
   angeklickten Karte in 0,5 s auf die volle Fensterfläche und dunkelt dabei ab, bis es der Abenteuer-Hintergrund des
-  Admins ist; gleichzeitig sinken Kopf und Karten 16px nach unten und blenden aus, der Rest der Auswahl (auch der
-  Hintergrund des bisher aktiven Abenteuers) blendet aus. Danach baut sich der Admin auf (siehe
+  Admins ist; gleichzeitig sinken Kopf und Karten 16px nach unten und blenden aus, der Rest der Auswahl blendet
+  aus. Danach baut sich der Admin auf (siehe
   [Admin Screen](#admin-screen), **Auftritt**). Ohne Kartenbild, oder wenn das Bild im Admin nach 300 ms noch nicht
   geladen ist, blendet die Auswahl nur aus. Bei „Bewegung reduzieren“ im System und in Browsern ohne View Transitions
   API wechselt die Seite ohne Übergang.
 - **Rückweg:** Nach „Abenteuer beenden“ im Admin schrumpft dessen Hintergrund in 0,5 s in das Bild der Karte dieses
   Abenteuers (jetzt ohne „Aktiv“); Kopf und Karten steigen von 16px unten auf (Kopf ab 0,3 s, Karten ab 0,35 s, jede
-  0,06 s nach der vorigen). Die Auswahl hat danach keinen Hintergrund. Ist die Karte nach 300 ms noch nicht geladen,
+  0,06 s nach der vorigen). Dahinter liegt danach die einfarbige Grundfläche. Ist die Karte nach 300 ms noch nicht geladen,
   läuft der Rückweg ohne schrumpfendes Bild.
-- **Hintergrund:** das Abenteuerbild des am Server aktiven Abenteuers wie im Admin, die Karten sind dann
-  durchscheinend; ohne aktives Abenteuer oder ohne Bild die einfarbige Grundfläche.
+- **Hintergrund:** immer die einfarbige Grundfläche (`background` des Themes), unabhängig davon, ob und welches
+  Abenteuer aktiv ist; das Abenteuerbild erscheint erst im Admin. Karten, Platzhalter-Karten, Zustands-Kachel und
+  Kampf-Hinweis sind trotzdem durchscheinend (Glas-Look wie über einem Bild).
 - **Kampf:** Läuft im aktiven Abenteuer ein Kampf, steht über den Karten „Im aktiven Abenteuer läuft ein Kampf.
   Andere Abenteuer sind bis zu seinem Ende gesperrt.“; alle anderen Karten sind ausgegraut, tragen auf dem Bild das
   Label „Gesperrt“ mit Schloss und den Tooltip „Während des Kampfes nicht wechselbar“, ein Klick tut nichts. Die Karte

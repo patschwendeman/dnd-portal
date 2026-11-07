@@ -20,6 +20,8 @@ import {
   waitForElement,
   waitForElementGone,
 } from '../support/helpers'
+import cyberTheme from '../../../src/style/cyberTheme'
+import tavernTheme from '../../../src/style/tavernTheme'
 
 const feature = loadFeature('__tests__/bdd/features/adminAdventureSelect.feature')
 
@@ -37,7 +39,7 @@ const ACTIVE_CARDS = `${SELECTION} [data-active="true"]`
 const FIGHT_NOTICE = '[data-test-id="adventure-select-fight"]'
 const SELECT_STATE = '[data-test-id="adventure-select-state"]'
 const RETRY = '[data-test-id="adventure-select-retry"]'
-const BACKGROUND_IMAGES = '[data-test-id="adventure-background"] img'
+const ADVENTURE_BACKGROUND = '[data-test-id="adventure-background"]'
 const ADMIN_ADVENTURE_NAME = '[data-test-id="admin-header"] [data-test-id="adventure-name"]'
 const ADMIN_SCREEN = '[data-test-id="admin-screen"]'
 const SETTINGS_ITEM = '[data-test-id="nav-item-settings"]'
@@ -72,7 +74,19 @@ interface Adventure {
   players: Player[]
   image: { source: string } | null
 }
-interface TableState { active_adventure_id: number | null }
+type Theme = 'cyber' | 'tavern'
+interface TableState { active_adventure_id: number | null, theme: Theme }
+
+const THEME_COLORS: Record<Theme, typeof cyberTheme.colors> = {
+  cyber: cyberTheme.colors,
+  tavern: tavernTheme.colors,
+}
+
+// Selenium reports computed colors as rgba(), the themes define them as #rrggbb
+const hexToRgba = (hex: string): string => {
+  const [red, green, blue] = [1, 3, 5].map((start) => parseInt(hex.slice(start, start + 2), 16))
+  return `rgba(${red}, ${green}, ${blue}, 1)`
+}
 
 const activeAdventureId = async (): Promise<number | null> => (
   (await readJson<TableState>('table')).active_adventure_id
@@ -148,11 +162,29 @@ const waitForAdminAdventure = async (driver: WebDriver, expected: string): Promi
   return actual
 }
 
-const shownBackgroundImages = async (driver: WebDriver): Promise<string[]> => driver.executeScript(
-  `return [...document.querySelectorAll('${BACKGROUND_IMAGES}')]
-    .filter((image) => image.complete && image.naturalWidth > 0)
-    .map((image) => new URL(image.src).pathname)`,
-)
+// Returns the last seen color instead of throwing on timeout, so the step's expect shows it
+const waitForSelectionColor = async (driver: WebDriver, expected: string): Promise<string> => {
+  const selection = await waitForElement(driver, SELECTION)
+  let actual = ''
+  try {
+    await driver.wait(async () => {
+      actual = await selection.getCssValue('background-color')
+      return actual === expected
+    }, WAIT_TIMEOUT)
+  } catch (err) {
+    if (!(err instanceof error.TimeoutError)) {
+      throw err
+    }
+  }
+  return actual
+}
+
+const expectPlainBackground = async (driver: WebDriver): Promise<void> => {
+  const { theme } = await readJson<TableState>('table')
+  const expected = hexToRgba(THEME_COLORS[theme].background)
+  expect(await waitForSelectionColor(driver, expected)).toBe(expected)
+  expect(await driver.findElements(By.css(ADVENTURE_BACKGROUND))).toHaveLength(0)
+}
 
 const openSelection = async (driver: WebDriver): Promise<void> => {
   await driver.manage().window().setRect(WINDOW_RECT)
@@ -245,14 +277,8 @@ defineFeature(feature, (test) => {
       expect(players).toEqual(adventure.players.map((player) => player.player_name))
     })
 
-    and('the adventure image lies behind the cards', async () => {
-      const expected = adventure.image?.source ?? 'no image'
-      await driver.wait(
-        async () => (await shownBackgroundImages(driver)).length === 1,
-        WAIT_TIMEOUT,
-      )
-      const [shown] = await shownBackgroundImages(driver)
-      expect(shown).toContain(expected)
+    and('the background is plain', async () => {
+      await expectPlainBackground(driver)
     })
   }, SCENARIO_TIMEOUT)
 
@@ -279,7 +305,7 @@ defineFeature(feature, (test) => {
     then('no card is marked as active and the background is plain', async () => {
       await waitForElement(driver, card(adventure.id))
       expect(await driver.findElements(By.css(ACTIVE_CARDS))).toHaveLength(0)
-      expect(await driver.findElements(By.css(BACKGROUND_IMAGES))).toHaveLength(0)
+      await expectPlainBackground(driver)
     })
 
     and('still no adventure is active on the server', async () => {

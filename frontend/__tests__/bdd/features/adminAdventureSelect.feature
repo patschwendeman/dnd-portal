@@ -6,7 +6,7 @@ Scenario: The selection shows the adventures with the active one marked
     Then I see a card for every adventure
     And the card of Erstes Abenteuer is marked as active
     And the card shows image, name, level, description and the party of the adventure
-    And the adventure image lies behind the cards
+    And the background is plain
 
 Scenario: I start an adventure while none is active
     Given no adventure is active and a player screen is open

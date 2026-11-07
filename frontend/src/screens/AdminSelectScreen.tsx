@@ -7,7 +7,6 @@ import { ReactSVG } from 'react-svg'
 import styled, { keyframes, useTheme } from 'styled-components'
 
 import { ADMIN_PLAY_PATH, ADMIN_SELECT_PATH } from '../app/adminPaths'
-import AdventureBackground from '../components/AdventureBackground'
 import AdventureCard from '../components/AdventureCard'
 import Label from '../components/Label'
 import { TextButton } from '../components/TextButton'
@@ -20,7 +19,6 @@ import { textStyle } from '../style/tokens'
 import { AdminEntrance, readSelectReturn } from '../utils/adminEntrance'
 import { adventureSelectStatus, isAdventureLocked } from '../utils/adventureSelect'
 import { loadLatest } from '../utils/loadSafely'
-import { useAdventureBackground } from '../utils/useAdventureBackground'
 import { isHeroShown, startPageTransition } from '../utils/viewTransition'
 
 import infoIcon from '/assets/icons/info.svg'
@@ -43,6 +41,7 @@ const Screen = styled.div`
   position: fixed;
   inset: 0;
   overflow-y: auto;
+  background-color: ${(props) => props.theme.colors.background};
   color: ${(props) => props.theme.colors.text.color};
 `
 
@@ -176,7 +175,8 @@ function Icon({ src, size = undefined }: IconProps): ReactElement {
  * Start of the Admin: the adventures as cards. A click on a card makes it the active adventure of
  * the game table and opens the Admin; the active one opens it without a write. During a fight only
  * the active adventure can be opened. Both ways into the Admin, and the way back after ending the
- * adventure, are a page transition in which the image of the card becomes the background.
+ * adventure, are a page transition in which the image of the card becomes the background. Behind
+ * the cards lies the plain background of the theme, whichever adventure is active.
  */
 function AdminSelectScreen(): ReactElement {
   const navigate = useNavigate()
@@ -220,9 +220,6 @@ function AdminSelectScreen(): ReactElement {
     }
   }, [reloadCount])
 
-  const activeAdventure = adventures?.find((adventure) => adventure.id === activeAdventureId)
-  const background = useAdventureBackground(activeAdventure)
-  const isTranslucent = background.isImageShown
   const status = adventureSelectStatus(adventures, loadFailed)
 
   // The name moves to the clicked card before the transition captures the selection
@@ -265,7 +262,6 @@ function AdminSelectScreen(): ReactElement {
               adventure={adventure}
               isActive={adventure.id === activeAdventureId}
               isLocked={isAdventureLocked(adventure.id, activeAdventureId, isFighting)}
-              isTranslucent={isTranslucent}
               onSelect={select}
               position={position}
               isHero={adventure.id === heroId}
@@ -278,7 +274,7 @@ function AdminSelectScreen(): ReactElement {
     content = (
       <Cards aria-label="Lädt" aria-busy="true" data-test-id="adventure-select-loading">
         {SKELETON_CARDS.map((card) => (
-          <SkeletonCard key={card} $isTranslucent={isTranslucent}>
+          <SkeletonCard key={card} $isTranslucent>
             <span />
             <span />
             <span />
@@ -288,13 +284,13 @@ function AdminSelectScreen(): ReactElement {
     )
   } else if (status === 'empty') {
     content = (
-      <State data-test-id="adventure-select-state" $isTranslucent={isTranslucent}>
+      <State data-test-id="adventure-select-state" $isTranslucent>
         <StateTitle>Noch keine Abenteuer</StateTitle>
       </State>
     )
   } else {
     content = (
-      <State data-test-id="adventure-select-state" $isTranslucent={isTranslucent}>
+      <State data-test-id="adventure-select-state" $isTranslucent>
         <Icon src={wifiOffIcon} size={STATE_ICON_SIZE} />
         <StateTitle>Keine Verbindung zum Server</StateTitle>
         <RetryButton
@@ -314,12 +310,6 @@ function AdminSelectScreen(): ReactElement {
     <>
       <GlobalStyle />
       <PageTransitionStyle />
-      <AdventureBackground
-        layers={background.layers}
-        shown={background.shown}
-        onLoad={background.onLoad}
-        onError={background.onError}
-      />
       <Screen data-test-id="adventure-select" data-status={status}>
         <Page>
           <Header data-view-head>
@@ -327,11 +317,7 @@ function AdminSelectScreen(): ReactElement {
             <Heading>Abenteuer wählen</Heading>
           </Header>
           {isFighting && status === 'list' && (
-            <Notice
-              role="status"
-              data-test-id="adventure-select-fight"
-              $isTranslucent={isTranslucent}
-            >
+            <Notice role="status" data-test-id="adventure-select-fight" $isTranslucent>
               <Icon src={infoIcon} />
               Im aktiven Abenteuer läuft ein Kampf. Andere Abenteuer sind bis zu seinem Ende
               gesperrt.

@@ -90,8 +90,8 @@
   aus mehreren Admin-Fenstern nacheinander wirken.
 - **Abenteuerauswahl** (`/admin`) und **Admin Screen** (`/admin/play`) verbinden sich je als `admin`, mit eigenem
   `GameTableProvider` je Route: Ein Wechsel zwischen beiden verbindet neu, sodass ein Admin, der zur Auswahl
-  zurückkehrt, nicht Audioausgabe bleibt. Die Auswahl nutzt vom Snapshot das aktive Abenteuer (Markierung und
-  Hintergrund) und den Kampf (Sperre der anderen Abenteuer), spielt nichts ab und meldet sich nie als Ausgabe.
+  zurückkehrt, nicht Audioausgabe bleibt. Die Auswahl nutzt vom Snapshot das aktive Abenteuer (Markierung) und
+  den Kampf (Sperre der anderen Abenteuer), spielt nichts ab und meldet sich nie als Ausgabe.
 - **Charakterauswahl** (`/`) und **Player Screen** (`/player/:id`, Smartphones) teilen sich eine Verbindung als
   `player` (Layout-Route `PlayerLayout`, ein `GameTableProvider`; ein Wechsel zwischen beiden verbindet nicht neu).
   Vom Snapshot nutzen sie das aktive Abenteuer und das Theme; `audio` und `sound` empfangen sie, zeigen sie aber nicht

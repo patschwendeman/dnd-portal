@@ -26,8 +26,8 @@ interface AdventureBackground {
 }
 
 /**
- * State of the adventure image behind the tiles of the Admin, the adventure selection and the
- * cards of the Player; without an image (or while the adventure loads) the background is plain.
+ * State of the adventure image behind the tiles of the Admin and the cards of the Player; without
+ * an image (or while the adventure loads) the background is plain.
  * `heldSource` (a media path) is shown instead of the image of `adventure` while it is set, e.g.
  * the image of the card the Admin was opened from, before the Admin loaded the adventure.
  */
