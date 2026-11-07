@@ -1,7 +1,7 @@
 # DND-55: Einfarbiger Hintergrund in der Abenteuerauswahl
 
 **Typ:** style
-**Status:** Entwurf
+**Status:** Freigegeben
 
 ## Kontext & Ziel
 Die Abenteuerauswahl (`/admin`, `AdminSelectScreen`) zeigt heute hinter den Karten das abgedunkelte Abenteuerbild
