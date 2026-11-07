@@ -16,7 +16,7 @@ Theme des Spieltischs (`PATCH`) sowie die Audio-Befehle (`PATCH`/`POST`).
 | `PATCH /adventures/{adventure_id}` | aktive Szene (`active_scene_id`, nur Szenen des Abenteuers, `null` leert sie) und/oder `global_level` (1–20) setzen; 404 bzw. 422 |
 | `GET /adventures/{adventure_id}/scenes` | Szenen des Abenteuers mit Wall-/Ground-Bild und Tracks, nach ID (wie angelegt) |
 | `GET /scenes/{scene_id}` | eine Szene (404, wenn unbekannt) |
-| `GET /table` | Spieltisch-Zustand: aktives Abenteuer, dessen aktive Szene, Theme (`dark` \| `tavern`), Wall-Overlay, Ground-Raster (Farbe, Zellgröße) |
+| `GET /table` | Spieltisch-Zustand: aktives Abenteuer, dessen aktive Szene, Theme (`cyber` \| `tavern`), Wall-Overlay, Ground-Raster (Farbe, Zellgröße) |
 | `PATCH /table` | aktives Abenteuer (`active_adventure_id`, `null` leert es) und/oder `theme`, `wall_overlay`, `ground_grid`, `ground_grid_cell_size` (100–200, Schritt 10) setzen; 422 bei unbekanntem Abenteuer oder ungültigen Werten |
 | `GET /table/audio` | Musikzustand: läuft/pausiert, aktueller Track, Lautstärke (0–100), ob eine Audioausgabe bereit ist |
 | `PATCH /table/audio` | `playing` und/oder `volume` (0–100) setzen; 422 bei ungültigen Werten |

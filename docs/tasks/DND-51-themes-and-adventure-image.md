@@ -1,7 +1,7 @@
 # DND-51: Themes „Cyber“ und „Taverne“, ein Abenteuerbild für beide Themes
 
 **Typ:** feat
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -149,3 +149,40 @@ so: Ein Theme-Wechsel ändert nur die Farben, das Bild bleibt.
 - keine
 
 ## Review
+
+### Runde 1 – Review vom 2026-11-07 (Commit 677ceab, Gesamtstand gegen dbb7b28)
+
+**Empfehlung: Abnahme.** Kein blockierender Befund. AK1 bis AK6 sind erfüllt, alle Checks laufen grün, auch die
+vollständige E2E-Suite. Offen sind die manuellen Tests aus dem Plan, vor allem der Player auf einem zweiten Gerät.
+Die veraltete Angabe in `backend/README.md` (Hinweis 1) sollte vor dem Abschluss nachgezogen werden.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Theme-Auswahl im Admin | erfüllt | `SettingsPanel.tsx:12-15` bietet nur „Cyber“ (`cyber`) und „Taverne“ (`tavern`); BDD `adminSettings.feature:26` prüft Server, Wall und Auswahlliste in beide Richtungen; Player-Menü „Wie Spieltisch“/„Cyber“/„Taverne“ (`SettingsMenu.tsx`, BDD `playerSelect.ts:189/198`) grün. |
+| AK2 Abenteuerbild in beiden Themes | erfüllt | `adventureBackground.ts:89-91` liefert `adventure?.image?.source` ohne Theme; Aufrufer `AdminScreen.tsx:655`, `PlayerLayout.tsx:95`; Seed `image_media_id: 1` (Forest); `GET /adventures/1` liefert forest.jpg; BDD `adminSettings.feature:30` prüft genau ein Bild `forest.jpg`; Abdunklung unverändert. |
+| AK3 Theme-Wechsel lässt das Bild stehen | erfüllt | Bildquelle hängt nicht mehr vom Theme ab, keine Überblendung; BDD `adminSettings.feature:35`/`:38` prüfen nach jedem Wechsel genau eine Bildebene mit `forest.jpg`. |
+| AK4 Ohne Abenteuerbild | erfüllt | Unit `adventureBackground.spec.ts:49`, `:65`, `:85`; Backend `test_read_adventure_returns_null_without_image`; Logik für deckende Flächen (`isTranslucent`) unverändert. |
+| AK5 Bestehende Installation läuft weiter | erfüllt | Migration `0009_adventure_image_and_cyber_theme.py`; `test_migration_0009.py` prüft Theme-Umbenennung, Bild = forest bzw. NULL, CHECK, Default, FK, Downgrade; Dev-DB auf `0009`; `playerTheme.ts:23-32` liest `dark` als `cyber` und schreibt zurück (Unit `playerTheme.spec.ts:45`). |
+| AK6 Alter Theme-Wert wird abgelehnt | erfüllt | `schemas/game_table.py:7` `Literal["cyber", "tavern"]`; `test_table.py:140` prüft 422 für `"dark"`; live `PATCH /table {"theme":"dark"}` → 422, `GET /table` unverändert. |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+1. **Veraltete Ist-Doku:** `backend/README.md:19` nennt beim Theme noch `dark` \| `tavern` statt `cyber`/`tavern`.
+2. **Flaky Backend-Test:** `tests/test_ws.py` schlug gegen die Dev-DB in 3 von 20 Läufen fehl (wechselnde Tests,
+   immer `InvalidRequestError: This session is in 'prepared' state` in `send_initial_state` → `read_fight`, Pfade
+   nicht im Diff). Vermutete Ursache: Fixture `db` in `conftest.py` teilt eine `Session` über mehrere
+   WS-Verbindungen/Threads. Auf separaten DBs 0/30 (aktuell) und 0/50 (Elternstand) rot. Zusammenhang mit DND-51
+   unwahrscheinlich; Empfehlung: in `known-issues.md` aufnehmen oder eigener Task.
+3. **Zusätzliche Doku** `frontend/docs/design/components.md` und `screen-layouts.md`: passend, vom Scope gedeckt.
+   Mockups unter `frontend/docs/design/mockup/` enthalten weiter `dark`/„Dunkel“ – als historische Entwürfe vertretbar.
+4. **Neue Test-ID** `data-test-id="adventure-background"` und erweiterte BDD-Schritte: unproblematisch, belegen AK2/AK3.
+5. **`selectScene` und `models/models.ts` unverändert:** nachvollziehbar (keine Theme-Bezüge bzw. Typen aus `schema.d.ts`).
+6. **jscpd:** einziger Klon `cyberTheme.ts` ↔ `tavernTheme.ts` vorbestehend, in `known-issues.md` umbenannt.
+
+**Checks**
+- Backend: ruff check/format, mypy, `make check-quality`, `openapi.json` ohne Diff, pytest 335/335 grün.
+- Frontend: lint, typecheck, Unit 347/347, knip, jscpd, build grün; `schema.d.ts` ohne Diff.
+- E2E: 13 Suites, 53/53 grün.
+- Manuell offen: Plan-Tests 1 bis 3, vor allem Test 3 (Player auf zweitem Gerät mit eigener Theme-Wahl).
