@@ -29,7 +29,7 @@ interface DashboardPanelProps {
   headEnd?: ReactNode
   testId: string
   children: ReactNode
-  // While the scene image lies behind the tiles
+  // While the background image of the adventure lies behind the tiles
   isTranslucent?: boolean
 }
 

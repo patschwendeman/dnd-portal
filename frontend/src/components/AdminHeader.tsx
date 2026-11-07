@@ -101,7 +101,6 @@ interface ErrorNotice {
 }
 
 interface AdminHeaderProps {
-  // Steps in the history of the notes
   canGoBack: boolean
   canGoForward: boolean
   onBack: () => void
@@ -113,7 +112,7 @@ interface AdminHeaderProps {
   isDashboardOpen: boolean
   dashboardId: string
   onToggleDashboard: () => void
-  // While the scene image lies behind the tiles
+  // While the background image of the adventure lies behind the tiles
   isTranslucent?: boolean
 }
 

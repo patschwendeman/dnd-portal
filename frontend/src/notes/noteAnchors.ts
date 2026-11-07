@@ -1,6 +1,6 @@
 const UMLAUTS: [RegExp, string][] = [[/ä/g, 'ae'], [/ö/g, 'oe'], [/ü/g, 'ue'], [/ß/g, 'ss']]
 
-// Character by character like before, so the existing anchors without umlauts stay the same
+// Replaces character by character, so anchors of headings without umlauts stay stable
 export const headingAnchor = (text: string): string => UMLAUTS
   .reduce((anchor, [umlaut, spelling]) => anchor.replace(umlaut, spelling), text.toLowerCase())
   .replace(/[^a-z0-9_]/g, '-')

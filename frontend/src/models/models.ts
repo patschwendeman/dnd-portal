@@ -15,7 +15,7 @@ export type Track = Schemas['Track']
 // /table)
 export type GameTableState = Schemas['GameTableState']
 export type Theme = GameTableState['theme']
-// What the Walls show above the scene image: the world map or nothing
+// What the Walls show above the scene image: the world map, the join QR code or nothing
 export type WallOverlay = GameTableState['wall_overlay']
 // Line colour of the grid on the Grounds, or no grid
 export type GroundGrid = GameTableState['ground_grid']
@@ -28,8 +28,8 @@ export type AudioState = Schemas['AudioState']
 export type AudioUpdate = Schemas['AudioUpdate']
 export type SoundName = Schemas['SoundRequest']['name']
 
-// The running fight of the active adventure (GET /table/fight, pushed only to Admins); combatants
-// in initiative order
+// The running fight of the active adventure (GET /table/fight, pushed to Admins and, without NPC
+// labels, to Walls and Players); combatants in initiative order
 export type FightState = Schemas['FightState']
 export type Combatant = Schemas['Combatant']
 export type CombatantKind = Combatant['kind']

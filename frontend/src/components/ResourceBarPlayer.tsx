@@ -102,7 +102,6 @@ const Slot = styled.span<{ $variant: 'spell' | 'special', $currentSlots: number,
 
 type SetResource = React.Dispatch<React.SetStateAction<number>>
 
-// Numbers 1 … count of the slots of a resource
 const slotNumbers = (count: number): number[] => (
   Array.from({ length: count }, (_, index) => index + 1)
 )

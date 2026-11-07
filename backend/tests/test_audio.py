@@ -46,6 +46,7 @@ def end_current_track() -> dict[str, Any]:
     from app.realtime.audio import audio
     from app.realtime.manager import Connection
 
+    # No WebSocket needed: the audio state only compares the output connection by identity
     output = Connection(websocket=None, screen="admin")  # type: ignore[arg-type]
     audio.set_output(output)
     assert audio.track is not None

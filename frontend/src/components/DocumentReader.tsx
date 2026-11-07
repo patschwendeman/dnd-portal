@@ -332,7 +332,7 @@ interface DocumentReaderProps {
   // The scroll area, so the history can save the position before a move
   scrollRef: RefObject<HTMLDivElement>
   onFollow: (target: NoteTarget) => void
-  // While the scene image lies behind the tiles
+  // While the background image of the adventure lies behind the tiles
   isTranslucent?: boolean
 }
 

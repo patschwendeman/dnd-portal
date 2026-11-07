@@ -18,7 +18,7 @@ export const ActiveSceneContext = createContext<ActiveSceneContextType>({
   activeSceneId: null,
 })
 
-// null: no adventure is selected (yet), so no scenes or maps are loaded
+// null: no adventure is selected (yet), so no scenes are loaded
 interface ActiveAdventureContextType {
   activeAdventureId: number | null
 }

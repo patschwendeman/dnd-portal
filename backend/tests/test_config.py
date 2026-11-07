@@ -27,7 +27,7 @@ def env(monkeypatch: pytest.MonkeyPatch) -> pytest.MonkeyPatch:
 
 
 def test_settings_read_db_values_and_build_url(env: pytest.MonkeyPatch) -> None:
-    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]  # init-only option of pydantic-settings
 
     assert settings.db_driver == "postgresql+psycopg2"
     assert settings.db_host == "db.example"
@@ -38,7 +38,7 @@ def test_settings_read_db_values_and_build_url(env: pytest.MonkeyPatch) -> None:
 
 
 def test_cors_origins_default_to_local_frontends(env: pytest.MonkeyPatch) -> None:
-    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]  # init-only option of pydantic-settings
 
     assert settings.cors_origins == ["http://localhost:5173", "http://localhost:8080"]
 
@@ -46,7 +46,7 @@ def test_cors_origins_default_to_local_frontends(env: pytest.MonkeyPatch) -> Non
 def test_cors_origins_are_read_as_json_list(env: pytest.MonkeyPatch) -> None:
     env.setenv("CORS_ORIGINS", '["http://localhost:8080","http://192.168.0.10:8080"]')
 
-    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]  # init-only option of pydantic-settings
 
     assert settings.cors_origins == ["http://localhost:8080", "http://192.168.0.10:8080"]
 
@@ -55,7 +55,7 @@ def test_missing_required_value_raises_validation_error(env: pytest.MonkeyPatch)
     env.delenv("DB_HOST")
 
     with pytest.raises(ValidationError) as error:
-        Settings(_env_file=None)  # type: ignore[call-arg]
+        Settings(_env_file=None)  # type: ignore[call-arg]  # init-only option of pydantic-settings
 
     assert error.value.errors()[0]["loc"] == ("db_host",)
     assert error.value.errors()[0]["type"] == "missing"
@@ -64,7 +64,7 @@ def test_missing_required_value_raises_validation_error(env: pytest.MonkeyPatch)
 def test_media_dir_defaults_to_app_media(env: pytest.MonkeyPatch) -> None:
     env.delenv("MEDIA_DIR", raising=False)
 
-    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]  # init-only option of pydantic-settings
 
     assert settings.media_dir == Path("/app/media")
 
@@ -72,7 +72,7 @@ def test_media_dir_defaults_to_app_media(env: pytest.MonkeyPatch) -> None:
 def test_media_dir_is_read_from_environment(env: pytest.MonkeyPatch) -> None:
     env.setenv("MEDIA_DIR", "/srv/dnd/media")
 
-    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]  # init-only option of pydantic-settings
 
     assert settings.media_dir == Path("/srv/dnd/media")
 
@@ -81,13 +81,13 @@ def test_media_dir_is_read_from_environment(env: pytest.MonkeyPatch) -> None:
 def test_empty_player_url_is_none(env: pytest.MonkeyPatch, value: str) -> None:
     env.setenv("PLAYER_URL", value)
 
-    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]  # init-only option of pydantic-settings
 
     assert settings.player_url is None
 
 
 def test_player_url_defaults_to_none(env: pytest.MonkeyPatch) -> None:
-    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]  # init-only option of pydantic-settings
 
     assert settings.player_url is None
 
@@ -95,6 +95,6 @@ def test_player_url_defaults_to_none(env: pytest.MonkeyPatch) -> None:
 def test_player_url_is_read_from_environment(env: pytest.MonkeyPatch) -> None:
     env.setenv("PLAYER_URL", "http://192.168.0.10:8080/")
 
-    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]  # init-only option of pydantic-settings
 
     assert settings.player_url == "http://192.168.0.10:8080/"

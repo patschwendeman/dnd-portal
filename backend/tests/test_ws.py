@@ -426,6 +426,7 @@ def test_broadcast_removes_connection_with_failing_send() -> None:
     async def scenario() -> tuple[ConnectionManager, RecordingWebSocket]:
         connections = ConnectionManager()
         healthy = RecordingWebSocket()
+        # Fake WebSockets: Connection only calls send_json
         connections.add(Connection(websocket=BrokenWebSocket(), screen="wall"))  # type: ignore[arg-type]
         connections.add(Connection(websocket=healthy, screen="ground"))  # type: ignore[arg-type]
 
@@ -706,6 +707,7 @@ def test_failed_send_to_a_screen_is_pushed_to_admins() -> None:
     async def scenario() -> list[dict[str, Any]]:
         connections = ConnectionManager()
         admin = RecordingWebSocket()
+        # Fake WebSockets: Connection only calls send_json
         connections.add(Connection(websocket=admin, screen="admin"))  # type: ignore[arg-type]
         connections.add(Connection(websocket=BrokenWebSocket(), screen="ground"))  # type: ignore[arg-type]
         await connections.push_screens()

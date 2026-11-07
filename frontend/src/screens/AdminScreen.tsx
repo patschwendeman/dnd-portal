@@ -244,8 +244,7 @@ function AdminScreen(): ReactElement {
   const [activeSceneFailed, setActiveSceneFailed] = useState<boolean>(false)
   const hasLoadError = adventuresFailed || adminDataFailed || adventureFailed || activeSceneFailed
 
-  // The last write that failed (scene, adventure or theme), kept so "Erneut versuchen" can repeat
-  // it
+  // The last write of the Admin that failed, kept so "Erneut versuchen" can repeat it
   const [failedSave, setFailedSave] = useState<{ retry: Save } | null>(null)
   const latestSave = useRef<number>(0)
 

@@ -93,7 +93,7 @@ interface NavRailProps {
   // id of the panel element the buttons control
   panelId: string
   onSelect: (id: string) => void
-  // While the scene image lies behind the tiles
+  // While the background image of the adventure lies behind the tiles
   isTranslucent?: boolean
 }
 

@@ -36,6 +36,6 @@ def update_table(update: GameTableUpdate, db: SessionDep, background_tasks: Back
         raise HTTPException(status_code=409, detail=str(error)) from error
     background_tasks.add_task(push_state)
     if "active_adventure_id" in update.model_fields_set:
-        # The Admins show the fight of the active adventure.
+        # Admins, Walls and Players show the fight of the active adventure.
         background_tasks.add_task(push_fight)
     return state
