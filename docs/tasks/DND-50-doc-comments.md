@@ -1,7 +1,7 @@
 # DND-50: Fehlende Doc-Kommentare nach CONTRIBUTING.md ergänzen
 
 **Typ:** chore
-**Status:** Im Review
+**Status:** Fertig
 
 ## Kontext & Ziel
 
@@ -117,16 +117,16 @@ im ganzen Code, ohne dass sich Verhalten ändert.
   Wesentliches fehlt. Jede Aussage muss mit dem Code übereinstimmen.
 
 ## Akzeptanzkriterien (refactor, style, chore)
-- [ ] AK1: Alle 15 genannten Routen haben einen Docstring; in `openapi.json` hat jede Operation eine `description`.
-- [ ] AK2: Die genannten Service- und Realtime-Funktionen haben Docstrings, deren Aussagen mit dem Code übereinstimmen.
-- [ ] AK3: Im Frontend steht über keiner exportierten Top-Level-Deklaration mehr ein `//`-Kommentar und an keinem
+- [x] AK1: Alle 15 genannten Routen haben einen Docstring; in `openapi.json` hat jede Operation eine `description`.
+- [x] AK2: Die genannten Service- und Realtime-Funktionen haben Docstrings, deren Aussagen mit dem Code übereinstimmen.
+- [x] AK3: Im Frontend steht über keiner exportierten Top-Level-Deklaration mehr ein `//`-Kommentar und an keinem
       Feld eines Interface/Type mehr ein `//`-Kommentar (E1, E2); Kommentare in Funktionsrümpfen und über nicht
       exportierten Deklarationen sind unverändert `//`.
-- [ ] AK4: Die genannten Frontend-Exporte haben ein `/** */`, das mit dem Code übereinstimmt.
-- [ ] AK5: Alle Invarianten eingehalten – keine Verhaltensänderung; Diff von `openapi.json`/`schema.d.ts` nur
+- [x] AK4: Die genannten Frontend-Exporte haben ein `/** */`, das mit dem Code übereinstimmt.
+- [x] AK5: Alle Invarianten eingehalten – keine Verhaltensänderung; Diff von `openapi.json`/`schema.d.ts` nur
       `description` bzw. Kommentarzeilen.
-- [ ] AK6: Lint, Tests und Build sind so grün wie vorher (bekannte Altfehler ausgenommen).
-- [ ] AK7: Bestehende Tests unverändert.
+- [x] AK6: Lint, Tests und Build sind so grün wie vorher (bekannte Altfehler ausgenommen).
+- [x] AK7: Bestehende Tests unverändert.
 
 ## Teststrategie / Verifikation
 
@@ -147,3 +147,44 @@ im ganzen Code, ohne dass sich Verhalten ändert.
 - keine
 
 ## Review
+
+### Runde 1 – Review vom 2026-11-07 (Commit ecb7da9)
+
+**Empfehlung: Abnahme.** Kein blockierender Befund; alle 7 Akzeptanzkriterien erfüllt. Diff ändert nur Kommentare,
+Docstrings und die daraus generierten Vertragsdateien. Die 4 roten pytest-Tests sind auf `ecb7da9^` identisch rot.
+
+| AK | Ergebnis | Beleg |
+|---|---|---|
+| AK1 Routen-Docstrings | erfüllt | AST-Skript über `routes/*.py`: keine Route ohne Docstring; alle 19 Operationen in `openapi.json` mit `description` (15 neu) |
+| AK2 Service/Realtime | erfüllt | Alle genannten Funktionen dokumentiert; Inhalt gegen Code geprüft (z. B. `update_adventure`, `update_state`, `AudioService.update`, `make_audio_output`) |
+| AK3 `//` → `/** */` | erfüllt | TS-AST über 115 Dateien: 0 Treffer; Gegenprobe auf `ecb7da9^`: 232 Treffer (123 Exporte, 109 Felder) |
+| AK4 Neue Frontend-Kommentare | erfüllt | Alle 24 vorhanden; Stichproben (`Dialogue`, `GridOverlay`, `loadData`, `planTransitions`) passen zum Code |
+| AK5 Invarianten | erfüllt | Nur Kommentarzeilen; 224 Umwandlungen ohne Wortlaut-Abweichung; E3 eingehalten; `openapi.json` nur `description`-Zeilen |
+| AK6 Checks | erfüllt | Siehe unten; 4 pytest-Fehler vorbestehend |
+| AK7 Tests unverändert | erfüllt | Keine Datei unter `backend/tests/` oder `frontend/__tests__/` im Commit |
+
+**Blockierende Befunde**
+- keine
+
+**Hinweise (nicht blockierend)**
+1. Bewusst als `//` belassen, planmäßig: `AudioPlayer.update` (`audioPlayer.ts:60-61`, Klassenmethode, kein
+   Top-Level), Kommentare über nicht exportierten Interfaces in `context.ts:12, 21, 79-80` (Non-Goal), Objekt-Literale
+   in `tokens.ts:59, 65, 78` (kein Type-Feld). Für den Hover-Nutzen Kandidaten für ein späteres Ticket.
+2. `noteLinks.ts:21`: `//` an einem Mitglied des Union-Typs `ResolvedLink` – kein Feld, von E1 nicht erfasst.
+3. Route-Docstrings unvollständig, nicht falsch: `start_fight` nennt bei 422 nur „player of another adventure“
+   (auch doppelte Spieler/Nummern → 422); `end_fight`, `update_combatant`, `remove_combatant` nennen 409 ohne aktives
+   Abenteuer nicht. OpenAPI-`responses` führen die Fälle auf.
+4. `update_table` (`table.py:33`): „A change of the active adventure also pushes its fight“ – Code pusht schon,
+   wenn `active_adventure_id` im Body steht, auch ohne Änderung (`table.py:46`). Ungenau, nicht falsch.
+5. 4 pytest-Fehler (`test_read_adventure_returns_detail_with_players`,
+   `test_read_adventure_returns_background_per_theme_as_image`, `test_patch_returns_detail_with_players`,
+   `test_scene_change_is_rejected_during_a_fight`): Dev-DB weicht vom Seed ab (Abenteuer 1 `global_level` 4,
+   andere Hintergründe). Abhilfe laut `backend/CLAUDE.md`: DB zurücksetzen.
+6. Manuelle Prüfung (Hover in VS Code) nicht durchgeführt; kein AK.
+
+**Konventionen:** ein Runden-Commit, Kopfzeile nach Schema, Typ `chore`, 5 Stichpunkte, keine KI-Signatur; kein neues
+`type: ignore`/`noqa`/`eslint-disable`.
+
+**Checks:** Backend `ruff check`, `ruff format --check`, `mypy app` grün; `export_openapi.py` erneut ohne Diff;
+`pytest` 324 grün, 4 rot (vorbestehend, Hinweis 5). Frontend `lint`, `typecheck`, `test:unit` (346), `build` grün;
+`generate:api` erneut ohne Diff.
